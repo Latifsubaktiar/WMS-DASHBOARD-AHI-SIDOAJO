@@ -1385,11 +1385,14 @@ function reloadIframe(frameId,key){
 }
 
 // ── AI SUPPORT ──
+const GAS_AI_URL = 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyqHrn8D5T6wxeqawefd6yMJWIO1Xj2mN4p_BMN6uwNoXZec5Xb5f0RDYnlmFjqgFoT/exec';
+
 function setupAI(inId,btnId,msgsId,typingId){
   const inp=document.getElementById(inId),btn=document.getElementById(btnId),msgs=document.getElementById(msgsId),typing=document.getElementById(typingId);
   if(!inp||!btn||!msgs)return;
   function addBubble(text,type){
-    const div=document.createElement('div');div.className=`ai-bubble ${type}`;div.textContent=text;
+    const div=document.createElement('div');div.className=`ai-bubble ${type}`;
+    div.style.whiteSpace='pre-wrap';div.textContent=text;
     if(typing&&msgs.contains(typing))msgs.insertBefore(div,typing);else msgs.appendChild(div);
     msgs.scrollTop=msgs.scrollHeight;
   }
@@ -1398,19 +1401,42 @@ function setupAI(inId,btnId,msgsId,typingId){
     addBubble(txt,'user');inp.value='';inp.disabled=true;btn.disabled=true;
     if(typing){typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;}
     try{
-      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Kamu adalah asisten AI untuk WMS (Warehouse Management System) AHI Sidoarjo. Bantu user seputar operasional gudang: inbound, outbound, inventory, storing, planning, dan laporan. Jawab dalam bahasa Indonesia yang ramah dan ringkas.',messages:[{role:'user',content:txt}]})});
+      const url=GAS_AI_URL+'?q='+encodeURIComponent(txt);
+      const res=await fetch(url);
       const data=await res.json();
       if(typing)typing.classList.remove('show');
-      const reply=data.content?.map(c=>c.text||'').join('')||'Maaf, tidak bisa memproses permintaan.';
-      addBubble(reply,'bot');
+      addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');
     }catch(e){
       if(typing)typing.classList.remove('show');
-      addBubble('Terjadi kesalahan koneksi. Coba lagi.','bot');
+      // Fallback: JSONP
+      try{
+        const reply=await askViaJsonp(txt);
+        addBubble(reply,'bot');
+      }catch(e2){
+        addBubble('Maaf, terjadi kesalahan koneksi.','bot');
+      }
     }
     inp.disabled=false;btn.disabled=false;inp.focus();
   }
   btn.addEventListener('click',send);
   inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+}
+
+function askViaJsonp(question){
+  return new Promise((resolve,reject)=>{
+    const cbName='cb_'+Date.now();
+    window[cbName]=function(data){
+      delete window[cbName];
+      document.getElementById('jsonpScript')?.remove();
+      resolve(data.answer||'Maaf, tidak ada jawaban.');
+    };
+    const s=document.createElement('script');
+    s.id='jsonpScript';
+    s.src=GAS_AI_URL+'?q='+encodeURIComponent(question)+'&cb='+cbName;
+    s.onerror=()=>reject(new Error('JSONP failed'));
+    document.body.appendChild(s);
+    setTimeout(()=>reject(new Error('Timeout')),15000);
+  });
 }
 setupAI('aiIn','aiBtn','aiMsg','aiTyping');
 setupAI('aiIn2','aiBtn2','aiMsg2','aiTyping2');
