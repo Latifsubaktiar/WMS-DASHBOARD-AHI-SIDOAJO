@@ -744,23 +744,19 @@ function applyLogin() {
   setTimeout(() => overlay.classList.add('hidden'), 300);
 }
 
-// ── Auto-login dari localStorage ──
+// ── Pre-fill dari localStorage (modal tetap muncul, nama sudah terisi) ──
 (function checkSavedLogin() {
   const savedName = localStorage.getItem('wms_name');
   const savedColor = parseInt(localStorage.getItem('wms_color') || '0');
   if (savedName) {
     selectedColorIdx = savedColor;
-    me.name     = savedName;
-    me.color    = AVATAR_COLORS[savedColor];
-    me.initials = savedName.slice(0,2).toUpperCase();
-    // Pre-fill form juga
+    // Pre-fill nama di form
     const nameInput = document.getElementById('loginName');
     if (nameInput) nameInput.value = savedName;
     // Tandai warna terpilih
     document.querySelectorAll('.color-opt').forEach((el,i) => {
       el.classList.toggle('selected', i === savedColor);
     });
-    applyLogin();
   }
 })();
 
