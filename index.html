@@ -710,6 +710,14 @@ function doLogin() {
   me.color    = AVATAR_COLORS[selectedColorIdx];
   me.initials = name.slice(0,2).toUpperCase();
 
+  // Simpan ke localStorage biar next visit langsung masuk
+  localStorage.setItem('wms_name', name);
+  localStorage.setItem('wms_color', selectedColorIdx);
+
+  applyLogin();
+}
+
+function applyLogin() {
   // Update header
   const av = document.getElementById('headerAvatar');
   av.textContent  = me.initials;
@@ -735,6 +743,35 @@ function doLogin() {
   overlay.style.transition = 'opacity 0.3s ease';
   setTimeout(() => overlay.classList.add('hidden'), 300);
 }
+
+// ── Auto-login dari localStorage ──
+(function checkSavedLogin() {
+  const savedName = localStorage.getItem('wms_name');
+  const savedColor = parseInt(localStorage.getItem('wms_color') || '0');
+  if (savedName) {
+    selectedColorIdx = savedColor;
+    me.name     = savedName;
+    me.color    = AVATAR_COLORS[savedColor];
+    me.initials = savedName.slice(0,2).toUpperCase();
+    // Pre-fill form juga
+    const nameInput = document.getElementById('loginName');
+    if (nameInput) nameInput.value = savedName;
+    // Tandai warna terpilih
+    document.querySelectorAll('.color-opt').forEach((el,i) => {
+      el.classList.toggle('selected', i === savedColor);
+    });
+    applyLogin();
+  }
+})();
+
+// ── Klik avatar di header = ganti nama ──
+document.getElementById('headerUser').addEventListener('click', () => {
+  localStorage.removeItem('wms_name');
+  localStorage.removeItem('wms_color');
+  const overlay = document.getElementById('loginOverlay');
+  overlay.classList.remove('hidden');
+  overlay.style.opacity = '1';
+});
 
 // ══════════════════════════════════════
 //  CHAT ENGINE
