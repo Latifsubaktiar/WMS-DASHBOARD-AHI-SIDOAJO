@@ -541,9 +541,9 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
   </div>
 
   <!-- PLANNER -->
-  <div class="launcher-page" id="page-planner">
-    <div class="launcher-bar"><button class="launcher-back" onclick="goHome()">← Kembali</button><span class="launcher-title">📋 Planner</span><span class="launcher-sub">Rencana Operasional</span></div>
-    <div class="launcher-body"><div class="launcher-icon-wrap">📋</div><div class="launcher-name">Planner Dashboard</div><div class="launcher-desc">Dashboard Planner tidak dapat ditampilkan langsung karena pengaturan keamanan website. Klik tombol di bawah untuk membukanya di tab baru.</div><a class="launcher-btn" id="plannerOpenBtn" href="https://plannerazko.github.io/DashboardPlanning/" target="_blank">↗ &nbsp;Buka Planner Dashboard</a><div class="launcher-note">🔒 Akan terbuka di tab baru browser kamu</div></div>
+  <div class="iframe-page" id="page-planner">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📋 Planner</span><span class="iframe-sub">Rencana Operasional</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrPlanner','planner')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabPlanner" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldPlanner"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Planner Dashboard...</span></div><div class="iframe-error" id="errPlanner"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabPlanner" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrPlanner" src="about:blank" allow="fullscreen *"></iframe></div>
   </div>
 
   <!-- INVENTORY -->
@@ -638,8 +638,8 @@ const URLS = {
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   inbound: null, storing: null,
 };
-const IFRAME_PAGES   = ['inventory','outbound'];
-const LAUNCHER_PAGES = ['planner'];
+const IFRAME_PAGES   = ['inventory','outbound','planner'];
+const LAUNCHER_PAGES = [];
 
 // ── Avatar color palette ──
 const AVATAR_COLORS = [
