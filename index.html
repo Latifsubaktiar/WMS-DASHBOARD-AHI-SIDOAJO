@@ -961,11 +961,19 @@ function loadIframe(key){
   if(!f)return;
   if(tab)tab.href=url; if(errTab)errTab.href=url;
   ld.classList.remove('hidden');er.classList.remove('show');
-  f.style.opacity='0';f.src='about:blank';
-  const t=setTimeout(()=>{ld.classList.add('hidden');er.classList.add('show');},12000);
-  f.onload=()=>{clearTimeout(t);ld.classList.add('hidden');f.style.opacity='1';try{const doc=f.contentDocument||f.contentWindow.document;if(!doc||doc.URL==='about:blank')er.classList.add('show');}catch(e){}};
-  f.onerror=()=>{clearTimeout(t);ld.classList.add('hidden');er.classList.add('show');};
-  setTimeout(()=>{f.src=url;},80);
+  f.style.opacity='0';
+  let realLoaded=false;
+  const t=setTimeout(()=>{ld.classList.add('hidden');er.classList.add('show');},20000);
+  f.onload=()=>{
+    if(!realLoaded)return;
+    clearTimeout(t);ld.classList.add('hidden');f.style.opacity='1';
+  };
+  f.onerror=()=>{
+    if(!realLoaded)return;
+    clearTimeout(t);ld.classList.add('hidden');er.classList.add('show');
+  };
+  f.src='about:blank';
+  setTimeout(()=>{realLoaded=true;f.src=url;},150);
 }
 function reloadIframe(frameId,key){
   const f=document.getElementById(frameId);const url=URLS[key];
