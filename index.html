@@ -1215,14 +1215,7 @@ function applyLogin() {
   }
 })();
 
-// ── Klik avatar di header = ganti nama ──
-document.getElementById('headerUser').addEventListener('click', () => {
-  localStorage.removeItem('wms_name');
-  localStorage.removeItem('wms_color');
-  const overlay = document.getElementById('loginOverlay');
-  overlay.classList.remove('hidden');
-  overlay.style.opacity = '1';
-});
+// headerUser click → handled by profile modal (see extra JS below)
 
 // ══════════════════════════════════════
 //  CHAT ENGINE
