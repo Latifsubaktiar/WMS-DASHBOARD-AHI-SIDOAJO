@@ -825,7 +825,7 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
     <div class="nav-label">Departemen</div>
     <button class="nav-item" data-page="planner"><span class="nav-icon">📋</span>Planner<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="inbound"><span class="nav-icon">📦</span>Inbound<span class="nav-tag tag-orange">Soon</span></button>
-    <button class="nav-item" data-page="storing"><span class="nav-icon">🏗️</span>Storing<span class="nav-tag tag-orange">Soon</span></button>
+    <button class="nav-item" data-page="storing"><span class="nav-icon">🏗️</span>Storing<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="outbound"><span class="nav-icon">🚚</span>Outbound<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="inventory"><span class="nav-icon">📊</span>Inventory<span class="nav-tag tag-green">Live</span></button>
   </div>
@@ -1036,9 +1036,10 @@ const URLS = {
   planner:   'https://plannerazko.github.io/DashboardPlanning/',
   inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzycCoQgClG2VO7M3HUsTMWg0ZDnOs8Un81br35sS4OtpKZsVqNsT2Btdzgs1SdMYZ3kg/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
-  inbound: null, storing: null,
+  inbound: null,
+  storing: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbwQ2a3YwuZHdU5oP9faQgNpTp_fM7pGhKwriX4z1DsMnk03ycDqCBfexOyNelQzLbQ-/exec',
 };
-const IFRAME_PAGES   = ['inventory','outbound','planner'];
+const IFRAME_PAGES   = ['inventory','outbound','planner','storing'];
 const LAUNCHER_PAGES = [];
 
 // ── Avatar color palette ──
