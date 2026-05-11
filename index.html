@@ -827,7 +827,7 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
     <div class="nav-label">Departemen</div>
     <button class="nav-item" data-page="planner"><span class="nav-icon">📋</span>Planner<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="inbound"><span class="nav-icon">📦</span>Inbound<span class="nav-tag tag-orange">Soon</span></button>
-    <button class="nav-item" data-page="storing"><span class="nav-icon">🏗️</span>Storing<span class="nav-tag tag-green">Live</span></button>
+    <button class="nav-item" data-page="storing"><span class="nav-icon">🏗️</span>Storing<span class="nav-tag tag-orange">Soon</span></button>
     <button class="nav-item" data-page="outbound"><span class="nav-icon">🚚</span>Outbound<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="inventory"><span class="nav-icon">📊</span>Inventory<span class="nav-tag tag-green">Live</span></button>
   </div>
@@ -958,10 +958,7 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
   <div class="page" id="page-inbound"><div class="soon-screen"><div class="si">📦</div><h2>Inbound Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
 
   <!-- STORING -->
-  <div class="page" id="page-storing">
-    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">🏗️ Storing</span><span class="iframe-sub">Dashboard Storing</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrStoring','storing')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabStoring" href="#" target="_blank">↗ Tab Baru</a></div></div>
-    <div class="iframe-container"><div class="iframe-loading" id="ldStoring"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Storing Dashboard...</span></div><div class="iframe-error" id="errStoring"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabStoring" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrStoring" src="about:blank" allow="fullscreen *"></iframe></div>
-  </div>
+  <div class="page" id="page-storing"><div class="soon-screen"><div class="si">🏗️</div><h2>Storing Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
 
   <!-- OUTBOUND -->
   <div class="iframe-page" id="page-outbound">
@@ -1042,9 +1039,9 @@ const URLS = {
   inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzycCoQgClG2VO7M3HUsTMWg0ZDnOs8Un81br35sS4OtpKZsVqNsT2Btdzgs1SdMYZ3kg/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   inbound: null,
-  storing: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbwQ2a3YwuZHdU5oP9faQgNpTp_fM7pGhKwriX4z1DsMnk03ycDqCBfexOyNelQzLbQ-/exec',
+  storing: null,
 };
-const IFRAME_PAGES   = ['inventory','outbound','planner','storing'];
+const IFRAME_PAGES   = ['inventory','outbound','planner'];
 const LAUNCHER_PAGES = [];
 
 // ── Avatar color palette ──
