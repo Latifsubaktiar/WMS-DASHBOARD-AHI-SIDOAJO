@@ -788,7 +788,16 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
     </div>
     <div class="login-colors">
       <label>Warna Avatar</label>
-      <div class="color-options" id="colorOptions"></div>
+      <div class="color-options" id="colorOptions">
+        <div class="color-opt selected" style="background:linear-gradient(145deg,#3b82f6,#1d4ed8)" data-idx="0"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#ec4899,#db2777)" data-idx="1"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#06b6d4,#0891b2)" data-idx="2"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#10b981,#059669)" data-idx="3"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#f59e0b,#d97706)" data-idx="4"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#8b5cf6,#7c3aed)" data-idx="5"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#ef4444,#dc2626)" data-idx="6"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#64748b,#475569)" data-idx="7"></div>
+      </div>
     </div>
     <button class="login-btn" id="loginBtn">Masuk ke Dashboard →</button>
     <div class="login-err" id="loginErr">Nama tidak boleh kosong!</div>
@@ -1094,17 +1103,13 @@ initFirebase();
 const colorOptions = document.getElementById('colorOptions');
 let selectedColorIdx = 0;
 
-AVATAR_COLORS.forEach((c, i) => {
-  const el = document.createElement('div');
-  el.className = 'color-opt' + (i === 0 ? ' selected' : '');
-  el.style.background = c.bg;
-  el.title = 'Pilih warna ini';
+// Handle color selection on hardcoded elements
+colorOptions.querySelectorAll('.color-opt').forEach(el => {
   el.addEventListener('click', () => {
-    document.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
+    colorOptions.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
     el.classList.add('selected');
-    selectedColorIdx = i;
+    selectedColorIdx = parseInt(el.dataset.idx || '0');
   });
-  colorOptions.appendChild(el);
 });
 
 document.getElementById('loginBtn').addEventListener('click', doLogin);
@@ -1147,6 +1152,8 @@ function applyLogin() {
     });
   }
 
+  lastSeenTs = parseInt(localStorage.getItem('lastSeenTs_' + me.name) || '0');
+
   startChat();
 
   const overlay = document.getElementById('loginOverlay');
@@ -1161,11 +1168,9 @@ function applyLogin() {
   const savedColor = parseInt(localStorage.getItem('wms_color') || '0');
   if (savedName) {
     selectedColorIdx = savedColor;
-    // Pre-fill nama di form
     const nameInput = document.getElementById('loginName');
     if (nameInput) nameInput.value = savedName;
-    // Tandai warna terpilih
-    document.querySelectorAll('.color-opt').forEach((el,i) => {
+    colorOptions.querySelectorAll('.color-opt').forEach((el, i) => {
       el.classList.toggle('selected', i === savedColor);
     });
   }
@@ -1456,14 +1461,22 @@ setupAI('aiIn2','aiBtn2','aiMsg2','aiTyping2');
 // ── NOTIFIKASI SYSTEM ──
 let notifList = [];
 let notifOpen = false;
-let lastSeenTs = parseInt(localStorage.getItem('lastSeenTs') || '0');
+
+function getLastSeenTs() {
+  const key = 'lastSeenTs_' + (me.name || 'guest');
+  return parseInt(localStorage.getItem(key) || '0');
+}
+
+function setLastSeenTs(ts) {
+  const key = 'lastSeenTs_' + (me.name || 'guest');
+  localStorage.setItem(key, ts);
+}
 
 function toggleNotif() {
   notifOpen = !notifOpen;
   document.getElementById('notifPanel').style.display = notifOpen ? 'block' : 'none';
   if (notifOpen) {
-    lastSeenTs = Date.now();
-    localStorage.setItem('lastSeenTs', lastSeenTs);
+    setLastSeenTs(Date.now());
     document.getElementById('notifBadge').style.display = 'none';
     document.getElementById('notifBadge').textContent = '0';
   }
@@ -1471,16 +1484,45 @@ function toggleNotif() {
 
 function clearNotifs() {
   notifList = [];
-  lastSeenTs = Date.now();
-  localStorage.setItem('lastSeenTs', lastSeenTs);
+  setLastSeenTs(Date.now());
   document.getElementById('notifBadge').style.display = 'none';
   document.getElementById('notifList').innerHTML = '<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';
 }
 
 function addNotif(msg) {
-  // Only notify messages from others, after login
-  if (!me.name || msg.name === me.name) return;
-  if (msg.ts <= lastSeenTs) return;
+  if (!msg || !msg.name) return;
+  if (me.name && msg.name === me.name) return; // jangan notif pesan sendiri
+  if (!msg.ts || msg.ts <= getLastSeenTs()) return; // sudah pernah dibaca
+
+  notifList.unshift(msg);
+  if (notifList.length > 20) notifList.pop();
+
+  if (!notifOpen) {
+    const badge = document.getElementById('notifBadge');
+    const count = parseInt(badge.textContent || '0') + 1;
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'flex';
+    const btn = document.getElementById('notifBtn');
+    btn.style.animation = 'none';
+    setTimeout(() => btn.style.animation = 'shakeBell 0.5s ease', 10);
+  }
+  renderNotifList();
+}
+
+  notifList.unshift(msg);
+  if (notifList.length > 20) notifList.pop();
+
+  if (!notifOpen) {
+    const badge = document.getElementById('notifBadge');
+    const count = parseInt(badge.textContent || '0') + 1;
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'flex';
+    const btn = document.getElementById('notifBtn');
+    btn.style.animation = 'none';
+    setTimeout(() => btn.style.animation = 'shakeBell 0.5s ease', 10);
+  }
+  renderNotifList();
+}
 
   notifList.unshift(msg);
   if (notifList.length > 20) notifList.pop();
@@ -1512,7 +1554,7 @@ function renderNotifList() {
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:700;color:#0f172a">${m.name||'User'} <span style="font-weight:400;color:#94a3b8">di Discussion</span></div>
         <div style="font-size:12px;color:#334155;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.text||''}</div>
-        <div style="font-size:10px;color:#94a3b8;margin-top:3px">${new Date(m.ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:3px">${m.timestamp ? new Date(m.timestamp).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
       </div>
       <span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0">💬</span>
     </div>
