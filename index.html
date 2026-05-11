@@ -456,7 +456,7 @@ body::after {
 .page.active { display: block; }
 @keyframes pageIn { from{opacity:0;transform:translateY(16px) scale(0.99)} to{opacity:1;transform:translateY(0) scale(1)} }
 .iframe-page { display: none; flex-direction: column; flex: 1; min-height: 0; background: var(--bg); }
-.iframe-page.active { display: flex; }
+.iframe-page.active { display: flex; flex-direction: column; }
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .page-title-wrap h1 { font-size: 26px; font-weight: 900; letter-spacing: -1px; color: var(--text); }
 .page-title-wrap p { font-size: 12.5px; color: var(--text-3); margin-top: 3px; font-weight: 500; }
