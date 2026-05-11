@@ -207,183 +207,6 @@ body::after {
 .sidebar::-webkit-scrollbar { width: 2px; }
 .sidebar::-webkit-scrollbar-thumb { background: rgba(200,215,240,0.5); border-radius: 4px; }
 
-.nav-section { padding: 0 10px; margin-bottom: 2px; }
-.nav-label { font-size: 9.5px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 2px; padding: 12px 10px 6px; }
-.nav-item {
-  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  border: 1px solid rgba(200,215,240,0.45);
-  background: rgba(255,255,255,0.7);
-  width: 100%; text-align: left;
-  color: var(--text-2); font-size: 13px; font-weight: 600; font-family: inherit;
-  transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
-  margin-bottom: 5px; text-decoration: none; position: relative; overflow: hidden;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.9) inset,
-    0 2px 6px rgba(99,120,167,0.07),
-    0 4px 12px rgba(99,120,167,0.05);
-}
-/* Light sweep */
-.nav-item::before {
-  content: '';
-  position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-  transition: left 0.5s ease;
-  pointer-events: none;
-}
-.nav-item:hover::before { left: 150%; }
-.nav-item:hover {
-  background: rgba(255,255,255,0.95);
-  color: var(--text);
-  border-color: rgba(191,219,254,0.6);
-  transform: translateX(3px) translateY(-1px);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,1) inset,
-    0 4px 12px rgba(37,99,235,0.08),
-    0 8px 24px rgba(99,120,167,0.10);
-}
-.nav-item.active {
-  background: linear-gradient(135deg, rgba(239,246,255,0.98), rgba(219,234,254,0.7));
-  color: var(--accent); font-weight: 700;
-  border-color: rgba(191,219,254,0.8);
-  transform: translateX(3px);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,1) inset,
-    0 4px 14px rgba(37,99,235,0.12),
-    0 8px 28px rgba(37,99,235,0.08);
-}
-.nav-item.active::after { display: none; }
-.nav-icon {
-  width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; font-size: 16px;
-  flex-shrink: 0;
-  background: rgba(255,255,255,0.9);
-  border: 1px solid rgba(200,215,240,0.5);
-  transition: all 0.22s;
-  box-shadow: 0 1px 0 rgba(255,255,255,1) inset, 0 2px 6px rgba(99,120,167,0.10);
-}
-.nav-item:hover .nav-icon {
-  background: rgba(255,255,255,1);
-  border-color: rgba(191,219,254,0.6);
-  transform: perspective(100px) rotateX(8deg);
-  box-shadow: 0 1px 0 rgba(255,255,255,1) inset, 0 3px 10px rgba(37,99,235,0.12);
-}
-.nav-item.active .nav-icon {
-  background: white;
-  border-color: rgba(191,219,254,0.8);
-  box-shadow: 0 1px 0 rgba(255,255,255,1) inset, 0 3px 10px rgba(37,99,235,0.18);
-  transform: perspective(100px) rotateX(8deg) rotateY(-4deg);
-}
-.nav-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(200,215,240,0.6), transparent); margin: 8px 10px; }
-.nav-tag { margin-left: auto; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.2px; }
-.tag-blue   { background: rgba(239,246,255,0.9); color: var(--accent); border: 1px solid rgba(191,219,254,0.7); }
-.tag-green  { background: rgba(220,252,231,0.9); color: var(--green);  border: 1px solid rgba(22,163,74,0.2); }
-.tag-orange { background: rgba(254,243,199,0.9); color: var(--orange); border: 1px solid rgba(217,119,6,0.2); }
-
-.sidebar-footer { margin-top: auto; padding: 12px; }
-.sys-info {
-  background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(200,215,240,0.5);
-  border-radius: var(--r-sm); padding: 14px 15px;
-  box-shadow: 0 1px 0 rgba(255,255,255,1) inset, 0 4px 16px rgba(99,120,167,0.08);
-}
-.sys-label { font-size: 10px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 9px; }
-.sys-bar-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.sys-bar-label { font-size: 10.5px; color: var(--text-2); font-weight: 600; width: 50px; flex-shrink: 0; }
-.sys-bar-track { flex: 1; height: 5px; background: rgba(99,120,167,0.10); border-radius: 5px; overflow: hidden; }
-.sys-bar-fill { height: 100%; border-radius: 5px; }
-.sys-bar-val { font-size: 10.5px; color: var(--text-2); font-family: 'JetBrains Mono', monospace; width: 30px; text-align: right; font-weight: 600; }
-.sidebar::-webkit-scrollbar { width: 2px; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-
-.nav-section { padding: 0 12px; margin-bottom: 2px; }
-.nav-label { font-size: 9.5px; font-weight: 800; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 2.5px; padding: 12px 10px 6px; }
-.nav-item {
-  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--r-sm);
-  cursor: pointer; border: 1px solid transparent; background: none; width: 100%; text-align: left;
-  color: rgba(255,255,255,0.75); font-size: 13px; font-weight: 500; font-family: inherit;
-  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); margin-bottom: 2px; text-decoration: none;
-  position: relative; overflow: hidden;
-}
-/* Light sweep effect */
-.nav-item::before {
-  content: '';
-  position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-  transition: left 0.5s ease;
-  pointer-events: none;
-}
-.nav-item:hover::before { left: 150%; }
-.nav-item:hover {
-  background: rgba(255,255,255,0.07);
-  color: rgba(255,255,255,0.9);
-  border-color: rgba(255,255,255,0.08);
-  transform: translateX(4px);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-}
-.nav-item.active {
-  background: linear-gradient(135deg, rgba(37,99,235,0.35), rgba(29,78,216,0.20));
-  color: #fff; font-weight: 700;
-  border-color: rgba(96,165,250,0.25);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.08) inset,
-    0 4px 16px rgba(37,99,235,0.25),
-    0 8px 32px rgba(37,99,235,0.12);
-  transform: translateX(4px);
-}
-.nav-item.active::after {
-  content: ''; position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px;
-  background: linear-gradient(180deg, #60a5fa, #2563eb);
-  border-radius: 0 3px 3px 0;
-  box-shadow: 0 0 12px rgba(96,165,250,0.8);
-}
-.nav-icon {
-  width: 35px; height: 35px; border-radius: 10px; display: grid; place-items: center; font-size: 16px;
-  flex-shrink: 0;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.08);
-  transition: all 0.25s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-.nav-item:hover .nav-icon {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.15);
-  transform: perspective(100px) rotateX(8deg);
-}
-.nav-item.active .nav-icon {
-  background: rgba(37,99,235,0.3);
-  border-color: rgba(96,165,250,0.3);
-  box-shadow: 0 2px 12px rgba(37,99,235,0.4), 0 1px 0 rgba(255,255,255,0.1) inset;
-  transform: perspective(100px) rotateX(8deg) rotateY(-4deg);
-}
-.nav-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); margin: 10px 12px; }
-.nav-tag { margin-left: auto; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.2px; }
-.tag-blue   { background: rgba(37,99,235,0.3);  color: #93c5fd; border: 1px solid rgba(96,165,250,0.3); }
-.tag-green  { background: rgba(22,163,74,0.25); color: #86efac; border: 1px solid rgba(74,222,128,0.3); }
-.tag-orange { background: rgba(217,119,6,0.25); color: #fcd34d; border: 1px solid rgba(251,191,36,0.3); }
-
-/* Brand area on dark sidebar */
-.brand { display: flex; align-items: center; gap: 11px; width: var(--sidebar-w); padding-right: 20px; border-right: 1px solid rgba(255,255,255,0.06); margin-right: 8px; height: 100%; flex-shrink: 0; }
-.brand-name { font-size: 20px; font-weight: 900; letter-spacing: -1px; color: var(--text); }
-.brand-sub { font-size: 10px; color: var(--text-3); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-top: -3px; }
-
-/* Sidebar footer */
-.sidebar-footer { margin-top: auto; padding: 12px; }
-.sys-info {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--r-sm); padding: 14px 15px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2), 0 1px 0 rgba(255,255,255,0.05) inset;
-}
-.sys-label { font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 9px; }
-.sys-bar-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.sys-bar-label { font-size: 10.5px; color: rgba(255,255,255,0.5); font-weight: 600; width: 50px; flex-shrink: 0; }
-.sys-bar-track { flex: 1; height: 5px; background: rgba(255,255,255,0.08); border-radius: 5px; overflow: hidden; }
-.sys-bar-fill { height: 100%; border-radius: 5px; }
-.sys-bar-val { font-size: 10.5px; color: rgba(255,255,255,0.5); font-family: 'JetBrains Mono', monospace; width: 30px; text-align: right; font-weight: 600; }
-.sidebar::-webkit-scrollbar { width: 2px; }
-.sidebar::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
 .nav-section { padding: 0 12px; margin-bottom: 2px; }
 .nav-label { font-size: 9.5px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 2px; padding: 12px 10px 6px; }
 .nav-item {
@@ -756,6 +579,10 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
   60%{transform:rotate(-10deg)}
   80%{transform:rotate(10deg)}
 }
+
+
+.profile-avatar-big { width:72px; height:72px; border-radius:50%; display:grid; place-items:center; font-size:26px; font-weight:900; color:#fff; margin:0 auto 12px; box-shadow:0 8px 24px rgba(37,99,235,0.35); }
+
 </style>
 <script>
 (function(){
@@ -788,7 +615,16 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
     </div>
     <div class="login-colors">
       <label>Warna Avatar</label>
-      <div class="color-options" id="colorOptions"></div>
+      <div class="color-options" id="colorOptions">
+        <div class="color-opt selected" style="background:linear-gradient(145deg,#3b82f6,#1d4ed8)" data-idx="0"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#ec4899,#db2777)" data-idx="1"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#06b6d4,#0891b2)" data-idx="2"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#10b981,#059669)" data-idx="3"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#f59e0b,#d97706)" data-idx="4"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#8b5cf6,#7c3aed)" data-idx="5"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#ef4444,#dc2626)" data-idx="6"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#64748b,#475569)" data-idx="7"></div>
+      </div>
     </div>
     <button class="login-btn" id="loginBtn">Masuk ke Dashboard →</button>
     <div class="login-err" id="loginErr">Nama tidak boleh kosong!</div>
@@ -1094,17 +930,13 @@ initFirebase();
 const colorOptions = document.getElementById('colorOptions');
 let selectedColorIdx = 0;
 
-AVATAR_COLORS.forEach((c, i) => {
-  const el = document.createElement('div');
-  el.className = 'color-opt' + (i === 0 ? ' selected' : '');
-  el.style.background = c.bg;
-  el.title = 'Pilih warna ini';
+// Handle color selection on hardcoded elements
+colorOptions.querySelectorAll('.color-opt').forEach(el => {
   el.addEventListener('click', () => {
-    document.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
+    colorOptions.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
     el.classList.add('selected');
-    selectedColorIdx = i;
+    selectedColorIdx = parseInt(el.dataset.idx || '0');
   });
-  colorOptions.appendChild(el);
 });
 
 document.getElementById('loginBtn').addEventListener('click', doLogin);
@@ -1147,6 +979,8 @@ function applyLogin() {
     });
   }
 
+  lastSeenTs = parseInt(localStorage.getItem('lastSeenTs_' + me.name) || '0');
+
   startChat();
 
   const overlay = document.getElementById('loginOverlay');
@@ -1161,11 +995,9 @@ function applyLogin() {
   const savedColor = parseInt(localStorage.getItem('wms_color') || '0');
   if (savedName) {
     selectedColorIdx = savedColor;
-    // Pre-fill nama di form
     const nameInput = document.getElementById('loginName');
     if (nameInput) nameInput.value = savedName;
-    // Tandai warna terpilih
-    document.querySelectorAll('.color-opt').forEach((el,i) => {
+    colorOptions.querySelectorAll('.color-opt').forEach((el, i) => {
       el.classList.toggle('selected', i === savedColor);
     });
   }
@@ -1456,14 +1288,23 @@ setupAI('aiIn2','aiBtn2','aiMsg2','aiTyping2');
 // ── NOTIFIKASI SYSTEM ──
 let notifList = [];
 let notifOpen = false;
-let lastSeenTs = parseInt(localStorage.getItem('lastSeenTs') || '0');
+let lastSeenTs = 0;
+
+function getLastSeenTs() {
+  const key = 'lastSeenTs_' + (me.name || 'guest');
+  return parseInt(localStorage.getItem(key) || '0');
+}
+
+function setLastSeenTs(ts) {
+  const key = 'lastSeenTs_' + (me.name || 'guest');
+  localStorage.setItem(key, ts);
+}
 
 function toggleNotif() {
   notifOpen = !notifOpen;
   document.getElementById('notifPanel').style.display = notifOpen ? 'block' : 'none';
   if (notifOpen) {
-    lastSeenTs = Date.now();
-    localStorage.setItem('lastSeenTs', lastSeenTs);
+    setLastSeenTs(Date.now());
     document.getElementById('notifBadge').style.display = 'none';
     document.getElementById('notifBadge').textContent = '0';
   }
@@ -1471,33 +1312,28 @@ function toggleNotif() {
 
 function clearNotifs() {
   notifList = [];
-  lastSeenTs = Date.now();
-  localStorage.setItem('lastSeenTs', lastSeenTs);
+  setLastSeenTs(Date.now());
   document.getElementById('notifBadge').style.display = 'none';
   document.getElementById('notifList').innerHTML = '<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';
 }
 
 function addNotif(msg) {
-  // Only notify messages from others, after login
-  if (!me.name || msg.name === me.name) return;
-  if (msg.ts <= lastSeenTs) return;
+  if (!msg || !msg.name) return;
+  if (me.name && msg.name === me.name) return;
+  if (!msg.timestamp || msg.timestamp <= getLastSeenTs()) return;
 
   notifList.unshift(msg);
   if (notifList.length > 20) notifList.pop();
 
-  // Update badge
   if (!notifOpen) {
     const badge = document.getElementById('notifBadge');
     const count = parseInt(badge.textContent || '0') + 1;
     badge.textContent = count > 9 ? '9+' : count;
     badge.style.display = 'flex';
-    // Animasi shake bell
     const btn = document.getElementById('notifBtn');
     btn.style.animation = 'none';
     setTimeout(() => btn.style.animation = 'shakeBell 0.5s ease', 10);
   }
-
-  // Render notif list
   renderNotifList();
 }
 
@@ -1512,7 +1348,7 @@ function renderNotifList() {
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:700;color:#0f172a">${m.name||'User'} <span style="font-weight:400;color:#94a3b8">di Discussion</span></div>
         <div style="font-size:12px;color:#334155;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.text||''}</div>
-        <div style="font-size:10px;color:#94a3b8;margin-top:3px">${new Date(m.ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:3px">${m.timestamp ? new Date(m.timestamp).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
       </div>
       <span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0">💬</span>
     </div>
@@ -1527,6 +1363,8 @@ document.addEventListener('click', (e) => {
   }
 });
 
+
+
 </script>
 <!-- NOTIFIKASI DROPDOWN -->
 <div id="notifPanel" style="display:none;position:fixed;top:70px;right:16px;width:340px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border:1px solid rgba(200,215,240,0.6);border-radius:16px;box-shadow:0 8px 32px rgba(99,120,167,0.18);z-index:999;overflow:hidden;">
@@ -1538,5 +1376,7 @@ document.addEventListener('click', (e) => {
     <div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>
   </div>
 </div>
+
+
 </body>
 </html>
