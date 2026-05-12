@@ -781,3 +781,52 @@ body.dark .profile-field input { background: rgba(255,255,255,0.06); border-colo
   box-shadow: 0 4px 12px rgba(37,99,235,0.4); transition: all 0.2s;
 }
 .profile-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.5); }
+
+/* ── DARK MODE ONLINE LIST & DISCUSSION FIX ── */
+body.dark #onlineList > div {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+body.dark #onlineList .disc-name,
+body.dark #onlineList div[style*="font-weight:700"] {
+  color: #e2e8f0 !important;
+}
+body.dark .card-title { color: #e2e8f0; }
+body.dark .card-header { border-bottom-color: rgba(255,255,255,0.08); }
+body.dark th { color: #64748b; }
+body.dark td { color: #94a3b8; border-bottom-color: rgba(255,255,255,0.06); }
+body.dark td strong { color: #cbd5e1; }
+body.dark tbody tr:hover { background: rgba(255,255,255,0.04); }
+body.dark .stat-label { color: #64748b; }
+body.dark .stat-value { color: inherit; }
+body.dark .stat-sub { color: #64748b; }
+body.dark .donut-legend-left { color: #94a3b8; }
+body.dark .donut-legend-val { color: #cbd5e1; }
+body.dark .donut-center .total { color: #e2e8f0; }
+body.dark .donut-center .total-label { color: #64748b; }
+body.dark .legend-item { color: #94a3b8; }
+body.dark .page-title-wrap h1 { color: #f1f5f9; }
+body.dark .page-title-wrap p { color: #64748b; }
+body.dark .sys-bar-label { color: #64748b; }
+body.dark .sys-bar-val { color: #64748b; }
+body.dark .sys-label { color: #475569; }
+body.dark .nav-label { color: #475569; }
+body.dark .brand-name { color: #e2e8f0; }
+body.dark .brand-sub { color: #475569; }
+body.dark .soon-screen h2 { color: #e2e8f0; }
+body.dark .soon-screen p { color: #64748b; }
+body.dark .disc-name { color: #e2e8f0; }
+body.dark .disc-time { color: #475569; }
+body.dark .disc-bubble { color: #94a3b8 !important; }
+body.dark .disc-date-sep { color: #475569; }
+body.dark .card-more { color: #475569; }
+body.dark .user-pill .name { color: #e2e8f0; }
+body.dark .chevron { color: #475569; }
+body.dark .date-chip { color: #94a3b8; }
+body.dark .header-search input { color: #e2e8f0; }
+body.dark .header-search input::placeholder { color: #475569; }
+body.dark .iframe-title { color: #e2e8f0; }
+body.dark .iframe-sub { color: #64748b; }
+body.dark .iframe-back { color: #94a3b8; }
+body.dark .err-title { color: #e2e8f0; }
+body.dark .err-desc { color: #64748b; }
