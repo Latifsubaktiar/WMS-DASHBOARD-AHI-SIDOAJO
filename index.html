@@ -583,6 +583,39 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
 
 .profile-avatar-big { width:72px; height:72px; border-radius:50%; display:grid; place-items:center; font-size:26px; font-weight:900; color:#fff; margin:0 auto 12px; box-shadow:0 8px 24px rgba(37,99,235,0.35); }
 
+/* ── DARK MODE ── */
+body.dark { --bg:#0f172a; --bg2:#1e293b; --surface:rgba(30,41,59,0.85); --border-2:rgba(255,255,255,0.08); --text:#f1f5f9; --text-2:#cbd5e1; --text-3:#64748b; --accent-light:rgba(37,99,235,0.15); --accent-mid:rgba(37,99,235,0.3); --green-bg:rgba(22,163,74,0.15); --orange-bg:rgba(217,119,6,0.15); --red-bg:rgba(220,38,38,0.15); }
+body.dark::before { background: radial-gradient(ellipse 80% 60% at 10% 0%, rgba(30,58,138,0.4) 0%, transparent 55%), linear-gradient(160deg, #0f172a 0%, #1e293b 100%); }
+body.dark .header { background:rgba(15,23,42,0.92); border-bottom-color:rgba(255,255,255,0.06); }
+body.dark .sidebar { background:linear-gradient(180deg,rgba(15,23,42,0.97) 0%,rgba(17,24,39,0.95) 100%); border-right-color:rgba(255,255,255,0.06); }
+body.dark .nav-item { border-color:rgba(255,255,255,0.07); background:rgba(255,255,255,0.04); color:var(--text-2); box-shadow:none; }
+body.dark .nav-item:hover { background:rgba(255,255,255,0.08); color:var(--text); border-color:rgba(37,99,235,0.3); }
+body.dark .nav-item.active { background:linear-gradient(135deg,rgba(37,99,235,0.3),rgba(29,78,216,0.15)); color:#93c5fd; border-color:rgba(37,99,235,0.3); }
+body.dark .nav-icon { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.08); box-shadow:none; }
+body.dark .tag-green { background:rgba(22,163,74,0.2); color:#86efac; border-color:rgba(22,163,74,0.3); }
+body.dark .tag-orange { background:rgba(217,119,6,0.2); color:#fcd34d; border-color:rgba(217,119,6,0.3); }
+body.dark .tag-blue { background:rgba(37,99,235,0.2); color:#93c5fd; border-color:rgba(37,99,235,0.3); }
+body.dark .sys-info { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.08); box-shadow:none; }
+body.dark .sys-label { color:var(--text-3); }
+body.dark .sys-bar-label,.sys-bar-val { color:var(--text-2); }
+body.dark .card { background:rgba(30,41,59,0.75); border-color:rgba(255,255,255,0.08); }
+body.dark .stat-card { background:rgba(30,41,59,0.75); border-color:rgba(255,255,255,0.08); }
+body.dark .card-header { border-bottom-color:rgba(255,255,255,0.06); }
+body.dark .icon-btn { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.08); }
+body.dark .user-pill { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.08); }
+body.dark .header-search { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.08); }
+body.dark .header-search input { color:var(--text); }
+body.dark .date-chip { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.08); }
+body.dark .disc-bubble { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.1); color:var(--text-2); }
+body.dark .disc-input { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.1); color:var(--text); }
+body.dark .ai-input { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.1); color:var(--text); }
+body.dark .iframe-bar { background:rgba(15,23,42,0.92); border-bottom-color:rgba(255,255,255,0.08); }
+body.dark .btn-outline { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.1); color:var(--text-2); }
+body.dark #notifPanel { background:rgba(15,23,42,0.97) !important; border-color:rgba(255,255,255,0.1) !important; }
+body.dark .login-card { background:rgba(15,23,42,0.95); border-color:rgba(255,255,255,0.1); }
+body.dark .login-field input { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.1); color:var(--text); }
+body.dark .disc-footer { background:rgba(15,23,42,0.3); }
+body.dark .online-badge { background:rgba(22,163,74,0.15); }
 </style>
 <script>
 (function(){
@@ -651,7 +684,7 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
   </div>
   <div class="header-actions">
     <div class="icon-btn" id="notifBtn" onclick="toggleNotif()" style="position:relative">🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span></div>
-    <div class="icon-btn">⚙️</div>
+    <div class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark / Light Mode">🌙</div>
     <div class="user-pill" id="headerUser">
       <div class="avatar" id="headerAvatar" style="background:linear-gradient(145deg,#3b82f6,#7c3aed)">?</div>
       <span class="name" id="headerName">...</span>
@@ -880,7 +913,7 @@ const firebaseConfig = {
 // ── URL Dashboard ──
 const URLS = {
   planner:   'https://plannerazko.github.io/DashboardPlanning/',
-  inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbznK9XTBd5Zz07tyb-1bvjQEa00pXEMPFOXhCtYaBqthThQUliRjcXUYYr27VaXV-888w/exec',
+  inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzycCoQgClG2VO7M3HUsTMWg0ZDnOs8Un81br35sS4OtpKZsVqNsT2Btdzgs1SdMYZ3kg/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   inbound: null,
   storing: null,
@@ -1363,7 +1396,18 @@ document.addEventListener('click', (e) => {
   }
 });
 
-
+// ── DARK MODE ──
+let isDark = localStorage.getItem('wms_dark') === '1';
+function applyDark() {
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙';
+}
+function toggleDark() {
+  isDark = !isDark;
+  localStorage.setItem('wms_dark', isDark ? '1' : '0');
+  applyDark();
+}
+applyDark();
 
 </script>
 <!-- NOTIFIKASI DROPDOWN -->
