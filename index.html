@@ -285,7 +285,8 @@ HTML PROJECT LATIF
         <div class="date-chip">📅 <span id="todayDate2">—</span></div>
       </div>
     </div>
-    <div class="page-wide-card">
+    <div style="display:grid;grid-template-columns:1fr 240px;gap:18px;max-width:1000px;">
+      <!-- CHAT -->
       <div class="card" style="display:flex;flex-direction:column;">
         <div class="card-header">
           <span class="card-title"><span class="live-dot"></span>Live Chat</span>
@@ -297,6 +298,16 @@ HTML PROJECT LATIF
             <input class="disc-input" id="fullDiscIn" type="text" placeholder="Ketik pesan lalu Enter...">
             <button class="disc-send" id="fullDiscBtn">➤</button>
           </div>
+        </div>
+      </div>
+      <!-- WHO'S ONLINE -->
+      <div class="card" style="display:flex;flex-direction:column;">
+        <div class="card-header">
+          <span class="card-title">🟢 Sedang Online</span>
+          <span style="font-size:11px;color:var(--text-3);font-weight:700" id="onlineCountDisc">0 user</span>
+        </div>
+        <div id="onlineList" style="padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;">
+          <div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Memuat...</div>
         </div>
       </div>
     </div>
