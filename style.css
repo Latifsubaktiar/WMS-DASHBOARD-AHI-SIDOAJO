@@ -949,9 +949,13 @@ body.dark .search-item:hover { background: rgba(37,99,235,0.15) !important; }
   .page { padding: 16px; }
 
   /* Stat cards */
-  .stat-card { padding: 16px; }
-  .stat-value { font-size: 24px; }
-  .stat-icon { width: 44px; height: 44px; font-size: 20px; }
+  .stat-card { padding: 14px; gap: 10px; }
+  .stat-value { font-size: 22px; letter-spacing: -0.5px; }
+  .stat-value[style*="font-size:15px"] { font-size: 12px !important; }
+  .stat-icon { width: 40px; height: 40px; font-size: 18px; transform: none !important; }
+  .stat-label { font-size: 9px; }
+  .stat-sub { font-size: 10px; }
+  .stat-content { min-width: 0; overflow: hidden; }
 
   /* Discussion */
   .page-wide-card { max-width: 100%; }
@@ -975,3 +979,13 @@ body.dark .search-item:hover { background: rgba(37,99,235,0.15) !important; }
 
 /* Hide hamburger on desktop */
 .hamburger { display: none; }
+@media (max-width: 768px) { .hamburger { display: flex; } }
+
+@media (max-width: 768px) {
+  .stat-card .stat-value { 
+    word-break: break-all; 
+    overflow-wrap: break-word;
+    line-height: 1.2;
+  }
+  .stat-card { overflow: hidden; }
+}
