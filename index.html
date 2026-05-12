@@ -83,7 +83,9 @@ HTML PROJECT LATIF
   </div>
   <div class="header-search">
     <span style="font-size:13px;color:var(--text-3)">🔍</span>
-    <input type="text" placeholder="Cari departemen atau menu...">
+    <input type="text" id="searchInput" placeholder="Cari departemen atau menu..." autocomplete="off">
+  </div>
+  <div id="searchDropdown" style="display:none;position:absolute;top:54px;left:252px;width:320px;background:rgba(255,255,255,0.97);backdrop-filter:blur(24px);border:1px solid rgba(200,215,240,0.5);border-radius:14px;box-shadow:0 8px 32px rgba(99,120,167,0.18);z-index:9999;overflow:hidden;padding:8px;">
   </div>
   <div class="header-actions">
     <div class="icon-btn" id="notifBtn" onclick="toggleNotif()" style="position:relative">🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span></div>
