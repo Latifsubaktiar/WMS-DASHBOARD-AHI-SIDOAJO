@@ -67,7 +67,7 @@
   --glass: blur(20px) saturate(180%);
 }
 
-html, body { height: 100%; overflow: hidden; }
+html, body { height: 100%; overflow: hidden; scroll-behavior: smooth; }
 body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
 
 body::before {
@@ -189,8 +189,8 @@ body::after {
   position: relative; z-index: 10;
 }
 .sidebar::before { display: none; }
-.sidebar::-webkit-scrollbar { width: 2px; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(200,215,240,0.5); border-radius: 4px; }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(37,99,235,0.25), rgba(99,120,167,0.15)); border-radius: 10px; }
 
 .nav-section { padding: 0 12px; margin-bottom: 2px; }
 .nav-label { font-size: 9.5px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 2px; padding: 12px 10px 6px; }
@@ -261,12 +261,21 @@ body::after {
 
 /* ── MAIN ── */
 .main { overflow-y: auto; background: transparent; }
-.main::-webkit-scrollbar { width: 5px; }
-.main::-webkit-scrollbar-thumb { background: rgba(200,215,240,0.5); border-radius: 4px; }
+.main::-webkit-scrollbar { width: 6px; }
+.main::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(37,99,235,0.3), rgba(99,120,167,0.2)); border-radius: 10px; border: 1px solid rgba(255,255,255,0.3); }
 .page { display: none; padding: 26px; animation: pageIn 0.35s cubic-bezier(0.34,1.56,0.64,1); }
 .page.active { display: block; }
-@keyframes pageIn { from{opacity:0;transform:translateY(20px) scale(0.98)} to{opacity:1;transform:translateY(0) scale(1)} }
-.page { transition: opacity 0.3s ease; }
+@keyframes pageIn {
+  0%   { opacity:0; transform:translateY(28px) scale(0.97) blur(4px); filter:blur(4px); }
+  60%  { opacity:0.8; filter:blur(1px); }
+  100% { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+}
+@keyframes pageOut {
+  from { opacity:1; transform:translateY(0) scale(1); }
+  to   { opacity:0; transform:translateY(-12px) scale(1.01); }
+}
+.page { transition: opacity 0.25s ease; }
+.page.active { animation: pageIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
 .iframe-page { display: none; }
 .iframe-page.active { display: flex; flex-direction: column; height: calc(100vh - var(--header-h)); overflow: hidden; }
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
@@ -537,9 +546,25 @@ td strong { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono',
 .soon-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--orange-bg); color: var(--orange); border: 1px solid rgba(217,119,6,0.25); border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 800; box-shadow: 0 2px 6px rgba(217,119,6,0.1); }
 
 .page-wide-card { max-width: 780px; }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(37,99,235,0.3), rgba(99,120,167,0.2));
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.4);
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(37,99,235,0.6), rgba(99,120,167,0.4));
+}
+::-webkit-scrollbar-corner { background: transparent; }
+body.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(96,165,250,0.3), rgba(99,120,167,0.2));
+  border-color: rgba(255,255,255,0.08);
+}
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(96,165,250,0.5), rgba(99,120,167,0.35));
+}
 
 /* ══════════════════════════════════════
    LOGIN MODAL
