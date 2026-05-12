@@ -20,6 +20,8 @@ const URLS = {
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   inbound: null,
   storing: null,
+  ga: null,
+  hr: null,
 };
 const IFRAME_PAGES   = ['inventory','outbound','planner'];
 const LAUNCHER_PAGES = [];
