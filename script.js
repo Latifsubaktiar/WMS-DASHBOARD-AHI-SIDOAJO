@@ -195,22 +195,26 @@ function startChat() {
   document.getElementById('discStatus').textContent = '🟢 Terhubung';
 
   // Listen to last 100 messages
+  const loadTime = Date.now();
   chatRef.limitToLast(100).on('child_added', snap => {
     const msg = snap.val();
     if (!msg || seenIds.has(snap.key)) return;
     seenIds.add(snap.key);
-    renderMessage(msg, snap.key, 'miniDiscMsg', 5);
-    renderMessage(msg, snap.key, 'fullDiscMsg', 999);
-    addNotif(msg);
+    const isNew = msg.timestamp && msg.timestamp > (loadTime - 3000);
+    renderMessage(msg, snap.key, 'miniDiscMsg', 5, isNew);
+    renderMessage(msg, snap.key, 'fullDiscMsg', 999, isNew);
+    if (isNew) addNotif(msg);
   });
 
   setupFirebaseChat('miniDiscIn', 'miniDiscBtn', 'miniDiscMsg');
   setupFirebaseChat('fullDiscIn', 'fullDiscBtn', 'fullDiscMsg');
 }
 
-function renderMessage(msg, key, listId, maxItems) {
+function renderMessage(msg, key, listId, maxItems, isNew=true) {
   const list = document.getElementById(listId);
   if (!list) return;
+  // Skip if already rendered
+  if (list.querySelector(`[data-key="${key}"]`)) return;
   while (list.children.length >= maxItems) list.removeChild(list.firstChild);
 
   const isMine = msg.name === me.name;
@@ -233,7 +237,7 @@ function renderMessage(msg, key, listId, maxItems) {
     </div>`;
 
   list.appendChild(row);
-  list.scrollTop = list.scrollHeight;
+  if (isNew) list.scrollTop = list.scrollHeight;
 }
 
 function setupFirebaseChat(inId, btnId, listId) {
@@ -626,5 +630,76 @@ document.addEventListener('click', function(e) {
   if (settingsOpen && panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
     settingsOpen = false;
     panel.classList.remove('open');
+  }
+});
+
+// ── SEARCH BAR ──
+const SEARCH_ITEMS = [
+  { label: 'Dashboard',   page: 'dashboard', icon: '🏠', desc: 'Halaman utama' },
+  { label: 'Planner',     page: 'planner',   icon: '📋', desc: 'Rencana Operasional' },
+  { label: 'Inbound',     page: 'inbound',   icon: '📦', desc: 'Dashboard Inbound' },
+  { label: 'Storing',     page: 'storing',   icon: '🏗️', desc: 'Dashboard Storing' },
+  { label: 'Outbound',    page: 'outbound',  icon: '🚚', desc: 'Dashboard Outbound' },
+  { label: 'Inventory',   page: 'inventory', icon: '📊', desc: 'Manajemen Stok' },
+  { label: 'GA',          page: 'ga',        icon: '🏢', desc: 'General Affairs' },
+  { label: 'HR',          page: 'hr',        icon: '👥', desc: 'Human Resources' },
+  { label: 'Reports',     page: 'reports',   icon: '📈', desc: 'Laporan Operasional' },
+  { label: 'Discussion',  page: 'discussion',icon: '💬', desc: 'Discussion Room' },
+  { label: 'AI Support',  page: 'ai',        icon: '🤖', desc: 'Asisten AI Warehouse' },
+];
+
+const searchInput = document.getElementById('searchInput');
+const searchDropdown = document.getElementById('searchDropdown');
+
+function renderSearch(query) {
+  if (!query.trim()) { searchDropdown.style.display = 'none'; return; }
+  const q = query.toLowerCase();
+  const results = SEARCH_ITEMS.filter(item =>
+    item.label.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q)
+  );
+  if (!results.length) {
+    searchDropdown.innerHTML = '<div style="padding:12px 14px;font-size:12.5px;color:var(--text-3);text-align:center;">Tidak ditemukan</div>';
+    searchDropdown.style.display = 'block';
+    return;
+  }
+  searchDropdown.innerHTML = results.map((item, i) => `
+    <div class="search-item" data-page="${item.page}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:all 0.15s;">
+      <div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);display:grid;place-items:center;font-size:16px;flex-shrink:0;border:1px solid var(--accent-mid);">${item.icon}</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">${item.label}</div>
+        <div style="font-size:11px;color:var(--text-3);font-weight:500;">${item.desc}</div>
+      </div>
+      <span style="margin-left:auto;font-size:10px;color:var(--text-3);">↵</span>
+    </div>
+  `).join('');
+  searchDropdown.style.display = 'block';
+
+  // Add hover + click events
+  searchDropdown.querySelectorAll('.search-item').forEach(el => {
+    el.addEventListener('mouseenter', () => { el.style.background = 'var(--accent-light)'; });
+    el.addEventListener('mouseleave', () => { el.style.background = 'none'; });
+    el.addEventListener('click', () => {
+      go(el.dataset.page);
+      searchInput.value = '';
+      searchDropdown.style.display = 'none';
+    });
+  });
+}
+
+if (searchInput) {
+  searchInput.addEventListener('input', e => renderSearch(e.target.value));
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const first = searchDropdown.querySelector('.search-item');
+      if (first) { go(first.dataset.page); searchInput.value = ''; searchDropdown.style.display = 'none'; }
+    }
+    if (e.key === 'Escape') { searchInput.value = ''; searchDropdown.style.display = 'none'; }
+  });
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (searchDropdown && !searchDropdown.contains(e.target) && e.target !== searchInput) {
+    searchDropdown.style.display = 'none';
   }
 });
