@@ -703,3 +703,29 @@ document.addEventListener('click', e => {
     searchDropdown.style.display = 'none';
   }
 });
+
+// ── MOBILE SIDEBAR ──
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const btn = document.getElementById('hamburgerBtn');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('show');
+  btn.classList.toggle('active');
+}
+
+function closeSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const btn = document.getElementById('hamburgerBtn');
+  sidebar.classList.remove('open');
+  overlay.classList.remove('show');
+  btn.classList.remove('active');
+}
+
+// Close sidebar when nav item clicked on mobile
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (window.innerWidth <= 768) closeSidebar();
+  });
+});
