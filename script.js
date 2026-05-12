@@ -16,7 +16,7 @@ const firebaseConfig = {
 // ── URL Dashboard ──
 const URLS = {
   planner:   'https://plannerazko.github.io/DashboardPlanning/',
-  inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzycCoQgClG2VO7M3HUsTMWg0ZDnOs8Un81br35sS4OtpKZsVqNsT2Btdzgs1SdMYZ3kg/exec',
+  inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbznK9XTBd5Zz07tyb-1bvjQEa00pXEMPFOXhCtYaBqthThQUliRjcXUYYr27VaXV-888w/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   inbound: null,
   storing: null,
