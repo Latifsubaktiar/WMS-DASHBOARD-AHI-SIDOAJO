@@ -38,6 +38,28 @@ const AVATAR_COLORS = [
   { bg: 'linear-gradient(145deg,#64748b,#475569)', hex: '#64748b' },
 ];
 
+
+// ── THEME COLOR PER USER ──
+const THEME_COLORS = {
+  '#3b82f6': { accent:'#2563eb', dark:'#1d4ed8', light:'#eff6ff', mid:'#bfdbfe' },  // biru
+  '#ec4899': { accent:'#db2777', dark:'#be185d', light:'#fdf2f8', mid:'#fbcfe8' },  // pink
+  '#06b6d4': { accent:'#0891b2', dark:'#0e7490', light:'#ecfeff', mid:'#a5f3fc' },  // cyan
+  '#10b981': { accent:'#059669', dark:'#047857', light:'#ecfdf5', mid:'#a7f3d0' },  // hijau
+  '#f59e0b': { accent:'#d97706', dark:'#b45309', light:'#fffbeb', mid:'#fde68a' },  // kuning
+  '#8b5cf6': { accent:'#7c3aed', dark:'#6d28d9', light:'#f5f3ff', mid:'#ddd6fe' },  // ungu
+  '#ef4444': { accent:'#dc2626', dark:'#b91c1c', light:'#fef2f2', mid:'#fecaca' },  // merah
+  '#64748b': { accent:'#475569', dark:'#334155', light:'#f8fafc', mid:'#cbd5e1' },  // abu
+};
+
+function applyTheme(hexColor) {
+  const theme = THEME_COLORS[hexColor] || THEME_COLORS['#3b82f6'];
+  const root = document.documentElement;
+  root.style.setProperty('--accent', theme.accent);
+  root.style.setProperty('--accent-dark', theme.dark);
+  root.style.setProperty('--accent-light', theme.light);
+  root.style.setProperty('--accent-mid', theme.mid);
+}
+
 // ── User session ──
 let me = { name: '', color: AVATAR_COLORS[0], initials: '' };
 let fbReady = false;
@@ -90,6 +112,7 @@ function doLogin() {
   me.name     = name;
   me.color    = AVATAR_COLORS[selectedColorIdx];
   me.initials = name.slice(0,2).toUpperCase();
+  applyTheme(me.color.hex);
 
   // Simpan ke localStorage biar next visit langsung masuk
   localStorage.setItem('wms_name', name);
@@ -161,6 +184,7 @@ function applyLogin() {
   const savedColor = parseInt(localStorage.getItem('wms_color') || '0');
   if (savedName) {
     selectedColorIdx = savedColor;
+    applyTheme(AVATAR_COLORS[savedColor].hex);
     const nameInput = document.getElementById('loginName');
     if (nameInput) nameInput.value = savedName;
     colorOptions.querySelectorAll('.color-opt').forEach((el, i) => {
@@ -611,6 +635,7 @@ document.getElementById('profileSaveBtn').addEventListener('click', function() {
   document.getElementById('headerAvatar').textContent = me.initials;
   document.getElementById('headerAvatar').style.background = me.color.bg;
   document.getElementById('headerName').textContent = me.name;
+  applyTheme(me.color.hex);
   updateSettingsUser();
   document.getElementById('profileOverlay').classList.add('hidden');
 });
