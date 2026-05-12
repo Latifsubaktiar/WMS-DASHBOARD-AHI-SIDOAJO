@@ -616,6 +616,155 @@ body.dark .login-card { background:rgba(15,23,42,0.95); border-color:rgba(255,25
 body.dark .login-field input { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.1); color:var(--text); }
 body.dark .disc-footer { background:rgba(15,23,42,0.3); }
 body.dark .online-badge { background:rgba(22,163,74,0.15); }
+
+/* ── SETTINGS DROPDOWN ── */
+.settings-wrap { position: relative; }
+.settings-panel {
+  display: none; position: absolute; top: 52px; right: 0;
+  width: 260px;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(200,215,240,0.6);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(99,120,167,0.18), 0 2px 8px rgba(99,120,167,0.10);
+  z-index: 9000; overflow: hidden;
+  animation: dropIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+body.dark .settings-panel {
+  background: rgba(15,23,42,0.97);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+@keyframes dropIn { from{opacity:0;transform:translateY(-8px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+.settings-panel.open { display: block; }
+.settings-user {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid rgba(200,215,240,0.35);
+}
+body.dark .settings-user { border-bottom-color: rgba(255,255,255,0.08); }
+.settings-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 15px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(37,99,235,0.35);
+}
+.settings-username { font-size: 14px; font-weight: 800; color: var(--text); }
+.settings-role { font-size: 11px; color: var(--text-3); font-weight: 500; margin-top: 1px; }
+.settings-menu { padding: 8px; }
+.settings-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px; border-radius: 10px;
+  cursor: pointer; transition: all 0.15s;
+  font-size: 13px; font-weight: 600; color: var(--text-2);
+  border: none; background: none; width: 100%; text-align: left;
+  font-family: inherit;
+}
+.settings-item:hover { background: rgba(37,99,235,0.07); color: var(--accent); }
+body.dark .settings-item:hover { background: rgba(255,255,255,0.07); color: #93c5fd; }
+.settings-item-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: grid; place-items: center; font-size: 15px; flex-shrink: 0;
+  background: rgba(99,120,167,0.08);
+}
+.settings-item:hover .settings-item-icon { background: rgba(37,99,235,0.12); }
+.settings-divider { height: 1px; background: rgba(200,215,240,0.4); margin: 6px 8px; }
+body.dark .settings-divider { background: rgba(255,255,255,0.08); }
+.settings-item.danger { color: var(--red); }
+.settings-item.danger:hover { background: rgba(220,38,38,0.07); color: var(--red); }
+.settings-item.danger .settings-item-icon { background: rgba(220,38,38,0.08); }
+.dark-toggle {
+  margin-left: auto;
+  width: 36px; height: 20px; border-radius: 20px;
+  background: rgba(99,120,167,0.2);
+  position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.dark-toggle.on { background: var(--accent); }
+.dark-toggle::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 14px; height: 14px; border-radius: 50%; background: #fff;
+  transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.dark-toggle.on::after { transform: translateX(16px); }
+
+/* ── PROFILE MODAL ── */
+.profile-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(15,23,42,0.35);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.profile-overlay.hidden { display: none; }
+.profile-card {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(255,255,255,0.95);
+  border-radius: 24px; padding: 32px 36px; width: 380px;
+  box-shadow: 0 24px 64px rgba(80,100,160,0.18);
+  animation: cardUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+}
+body.dark .profile-card {
+  background: rgba(17,24,39,0.97);
+  border-color: rgba(255,255,255,0.1);
+}
+.profile-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1px solid rgba(200,215,240,0.5);
+  background: rgba(255,255,255,0.7);
+  display: grid; place-items: center;
+  cursor: pointer; font-size: 13px; color: var(--text-3);
+  transition: all 0.2s; font-family: inherit;
+}
+body.dark .profile-close { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
+.profile-close:hover { background: var(--red-bg); color: var(--red); }
+.profile-ava-big {
+  width: 76px; height: 76px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 28px; font-weight: 900; color: #fff;
+  margin: 0 auto 14px;
+  box-shadow: 0 8px 24px rgba(37,99,235,0.35);
+}
+.profile-name-show {
+  text-align: center; font-size: 20px; font-weight: 900;
+  color: var(--text); margin-bottom: 4px;
+}
+.profile-role {
+  text-align: center; font-size: 11px; color: var(--text-3);
+  font-weight: 500; margin-bottom: 22px;
+}
+.profile-field label {
+  display: block; font-size: 11px; font-weight: 800;
+  color: var(--text-2); text-transform: uppercase;
+  letter-spacing: 0.8px; margin-bottom: 7px;
+}
+.profile-field input {
+  width: 100%; border: 1.5px solid var(--border-2);
+  border-radius: var(--r-sm); padding: 10px 13px;
+  font-size: 14px; font-family: inherit; color: var(--text);
+  background: var(--bg); outline: none; transition: all 0.2s;
+  font-weight: 600; margin-bottom: 16px;
+}
+body.dark .profile-field input { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+.profile-field input:focus { border-color: rgba(37,99,235,0.5); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+.profile-color-label {
+  font-size: 11px; font-weight: 800; color: var(--text-2);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  display: block; margin-bottom: 10px;
+}
+.profile-colors { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+.profile-save {
+  width: 100%; height: 46px;
+  background: linear-gradient(145deg,#3b82f6,#1d4ed8);
+  border: none; border-radius: var(--r-sm); cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 800; color: #fff;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.4); transition: all 0.2s;
+}
+.profile-save:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.5); }
+
 </style>
 <script>
 (function(){
@@ -684,7 +833,34 @@ body.dark .online-badge { background:rgba(22,163,74,0.15); }
   </div>
   <div class="header-actions">
     <div class="icon-btn" id="notifBtn" onclick="toggleNotif()" style="position:relative">🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span></div>
-    <div class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark / Light Mode">🌙</div>
+    <div class="settings-wrap">
+      <div class="icon-btn" id="settingsBtn" onclick="toggleSettings()" title="Pengaturan">⚙️</div>
+      <div class="settings-panel" id="settingsPanel">
+        <div class="settings-user">
+          <div class="settings-avatar" id="settingsAva">?</div>
+          <div>
+            <div class="settings-username" id="settingsName">...</div>
+            <div class="settings-role">Member AHI Sidoarjo</div>
+          </div>
+        </div>
+        <div class="settings-menu">
+          <button class="settings-item" onclick="openProfile()">
+            <span class="settings-item-icon">👤</span>
+            <span>Edit Profile</span>
+          </button>
+          <button class="settings-item" onclick="toggleDark();updateDarkToggle()">
+            <span class="settings-item-icon">🌙</span>
+            <span>Dark Mode</span>
+            <div class="dark-toggle" id="darkToggle"></div>
+          </button>
+          <div class="settings-divider"></div>
+          <button class="settings-item danger" onclick="doLogout()">
+            <span class="settings-item-icon">🚪</span>
+            <span>Ganti Akun</span>
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="user-pill" id="headerUser">
       <div class="avatar" id="headerAvatar" style="background:linear-gradient(145deg,#3b82f6,#7c3aed)">?</div>
       <span class="name" id="headerName">...</span>
@@ -1020,6 +1196,7 @@ function applyLogin() {
   overlay.style.opacity = '0';
   overlay.style.transition = 'opacity 0.3s ease';
   setTimeout(() => overlay.classList.add('hidden'), 300);
+  setTimeout(updateSettingsUser, 350);
 }
 
 // ── Pre-fill dari localStorage (modal tetap muncul, nama sudah terisi) ──
@@ -1400,7 +1577,7 @@ document.addEventListener('click', (e) => {
 let isDark = localStorage.getItem('wms_dark') === '1';
 function applyDark() {
   document.body.classList.toggle('dark', isDark);
-  document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙';
+  updateDarkToggle();
 }
 function toggleDark() {
   isDark = !isDark;
@@ -1408,6 +1585,93 @@ function toggleDark() {
   applyDark();
 }
 applyDark();
+
+
+// ── SETTINGS ──
+let settingsOpen = false;
+let profileColorIdx = parseInt(localStorage.getItem('wms_color') || '0');
+
+function updateSettingsUser() {
+  if (!me.name) return;
+  const ava = document.getElementById('settingsAva');
+  if (ava) { ava.textContent = me.initials; ava.style.background = me.color.bg; }
+  const nm = document.getElementById('settingsName');
+  if (nm) nm.textContent = me.name;
+}
+
+function toggleSettings() {
+  settingsOpen = !settingsOpen;
+  document.getElementById('settingsPanel').classList.toggle('open', settingsOpen);
+  updateDarkToggle();
+}
+
+function updateDarkToggle() {
+  const toggle = document.getElementById('darkToggle');
+  if (toggle) toggle.classList.toggle('on', isDark);
+}
+
+function openProfile() {
+  settingsOpen = false;
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('profileOverlay').classList.remove('hidden');
+  document.getElementById('profileNameIn').value = me.name || '';
+  document.getElementById('profileAvaBig').textContent = me.initials || '?';
+  document.getElementById('profileAvaBig').style.background = me.color ? me.color.bg : '#2563eb';
+  document.getElementById('profileNameShow').textContent = me.name || '—';
+  profileColorIdx = parseInt(localStorage.getItem('wms_color') || '0');
+  document.querySelectorAll('#profileColorOpts .color-opt').forEach((el, i) => {
+    el.classList.toggle('selected', i === profileColorIdx);
+    el.onclick = function() {
+      document.querySelectorAll('#profileColorOpts .color-opt').forEach(x => x.classList.remove('selected'));
+      el.classList.add('selected');
+      profileColorIdx = parseInt(el.dataset.pidx || i);
+      document.getElementById('profileAvaBig').style.background = el.style.background;
+    };
+  });
+}
+
+function doLogout() {
+  settingsOpen = false;
+  document.getElementById('settingsPanel').classList.remove('open');
+  localStorage.removeItem('wms_name');
+  localStorage.removeItem('wms_color');
+  const overlay = document.getElementById('loginOverlay');
+  overlay.classList.remove('hidden');
+  overlay.style.opacity = '1';
+}
+
+document.getElementById('profileSaveBtn').addEventListener('click', function() {
+  const newName = document.getElementById('profileNameIn').value.trim();
+  if (!newName) return;
+  me.name = newName;
+  me.color = AVATAR_COLORS[profileColorIdx];
+  me.initials = newName.slice(0,2).toUpperCase();
+  localStorage.setItem('wms_name', newName);
+  localStorage.setItem('wms_color', profileColorIdx);
+  document.getElementById('headerAvatar').textContent = me.initials;
+  document.getElementById('headerAvatar').style.background = me.color.bg;
+  document.getElementById('headerName').textContent = me.name;
+  updateSettingsUser();
+  document.getElementById('profileOverlay').classList.add('hidden');
+});
+
+document.getElementById('profileCloseBtn').addEventListener('click', function() {
+  document.getElementById('profileOverlay').classList.add('hidden');
+});
+
+document.getElementById('profileOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.add('hidden');
+});
+
+// Close settings on outside click
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('settingsPanel');
+  const btn = document.getElementById('settingsBtn');
+  if (settingsOpen && panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+    settingsOpen = false;
+    panel.classList.remove('open');
+  }
+});
 
 </script>
 <!-- NOTIFIKASI DROPDOWN -->
@@ -1421,6 +1685,33 @@ applyDark();
   </div>
 </div>
 
+
+
+<!-- PROFILE MODAL -->
+<div class="profile-overlay hidden" id="profileOverlay">
+  <div class="profile-card">
+    <button class="profile-close" id="profileCloseBtn">✕</button>
+    <div class="profile-ava-big" id="profileAvaBig">?</div>
+    <div class="profile-name-show" id="profileNameShow">—</div>
+    <div class="profile-role">Member AHI Sidoarjo</div>
+    <div class="profile-field">
+      <label>Nama</label>
+      <input type="text" id="profileNameIn" maxlength="24" placeholder="Nama kamu...">
+    </div>
+    <label class="profile-color-label">Warna Avatar</label>
+    <div class="profile-colors" id="profileColorOpts">
+      <div class="color-opt" style="background:linear-gradient(145deg,#3b82f6,#1d4ed8)" data-pidx="0"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#ec4899,#db2777)" data-pidx="1"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#06b6d4,#0891b2)" data-pidx="2"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#10b981,#059669)" data-pidx="3"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#f59e0b,#d97706)" data-pidx="4"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#8b5cf6,#7c3aed)" data-pidx="5"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#ef4444,#dc2626)" data-pidx="6"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#64748b,#475569)" data-pidx="7"></div>
+    </div>
+    <button class="profile-save" id="profileSaveBtn">Simpan Perubahan</button>
+  </div>
+</div>
 
 </body>
 </html>
