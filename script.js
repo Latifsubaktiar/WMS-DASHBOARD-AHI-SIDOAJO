@@ -112,6 +112,33 @@ function applyLogin() {
     onlineRef.on('value', snap => {
       const count = snap.numChildren();
       document.getElementById('onlineCount').textContent = count + ' online';
+      // Update onlineCountDisc if exists
+      const discCount = document.getElementById('onlineCountDisc');
+      if (discCount) discCount.textContent = count + ' user';
+      // Render online users list
+      const list = document.getElementById('onlineList');
+      if (!list) return;
+      const users = [];
+      snap.forEach(child => { users.push(child.val()); });
+      if (!users.length) {
+        list.innerHTML = '<div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Belum ada yang online</div>';
+        return;
+      }
+      list.innerHTML = users.map(u => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.5);border:1px solid rgba(200,215,240,0.3);">
+          <div style="width:36px;height:36px;border-radius:50%;background:${u.color||'#2563eb'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+            ${(u.name||'?').slice(0,2).toUpperCase()}
+          </div>
+          <div style="min-width:0;">
+            <div style="font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.name||'User'}</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--green);font-weight:600;">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 6px rgba(22,163,74,0.6);"></span>
+              Online
+            </div>
+          </div>
+          ${u.name === me.name ? '<span style="font-size:10px;background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:10px;font-weight:700;margin-left:auto;flex-shrink:0;">Kamu</span>' : ''}
+        </div>
+      `).join('');
     });
   }
 
