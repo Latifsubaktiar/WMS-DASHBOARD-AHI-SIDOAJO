@@ -20,7 +20,7 @@ const URLS = {
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   inbound: null,
   storing: null,
-  ga: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyNQOziQL4tMnN6XiwYzGv-Sj_HEGyZf_XSLRyc-9kPbgKcbbm896pfsZCtVscSUxja/exec',
+  ga: 'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
   hr: null,
 };
 const IFRAME_PAGES   = ['inventory','outbound','planner','ga'];
