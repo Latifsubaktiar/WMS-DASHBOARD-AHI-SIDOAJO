@@ -20,10 +20,10 @@ const URLS = {
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   inbound: null,
   storing: null,
-  ga: null,
+  ga: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyNQOziQL4tMnN6XiwYzGv-Sj_HEGyZf_XSLRyc-9kPbgKcbbm896pfsZCtVscSUxja/exec',
   hr: null,
 };
-const IFRAME_PAGES   = ['inventory','outbound','planner'];
+const IFRAME_PAGES   = ['inventory','outbound','planner','ga'];
 const LAUNCHER_PAGES = [];
 
 // ── Avatar color palette ──
