@@ -143,7 +143,7 @@ HTML PROJECT LATIF
     <button class="nav-item" data-page="storing"><span class="nav-icon">🏗️</span>Storing<span class="nav-tag tag-orange">Soon</span></button>
     <button class="nav-item" data-page="outbound"><span class="nav-icon">🚚</span>Outbound<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="inventory"><span class="nav-icon">📊</span>Inventory<span class="nav-tag tag-green">Live</span></button>
-    <button class="nav-item" data-page="ga"><span class="nav-icon">🏢</span>GA<span class="nav-tag tag-orange">Soon</span></button>
+    <button class="nav-item" data-page="ga"><span class="nav-icon">🏢</span>GA<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="hr"><span class="nav-icon">👥</span>HR<span class="nav-tag tag-orange">Soon</span></button>
   </div>
   <div class="nav-divider"></div>
@@ -276,7 +276,10 @@ HTML PROJECT LATIF
   <div class="page" id="page-storing"><div class="soon-screen"><div class="si">🏗️</div><h2>Storing Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
 
   <!-- GA -->
-  <div class="page" id="page-ga"><div class="soon-screen"><div class="si">🏢</div><h2>GA Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
+  <div class="iframe-page" id="page-ga">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">🏢 GA</span><span class="iframe-sub">Dashboard General Affairs</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrGa','ga')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabGa" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldGa"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat GA Dashboard...</span></div><div class="iframe-error" id="errGa"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabGa" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrGa" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
 
   <!-- HR -->
   <div class="page" id="page-hr"><div class="soon-screen"><div class="si">👥</div><h2>HR Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
