@@ -867,16 +867,35 @@ body.dark .login-field label  { color: #8b949e; }
 /* Settings & Profile */
 body.dark .settings-panel {
   background: #161b22 !important;
-  border-color: rgba(255,255,255,0.1) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  border-radius: 18px !important;
 }
-body.dark .settings-user { border-bottom-color: rgba(255,255,255,0.08); }
-body.dark .settings-username { color: #c9d1d9; }
-body.dark .settings-role { color: #484f58; }
-body.dark .settings-item { color: #8b949e; }
-body.dark .settings-item:hover { background: rgba(255,255,255,0.06); color: #f0f6fc; }
-body.dark .settings-item-icon { background: rgba(255,255,255,0.05); }
-body.dark .settings-divider { background: rgba(255,255,255,0.07); }
+body.dark .settings-user {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+}
+body.dark .settings-username { color: #c9d1d9; font-size: 14px; font-weight: 800; }
+body.dark .settings-role { color: #484f58; font-size: 11px; }
+body.dark .settings-item {
+  color: #8b949e;
+  background: transparent;
+  border-radius: 10px;
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px;
+}
+body.dark .settings-item:hover { background: rgba(255,255,255,0.06) !important; color: #f0f6fc !important; }
+body.dark .settings-item.danger { color: #f85149; }
+body.dark .settings-item.danger:hover { background: rgba(248,81,73,0.08) !important; }
+body.dark .settings-item-icon {
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+}
+body.dark .settings-divider { background: rgba(255,255,255,0.07); margin: 6px 8px; }
+body.dark .dark-toggle { background: rgba(255,255,255,0.1); }
+body.dark .dark-toggle.on { background: var(--accent); }
 body.dark .profile-card {
   background: #161b22;
   border-color: rgba(255,255,255,0.1);
