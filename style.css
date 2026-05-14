@@ -865,7 +865,7 @@ body.dark .login-colors label { color: #8b949e; }
 body.dark .login-field label  { color: #8b949e; }
 
 /* Settings & Profile */
-body.dark .settings-panel {
+.settings-panel {
   display: none; position: absolute; top: 52px; right: 0;
   width: 260px;
   background: rgba(255,255,255,0.97);
