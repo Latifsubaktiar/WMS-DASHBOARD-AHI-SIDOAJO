@@ -1,5 +1,3 @@
-HTML PROJECT LATIF
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -149,7 +147,7 @@ HTML PROJECT LATIF
   <div class="nav-divider"></div>
   <div class="nav-section">
     <div class="nav-label">Lainnya</div>
-    <button class="nav-item" data-page="reports"><span class="nav-icon">📈</span>Reports</button>
+    <button class="nav-item" data-page="analyst"><span class="nav-icon">📊</span>Analyst<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="discussion"><span class="nav-icon">💬</span>Discussion<span class="nav-tag tag-blue" id="discBadge">Live</span></button>
     <button class="nav-item" data-page="ai"><span class="nav-icon">🤖</span>AI Support</button>
   </div>
@@ -290,8 +288,11 @@ HTML PROJECT LATIF
     <div class="iframe-container"><div class="iframe-loading" id="ldOutbound"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Outbound Dashboard...</span></div><div class="iframe-error" id="errOutbound"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabOutbound" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrOutbound" src="about:blank" allow="fullscreen *"></iframe></div>
   </div>
 
-  <!-- REPORTS -->
-  <div class="page" id="page-reports"><div class="soon-screen"><div class="si">📈</div><h2>Reports</h2><p>Laporan operasional akan tersedia di sini.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
+  <!-- ANALYST -->
+  <div class="iframe-page" id="page-analyst">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📊 Analyst</span><span class="iframe-sub">Dashboard Analitik Operasional</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrAnalyst','analyst')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabAnalyst" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldAnalyst"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Analyst Dashboard...</span></div><div class="iframe-error" id="errAnalyst"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabAnalyst" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrAnalyst" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
 
   <!-- DISCUSSION ROOM -->
   <div class="page" id="page-discussion">
@@ -363,8 +364,6 @@ HTML PROJECT LATIF
     <div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>
   </div>
 </div>
-
-
 
 <!-- PROFILE MODAL -->
 <div class="profile-overlay hidden" id="profileOverlay">
