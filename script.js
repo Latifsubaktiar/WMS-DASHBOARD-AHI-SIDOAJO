@@ -18,12 +18,13 @@ const URLS = {
   planner:   'https://plannerazko.github.io/DashboardPlanning/',
   inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbznK9XTBd5Zz07tyb-1bvjQEa00pXEMPFOXhCtYaBqthThQUliRjcXUYYr27VaXV-888w/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
-  inbound: null,
-  storing: null,
-  ga: 'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
-  hr: null,
+  analyst:   'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbxTVbfZUlgGGJL9YgO6XLuCS6Ro4ksk9Iy8t486SFvCB-xRnHIFo1X6b8-PD9Qjn4qp/exec',
+  inbound:   null,
+  storing:   null,
+  ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
+  hr:        null,
 };
-const IFRAME_PAGES   = ['inventory','outbound','planner','ga'];
+const IFRAME_PAGES   = ['inventory','outbound','planner','ga','analyst'];
 const LAUNCHER_PAGES = [];
 
 // ── Avatar color palette ──
@@ -41,14 +42,14 @@ const AVATAR_COLORS = [
 
 // ── THEME COLOR PER USER ──
 const THEME_COLORS = {
-  '#3b82f6': { accent:'#2563eb', dark:'#1d4ed8', light:'#eff6ff', mid:'#bfdbfe' },  // biru
-  '#ec4899': { accent:'#db2777', dark:'#be185d', light:'#fdf2f8', mid:'#fbcfe8' },  // pink
-  '#06b6d4': { accent:'#0891b2', dark:'#0e7490', light:'#ecfeff', mid:'#a5f3fc' },  // cyan
-  '#10b981': { accent:'#059669', dark:'#047857', light:'#ecfdf5', mid:'#a7f3d0' },  // hijau
-  '#f59e0b': { accent:'#d97706', dark:'#b45309', light:'#fffbeb', mid:'#fde68a' },  // kuning
-  '#8b5cf6': { accent:'#7c3aed', dark:'#6d28d9', light:'#f5f3ff', mid:'#ddd6fe' },  // ungu
-  '#ef4444': { accent:'#dc2626', dark:'#b91c1c', light:'#fef2f2', mid:'#fecaca' },  // merah
-  '#64748b': { accent:'#475569', dark:'#334155', light:'#f8fafc', mid:'#cbd5e1' },  // abu
+  '#3b82f6': { accent:'#2563eb', dark:'#1d4ed8', light:'#eff6ff', mid:'#bfdbfe' },
+  '#ec4899': { accent:'#db2777', dark:'#be185d', light:'#fdf2f8', mid:'#fbcfe8' },
+  '#06b6d4': { accent:'#0891b2', dark:'#0e7490', light:'#ecfeff', mid:'#a5f3fc' },
+  '#10b981': { accent:'#059669', dark:'#047857', light:'#ecfdf5', mid:'#a7f3d0' },
+  '#f59e0b': { accent:'#d97706', dark:'#b45309', light:'#fffbeb', mid:'#fde68a' },
+  '#8b5cf6': { accent:'#7c3aed', dark:'#6d28d9', light:'#f5f3ff', mid:'#ddd6fe' },
+  '#ef4444': { accent:'#dc2626', dark:'#b91c1c', light:'#fef2f2', mid:'#fecaca' },
+  '#64748b': { accent:'#475569', dark:'#334155', light:'#f8fafc', mid:'#cbd5e1' },
 };
 
 function applyTheme(hexColor) {
@@ -90,7 +91,6 @@ initFirebase();
 const colorOptions = document.getElementById('colorOptions');
 let selectedColorIdx = 0;
 
-// Handle color selection on hardcoded elements
 colorOptions.querySelectorAll('.color-opt').forEach(el => {
   el.addEventListener('click', () => {
     colorOptions.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
@@ -114,7 +114,6 @@ function doLogin() {
   me.initials = name.slice(0,2).toUpperCase();
   applyTheme(me.color.hex);
 
-  // Simpan ke localStorage biar next visit langsung masuk
   localStorage.setItem('wms_name', name);
   localStorage.setItem('wms_color', selectedColorIdx);
 
@@ -122,13 +121,11 @@ function doLogin() {
 }
 
 function applyLogin() {
-  // Update header
   const av = document.getElementById('headerAvatar');
   av.textContent  = me.initials;
   av.style.background = me.color.bg;
   document.getElementById('headerName').textContent = me.name;
 
-  // Online presence
   if (fbReady && onlineRef) {
     const safeKey = me.name.replace(/[.#$/[\]\s]/g,'_');
     const myOnlineRef = onlineRef.child(safeKey);
@@ -137,10 +134,8 @@ function applyLogin() {
     onlineRef.on('value', snap => {
       const count = snap.numChildren();
       document.getElementById('onlineCount').textContent = count + ' online';
-      // Update onlineCountDisc if exists
       const discCount = document.getElementById('onlineCountDisc');
       if (discCount) discCount.textContent = count + ' user';
-      // Render online users list
       const list = document.getElementById('onlineList');
       if (!list) return;
       const users = [];
@@ -178,7 +173,7 @@ function applyLogin() {
   setTimeout(updateSettingsUser, 350);
 }
 
-// ── Pre-fill dari localStorage (modal tetap muncul, nama sudah terisi) ──
+// ── Pre-fill dari localStorage ──
 (function checkSavedLogin() {
   const savedName = localStorage.getItem('wms_name');
   const savedColor = parseInt(localStorage.getItem('wms_color') || '0');
@@ -193,7 +188,6 @@ function applyLogin() {
   }
 })();
 
-// ── Klik avatar di header = ganti nama ──
 document.getElementById('headerUser').addEventListener('click', () => {
   localStorage.removeItem('wms_name');
   localStorage.removeItem('wms_color');
@@ -218,7 +212,6 @@ function startChat() {
 
   document.getElementById('discStatus').textContent = '🟢 Terhubung';
 
-  // Listen to last 100 messages
   const loadTime = Date.now();
   chatRef.limitToLast(100).on('child_added', snap => {
     const msg = snap.val();
@@ -237,7 +230,6 @@ function startChat() {
 function renderMessage(msg, key, listId, maxItems, isNew=true) {
   const list = document.getElementById(listId);
   if (!list) return;
-  // Skip if already rendered
   if (list.querySelector(`[data-key="${key}"]`)) return;
   while (list.children.length >= maxItems) list.removeChild(list.firstChild);
 
@@ -283,7 +275,6 @@ function setupFirebaseChat(inId, btnId, listId) {
   inp.addEventListener('keydown', e => { if(e.key==='Enter') send(); });
 }
 
-// Demo fallback
 const demoMessages = [
   { name:'Rani',  text:'Stok ABC mulai menipis, perlu restock segera.', color:'linear-gradient(145deg,#ec4899,#db2777)', timestamp: Date.now()-120000 },
   { name:'Budi',  text:'Besok ada inbound besar jam 10 pagi.',          color:'linear-gradient(145deg,#06b6d4,#0891b2)', timestamp: Date.now()-80000 },
@@ -446,7 +437,6 @@ function setupAI(inId,btnId,msgsId,typingId){
       addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');
     }catch(e){
       if(typing)typing.classList.remove('show');
-      // Fallback: JSONP
       try{
         const reply=await askViaJsonp(txt);
         addBubble(reply,'bot');
@@ -549,7 +539,6 @@ function renderNotifList() {
   `).join('');
 }
 
-// Close notif panel when clicking outside
 document.addEventListener('click', (e) => {
   if (notifOpen && !document.getElementById('notifPanel').contains(e.target) && !document.getElementById('notifBtn').contains(e.target)) {
     notifOpen = false;
@@ -569,7 +558,6 @@ function toggleDark() {
   applyDark();
 }
 applyDark();
-
 
 // ── SETTINGS ──
 let settingsOpen = false;
@@ -648,7 +636,6 @@ document.getElementById('profileOverlay').addEventListener('click', function(e) 
   if (e.target === this) this.classList.add('hidden');
 });
 
-// Close settings on outside click
 document.addEventListener('click', function(e) {
   const panel = document.getElementById('settingsPanel');
   const btn = document.getElementById('settingsBtn');
@@ -668,7 +655,7 @@ const SEARCH_ITEMS = [
   { label: 'Inventory',   page: 'inventory', icon: '📊', desc: 'Manajemen Stok' },
   { label: 'GA',          page: 'ga',        icon: '🏢', desc: 'General Affairs' },
   { label: 'HR',          page: 'hr',        icon: '👥', desc: 'Human Resources' },
-  { label: 'Reports',     page: 'reports',   icon: '📈', desc: 'Laporan Operasional' },
+  { label: 'Analyst',     page: 'analyst',   icon: '📊', desc: 'Dashboard Analitik Operasional' },
   { label: 'Discussion',  page: 'discussion',icon: '💬', desc: 'Discussion Room' },
   { label: 'AI Support',  page: 'ai',        icon: '🤖', desc: 'Asisten AI Warehouse' },
 ];
@@ -699,7 +686,6 @@ function renderSearch(query) {
   `).join('');
   searchDropdown.style.display = 'block';
 
-  // Add hover + click events
   searchDropdown.querySelectorAll('.search-item').forEach(el => {
     el.addEventListener('mouseenter', () => { el.style.background = 'var(--accent-light)'; });
     el.addEventListener('mouseleave', () => { el.style.background = 'none'; });
@@ -722,7 +708,6 @@ if (searchInput) {
   });
 }
 
-// Close dropdown on outside click
 document.addEventListener('click', e => {
   if (searchDropdown && !searchDropdown.contains(e.target) && e.target !== searchInput) {
     searchDropdown.style.display = 'none';
@@ -748,7 +733,6 @@ function closeSidebar() {
   btn.classList.remove('active');
 }
 
-// Close sidebar when nav item clicked on mobile
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
     if (window.innerWidth <= 768) closeSidebar();
