@@ -1099,3 +1099,235 @@ body.dark ::-webkit-scrollbar-thumb:hover {
   }
   .stat-card { overflow: hidden; }
 }
+/* ══════════════════════════════════════════════════════════
+   SETTINGS PANEL — Elegant Override
+   Tambahkan di bagian paling bawah style.css
+══════════════════════════════════════════════════════════ */
+
+.settings-wrap { position: relative; }
+
+.settings-panel {
+  display: none;
+  position: absolute;
+  top: 56px;
+  right: 0;
+  width: 288px;
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(210,228,255,0.6);
+  border-radius: 22px;
+  z-index: 9000;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,1) inset,
+    0 4px 6px rgba(15,23,42,0.04),
+    0 12px 32px rgba(99,120,167,0.16),
+    0 32px 64px rgba(80,100,160,0.10);
+  animation: settingsDropIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.settings-panel.open { display: block; }
+
+@keyframes settingsDropIn {
+  from { opacity:0; transform:translateY(-10px) scale(0.96); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* ── User Header ── */
+.settings-user {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid rgba(200,215,240,0.35);
+  background: linear-gradient(135deg, rgba(239,246,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.settings-user::before {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.08), transparent 70%);
+  pointer-events: none;
+}
+.settings-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  font-weight: 900;
+  color: #fff;
+  flex-shrink: 0;
+  background: linear-gradient(145deg,#3b82f6,#1d4ed8);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.35) inset,
+    0 4px 14px rgba(37,99,235,0.45),
+    0 8px 24px rgba(37,99,235,0.20);
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.settings-avatar:hover { transform: scale(1.08); }
+.settings-user-info { flex: 1; min-width: 0; }
+.settings-username {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.settings-role {
+  font-size: 11.5px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-top: 2px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-mid);
+  border-radius: 20px;
+  padding: 1px 8px;
+  display: inline-block;
+}
+
+/* ── Menu ── */
+.settings-menu { padding: 8px; }
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 13px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  border: 1px solid transparent;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  margin-bottom: 2px;
+}
+.settings-item:hover {
+  background: rgba(37,99,235,0.05);
+  border-color: rgba(37,99,235,0.12);
+  color: var(--accent);
+  transform: translateX(3px);
+}
+.settings-item-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  background: rgba(99,120,167,0.07);
+  border: 1px solid rgba(200,215,240,0.5);
+  transition: all 0.18s;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset;
+}
+.settings-item:hover .settings-item-icon {
+  background: rgba(37,99,235,0.10);
+  border-color: rgba(37,99,235,0.20);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 3px 8px rgba(37,99,235,0.12);
+}
+
+.settings-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,215,240,0.7), transparent);
+  margin: 6px 10px;
+}
+
+.settings-item.danger { color: #dc2626; }
+.settings-item.danger:hover {
+  background: rgba(220,38,38,0.05);
+  border-color: rgba(220,38,38,0.15);
+  color: #dc2626;
+  transform: translateX(3px);
+}
+.settings-item.danger .settings-item-icon {
+  background: rgba(220,38,38,0.07);
+  border-color: rgba(220,38,38,0.15);
+}
+.settings-item.danger:hover .settings-item-icon {
+  background: rgba(220,38,38,0.12);
+}
+
+/* ── Dark Toggle ── */
+.dark-toggle {
+  margin-left: auto;
+  width: 40px;
+  height: 22px;
+  border-radius: 20px;
+  background: rgba(148,163,184,0.25);
+  border: 1px solid rgba(200,215,240,0.5);
+  position: relative;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.dark-toggle.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.35);
+}
+.dark-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.dark-toggle.on::after { transform: translateX(18px); }
+
+/* ── DARK MODE overrides ── */
+body.dark .settings-panel {
+  background: #1c2128;
+  border-color: rgba(255,255,255,0.09);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.4);
+}
+body.dark .settings-user {
+  background: linear-gradient(135deg, rgba(37,99,235,0.08), transparent);
+  border-bottom-color: rgba(255,255,255,0.07);
+}
+body.dark .settings-username { color: #f0f6fc; }
+body.dark .settings-role {
+  color: #79b8ff;
+  background: rgba(37,99,235,0.15);
+  border-color: rgba(37,99,235,0.25);
+}
+body.dark .settings-item { color: #8b949e; }
+body.dark .settings-item:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+  color: #f0f6fc;
+}
+body.dark .settings-item-icon {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.08);
+}
+body.dark .settings-item:hover .settings-item-icon {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.14);
+}
+body.dark .settings-item.danger { color: #f85149; }
+body.dark .settings-item.danger:hover {
+  background: rgba(248,81,73,0.08);
+  border-color: rgba(248,81,73,0.2);
+  color: #f85149;
+}
+body.dark .settings-divider { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+body.dark .dark-toggle { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.12); }
+body.dark .dark-toggle.on { background: var(--accent); border-color: var(--accent); }
