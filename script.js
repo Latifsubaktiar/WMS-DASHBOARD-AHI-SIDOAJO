@@ -65,6 +65,9 @@ function applyTheme(hexColor) {
 let me = { nip: '', name: '', jabatan: '', color: AVATAR_COLORS[0], initials: '' };
 let fbReady = false;
 let db = null, chatRef = null, onlineRef = null;
+
+// ── Notif & chat state (deklarasi awal biar tidak error) ──
+let notifList = [], notifOpen = false, lastSeenTs = 0;
 const CHAT_PATH   = 'wms_ahi_chat/messages';
 const ONLINE_PATH = 'wms_ahi_chat/online';
 
@@ -145,7 +148,7 @@ async function checkNip() {
       nipInput.disabled = true;
 
     } else {
-      errEl.textContent = '❌ NIP tidak terdaftar! Hubungi admin.';
+      errEl.textContent = '❌ NIP tidak terdaftar! Hubungi admin. (Latif Subaktiar_0838-3084-8989)';
       errEl.classList.add('show');
       btn.disabled      = false;
       nipInput.disabled = false;
@@ -228,7 +231,7 @@ function applyLogin() {
   setTimeout(updateSettingsUser, 350);
 }
 
-// ── Auto-login dari localStorage ──
+// ── Auto-fill dari localStorage (tampilkan modal, NIP sudah terisi) ──
 (function checkSavedLogin() {
   const savedNip     = localStorage.getItem('wms_nip');
   const savedName    = localStorage.getItem('wms_name');
@@ -236,14 +239,28 @@ function applyLogin() {
   const savedColor   = parseInt(localStorage.getItem('wms_color') || '0');
 
   if (savedNip && savedName) {
-    me.nip      = savedNip;
-    me.name     = savedName;
-    me.jabatan  = savedJabatan || 'Staff';
-    me.color    = AVATAR_COLORS[savedColor];
-    me.initials = savedName.slice(0,2).toUpperCase();
+    // Pre-fill NIP & tampilkan preview nama — user tinggal klik masuk
+    nipVerified  = true;
+    verifiedData = { nip: savedNip, name: savedName, jabatan: savedJabatan || 'Staff' };
     selectedColorIdx = savedColor;
-    applyTheme(me.color.hex);
-    applyLogin();
+    applyTheme(AVATAR_COLORS[savedColor].hex);
+
+    const nipInput = document.getElementById('loginNip');
+    if (nipInput) { nipInput.value = savedNip; nipInput.disabled = true; }
+
+    document.getElementById('previewName').textContent    = savedName;
+    document.getElementById('previewJabatan').textContent = savedJabatan || 'Staff';
+    document.getElementById('loginFoundBox').classList.add('show');
+    document.getElementById('loginColorsWrap').style.display = 'block';
+
+    // Set warna avatar yang tersimpan
+    colorOptions.querySelectorAll('.color-opt').forEach((el, i) => {
+      el.classList.toggle('selected', i === savedColor);
+    });
+
+    // Tombol langsung siap masuk
+    const btn = document.getElementById('loginBtn');
+    if (btn) btn.textContent = 'Masuk ke Dashboard →';
   }
 })();
 
@@ -498,7 +515,6 @@ setupAI('aiIn','aiBtn','aiMsg','aiTyping');
 setupAI('aiIn2','aiBtn2','aiMsg2','aiTyping2');
 
 // ── NOTIFIKASI ──
-let notifList=[], notifOpen=false, lastSeenTs=0;
 function getLastSeenTs(){ return parseInt(localStorage.getItem('lastSeenTs_'+(me.name||'guest'))||'0'); }
 function setLastSeenTs(ts){ localStorage.setItem('lastSeenTs_'+(me.name||'guest'),ts); }
 function toggleNotif(){
