@@ -403,28 +403,131 @@ document.getElementById('todayDate2').textContent = dateStr;
 // ── FETCH REAL DATA STAT CARDS ──
 const GAS_DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
+let dashInboundChart = null;
+let dashOutboundChart = null;
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderDashInboundChart(total, checkedIn, selesai, hit, miss) {
+  const belum  = Math.max(0, total - checkedIn);
+  const proses = Math.max(0, checkedIn - selesai);
+  const pct    = total > 0 ? Math.round((selesai / total) * 100) : 0;
+
+  document.getElementById('dashInboundPct').textContent    = pct + '%';
+  document.getElementById('inboundPctBadge').textContent   = pct + '% Selesai';
+  document.getElementById('piInSelesai').textContent = selesai + ' truck';
+  document.getElementById('piInProses').textContent  = proses  + ' truck';
+  document.getElementById('piInBelum').textContent   = belum   + ' truck';
+  document.getElementById('piInHitMiss').textContent = hit + ' HIT / ' + miss + ' MISS';
+
+  const isDark = document.body.classList.contains('dark');
+  const border = isDark ? '#161b22' : '#ffffff';
+  const ctx = document.getElementById('dashInboundChart').getContext('2d');
+  if (dashInboundChart) dashInboundChart.destroy();
+  dashInboundChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Selesai', 'Check In (Proses)', 'Belum Check In'],
+      datasets: [{ data: [selesai, proses, belum], backgroundColor: ['#16a34a','#2563eb','#dc2626'], borderColor: border, borderWidth: 3, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)', titleColor:'#fff', bodyColor:'rgba(255,255,255,0.8)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10, cornerRadius:10,
+          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} truck` }
+        }
+      }
+    }
+  });
+}
+
+function renderDashOutboundChart(total, selesai) {
+  const belum = Math.max(0, total - selesai);
+  const pct   = total > 0 ? Math.round((selesai / total) * 100) : 0;
+
+  document.getElementById('dashOutboundPct').textContent    = pct + '%';
+  document.getElementById('outboundPctBadge').textContent   = pct + '% Selesai';
+  document.getElementById('piOutSelesai').textContent = selesai + ' armada';
+  document.getElementById('piOutBelum').textContent   = belum   + ' armada';
+
+  const isDark = document.body.classList.contains('dark');
+  const border = isDark ? '#161b22' : '#ffffff';
+  const ctx = document.getElementById('dashOutboundChart').getContext('2d');
+  if (dashOutboundChart) dashOutboundChart.destroy();
+  dashOutboundChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Selesai', 'Belum Selesai'],
+      datasets: [{ data: [selesai, belum], backgroundColor: ['#16a34a','#f59e0b'], borderColor: border, borderWidth: 3, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)', titleColor:'#fff', bodyColor:'rgba(255,255,255,0.8)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10, cornerRadius:10,
+          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} armada` }
+        }
+      }
+    }
+  });
+}
+
+function renderDashInboundTable(rows) {
+  const tbody = document.getElementById('dashInboundBody');
+  const count = document.getElementById('dashInboundCount');
+  if (!tbody) return;
+  if (!rows || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data hari ini</td></tr>';
+    if (count) count.textContent = '0 data';
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td class="mono" style="font-size:12px">${i+1}</td>
+      <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
+      <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
+      <td style="font-size:12px">${escHtml(r.ekspedisi)}</td>
+      <td style="font-size:12px">${escHtml(r.type)}</td>
+      <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
+      <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
+      <td style="font-size:11px;max-width:140px;white-space:normal">${r.stuffing||'—'}</td>
+      <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')
+        ? '<span class="badge badge-green">🎯 HIT</span>'
+        : r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')
+        ? '<span class="badge badge-red">⚠️ MISS</span>'
+        : '<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
+    </tr>
+  `).join('');
+  if (count) count.textContent = rows.length + ' data hari ini';
+}
+
 async function fetchDashboardStats() {
   try {
-    // Fetch Inbound
     const resIn  = await fetch(GAS_DASHBOARD_URL + '?action=getInbound');
     const dataIn = await resIn.json();
     if (dataIn.ok) {
+      const { total, checkedIn, selesai, hit, miss } = dataIn.summary;
       const el = document.querySelector('.stat-card.blue-bar .stat-value');
       const sb = document.querySelector('.stat-card.blue-bar .stat-sub');
-      if (el) el.textContent = dataIn.summary.total;
-      if (sb) sb.innerHTML  = `Plan masuk &nbsp;<span class="up">✅ ${dataIn.summary.checkedIn} check in</span> &nbsp;<span class="up">🎯 ${dataIn.summary.hit} HIT</span>`;
+      if (el) el.textContent = total;
+      if (sb) sb.innerHTML  = `Plan masuk &nbsp;<span class="up">✅ ${checkedIn} check in</span> &nbsp;<span class="up">🎯 ${hit} HIT</span>`;
+      renderDashInboundChart(total, checkedIn, selesai, hit, miss);
+      renderDashInboundTable(dataIn.data);
     }
   } catch(e) { console.warn('Inbound stats error:', e); }
 
   try {
-    // Fetch Outbound
     const resOut  = await fetch(GAS_DASHBOARD_URL + '?action=getOutbound');
     const dataOut = await resOut.json();
     if (dataOut.ok) {
       const el = document.querySelector('.stat-card.orange-bar .stat-value');
       const sb = document.querySelector('.stat-card.orange-bar .stat-sub');
       if (el) el.textContent = dataOut.total;
-      if (sb) sb.innerHTML  = `Armada hari ini &nbsp;<span class="up">✅ ${dataOut.selesai} selesai</span>`;
+      if (sb) sb.innerHTML  = `Armada hari ini &nbsp;<span class="up">✅ ${dataOut.selesai} selesai</span> &nbsp;<span class="dn">⏳ ${dataOut.total - dataOut.selesai} belum</span>`;
+      renderDashOutboundChart(dataOut.total, dataOut.selesai);
     }
   } catch(e) { console.warn('Outbound stats error:', e); }
 }
