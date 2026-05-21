@@ -400,6 +400,38 @@ const dateStr = d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month
 document.getElementById('todayDate').textContent  = dateStr;
 document.getElementById('todayDate2').textContent = dateStr;
 
+// ── FETCH REAL DATA STAT CARDS ──
+const GAS_DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
+
+async function fetchDashboardStats() {
+  try {
+    // Fetch Inbound
+    const resIn  = await fetch(GAS_DASHBOARD_URL + '?action=getInbound');
+    const dataIn = await resIn.json();
+    if (dataIn.ok) {
+      const el = document.querySelector('.stat-card.blue-bar .stat-value');
+      const sb = document.querySelector('.stat-card.blue-bar .stat-sub');
+      if (el) el.textContent = dataIn.summary.total;
+      if (sb) sb.innerHTML  = `Plan masuk &nbsp;<span class="up">✅ ${dataIn.summary.checkedIn} check in</span> &nbsp;<span class="up">🎯 ${dataIn.summary.hit} HIT</span>`;
+    }
+  } catch(e) { console.warn('Inbound stats error:', e); }
+
+  try {
+    // Fetch Outbound
+    const resOut  = await fetch(GAS_DASHBOARD_URL + '?action=getOutbound');
+    const dataOut = await resOut.json();
+    if (dataOut.ok) {
+      const el = document.querySelector('.stat-card.orange-bar .stat-value');
+      const sb = document.querySelector('.stat-card.orange-bar .stat-sub');
+      if (el) el.textContent = dataOut.total;
+      if (sb) sb.innerHTML  = `Armada hari ini &nbsp;<span class="up">✅ ${dataOut.selesai} selesai</span>`;
+    }
+  } catch(e) { console.warn('Outbound stats error:', e); }
+}
+
+fetchDashboardStats();
+setInterval(fetchDashboardStats, 5 * 60 * 1000);
+
 // ── CHARTS ──
 Chart.defaults.color = '#6b7280';
 Chart.defaults.font.family = 'Outfit';
