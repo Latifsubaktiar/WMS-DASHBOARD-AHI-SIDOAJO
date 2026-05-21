@@ -5,13 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WMS Dashboard – AHI Sidoarjo</title>
 <link rel="icon" type="image/jpeg" href="nailong%20lucu.jpg">
-
 <link rel="stylesheet" href="style.css">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
 (function(){
   var l=document.querySelector("link[rel='icon']");
@@ -20,32 +18,17 @@
   l.href='nailong%20lucu.jpg?v='+Date.now();
 })();
 </script>
-
 <style>
-.login-nip-hint {
-  font-size: 11.5px; color: var(--text-3); margin-top: 6px;
-  font-weight: 500; display: flex; align-items: center; gap: 5px;
-}
-.login-loading {
-  display: none; align-items: center; justify-content: center;
-  gap: 10px; font-size: 13px; color: var(--text-3); font-weight: 600; margin-top: 10px;
-}
-.login-loading.show { display: flex; }
-.login-spinner {
-  width: 18px; height: 18px;
-  border: 2px solid var(--accent-mid); border-top-color: var(--accent);
-  border-radius: 50%; animation: nipSpin 0.7s linear infinite;
-}
-@keyframes nipSpin { to { transform: rotate(360deg); } }
-.login-found-box {
-  display: none; flex-direction: column; align-items: center; gap: 5px;
-  padding: 14px; background: var(--green-bg);
-  border: 1px solid rgba(22,163,74,0.25); border-radius: var(--r-sm); margin-top: 14px;
-}
-.login-found-box.show { display: flex; }
-.login-found-box .lf-tag     { font-size: 11px; color: var(--green); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-.login-found-box .lf-name    { font-size: 19px; font-weight: 900; color: var(--text); letter-spacing: -0.5px; }
-.login-found-box .lf-jabatan { font-size: 12px; color: var(--text-3); font-weight: 600; }
+.login-nip-hint { font-size:11.5px; color:var(--text-3); margin-top:6px; font-weight:500; display:flex; align-items:center; gap:5px; }
+.login-loading { display:none; align-items:center; justify-content:center; gap:10px; font-size:13px; color:var(--text-3); font-weight:600; margin-top:10px; }
+.login-loading.show { display:flex; }
+.login-spinner { width:18px; height:18px; border:2px solid var(--accent-mid); border-top-color:var(--accent); border-radius:50%; animation:nipSpin 0.7s linear infinite; }
+@keyframes nipSpin { to{transform:rotate(360deg)} }
+.login-found-box { display:none; flex-direction:column; align-items:center; gap:5px; padding:14px; background:var(--green-bg); border:1px solid rgba(22,163,74,0.25); border-radius:var(--r-sm); margin-top:14px; }
+.login-found-box.show { display:flex; }
+.login-found-box .lf-tag { font-size:11px; color:var(--green); font-weight:800; text-transform:uppercase; letter-spacing:1px; }
+.login-found-box .lf-name { font-size:19px; font-weight:900; color:var(--text); letter-spacing:-0.5px; }
+.login-found-box .lf-jabatan { font-size:12px; color:var(--text-3); font-weight:600; }
 </style>
 </head>
 <body>
@@ -64,21 +47,16 @@
     </div>
     <div class="login-title">Selamat Datang 👋</div>
     <div class="login-sub">Masukkan NIP kamu untuk mengakses dashboard</div>
-
     <div class="login-field">
       <label>NIP Kamu</label>
-      <input type="text" id="loginNip" placeholder="Contoh: 12345678..." maxlength="20" autocomplete="off" inputmode="numeric">
+      <input type="text" id="loginNip" placeholder="Masukkan NIP..." maxlength="20" autocomplete="off" inputmode="numeric">
       <div class="login-nip-hint">🔒 Hanya NIP terdaftar yang bisa masuk</div>
     </div>
-
-    <!-- Preview nama setelah NIP valid -->
     <div class="login-found-box" id="loginFoundBox">
       <span class="lf-tag">✅ NIP Ditemukan</span>
       <span class="lf-name" id="previewName">—</span>
       <span class="lf-jabatan" id="previewJabatan">—</span>
     </div>
-
-    <!-- Pilih warna avatar (muncul setelah NIP valid) -->
     <div class="login-colors" id="loginColorsWrap" style="display:none;">
       <label>Warna Avatar</label>
       <div class="color-options" id="colorOptions">
@@ -92,12 +70,10 @@
         <div class="color-opt" style="background:linear-gradient(145deg,#64748b,#475569)" data-idx="7"></div>
       </div>
     </div>
-
     <div class="login-loading" id="loginLoading">
       <div class="login-spinner"></div>
       <span>Memeriksa NIP...</span>
     </div>
-
     <button class="login-btn" id="loginBtn">Masuk ke Dashboard →</button>
     <div class="login-err" id="loginErr">NIP tidak terdaftar!</div>
   </div>
@@ -108,9 +84,7 @@
 
 <!-- HEADER -->
 <header class="header">
-  <div class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">
-    <span></span><span></span><span></span>
-  </div>
+  <div class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
   <div class="brand">
     <div class="brand-icon">
@@ -139,20 +113,10 @@
           </div>
         </div>
         <div class="settings-menu">
-          <button class="settings-item" onclick="openProfile()">
-            <span class="settings-item-icon">👤</span>
-            <span>Lihat Profile</span>
-          </button>
-          <button class="settings-item" onclick="toggleDark();updateDarkToggle()">
-            <span class="settings-item-icon">🌙</span>
-            <span>Dark Mode</span>
-            <div class="dark-toggle" id="darkToggle"></div>
-          </button>
+          <button class="settings-item" onclick="openProfile()"><span class="settings-item-icon">👤</span><span>Lihat Profile</span></button>
+          <button class="settings-item" onclick="toggleDark();updateDarkToggle()"><span class="settings-item-icon">🌙</span><span>Dark Mode</span><div class="dark-toggle" id="darkToggle"></div></button>
           <div class="settings-divider"></div>
-          <button class="settings-item danger" onclick="doLogout()">
-            <span class="settings-item-icon">🚪</span>
-            <span>Ganti Akun</span>
-          </button>
+          <button class="settings-item danger" onclick="doLogout()"><span class="settings-item-icon">🚪</span><span>Ganti Akun</span></button>
         </div>
       </div>
     </div>
@@ -246,18 +210,69 @@
         </div>
       </div>
     </div>
+    <!-- PROGRESS CHARTS ROW -->
+    <div class="progress-row">
+      <!-- Inbound Progress -->
+      <div class="card progress-card">
+        <div class="card-header">
+          <span class="card-title"><span class="live-dot"></span>📦 Inbound Progress Hari Ini</span>
+          <span id="inboundPctBadge" style="font-size:12px;font-weight:800;color:var(--green);background:var(--green-bg);border:1px solid rgba(22,163,74,0.2);padding:3px 10px;border-radius:20px;">—%</span>
+        </div>
+        <div class="progress-body">
+          <div class="progress-chart-wrap">
+            <canvas id="dashInboundChart"></canvas>
+            <div class="progress-center">
+              <div class="progress-pct" id="dashInboundPct">—</div>
+              <div class="progress-label">Selesai</div>
+            </div>
+          </div>
+          <div class="progress-legend">
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#16a34a"></span><span class="prog-leg-text">Selesai Unloading</span><span class="prog-leg-val" id="piInSelesai" style="color:#16a34a">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#2563eb"></span><span class="prog-leg-text">Check In (Proses)</span><span class="prog-leg-val" id="piInProses" style="color:#2563eb">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#dc2626"></span><span class="prog-leg-text">Belum Check In</span><span class="prog-leg-val" id="piInBelum" style="color:#dc2626">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">HIT / MISS</span><span class="prog-leg-val" id="piInHitMiss" style="color:#f59e0b">—</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Outbound Progress -->
+      <div class="card progress-card">
+        <div class="card-header">
+          <span class="card-title"><span class="live-dot"></span>🚚 Outbound Progress Hari Ini</span>
+          <span id="outboundPctBadge" style="font-size:12px;font-weight:800;color:var(--orange);background:var(--orange-bg);border:1px solid rgba(217,119,6,0.2);padding:3px 10px;border-radius:20px;">—%</span>
+        </div>
+        <div class="progress-body">
+          <div class="progress-chart-wrap">
+            <canvas id="dashOutboundChart"></canvas>
+            <div class="progress-center">
+              <div class="progress-pct" id="dashOutboundPct">—</div>
+              <div class="progress-label">Selesai</div>
+            </div>
+          </div>
+          <div class="progress-legend">
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#16a34a"></span><span class="prog-leg-text">Selesai</span><span class="prog-leg-val" id="piOutSelesai" style="color:#16a34a">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Belum Selesai</span><span class="prog-leg-val" id="piOutBelum" style="color:#f59e0b">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="bottom-grid">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Recent Deliveries</span><div class="card-more">⋯</div></div>
-        <div class="table-wrap">
+      <!-- INBOUND TABLE REAL -->
+      <div class="card" style="overflow:hidden;">
+        <div class="card-header">
+          <span class="card-title"><span class="live-dot"></span>Data Inbound Hari Ini</span>
+          <span id="dashInboundCount" style="font-size:11px;color:var(--text-3);font-weight:600">Memuat...</span>
+        </div>
+        <div class="table-wrap" style="max-height:260px;overflow-y:auto;">
           <table>
-            <thead><tr><th>DO Number</th><th>Customer</th><th>Status</th><th>ETA</th></tr></thead>
-            <tbody>
-              <tr><td><strong>DO-1023</strong></td><td>PT Sejahtera</td><td><span class="badge badge-blue">✈ In Transit</span></td><td>15 Apr 2026</td></tr>
-              <tr><td><strong>DO-1024</strong></td><td>CV Maju Jaya</td><td><span class="badge badge-green">✔ Delivered</span></td><td>14 Apr 2026</td></tr>
-              <tr><td><strong>DO-1025</strong></td><td>TV Stamina</td><td><span class="badge badge-green">✔ Delivered</span></td><td>14 Apr 2026</td></tr>
-              <tr><td><strong>DO-1026</strong></td><td>PT Sejahtera</td><td><span class="badge badge-green">✔ Delivered</span></td><td>14 Apr 2026</td></tr>
-              <tr><td><strong>DO-1027</strong></td><td>UD Karya Muda</td><td><span class="badge badge-orange">⏳ Pending</span></td><td>16 Apr 2026</td></tr>
+            <thead>
+              <tr>
+                <th>No</th><th>No LC</th><th>No Polisi</th><th>Ekspedisi</th>
+                <th>Type</th><th>BU</th><th>Check In</th><th>Stuffing</th><th>Hit/Miss</th>
+              </tr>
+            </thead>
+            <tbody id="dashInboundBody">
+              <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -323,7 +338,7 @@
 
   <!-- ANALYST -->
   <div class="iframe-page" id="page-analyst">
-    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📊 Analyst</span><span class="iframe-sub">Dashboard Analitik Operasional</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrAnalyst','analyst')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabAnalyst" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📈 Analyst</span><span class="iframe-sub">Dashboard Analitik Operasional</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrAnalyst','analyst')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabAnalyst" href="#" target="_blank">↗ Tab Baru</a></div></div>
     <div class="iframe-container"><div class="iframe-loading" id="ldAnalyst"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Analyst Dashboard...</span></div><div class="iframe-error" id="errAnalyst"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabAnalyst" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrAnalyst" src="about:blank" allow="fullscreen *"></iframe></div>
   </div>
 
@@ -338,10 +353,7 @@
     </div>
     <div style="display:grid;grid-template-columns:1fr 240px;gap:18px;max-width:1000px;">
       <div class="card" style="display:flex;flex-direction:column;">
-        <div class="card-header">
-          <span class="card-title"><span class="live-dot"></span>Live Chat</span>
-          <div style="font-size:11px;color:var(--text-3);font-weight:600" id="discStatus">Menghubungkan...</div>
-        </div>
+        <div class="card-header"><span class="card-title"><span class="live-dot"></span>Live Chat</span><div style="font-size:11px;color:var(--text-3);font-weight:600" id="discStatus">Menghubungkan...</div></div>
         <div class="disc-body">
           <div class="disc-messages" id="fullDiscMsg" style="height:480px;"></div>
           <div class="disc-footer">
@@ -351,13 +363,8 @@
         </div>
       </div>
       <div class="card" style="display:flex;flex-direction:column;">
-        <div class="card-header">
-          <span class="card-title">🟢 Sedang Online</span>
-          <span style="font-size:11px;color:var(--text-3);font-weight:700" id="onlineCountDisc">0 user</span>
-        </div>
-        <div id="onlineList" style="padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;">
-          <div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Memuat...</div>
-        </div>
+        <div class="card-header"><span class="card-title">🟢 Sedang Online</span><span style="font-size:11px;color:var(--text-3);font-weight:700" id="onlineCountDisc">0 user</span></div>
+        <div id="onlineList" style="padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;"><div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Memuat...</div></div>
       </div>
     </div>
   </div>
@@ -390,9 +397,7 @@
     <span style="font-size:14px;font-weight:800;color:#0f172a">🔔 Notifikasi</span>
     <button onclick="clearNotifs()" style="font-size:11px;color:#2563eb;border:none;background:none;cursor:pointer;font-weight:600">Tandai semua dibaca</button>
   </div>
-  <div id="notifList" style="max-height:340px;overflow-y:auto;padding:8px 0;">
-    <div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>
-  </div>
+  <div id="notifList" style="max-height:340px;overflow-y:auto;padding:8px 0;"><div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div></div>
 </div>
 
 <!-- PROFILE MODAL -->
@@ -402,10 +407,7 @@
     <div class="profile-ava-big" id="profileAvaBig">?</div>
     <div class="profile-name-show" id="profileNameShow">—</div>
     <div class="profile-role" id="profileJabatan">—</div>
-    <div class="profile-field">
-      <label>NIP</label>
-      <input type="text" id="profileNipShow" disabled style="opacity:0.6;cursor:not-allowed;background:var(--bg);">
-    </div>
+    <div class="profile-field"><label>NIP</label><input type="text" id="profileNipShow" disabled style="opacity:0.6;cursor:not-allowed;background:var(--bg);"></div>
     <label class="profile-color-label">Warna Avatar</label>
     <div class="profile-colors" id="profileColorOpts">
       <div class="color-opt" style="background:linear-gradient(145deg,#3b82f6,#1d4ed8)" data-pidx="0"></div>
