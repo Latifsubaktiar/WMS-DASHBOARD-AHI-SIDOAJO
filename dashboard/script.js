@@ -3,7 +3,7 @@
 //  Ganti GAS_URL setelah deploy Code.gs
 // ══════════════════════════════════════════════════════════
 
-const GAS_URL = 'GANTI_DENGAN_URL_GAS_INBOUND_KAMU';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
 // ── State ──
 let allData = [];
