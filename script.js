@@ -394,29 +394,7 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── FETCH INBOUND TODAY DATA ──
-const GAS_INBOUND_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
-async function fetchInboundStats() {
-  try {
-    const res  = await fetch(GAS_INBOUND_URL + '?action=getInbound');
-    const data = await res.json();
-    if (!data.ok) return;
-
-    const { total, checkedIn, hit, miss } = data.summary;
-
-    const el = document.getElementById('inboundTotal');
-    const sb = document.getElementById('inboundSub');
-    if (el) el.textContent = total;
-    if (sb) sb.innerHTML  = `Check in: <span class="up">${checkedIn}</span> &nbsp;🎯 <span class="up">${hit} HIT</span> &nbsp;⚠️ <span class="dn">${miss} MISS</span>`;
-
-  } catch(e) {
-    console.warn('Inbound stats error:', e);
-  }
-}
-
-fetchInboundStats();
-setInterval(fetchInboundStats, 5 * 60 * 1000);
 const d = new Date();
 const dateStr = d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 document.getElementById('todayDate').textContent  = dateStr;
