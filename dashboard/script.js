@@ -48,7 +48,7 @@ function renderTable(rows) {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = rows.map((r, i) => `
     <tr>
-      <td class="mono">${r.no || i+1}</td>
+      <td class="mono">${i + 1}</td>
       <td class="bold">${escHtml(r.noLc)}</td>
       <td class="mono">${escHtml(r.noPolisi)}</td>
       <td>${escHtml(r.ekspedisi)}</td>
