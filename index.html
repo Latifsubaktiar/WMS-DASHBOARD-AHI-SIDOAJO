@@ -3,422 +3,169 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WMS Dashboard – AHI Sidoarjo</title>
-<link rel="icon" type="image/jpeg" href="nailong%20lucu.jpg">
-
-<link rel="stylesheet" href="style.css">
+<title>Inbound Dashboard — AHI Sidoarjo</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<script>
-(function(){
-  var l=document.querySelector("link[rel='icon']");
-  if(!l){l=document.createElement('link');l.rel='icon';document.head.appendChild(l);}
-  l.type='image/jpeg';
-  l.href='nailong%20lucu.jpg?v='+Date.now();
-})();
-</script>
-
-<style>
-.login-nip-hint {
-  font-size: 11.5px; color: var(--text-3); margin-top: 6px;
-  font-weight: 500; display: flex; align-items: center; gap: 5px;
-}
-.login-loading {
-  display: none; align-items: center; justify-content: center;
-  gap: 10px; font-size: 13px; color: var(--text-3); font-weight: 600; margin-top: 10px;
-}
-.login-loading.show { display: flex; }
-.login-spinner {
-  width: 18px; height: 18px;
-  border: 2px solid var(--accent-mid); border-top-color: var(--accent);
-  border-radius: 50%; animation: nipSpin 0.7s linear infinite;
-}
-@keyframes nipSpin { to { transform: rotate(360deg); } }
-.login-found-box {
-  display: none; flex-direction: column; align-items: center; gap: 5px;
-  padding: 14px; background: var(--green-bg);
-  border: 1px solid rgba(22,163,74,0.25); border-radius: var(--r-sm); margin-top: 14px;
-}
-.login-found-box.show { display: flex; }
-.login-found-box .lf-tag     { font-size: 11px; color: var(--green); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-.login-found-box .lf-name    { font-size: 19px; font-weight: 900; color: var(--text); letter-spacing: -0.5px; }
-.login-found-box .lf-jabatan { font-size: 12px; color: var(--text-3); font-weight: 600; }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- LOGIN MODAL -->
-<div class="login-overlay" id="loginOverlay">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zm0 12H4V9h16v10zM2 5h20v2H2zM6 3h12v2H6z"/></svg>
-      </div>
-      <div class="login-logo-text">
-        <div class="big">WMS</div>
-        <div class="small">AHI Sidoarjo</div>
-      </div>
-    </div>
-    <div class="login-title">Selamat Datang 👋</div>
-    <div class="login-sub">Masukkan NIP kamu untuk mengakses dashboard</div>
+<div class="app">
 
-    <div class="login-field">
-      <label>NIP Kamu</label>
-      <input type="text" id="loginNip" placeholder="Contoh: 12345678..." maxlength="20" autocomplete="off" inputmode="numeric">
-      <div class="login-nip-hint">🔒 Hanya NIP terdaftar yang bisa masuk</div>
-    </div>
-
-    <!-- Preview nama setelah NIP valid -->
-    <div class="login-found-box" id="loginFoundBox">
-      <span class="lf-tag">✅ NIP Ditemukan</span>
-      <span class="lf-name" id="previewName">—</span>
-      <span class="lf-jabatan" id="previewJabatan">—</span>
-    </div>
-
-    <!-- Pilih warna avatar (muncul setelah NIP valid) -->
-    <div class="login-colors" id="loginColorsWrap" style="display:none;">
-      <label>Warna Avatar</label>
-      <div class="color-options" id="colorOptions">
-        <div class="color-opt selected" style="background:linear-gradient(145deg,#3b82f6,#1d4ed8)" data-idx="0"></div>
-        <div class="color-opt" style="background:linear-gradient(145deg,#ec4899,#db2777)" data-idx="1"></div>
-        <div class="color-opt" style="background:linear-gradient(145deg,#06b6d4,#0891b2)" data-idx="2"></div>
-        <div class="color-opt" style="background:linear-gradient(145deg,#10b981,#059669)" data-idx="3"></div>
-        <div class="color-opt" style="background:linear-gradient(145deg,#f59e0b,#d97706)" data-idx="4"></div>
-        <div class="color-opt" style="background:linear-gradient(145deg,#8b5cf6,#7c3aed)" data-idx="5"></div>
-        <div class="color-opt" style="background:linear-gradient(145deg,#ef4444,#dc2626)" data-idx="6"></div>
-        <div class="color-opt" style="background:linear-gradient(145deg,#64748b,#475569)" data-idx="7"></div>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">📦</div>
+      <div>
+        <div class="header-title">Inbound Dashboard</div>
+        <div class="header-sub">NDC AHI Sidoarjo — Aktivitas Hari Ini</div>
       </div>
     </div>
-
-    <div class="login-loading" id="loginLoading">
-      <div class="login-spinner"></div>
-      <span>Memeriksa NIP...</span>
+    <div class="header-right">
+      <div class="date-badge" id="todayBadge">—</div>
+      <button class="refresh-btn" onclick="loadData()">↺ Refresh</button>
     </div>
+  </header>
 
-    <button class="login-btn" id="loginBtn">Masuk ke Dashboard →</button>
-    <div class="login-err" id="loginErr">NIP tidak terdaftar!</div>
-  </div>
-</div>
+  <!-- SUMMARY + CHART ROW -->
+  <div class="top-row">
 
-<!-- DASHBOARD SHELL -->
-<div class="shell">
-
-<!-- HEADER -->
-<header class="header">
-  <div class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">
-    <span></span><span></span><span></span>
-  </div>
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-  <div class="brand">
-    <div class="brand-icon">
-      <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zm0 12H4V9h16v10zM2 5h20v2H2zM6 3h12v2H6z"/></svg>
-    </div>
-    <div>
-      <div class="brand-name">WMS</div>
-      <div class="brand-sub">AHI Sidoarjo</div>
-    </div>
-  </div>
-  <div class="header-search">
-    <span style="font-size:13px;color:var(--text-3)">🔍</span>
-    <input type="text" id="searchInput" placeholder="Cari departemen atau menu..." autocomplete="off">
-  </div>
-  <div id="searchDropdown" style="display:none;position:absolute;top:54px;left:252px;width:320px;background:rgba(255,255,255,0.97);backdrop-filter:blur(24px);border:1px solid rgba(200,215,240,0.5);border-radius:14px;box-shadow:0 8px 32px rgba(99,120,167,0.18);z-index:9999;overflow:hidden;padding:8px;"></div>
-  <div class="header-actions">
-    <div class="icon-btn" id="notifBtn" onclick="toggleNotif()" style="position:relative">🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span></div>
-    <div class="settings-wrap">
-      <div class="icon-btn" id="settingsBtn" onclick="toggleSettings()" title="Pengaturan">⚙️</div>
-      <div class="settings-panel" id="settingsPanel">
-        <div class="settings-user">
-          <div class="settings-avatar" id="settingsAva">?</div>
-          <div class="settings-user-info">
-            <div class="settings-username" id="settingsName">...</div>
-            <div class="settings-role" id="settingsRole">Member AHI Sidoarjo</div>
-          </div>
+    <!-- SUMMARY CARDS -->
+    <div class="summary-grid">
+      <div class="sum-card blue">
+        <div class="sum-icon">📋</div>
+        <div class="sum-info">
+          <div class="sum-label">Total Plan Masuk</div>
+          <div class="sum-value" id="sumTotal">—</div>
+          <div class="sum-sub">Truck hari ini</div>
         </div>
-        <div class="settings-menu">
-          <button class="settings-item" onclick="openProfile()">
-            <span class="settings-item-icon">👤</span>
-            <span>Lihat Profile</span>
-          </button>
-          <button class="settings-item" onclick="toggleDark();updateDarkToggle()">
-            <span class="settings-item-icon">🌙</span>
-            <span>Dark Mode</span>
-            <div class="dark-toggle" id="darkToggle"></div>
-          </button>
-          <div class="settings-divider"></div>
-          <button class="settings-item danger" onclick="doLogout()">
-            <span class="settings-item-icon">🚪</span>
-            <span>Ganti Akun</span>
-          </button>
+      </div>
+      <div class="sum-card green">
+        <div class="sum-icon">✅</div>
+        <div class="sum-info">
+          <div class="sum-label">Sudah Check In</div>
+          <div class="sum-value" id="sumCheckedIn">—</div>
+          <div class="sum-sub">Dari total plan</div>
+        </div>
+      </div>
+      <div class="sum-card orange">
+        <div class="sum-icon">🏁</div>
+        <div class="sum-info">
+          <div class="sum-label">Selesai Unloading</div>
+          <div class="sum-value" id="sumSelesai">—</div>
+          <div class="sum-sub">Sudah update</div>
+        </div>
+      </div>
+      <div class="sum-card teal">
+        <div class="sum-icon">🎯</div>
+        <div class="sum-info">
+          <div class="sum-label">HIT</div>
+          <div class="sum-value" id="sumHit">—</div>
+          <div class="sum-sub">On time</div>
+        </div>
+      </div>
+      <div class="sum-card red">
+        <div class="sum-icon">⚠️</div>
+        <div class="sum-info">
+          <div class="sum-label">MISS</div>
+          <div class="sum-value" id="sumMiss">—</div>
+          <div class="sum-sub">Terlambat</div>
         </div>
       </div>
     </div>
-    <div class="user-pill" id="headerUser" onclick="toggleSettings()">
-      <div class="avatar" id="headerAvatar" style="background:linear-gradient(145deg,#3b82f6,#7c3aed)">?</div>
-      <span class="name" id="headerName">...</span>
-      <span class="chevron">▾</span>
-    </div>
-  </div>
-</header>
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="nav-section">
-    <div class="nav-label">Main</div>
-    <button class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span>Dashboard</button>
-  </div>
-  <div class="nav-divider"></div>
-  <div class="nav-section">
-    <div class="nav-label">Departemen</div>
-    <button class="nav-item" data-page="planner"><span class="nav-icon">📋</span>Planner<span class="nav-tag tag-green">Live</span></button>
-    <button class="nav-item" data-page="inbound"><span class="nav-icon">📦</span>Inbound<span class="nav-tag tag-orange">Soon</span></button>
-    <button class="nav-item" data-page="storing"><span class="nav-icon">🏗️</span>Storing<span class="nav-tag tag-orange">Soon</span></button>
-    <button class="nav-item" data-page="outbound"><span class="nav-icon">🚚</span>Outbound<span class="nav-tag tag-green">Live</span></button>
-    <button class="nav-item" data-page="inventory"><span class="nav-icon">📊</span>Inventory<span class="nav-tag tag-green">Live</span></button>
-    <button class="nav-item" data-page="ga"><span class="nav-icon">🏢</span>GA<span class="nav-tag tag-green">Live</span></button>
-    <button class="nav-item" data-page="hr"><span class="nav-icon">👥</span>HR<span class="nav-tag tag-orange">Soon</span></button>
-  </div>
-  <div class="nav-divider"></div>
-  <div class="nav-section">
-    <div class="nav-label">Lainnya</div>
-    <button class="nav-item" data-page="analyst"><span class="nav-icon">📈</span>Analyst<span class="nav-tag tag-blue">Live</span></button>
-    <button class="nav-item" data-page="discussion"><span class="nav-icon">💬</span>Discussion<span class="nav-tag tag-blue" id="discBadge">Live</span></button>
-    <button class="nav-item" data-page="ai"><span class="nav-icon">🤖</span>AI Support</button>
-  </div>
-  <div class="sidebar-footer">
-    <div class="sys-info">
-      <div class="sys-label">System Status</div>
-      <div class="sys-bar-wrap"><span class="sys-bar-label">Server</span><div class="sys-bar-track"><div class="sys-bar-fill" style="width:72%;background:linear-gradient(90deg,#16a34a,#4ade80)"></div></div><span class="sys-bar-val">72%</span></div>
-      <div class="sys-bar-wrap"><span class="sys-bar-label">Memory</span><div class="sys-bar-track"><div class="sys-bar-fill" style="width:45%;background:linear-gradient(90deg,#2563eb,#60a5fa)"></div></div><span class="sys-bar-val">45%</span></div>
-      <div class="sys-bar-wrap"><span class="sys-bar-label">Storage</span><div class="sys-bar-track"><div class="sys-bar-fill" style="width:88%;background:linear-gradient(90deg,#d97706,#f87171)"></div></div><span class="sys-bar-val">88%</span></div>
-    </div>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<main class="main" id="mainContent">
-
-  <!-- DASHBOARD -->
-  <div class="page active" id="page-dashboard">
-    <div class="page-header">
-      <div class="page-title-wrap"><h1>Dashboard</h1><p>Ringkasan operasional hari ini — AHI Sidoarjo</p></div>
-      <div class="date-chip">📅 <span id="todayDate">—</span></div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card blue-bar">
-        <div class="stat-icon" style="background:var(--accent-light)">📦</div>
-        <div class="stat-content"><div class="stat-label">Inbound Today</div><div class="stat-value" style="color:var(--accent)">12</div><div class="stat-sub">Shipments &nbsp;<span class="up">↑ 3</span> dari kemarin</div></div>
-      </div>
-      <div class="stat-card orange-bar">
-        <div class="stat-icon" style="background:var(--orange-bg)">🚚</div>
-        <div class="stat-content"><div class="stat-label">Outbound Today</div><div class="stat-value" style="color:var(--orange)">8</div><div class="stat-sub">Shipments &nbsp;<span class="dn">↓ 2</span> dari kemarin</div></div>
-      </div>
-      <div class="stat-card green-bar">
-        <div class="stat-icon" style="background:var(--green-bg)">💰</div>
-        <div class="stat-content"><div class="stat-label">Inventory Value</div><div class="stat-value" style="color:var(--green);font-size:15px;margin-top:6px">Rp 450.000.000</div><div class="stat-sub">Total nilai stok gudang</div></div>
-      </div>
-      <div class="stat-card red-bar">
-        <div class="stat-icon" style="background:var(--red-bg)">🔔</div>
-        <div class="stat-content"><div class="stat-label">Pending Alerts</div><div class="stat-value" style="color:var(--red)">3</div><div class="stat-sub"><span class="dn">! Perlu tindakan</span></div></div>
-      </div>
-    </div>
-    <div class="mid-grid">
-      <div class="card">
-        <div class="card-header"><span class="card-title"><span class="live-dot"></span>Daily Activity</span><div class="card-more">⋯</div></div>
-        <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>Inbound</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div>Outbound</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Inventory Status</span><div class="card-more">⋯</div></div>
+    <!-- PIE CHART PENYELESAIAN -->
+    <div class="chart-card">
+      <div class="chart-card-title">📊 Progress Penyelesaian</div>
+      <div class="chart-card-body">
         <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="donutChart"></canvas><div class="donut-center"><div class="total">100%</div><div class="total-label">Total Stok</div></div></div>
-          <div class="donut-legend">
-            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#16a34a"></div>Available</div><div class="donut-legend-val">60%</div></div>
-            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#d97706"></div>Reserved</div><div class="donut-legend-val">25%</div></div>
-            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#dc2626"></div>Low Stock</div><div class="donut-legend-val">15%</div></div>
+          <canvas id="progressChart"></canvas>
+          <div class="donut-center-label">
+            <div class="pct-value" id="pctValue">—</div>
+            <div class="pct-label">Selesai</div>
+          </div>
+        </div>
+        <div class="chart-legend-list">
+          <div class="chart-leg-item">
+            <span class="chart-leg-dot" style="background:#16a34a"></span>
+            <span class="chart-leg-text">Selesai Unloading</span>
+            <span class="chart-leg-val green" id="legSelesai">—</span>
+          </div>
+          <div class="chart-leg-item">
+            <span class="chart-leg-dot" style="background:#2563eb"></span>
+            <span class="chart-leg-text">Sudah Check In</span>
+            <span class="chart-leg-val blue" id="legCheckin">—</span>
+          </div>
+          <div class="chart-leg-item">
+            <span class="chart-leg-dot" style="background:#dc2626"></span>
+            <span class="chart-leg-text">Belum Check In</span>
+            <span class="chart-leg-val red" id="legBelum">—</span>
+          </div>
+          <div class="chart-leg-divider"></div>
+          <div class="chart-leg-item">
+            <span class="chart-leg-dot" style="background:transparent;border:2px solid #94a3b8"></span>
+            <span class="chart-leg-text">Sisa Penyelesaian</span>
+            <span class="chart-leg-val gray" id="legSisa">—</span>
           </div>
         </div>
       </div>
     </div>
-    <div class="bottom-grid">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Recent Deliveries</span><div class="card-more">⋯</div></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>DO Number</th><th>Customer</th><th>Status</th><th>ETA</th></tr></thead>
-            <tbody>
-              <tr><td><strong>DO-1023</strong></td><td>PT Sejahtera</td><td><span class="badge badge-blue">✈ In Transit</span></td><td>15 Apr 2026</td></tr>
-              <tr><td><strong>DO-1024</strong></td><td>CV Maju Jaya</td><td><span class="badge badge-green">✔ Delivered</span></td><td>14 Apr 2026</td></tr>
-              <tr><td><strong>DO-1025</strong></td><td>TV Stamina</td><td><span class="badge badge-green">✔ Delivered</span></td><td>14 Apr 2026</td></tr>
-              <tr><td><strong>DO-1026</strong></td><td>PT Sejahtera</td><td><span class="badge badge-green">✔ Delivered</span></td><td>14 Apr 2026</td></tr>
-              <tr><td><strong>DO-1027</strong></td><td>UD Karya Muda</td><td><span class="badge badge-orange">⏳ Pending</span></td><td>16 Apr 2026</td></tr>
-            </tbody>
-          </table>
-        </div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title"><span class="live-dot"></span>Data Inbound Hari Ini</div>
+      <div class="table-search">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Cari No LC, Polisi, Ekspedisi..." oninput="filterTable()">
       </div>
-      <div class="card" style="display:flex;flex-direction:column;">
-        <div class="card-header"><span class="card-title"><span class="live-dot"></span>Discussion</span><div class="card-more" onclick="go('discussion')" title="Buka penuh">↗</div></div>
-        <div class="disc-body" style="flex:1;">
-          <div class="disc-messages" id="miniDiscMsg" style="height:168px;"></div>
-          <div class="disc-footer">
-            <input class="disc-input" id="miniDiscIn" type="text" placeholder="Ketik pesan...">
-            <button class="disc-send" id="miniDiscBtn">➤</button>
-          </div>
-        </div>
-      </div>
-      <div class="card" style="display:flex;flex-direction:column;">
-        <div class="card-header"><span class="card-title">🤖 AI Support</span><div class="card-more">⋯</div></div>
-        <div class="ai-body" style="flex:1;">
-          <div class="ai-messages" id="aiMsg" style="height:168px;">
-            <div class="ai-bubble bot">Halo! Saya AI asisten WMS kamu. Ada yang bisa saya bantu?</div>
-            <div class="ai-typing" id="aiTyping"><span></span><span></span><span></span></div>
-          </div>
-          <div class="ai-footer">
-            <input class="ai-input" id="aiIn" type="text" placeholder="Ask something...">
-            <button class="ai-send" id="aiBtn">➤</button>
-          </div>
-        </div>
-      </div>
+    </div>
+
+    <div class="loading-wrap" id="loadingWrap">
+      <div class="spinner"></div>
+      <span>Mengambil data...</span>
+    </div>
+    <div class="error-wrap hidden" id="errorWrap">
+      <div style="font-size:40px">⚠️</div>
+      <div class="error-title">Gagal memuat data</div>
+      <div class="error-sub" id="errorMsg">—</div>
+      <button class="refresh-btn" onclick="loadData()">↺ Coba Lagi</button>
+    </div>
+    <div class="empty-wrap hidden" id="emptyWrap">
+      <div style="font-size:48px">📭</div>
+      <div class="error-title">Tidak ada data hari ini</div>
+      <div class="error-sub">Belum ada truck yang terjadwal masuk hari ini</div>
+    </div>
+    <div class="table-wrap hidden" id="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>No LC</th>
+            <th>No Polisi</th>
+            <th>Ekspedisi</th>
+            <th>Site From</th>
+            <th>Type</th>
+            <th>BU</th>
+            <th>Update Perjalanan</th>
+            <th>Check In</th>
+            <th>Stuffing</th>
+            <th>Hit / Miss</th>
+            <th>Update Unloading</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="table-footer" id="tableFooter" style="display:none">
+      Menampilkan <strong id="rowCount">0</strong> data
+      <span id="lastUpdate" style="margin-left:12px;color:var(--text-3)"></span>
     </div>
   </div>
 
-  <!-- PLANNER -->
-  <div class="iframe-page" id="page-planner">
-    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📋 Planner</span><span class="iframe-sub">Rencana Operasional</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrPlanner','planner')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabPlanner" href="#" target="_blank">↗ Tab Baru</a></div></div>
-    <div class="iframe-container"><div class="iframe-loading" id="ldPlanner"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Planner Dashboard...</span></div><div class="iframe-error" id="errPlanner"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabPlanner" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrPlanner" src="about:blank" allow="fullscreen *"></iframe></div>
-  </div>
-
-  <!-- INVENTORY -->
-  <div class="iframe-page" id="page-inventory">
-    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📊 Inventory</span><span class="iframe-sub">Manajemen Stok</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrInventory','inventory')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabInventory" href="#" target="_blank">↗ Tab Baru</a></div></div>
-    <div class="iframe-container"><div class="iframe-loading" id="ldInventory"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Inventory Dashboard...</span></div><div class="iframe-error" id="errInventory"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Dashboard memblokir embed. Gunakan tombol Tab Baru.</div><a class="btn-sm btn-primary" id="errTabInventory" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrInventory" src="about:blank" allow="fullscreen *"></iframe></div>
-  </div>
-
-  <!-- INBOUND -->
-  <div class="page" id="page-inbound"><div class="soon-screen"><div class="si">📦</div><h2>Inbound Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
-
-  <!-- STORING -->
-  <div class="page" id="page-storing"><div class="soon-screen"><div class="si">🏗️</div><h2>Storing Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
-
-  <!-- GA -->
-  <div class="iframe-page" id="page-ga">
-    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">🏢 GA</span><span class="iframe-sub">Dashboard General Affairs</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrGa','ga')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabGa" href="#" target="_blank">↗ Tab Baru</a></div></div>
-    <div class="iframe-container"><div class="iframe-loading" id="ldGa"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat GA Dashboard...</span></div><div class="iframe-error" id="errGa"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabGa" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrGa" src="about:blank" allow="fullscreen *"></iframe></div>
-  </div>
-
-  <!-- HR -->
-  <div class="page" id="page-hr"><div class="soon-screen"><div class="si">👥</div><h2>HR Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
-
-  <!-- OUTBOUND -->
-  <div class="iframe-page" id="page-outbound">
-    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">🚚 Outbound</span><span class="iframe-sub">Dashboard Outbound</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrOutbound','outbound')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabOutbound" href="#" target="_blank">↗ Tab Baru</a></div></div>
-    <div class="iframe-container"><div class="iframe-loading" id="ldOutbound"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Outbound Dashboard...</span></div><div class="iframe-error" id="errOutbound"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabOutbound" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrOutbound" src="about:blank" allow="fullscreen *"></iframe></div>
-  </div>
-
-  <!-- ANALYST -->
-  <div class="iframe-page" id="page-analyst">
-    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📊 Analyst</span><span class="iframe-sub">Dashboard Analitik Operasional</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrAnalyst','analyst')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabAnalyst" href="#" target="_blank">↗ Tab Baru</a></div></div>
-    <div class="iframe-container"><div class="iframe-loading" id="ldAnalyst"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Analyst Dashboard...</span></div><div class="iframe-error" id="errAnalyst"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabAnalyst" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrAnalyst" src="about:blank" allow="fullscreen *"></iframe></div>
-  </div>
-
-  <!-- DISCUSSION ROOM -->
-  <div class="page" id="page-discussion">
-    <div class="page-header">
-      <div class="page-title-wrap"><h1>💬 Discussion Room</h1><p>Komunikasi real-time tim gudang AHI Sidoarjo</p></div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <div class="online-badge"><span class="online-dot"></span><span id="onlineCount">1 online</span></div>
-        <div class="date-chip">📅 <span id="todayDate2">—</span></div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 240px;gap:18px;max-width:1000px;">
-      <div class="card" style="display:flex;flex-direction:column;">
-        <div class="card-header">
-          <span class="card-title"><span class="live-dot"></span>Live Chat</span>
-          <div style="font-size:11px;color:var(--text-3);font-weight:600" id="discStatus">Menghubungkan...</div>
-        </div>
-        <div class="disc-body">
-          <div class="disc-messages" id="fullDiscMsg" style="height:480px;"></div>
-          <div class="disc-footer">
-            <input class="disc-input" id="fullDiscIn" type="text" placeholder="Ketik pesan lalu Enter...">
-            <button class="disc-send" id="fullDiscBtn">➤</button>
-          </div>
-        </div>
-      </div>
-      <div class="card" style="display:flex;flex-direction:column;">
-        <div class="card-header">
-          <span class="card-title">🟢 Sedang Online</span>
-          <span style="font-size:11px;color:var(--text-3);font-weight:700" id="onlineCountDisc">0 user</span>
-        </div>
-        <div id="onlineList" style="padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;">
-          <div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Memuat...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- AI PAGE -->
-  <div class="page" id="page-ai">
-    <div class="page-header"><div class="page-title-wrap"><h1>🤖 AI Support</h1><p>Asisten AI untuk operasional warehouse</p></div></div>
-    <div class="page-wide-card">
-      <div class="card" style="display:flex;flex-direction:column;">
-        <div class="ai-body">
-          <div class="ai-messages" id="aiMsg2" style="height:440px;">
-            <div class="ai-bubble bot">Halo! Saya AI asisten WMS AHI Sidoarjo. Ada yang bisa saya bantu hari ini?</div>
-            <div class="ai-typing" id="aiTyping2"><span></span><span></span><span></span></div>
-          </div>
-          <div class="ai-footer">
-            <input class="ai-input" id="aiIn2" type="text" placeholder="Tanyakan sesuatu tentang operasional warehouse...">
-            <button class="ai-send" id="aiBtn2">➤</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</main>
-</div>
-
-<!-- NOTIFIKASI DROPDOWN -->
-<div id="notifPanel" style="display:none;position:fixed;top:70px;right:16px;width:340px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border:1px solid rgba(200,215,240,0.6);border-radius:16px;box-shadow:0 8px 32px rgba(99,120,167,0.18);z-index:999;overflow:hidden;">
-  <div style="padding:14px 18px;border-bottom:1px solid rgba(200,215,240,0.4);display:flex;align-items:center;justify-content:space-between;">
-    <span style="font-size:14px;font-weight:800;color:#0f172a">🔔 Notifikasi</span>
-    <button onclick="clearNotifs()" style="font-size:11px;color:#2563eb;border:none;background:none;cursor:pointer;font-weight:600">Tandai semua dibaca</button>
-  </div>
-  <div id="notifList" style="max-height:340px;overflow-y:auto;padding:8px 0;">
-    <div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>
-  </div>
-</div>
-
-<!-- PROFILE MODAL -->
-<div class="profile-overlay hidden" id="profileOverlay">
-  <div class="profile-card">
-    <button class="profile-close" id="profileCloseBtn">✕</button>
-    <div class="profile-ava-big" id="profileAvaBig">?</div>
-    <div class="profile-name-show" id="profileNameShow">—</div>
-    <div class="profile-role" id="profileJabatan">—</div>
-    <div class="profile-field">
-      <label>NIP</label>
-      <input type="text" id="profileNipShow" disabled style="opacity:0.6;cursor:not-allowed;background:var(--bg);">
-    </div>
-    <label class="profile-color-label">Warna Avatar</label>
-    <div class="profile-colors" id="profileColorOpts">
-      <div class="color-opt" style="background:linear-gradient(145deg,#3b82f6,#1d4ed8)" data-pidx="0"></div>
-      <div class="color-opt" style="background:linear-gradient(145deg,#ec4899,#db2777)" data-pidx="1"></div>
-      <div class="color-opt" style="background:linear-gradient(145deg,#06b6d4,#0891b2)" data-pidx="2"></div>
-      <div class="color-opt" style="background:linear-gradient(145deg,#10b981,#059669)" data-pidx="3"></div>
-      <div class="color-opt" style="background:linear-gradient(145deg,#f59e0b,#d97706)" data-pidx="4"></div>
-      <div class="color-opt" style="background:linear-gradient(145deg,#8b5cf6,#7c3aed)" data-pidx="5"></div>
-      <div class="color-opt" style="background:linear-gradient(145deg,#ef4444,#dc2626)" data-pidx="6"></div>
-      <div class="color-opt" style="background:linear-gradient(145deg,#64748b,#475569)" data-pidx="7"></div>
-    </div>
-    <button class="profile-save" id="profileSaveBtn">Simpan Warna Avatar</button>
-  </div>
 </div>
 
 <script src="script.js"></script>
