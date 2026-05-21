@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inbound Dashboard — AHI Sidoarjo</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -26,48 +27,90 @@
     </div>
   </header>
 
-  <!-- SUMMARY CARDS -->
-  <div class="summary-grid">
-    <div class="sum-card blue">
-      <div class="sum-icon">📋</div>
-      <div class="sum-info">
-        <div class="sum-label">Total Plan Masuk</div>
-        <div class="sum-value" id="sumTotal">—</div>
-        <div class="sum-sub">Truck hari ini</div>
+  <!-- SUMMARY + CHART ROW -->
+  <div class="top-row">
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-grid">
+      <div class="sum-card blue">
+        <div class="sum-icon">📋</div>
+        <div class="sum-info">
+          <div class="sum-label">Total Plan Masuk</div>
+          <div class="sum-value" id="sumTotal">—</div>
+          <div class="sum-sub">Truck hari ini</div>
+        </div>
+      </div>
+      <div class="sum-card green">
+        <div class="sum-icon">✅</div>
+        <div class="sum-info">
+          <div class="sum-label">Sudah Check In</div>
+          <div class="sum-value" id="sumCheckedIn">—</div>
+          <div class="sum-sub">Dari total plan</div>
+        </div>
+      </div>
+      <div class="sum-card orange">
+        <div class="sum-icon">🏁</div>
+        <div class="sum-info">
+          <div class="sum-label">Selesai Unloading</div>
+          <div class="sum-value" id="sumSelesai">—</div>
+          <div class="sum-sub">Sudah update</div>
+        </div>
+      </div>
+      <div class="sum-card teal">
+        <div class="sum-icon">🎯</div>
+        <div class="sum-info">
+          <div class="sum-label">HIT</div>
+          <div class="sum-value" id="sumHit">—</div>
+          <div class="sum-sub">On time</div>
+        </div>
+      </div>
+      <div class="sum-card red">
+        <div class="sum-icon">⚠️</div>
+        <div class="sum-info">
+          <div class="sum-label">MISS</div>
+          <div class="sum-value" id="sumMiss">—</div>
+          <div class="sum-sub">Terlambat</div>
+        </div>
       </div>
     </div>
-    <div class="sum-card green">
-      <div class="sum-icon">✅</div>
-      <div class="sum-info">
-        <div class="sum-label">Sudah Check In</div>
-        <div class="sum-value" id="sumCheckedIn">—</div>
-        <div class="sum-sub">Dari total plan</div>
+
+    <!-- PIE CHART PENYELESAIAN -->
+    <div class="chart-card">
+      <div class="chart-card-title">📊 Progress Penyelesaian</div>
+      <div class="chart-card-body">
+        <div class="donut-wrap">
+          <canvas id="progressChart"></canvas>
+          <div class="donut-center-label">
+            <div class="pct-value" id="pctValue">—</div>
+            <div class="pct-label">Selesai</div>
+          </div>
+        </div>
+        <div class="chart-legend-list">
+          <div class="chart-leg-item">
+            <span class="chart-leg-dot" style="background:#16a34a"></span>
+            <span class="chart-leg-text">Selesai Unloading</span>
+            <span class="chart-leg-val green" id="legSelesai">—</span>
+          </div>
+          <div class="chart-leg-item">
+            <span class="chart-leg-dot" style="background:#2563eb"></span>
+            <span class="chart-leg-text">Sudah Check In</span>
+            <span class="chart-leg-val blue" id="legCheckin">—</span>
+          </div>
+          <div class="chart-leg-item">
+            <span class="chart-leg-dot" style="background:#dc2626"></span>
+            <span class="chart-leg-text">Belum Check In</span>
+            <span class="chart-leg-val red" id="legBelum">—</span>
+          </div>
+          <div class="chart-leg-divider"></div>
+          <div class="chart-leg-item">
+            <span class="chart-leg-dot" style="background:transparent;border:2px solid #94a3b8"></span>
+            <span class="chart-leg-text">Sisa Penyelesaian</span>
+            <span class="chart-leg-val gray" id="legSisa">—</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="sum-card orange">
-      <div class="sum-icon">🏁</div>
-      <div class="sum-info">
-        <div class="sum-label">Selesai Unloading</div>
-        <div class="sum-value" id="sumSelesai">—</div>
-        <div class="sum-sub">Sudah update</div>
-      </div>
-    </div>
-    <div class="sum-card teal">
-      <div class="sum-icon">🎯</div>
-      <div class="sum-info">
-        <div class="sum-label">HIT</div>
-        <div class="sum-value" id="sumHit">—</div>
-        <div class="sum-sub">On time</div>
-      </div>
-    </div>
-    <div class="sum-card red">
-      <div class="sum-icon">⚠️</div>
-      <div class="sum-info">
-        <div class="sum-label">MISS</div>
-        <div class="sum-value" id="sumMiss">—</div>
-        <div class="sum-sub">Terlambat</div>
-      </div>
-    </div>
+
   </div>
 
   <!-- TABLE -->
@@ -80,28 +123,21 @@
       </div>
     </div>
 
-    <!-- Loading -->
     <div class="loading-wrap" id="loadingWrap">
       <div class="spinner"></div>
       <span>Mengambil data...</span>
     </div>
-
-    <!-- Error -->
     <div class="error-wrap hidden" id="errorWrap">
       <div style="font-size:40px">⚠️</div>
       <div class="error-title">Gagal memuat data</div>
       <div class="error-sub" id="errorMsg">—</div>
       <button class="refresh-btn" onclick="loadData()">↺ Coba Lagi</button>
     </div>
-
-    <!-- Empty -->
     <div class="empty-wrap hidden" id="emptyWrap">
       <div style="font-size:48px">📭</div>
       <div class="error-title">Tidak ada data hari ini</div>
       <div class="error-sub">Belum ada truck yang terjadwal masuk hari ini</div>
     </div>
-
-    <!-- Table -->
     <div class="table-wrap hidden" id="tableWrap">
       <table>
         <thead>
