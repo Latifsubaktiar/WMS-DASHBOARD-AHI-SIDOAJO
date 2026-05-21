@@ -20,7 +20,7 @@ const URLS = {
   planner:   'https://plannerazko.github.io/DashboardPlanning/',
   inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbznK9XTBd5Zz07tyb-1bvjQEa00pXEMPFOXhCtYaBqthThQUliRjcXUYYr27VaXV-888w/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
-  analyst:   'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzbsvn8Tiu3N3WGjBRbN_6-CsqAI9vTl2IxW1bsYi92Gk15Alzzk1JBvL4iyyvnL8nj/exec',
+  analyst:   'https://script.google.com/macros/s/AKfycbxTVbfZUlgGGJL9YgO6XLuCS6Ro4ksk9Iy8t486SFvCB-xRnHIFo1X6b8-PD9Qjn4qp/exec',
   inbound:   null,
   storing:   null,
   ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
@@ -394,7 +394,32 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── DATE ──
+// ── FETCH INBOUND TODAY DATA ──
+const GAS_INBOUND_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
+
+async function fetchInboundStats() {
+  try {
+    const res  = await fetch(GAS_INBOUND_URL + '?action=getInbound');
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const { total, checkedIn, hit, miss } = data.summary;
+
+    // Update stat card Inbound Today
+    const inboundVal = document.querySelector('.stat-card.blue-bar .stat-value');
+    const inboundSub = document.querySelector('.stat-card.blue-bar .stat-sub');
+    if (inboundVal) inboundVal.textContent = total;
+    if (inboundSub) inboundSub.innerHTML  =
+      `Plan masuk &nbsp;<span class="up">✅ ${checkedIn} check in</span> &nbsp;<span class="${hit>=total&&total>0?'up':'dn'}">🎯 ${hit} HIT / ⚠️ ${miss} MISS</span>`;
+
+  } catch(e) {
+    console.warn('Inbound stats error:', e);
+  }
+}
+
+// Jalankan saat load & setiap 5 menit
+fetchInboundStats();
+setInterval(fetchInboundStats, 5 * 60 * 1000);
 const d = new Date();
 const dateStr = d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 document.getElementById('todayDate').textContent  = dateStr;
