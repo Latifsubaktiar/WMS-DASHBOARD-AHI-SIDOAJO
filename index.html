@@ -174,7 +174,7 @@
   <div class="nav-section">
     <div class="nav-label">Departemen</div>
     <button class="nav-item" data-page="planner"><span class="nav-icon">📋</span>Planner<span class="nav-tag tag-green">Live</span></button>
-    <button class="nav-item" data-page="inbound"><span class="nav-icon">📦</span>Inbound<span class="nav-tag tag-orange">Soon</span></button>
+    <button class="nav-item" data-page="inbound"><span class="nav-icon">📦</span>Inbound<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="storing"><span class="nav-icon">🏗️</span>Storing<span class="nav-tag tag-orange">Soon</span></button>
     <button class="nav-item" data-page="outbound"><span class="nav-icon">🚚</span>Outbound<span class="nav-tag tag-green">Live</span></button>
     <button class="nav-item" data-page="inventory"><span class="nav-icon">📊</span>Inventory<span class="nav-tag tag-green">Live</span></button>
@@ -210,7 +210,7 @@
     <div class="stats-grid">
       <div class="stat-card blue-bar">
         <div class="stat-icon" style="background:var(--accent-light)">📦</div>
-        <div class="stat-content"><div class="stat-label">Inbound Today</div><div class="stat-value" style="color:var(--accent)">12</div><div class="stat-sub">Shipments &nbsp;<span class="up">↑ 3</span> dari kemarin</div></div>
+        <div class="stat-content"><div class="stat-label">Inbound Today</div><div class="stat-value" id="inboundTotal" style="color:var(--accent)">—</div><div class="stat-sub" id="inboundSub">Memuat data...</div></div>
       </div>
       <div class="stat-card orange-bar">
         <div class="stat-icon" style="background:var(--orange-bg)">🚚</div>
@@ -301,7 +301,10 @@
   </div>
 
   <!-- INBOUND -->
-  <div class="page" id="page-inbound"><div class="soon-screen"><div class="si">📦</div><h2>Inbound Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
+  <div class="iframe-page" id="page-inbound">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📦 Inbound</span><span class="iframe-sub">Dashboard Aktivitas Inbound Hari Ini</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrInbound','inbound')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabInbound" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldInbound"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Inbound Dashboard...</span></div><div class="iframe-error" id="errInbound"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabInbound" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrInbound" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
 
   <!-- STORING -->
   <div class="page" id="page-storing"><div class="soon-screen"><div class="si">🏗️</div><h2>Storing Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
