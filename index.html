@@ -226,25 +226,22 @@
       </div>
     </div>
 
-    <!-- INBOUND DASHBOARD EMBED -->
-    <div class="card" style="margin-bottom:18px;overflow:hidden;height:600px;display:flex;flex-direction:column;">
-      <div class="card-header">
-        <span class="card-title"><span class="live-dot"></span>Inbound Dashboard — Aktivitas Hari Ini</span>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-sm btn-outline" onclick="document.getElementById('ifrDashInbound').src=document.getElementById('ifrDashInbound').src">↺ Refresh</button>
+    <!-- INBOUND DASHBOARD LIVE -->
+    <div class="iframe-page active" style="display:flex;flex-direction:column;height:620px;border-radius:var(--r);overflow:hidden;margin-bottom:18px;border:1px solid rgba(255,255,255,0.92);box-shadow:var(--shadow-card);">
+      <div class="iframe-bar" style="flex-shrink:0;">
+        <span class="iframe-title">📦 Inbound</span>
+        <span class="iframe-sub">Dashboard Aktivitas Hari Ini</span>
+        <div class="iframe-actions">
+          <button class="btn-sm btn-outline" onclick="document.getElementById('ifrDashboard').src=document.getElementById('ifrDashboard').src">↺ Refresh</button>
           <a class="btn-sm btn-primary" href="https://latifsubaktiar.github.io/WMS-DASHBOARD-AHI-SIDOAJO/dashboard/" target="_blank">↗ Tab Baru</a>
         </div>
       </div>
       <div style="flex:1;position:relative;">
-        <iframe id="ifrDashInbound"
-          src="https://latifsubaktiar.github.io/WMS-DASHBOARD-AHI-SIDOAJO/dashboard/"
-          style="width:100%;height:100%;border:none;"
-          allow="fullscreen *">
-        </iframe>
+        <iframe id="ifrDashboard" src="https://latifsubaktiar.github.io/WMS-DASHBOARD-AHI-SIDOAJO/dashboard/" style="width:100%;height:100%;border:none;" allow="fullscreen *"></iframe>
       </div>
     </div>
+
     <div class="mid-grid">
-      <div class="card">
         <div class="card-header"><span class="card-title"><span class="live-dot"></span>Daily Activity</span><div class="card-more">⋯</div></div>
         <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
         <div class="chart-legend">
@@ -319,10 +316,7 @@
   </div>
 
   <!-- INBOUND -->
-  <div class="iframe-page" id="page-inbound">
-    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📦 Inbound</span><span class="iframe-sub">Dashboard Aktivitas Inbound Hari Ini</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrInbound','inbound')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabInbound" href="#" target="_blank">↗ Tab Baru</a></div></div>
-    <div class="iframe-container"><div class="iframe-loading" id="ldInbound"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Inbound Dashboard...</span></div><div class="iframe-error" id="errInbound"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabInbound" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrInbound" src="about:blank" allow="fullscreen *"></iframe></div>
-  </div>
+  <div class="page" id="page-inbound"><div class="soon-screen"><div class="si">📦</div><h2>Inbound Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
 
   <!-- STORING -->
   <div class="page" id="page-storing"><div class="soon-screen"><div class="si">🏗️</div><h2>Storing Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
