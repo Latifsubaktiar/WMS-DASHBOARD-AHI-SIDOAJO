@@ -405,19 +405,16 @@ async function fetchInboundStats() {
 
     const { total, checkedIn, hit, miss } = data.summary;
 
-    // Update stat card Inbound Today
-    const inboundVal = document.querySelector('.stat-card.blue-bar .stat-value');
-    const inboundSub = document.querySelector('.stat-card.blue-bar .stat-sub');
-    if (inboundVal) inboundVal.textContent = total;
-    if (inboundSub) inboundSub.innerHTML  =
-      `Plan masuk &nbsp;<span class="up">✅ ${checkedIn} check in</span> &nbsp;<span class="${hit>=total&&total>0?'up':'dn'}">🎯 ${hit} HIT / ⚠️ ${miss} MISS</span>`;
+    const el = document.getElementById('inboundTotal');
+    const sb = document.getElementById('inboundSub');
+    if (el) el.textContent = total;
+    if (sb) sb.innerHTML  = `Check in: <span class="up">${checkedIn}</span> &nbsp;🎯 <span class="up">${hit} HIT</span> &nbsp;⚠️ <span class="dn">${miss} MISS</span>`;
 
   } catch(e) {
     console.warn('Inbound stats error:', e);
   }
 }
 
-// Jalankan saat load & setiap 5 menit
 fetchInboundStats();
 setInterval(fetchInboundStats, 5 * 60 * 1000);
 const d = new Date();
