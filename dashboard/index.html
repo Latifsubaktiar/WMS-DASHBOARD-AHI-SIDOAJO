@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inbound Dashboard — AHI Sidoarjo</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">📦</div>
+      <div>
+        <div class="header-title">Inbound Dashboard</div>
+        <div class="header-sub">NDC AHI Sidoarjo — Aktivitas Hari Ini</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="date-badge" id="todayBadge">—</div>
+      <button class="refresh-btn" onclick="loadData()">↺ Refresh</button>
+    </div>
+  </header>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-grid">
+    <div class="sum-card blue">
+      <div class="sum-icon">📋</div>
+      <div class="sum-info">
+        <div class="sum-label">Total Plan Masuk</div>
+        <div class="sum-value" id="sumTotal">—</div>
+        <div class="sum-sub">Truck hari ini</div>
+      </div>
+    </div>
+    <div class="sum-card green">
+      <div class="sum-icon">✅</div>
+      <div class="sum-info">
+        <div class="sum-label">Sudah Check In</div>
+        <div class="sum-value" id="sumCheckedIn">—</div>
+        <div class="sum-sub">Dari total plan</div>
+      </div>
+    </div>
+    <div class="sum-card orange">
+      <div class="sum-icon">🏁</div>
+      <div class="sum-info">
+        <div class="sum-label">Selesai Unloading</div>
+        <div class="sum-value" id="sumSelesai">—</div>
+        <div class="sum-sub">Sudah update</div>
+      </div>
+    </div>
+    <div class="sum-card teal">
+      <div class="sum-icon">🎯</div>
+      <div class="sum-info">
+        <div class="sum-label">HIT</div>
+        <div class="sum-value" id="sumHit">—</div>
+        <div class="sum-sub">On time</div>
+      </div>
+    </div>
+    <div class="sum-card red">
+      <div class="sum-icon">⚠️</div>
+      <div class="sum-info">
+        <div class="sum-label">MISS</div>
+        <div class="sum-value" id="sumMiss">—</div>
+        <div class="sum-sub">Terlambat</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title"><span class="live-dot"></span>Data Inbound Hari Ini</div>
+      <div class="table-search">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Cari No LC, Polisi, Ekspedisi..." oninput="filterTable()">
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-wrap" id="loadingWrap">
+      <div class="spinner"></div>
+      <span>Mengambil data...</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-wrap hidden" id="errorWrap">
+      <div style="font-size:40px">⚠️</div>
+      <div class="error-title">Gagal memuat data</div>
+      <div class="error-sub" id="errorMsg">—</div>
+      <button class="refresh-btn" onclick="loadData()">↺ Coba Lagi</button>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-wrap hidden" id="emptyWrap">
+      <div style="font-size:48px">📭</div>
+      <div class="error-title">Tidak ada data hari ini</div>
+      <div class="error-sub">Belum ada truck yang terjadwal masuk hari ini</div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap hidden" id="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>No LC</th>
+            <th>No Polisi</th>
+            <th>Ekspedisi</th>
+            <th>Site From</th>
+            <th>Type</th>
+            <th>BU</th>
+            <th>Update Perjalanan</th>
+            <th>Check In</th>
+            <th>Stuffing</th>
+            <th>Hit / Miss</th>
+            <th>Update Unloading</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="table-footer" id="tableFooter" style="display:none">
+      Menampilkan <strong id="rowCount">0</strong> data
+      <span id="lastUpdate" style="margin-left:12px;color:var(--text-3)"></span>
+    </div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
