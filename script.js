@@ -12,24 +12,21 @@ const firebaseConfig = {
   measurementId:     "G-8ZPFL4DH0D"
 };
 
-// ── URL GAS Login ──
 const GAS_USER_URL = 'https://script.google.com/macros/s/AKfycbxTVbfZUlgGGJL9YgO6XLuCS6Ro4ksk9Iy8t486SFvCB-xRnHIFo1X6b8-PD9Qjn4qp/exec';
+const GAS_DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
-// ── URL Dashboard ──
 const URLS = {
   planner:   'https://plannerazko.github.io/DashboardPlanning/',
   inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbznK9XTBd5Zz07tyb-1bvjQEa00pXEMPFOXhCtYaBqthThQUliRjcXUYYr27VaXV-888w/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   analyst:   'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzbsvn8Tiu3N3WGjBRbN_6-CsqAI9vTl2IxW1bsYi92Gk15Alzzk1JBvL4iyyvnL8nj/exec',
-  inbound:   null,
-  storing:   null,
+  inbound:   null, storing: null,
   ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
   hr:        null,
 };
 const IFRAME_PAGES   = ['inventory','outbound','planner','ga','analyst'];
-const LAUNCHER_PAGES = [];
+const GAS_AI_URL     = 'https://script.google.com/macros/s/AKfycbzphhWpNaHVnvJzRl2dO2g-JsUnLByOPvkYZWIKoN_XrfD42uF_m7sqPgNkhUCIQlEu/exec';
 
-// ── Avatar color palette ──
 const AVATAR_COLORS = [
   { bg: 'linear-gradient(145deg,#3b82f6,#1d4ed8)', hex: '#3b82f6' },
   { bg: 'linear-gradient(145deg,#ec4899,#db2777)', hex: '#ec4899' },
@@ -40,7 +37,6 @@ const AVATAR_COLORS = [
   { bg: 'linear-gradient(145deg,#ef4444,#dc2626)', hex: '#ef4444' },
   { bg: 'linear-gradient(145deg,#64748b,#475569)', hex: '#64748b' },
 ];
-
 const THEME_COLORS = {
   '#3b82f6': { accent:'#2563eb', dark:'#1d4ed8', light:'#eff6ff', mid:'#bfdbfe' },
   '#ec4899': { accent:'#db2777', dark:'#be185d', light:'#fdf2f8', mid:'#fbcfe8' },
@@ -51,7 +47,6 @@ const THEME_COLORS = {
   '#ef4444': { accent:'#dc2626', dark:'#b91c1c', light:'#fef2f2', mid:'#fecaca' },
   '#64748b': { accent:'#475569', dark:'#334155', light:'#f8fafc', mid:'#cbd5e1' },
 };
-
 function applyTheme(hexColor) {
   const theme = THEME_COLORS[hexColor] || THEME_COLORS['#3b82f6'];
   const root = document.documentElement;
@@ -61,12 +56,11 @@ function applyTheme(hexColor) {
   root.style.setProperty('--accent-mid', theme.mid);
 }
 
-// ── User session ──
+// ── User session — SEMUA DEKLARASI DI ATAS ──
 let me = { nip: '', name: '', jabatan: '', color: AVATAR_COLORS[0], initials: '' };
 let fbReady = false;
 let db = null, chatRef = null, onlineRef = null;
-
-// ── Notif & chat state (deklarasi awal biar tidak error) ──
+let settingsOpen = false;          // ← deklarasi di sini, bukan di bawah!
 let notifList = [], notifOpen = false, lastSeenTs = 0;
 const CHAT_PATH   = 'wms_ahi_chat/messages';
 const ONLINE_PATH = 'wms_ahi_chat/online';
@@ -85,11 +79,10 @@ function initFirebase() {
 initFirebase();
 
 // ══════════════════════════════════════
-//  LOGIN — NIP Based
+//  LOGIN
 // ══════════════════════════════════════
 const colorOptions = document.getElementById('colorOptions');
 let selectedColorIdx = 0;
-
 colorOptions.querySelectorAll('.color-opt').forEach(el => {
   el.addEventListener('click', () => {
     colorOptions.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
@@ -97,101 +90,64 @@ colorOptions.querySelectorAll('.color-opt').forEach(el => {
     selectedColorIdx = parseInt(el.dataset.idx || '0');
   });
 });
-
-let nipVerified  = false;
-let verifiedData = null;
-
+let nipVerified = false, verifiedData = null;
 document.getElementById('loginBtn').addEventListener('click', handleLoginClick);
-document.getElementById('loginNip').addEventListener('keydown', e => {
-  if (e.key === 'Enter') handleLoginClick();
-});
+document.getElementById('loginNip').addEventListener('keydown', e => { if (e.key === 'Enter') handleLoginClick(); });
 
-function handleLoginClick() {
-  if (!nipVerified) { checkNip(); } else { doLogin(); }
-}
+function handleLoginClick() { if (!nipVerified) checkNip(); else doLogin(); }
 
 async function checkNip() {
   const nipInput = document.getElementById('loginNip');
-  const nip      = nipInput.value.trim();
-  const errEl    = document.getElementById('loginErr');
-  const loadEl   = document.getElementById('loginLoading');
-  const btn      = document.getElementById('loginBtn');
-
-  if (!nip) {
-    errEl.textContent = 'NIP tidak boleh kosong!';
-    errEl.classList.add('show');
-    nipInput.focus();
-    return;
-  }
-
-  errEl.classList.remove('show');
-  loadEl.classList.add('show');
-  btn.disabled      = true;
-  nipInput.disabled = true;
-
+  const nip = nipInput.value.trim();
+  const errEl = document.getElementById('loginErr');
+  const loadEl = document.getElementById('loginLoading');
+  const btn = document.getElementById('loginBtn');
+  if (!nip) { errEl.textContent='NIP tidak boleh kosong!'; errEl.classList.add('show'); nipInput.focus(); return; }
+  errEl.classList.remove('show'); loadEl.classList.add('show'); btn.disabled=true; nipInput.disabled=true;
   try {
-    const url  = GAS_USER_URL + '?action=checkNip&nip=' + encodeURIComponent(nip);
-    const res  = await fetch(url);
+    const res = await fetch(GAS_USER_URL + '?action=checkNip&nip=' + encodeURIComponent(nip));
     const data = await res.json();
-
     if (data.found) {
-      verifiedData = data;
-      nipVerified  = true;
-
+      verifiedData = data; nipVerified = true;
       document.getElementById('previewName').textContent    = data.name    || '—';
       document.getElementById('previewJabatan').textContent = data.jabatan || 'Staff';
       document.getElementById('loginFoundBox').classList.add('show');
       document.getElementById('loginColorsWrap').style.display = 'block';
-
-      btn.textContent   = 'Masuk ke Dashboard →';
-      btn.disabled      = false;
-      nipInput.disabled = true;
-
+      btn.textContent = 'Masuk ke Dashboard →'; btn.disabled = false; nipInput.disabled = true;
     } else {
       errEl.textContent = '❌ NIP tidak terdaftar! Hubungi admin. (Latif Subaktiar_0838-3084-8989)';
-      errEl.classList.add('show');
-      btn.disabled      = false;
-      nipInput.disabled = false;
-      nipInput.focus();
+      errEl.classList.add('show'); btn.disabled=false; nipInput.disabled=false; nipInput.focus();
     }
-
   } catch(e) {
-    errEl.textContent = '⚠️ Gagal terhubung ke server. Coba lagi.';
-    errEl.classList.add('show');
-    btn.disabled      = false;
-    nipInput.disabled = false;
+    errEl.textContent='⚠️ Gagal terhubung ke server. Coba lagi.'; errEl.classList.add('show');
+    btn.disabled=false; nipInput.disabled=false;
   }
-
   loadEl.classList.remove('show');
 }
 
 function doLogin() {
   if (!verifiedData) return;
-  me.nip      = verifiedData.nip      || document.getElementById('loginNip').value.trim();
-  me.name     = verifiedData.name     || '—';
-  me.jabatan  = verifiedData.jabatan  || 'Staff';
+  me.nip      = verifiedData.nip || document.getElementById('loginNip').value.trim();
+  me.name     = verifiedData.name || '—';
+  me.jabatan  = verifiedData.jabatan || 'Staff';
   me.color    = AVATAR_COLORS[selectedColorIdx];
   me.initials = me.name.slice(0,2).toUpperCase();
   applyTheme(me.color.hex);
-
   localStorage.setItem('wms_nip',     me.nip);
   localStorage.setItem('wms_name',    me.name);
   localStorage.setItem('wms_jabatan', me.jabatan);
   localStorage.setItem('wms_color',   selectedColorIdx);
-
   applyLogin();
 }
 
 function applyLogin() {
   const av = document.getElementById('headerAvatar');
-  av.textContent      = me.initials;
-  av.style.background = me.color.bg;
+  av.textContent = me.initials; av.style.background = me.color.bg;
   document.getElementById('headerName').textContent = me.name;
-
   if (fbReady && onlineRef) {
-    const safeKey     = me.name.replace(/[.#$/[\]\s]/g,'_');
+    const safeKey = me.name.replace(/[.#$/[\]\s]/g,'_');
     const myOnlineRef = onlineRef.child(safeKey);
-    myOnlineRef.set({ name: me.name, jabatan: me.jabatan, color: me.color.hex, nip: me.nip, ts: firebase.database.ServerValue.TIMESTAMP });
+    myOnlineRef.set({ name:me.name, jabatan:me.jabatan, color:me.color.hex, nip:me.nip, ts:firebase.database.ServerValue.TIMESTAMP });
     myOnlineRef.onDisconnect().remove();
     onlineRef.on('value', snap => {
       const count = snap.numChildren();
@@ -202,925 +158,475 @@ function applyLogin() {
       if (!list) return;
       const users = [];
       snap.forEach(child => { users.push(child.val()); });
-      if (!users.length) {
-        list.innerHTML = '<div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Belum ada yang online</div>';
-        return;
-      }
+      if (!users.length) { list.innerHTML='<div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Belum ada yang online</div>'; return; }
       list.innerHTML = users.map(u => `
         <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.5);border:1px solid rgba(200,215,240,0.3);">
-          <div style="width:36px;height:36px;border-radius:50%;background:${u.color||'#2563eb'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-            ${(u.name||'?').slice(0,2).toUpperCase()}
-          </div>
-          <div style="min-width:0;">
-            <div style="font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.name||'User'}</div>
-            <div style="font-size:10.5px;color:var(--text-3);font-weight:500;">${u.jabatan||'Staff'}</div>
-          </div>
-          ${u.name === me.name ? '<span style="font-size:10px;background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:10px;font-weight:700;margin-left:auto;flex-shrink:0;">Kamu</span>' : ''}
-        </div>
-      `).join('');
+          <div style="width:36px;height:36px;border-radius:50%;background:${u.color||'#2563eb'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);">${(u.name||'?').slice(0,2).toUpperCase()}</div>
+          <div style="min-width:0;"><div style="font-size:12.5px;font-weight:700;color:var(--text)">${u.name||'User'}</div><div style="font-size:10.5px;color:var(--text-3)">${u.jabatan||'Staff'}</div></div>
+          ${u.name===me.name?'<span style="font-size:10px;background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:10px;font-weight:700;margin-left:auto">Kamu</span>':''}
+        </div>`).join('');
     });
   }
-
-  lastSeenTs = parseInt(localStorage.getItem('lastSeenTs_' + me.name) || '0');
+  lastSeenTs = parseInt(localStorage.getItem('lastSeenTs_'+me.name)||'0');
   startChat();
-
   const overlay = document.getElementById('loginOverlay');
-  overlay.style.opacity    = '0';
-  overlay.style.transition = 'opacity 0.3s ease';
-  setTimeout(() => overlay.classList.add('hidden'), 300);
-  setTimeout(updateSettingsUser, 350);
+  overlay.style.opacity='0'; overlay.style.transition='opacity 0.3s ease';
+  setTimeout(()=>overlay.classList.add('hidden'),300);
+  setTimeout(updateSettingsUser,350);
 }
 
-// ── Auto-fill dari localStorage (tampilkan modal, NIP sudah terisi) ──
 (function checkSavedLogin() {
-  const savedNip     = localStorage.getItem('wms_nip');
-  const savedName    = localStorage.getItem('wms_name');
-  const savedJabatan = localStorage.getItem('wms_jabatan');
-  const savedColor   = parseInt(localStorage.getItem('wms_color') || '0');
-
+  const savedNip=localStorage.getItem('wms_nip'), savedName=localStorage.getItem('wms_name');
+  const savedJabatan=localStorage.getItem('wms_jabatan'), savedColor=parseInt(localStorage.getItem('wms_color')||'0');
   if (savedNip && savedName) {
-    // Pre-fill NIP & tampilkan preview nama — user tinggal klik masuk
-    nipVerified  = true;
-    verifiedData = { nip: savedNip, name: savedName, jabatan: savedJabatan || 'Staff' };
-    selectedColorIdx = savedColor;
-    applyTheme(AVATAR_COLORS[savedColor].hex);
-
-    const nipInput = document.getElementById('loginNip');
-    if (nipInput) { nipInput.value = savedNip; nipInput.disabled = true; }
-
-    document.getElementById('previewName').textContent    = savedName;
-    document.getElementById('previewJabatan').textContent = savedJabatan || 'Staff';
+    nipVerified=true; verifiedData={nip:savedNip,name:savedName,jabatan:savedJabatan||'Staff'};
+    selectedColorIdx=savedColor; applyTheme(AVATAR_COLORS[savedColor].hex);
+    const nipInput=document.getElementById('loginNip');
+    if(nipInput){nipInput.value=savedNip;nipInput.disabled=true;}
+    document.getElementById('previewName').textContent=savedName;
+    document.getElementById('previewJabatan').textContent=savedJabatan||'Staff';
     document.getElementById('loginFoundBox').classList.add('show');
-    document.getElementById('loginColorsWrap').style.display = 'block';
-
-    // Set warna avatar yang tersimpan
-    colorOptions.querySelectorAll('.color-opt').forEach((el, i) => {
-      el.classList.toggle('selected', i === savedColor);
-    });
-
-    // Tombol langsung siap masuk
-    const btn = document.getElementById('loginBtn');
-    if (btn) btn.textContent = 'Masuk ke Dashboard →';
+    document.getElementById('loginColorsWrap').style.display='block';
+    colorOptions.querySelectorAll('.color-opt').forEach((el,i)=>el.classList.toggle('selected',i===savedColor));
+    const btn=document.getElementById('loginBtn'); if(btn) btn.textContent='Masuk ke Dashboard →';
   }
 })();
 
-// ── Logout ──
 function doLogout() {
-  localStorage.removeItem('wms_nip');
-  localStorage.removeItem('wms_name');
-  localStorage.removeItem('wms_jabatan');
-  localStorage.removeItem('wms_color');
-
-  nipVerified  = false;
-  verifiedData = null;
-  document.getElementById('loginNip').value       = '';
-  document.getElementById('loginNip').disabled    = false;
+  localStorage.removeItem('wms_nip'); localStorage.removeItem('wms_name');
+  localStorage.removeItem('wms_jabatan'); localStorage.removeItem('wms_color');
+  nipVerified=false; verifiedData=null;
+  document.getElementById('loginNip').value=''; document.getElementById('loginNip').disabled=false;
   document.getElementById('loginFoundBox').classList.remove('show');
-  document.getElementById('loginColorsWrap').style.display = 'none';
-  document.getElementById('loginBtn').textContent = 'Masuk ke Dashboard →';
+  document.getElementById('loginColorsWrap').style.display='none';
+  document.getElementById('loginBtn').textContent='Masuk ke Dashboard →';
   document.getElementById('loginErr').classList.remove('show');
-
-  settingsOpen = false;
+  settingsOpen=false;
   document.getElementById('settingsPanel').classList.remove('open');
-
-  const overlay = document.getElementById('loginOverlay');
-  overlay.classList.remove('hidden');
-  overlay.style.opacity = '1';
+  const overlay=document.getElementById('loginOverlay');
+  overlay.classList.remove('hidden'); overlay.style.opacity='1';
 }
 
 // ══════════════════════════════════════
 //  CHAT ENGINE
 // ══════════════════════════════════════
 const seenIds = new Set();
-
 function startChat() {
-  if (!fbReady) {
-    document.getElementById('discStatus').textContent = '⚠️ Offline — Firebase error';
-    loadDemoMessages();
-    setupOfflineChat('miniDiscIn','miniDiscBtn','miniDiscMsg');
-    setupOfflineChat('fullDiscIn','fullDiscBtn','fullDiscMsg');
-    return;
-  }
-  document.getElementById('discStatus').textContent = '🟢 Terhubung';
-  const loadTime = Date.now();
-  chatRef.limitToLast(100).on('child_added', snap => {
-    const msg = snap.val();
-    if (!msg || seenIds.has(snap.key)) return;
+  if (!fbReady) { document.getElementById('discStatus').textContent='⚠️ Offline — Firebase error'; loadDemoMessages(); setupOfflineChat('miniDiscIn','miniDiscBtn','miniDiscMsg'); setupOfflineChat('fullDiscIn','fullDiscBtn','fullDiscMsg'); return; }
+  document.getElementById('discStatus').textContent='🟢 Terhubung';
+  const loadTime=Date.now();
+  chatRef.limitToLast(100).on('child_added', snap=>{
+    const msg=snap.val(); if(!msg||seenIds.has(snap.key)) return;
     seenIds.add(snap.key);
-    const isNew = msg.timestamp && msg.timestamp > (loadTime - 3000);
-    renderMessage(msg, snap.key, 'miniDiscMsg', 5, isNew);
-    renderMessage(msg, snap.key, 'fullDiscMsg', 999, isNew);
-    if (isNew) addNotif(msg);
+    const isNew=msg.timestamp&&msg.timestamp>(loadTime-3000);
+    renderMessage(msg,snap.key,'miniDiscMsg',5,isNew); renderMessage(msg,snap.key,'fullDiscMsg',999,isNew);
+    if(isNew) addNotif(msg);
   });
-  setupFirebaseChat('miniDiscIn', 'miniDiscBtn', 'miniDiscMsg');
-  setupFirebaseChat('fullDiscIn', 'fullDiscBtn', 'fullDiscMsg');
+  setupFirebaseChat('miniDiscIn','miniDiscBtn','miniDiscMsg');
+  setupFirebaseChat('fullDiscIn','fullDiscBtn','fullDiscMsg');
 }
-
-function renderMessage(msg, key, listId, maxItems, isNew=true) {
-  const list = document.getElementById(listId);
-  if (!list) return;
-  if (list.querySelector(`[data-key="${key}"]`)) return;
-  while (list.children.length >= maxItems) list.removeChild(list.firstChild);
-  const isMine  = msg.name === me.name;
-  const timeStr = msg.timestamp ? formatTime(new Date(msg.timestamp)) : '';
-  const row = document.createElement('div');
-  row.className   = 'disc-msg' + (isMine ? ' mine' : '');
-  row.dataset.key = key;
-  row.innerHTML = `
-    <div class="disc-avatar" style="background:${msg.color || 'linear-gradient(145deg,#3b82f6,#1d4ed8)'}">${(msg.name||'?').slice(0,2).toUpperCase()}</div>
-    <div class="disc-bubble-wrap">
-      <div class="disc-meta">
-        ${isMine
-          ? `<span class="disc-time">${timeStr}</span><span class="disc-name">Kamu</span>`
-          : `<span class="disc-name">${escHtml(msg.name)}</span><span class="disc-time">${timeStr}</span>`}
-      </div>
-      <div class="disc-bubble">${escHtml(msg.text)}</div>
-    </div>`;
-  list.appendChild(row);
-  if (isNew) list.scrollTop = list.scrollHeight;
+function renderMessage(msg,key,listId,maxItems,isNew=true){
+  const list=document.getElementById(listId); if(!list) return;
+  if(list.querySelector(`[data-key="${key}"]`)) return;
+  while(list.children.length>=maxItems) list.removeChild(list.firstChild);
+  const isMine=msg.name===me.name, timeStr=msg.timestamp?formatTime(new Date(msg.timestamp)):'';
+  const row=document.createElement('div'); row.className='disc-msg'+(isMine?' mine':''); row.dataset.key=key;
+  row.innerHTML=`<div class="disc-avatar" style="background:${msg.color||'linear-gradient(145deg,#3b82f6,#1d4ed8)'}">${(msg.name||'?').slice(0,2).toUpperCase()}</div><div class="disc-bubble-wrap"><div class="disc-meta">${isMine?`<span class="disc-time">${timeStr}</span><span class="disc-name">Kamu</span>`:`<span class="disc-name">${escHtml(msg.name)}</span><span class="disc-time">${timeStr}</span>`}</div><div class="disc-bubble">${escHtml(msg.text)}</div></div>`;
+  list.appendChild(row); if(isNew) list.scrollTop=list.scrollHeight;
 }
-
-function setupFirebaseChat(inId, btnId, listId) {
-  const inp = document.getElementById(inId);
-  const btn = document.getElementById(btnId);
-  if (!inp || !btn) return;
-  function send() {
-    const text = inp.value.trim(); if (!text) return;
-    inp.value = ''; inp.disabled = true; btn.disabled = true;
-    chatRef.push({
-      name: me.name, text, color: me.color.bg,
-      initials: me.initials,
-      timestamp: firebase.database.ServerValue.TIMESTAMP
-    }).finally(() => { inp.disabled = false; btn.disabled = false; inp.focus(); });
-  }
-  btn.addEventListener('click', send);
-  inp.addEventListener('keydown', e => { if(e.key==='Enter') send(); });
+function setupFirebaseChat(inId,btnId,listId){
+  const inp=document.getElementById(inId),btn=document.getElementById(btnId); if(!inp||!btn) return;
+  function send(){ const text=inp.value.trim(); if(!text) return; inp.value=''; inp.disabled=true; btn.disabled=true; chatRef.push({name:me.name,text,color:me.color.bg,initials:me.initials,timestamp:firebase.database.ServerValue.TIMESTAMP}).finally(()=>{inp.disabled=false;btn.disabled=false;inp.focus();}); }
+  btn.addEventListener('click',send); inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 }
-
-const demoMessages = [
-  { name:'Rani',  text:'Stok ABC mulai menipis, perlu restock segera.', color:'linear-gradient(145deg,#ec4899,#db2777)', timestamp: Date.now()-120000 },
-  { name:'Budi',  text:'Besok ada inbound besar jam 10 pagi.',          color:'linear-gradient(145deg,#06b6d4,#0891b2)', timestamp: Date.now()-80000 },
-  { name:'Tapes', text:'Forklift sudah stand by di loading area.',       color:'linear-gradient(145deg,#10b981,#059669)', timestamp: Date.now()-30000 },
-];
-function loadDemoMessages() {
-  demoMessages.forEach((msg, i) => {
-    renderMessage(msg, 'demo-'+i, 'miniDiscMsg', 5);
-    renderMessage(msg, 'demo-'+i, 'fullDiscMsg', 999);
-  });
+const demoMessages=[{name:'Rani',text:'Stok ABC mulai menipis, perlu restock segera.',color:'linear-gradient(145deg,#ec4899,#db2777)',timestamp:Date.now()-120000},{name:'Budi',text:'Besok ada inbound besar jam 10 pagi.',color:'linear-gradient(145deg,#06b6d4,#0891b2)',timestamp:Date.now()-80000},{name:'Tapes',text:'Forklift sudah stand by di loading area.',color:'linear-gradient(145deg,#10b981,#059669)',timestamp:Date.now()-30000}];
+function loadDemoMessages(){ demoMessages.forEach((msg,i)=>{renderMessage(msg,'demo-'+i,'miniDiscMsg',5);renderMessage(msg,'demo-'+i,'fullDiscMsg',999);}); }
+function setupOfflineChat(inId,btnId,listId){
+  const inp=document.getElementById(inId),btn=document.getElementById(btnId); if(!inp||!btn) return;
+  function send(){ const text=inp.value.trim(); if(!text) return; const msg={name:me.name,text,color:me.color.bg,timestamp:Date.now()}; renderMessage(msg,'local-'+Date.now(),'miniDiscMsg',5); renderMessage(msg,'local-'+Date.now()+1,'fullDiscMsg',999); inp.value=''; inp.focus(); }
+  btn.addEventListener('click',send); inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 }
-function setupOfflineChat(inId, btnId, listId) {
-  const inp = document.getElementById(inId);
-  const btn = document.getElementById(btnId);
-  if (!inp || !btn) return;
-  function send() {
-    const text = inp.value.trim(); if (!text) return;
-    const msg = { name: me.name, text, color: me.color.bg, timestamp: Date.now() };
-    renderMessage(msg, 'local-'+Date.now(),   'miniDiscMsg', 5);
-    renderMessage(msg, 'local-'+Date.now()+1, 'fullDiscMsg', 999);
-    inp.value = ''; inp.focus();
-  }
-  btn.addEventListener('click', send);
-  inp.addEventListener('keydown', e => { if(e.key==='Enter') send(); });
-}
+function formatTime(date){ const now=new Date(),diff=now-date; if(diff<60000) return 'baru saja'; if(diff<3600000) return Math.floor(diff/60000)+' mnt lalu'; if(date.toDateString()===now.toDateString()) return date.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}); return date.toLocaleDateString('id-ID',{day:'numeric',month:'short'}); }
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function formatTime(date) {
-  const now = new Date(), diff = now - date;
-  if (diff < 60000)    return 'baru saja';
-  if (diff < 3600000)  return Math.floor(diff/60000) + ' mnt lalu';
-  if (date.toDateString() === now.toDateString()) return date.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
-  return date.toLocaleDateString('id-ID',{day:'numeric',month:'short'});
-}
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+const d=new Date();
+const dateStr=d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+document.getElementById('todayDate').textContent=dateStr;
+document.getElementById('todayDate2').textContent=dateStr;
 
-
-const d = new Date();
-const dateStr = d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-document.getElementById('todayDate').textContent  = dateStr;
-document.getElementById('todayDate2').textContent = dateStr;
-
-// ── INBOUND DETAIL PANEL ──
-let inboundPanelOpen   = false;
-let inlineLoaded       = false;
-let chartUnloadingInst = null;
-let chartPutawayInInst = null;
-let chartPutawayStrInst= null;
+// ══════════════════════════════════════
+//  INBOUND DETAIL PANEL
+// ══════════════════════════════════════
+let inboundPanelOpen = false;
+let inlineLoaded     = false;
 
 function toggleInboundPanel() {
   inboundPanelOpen = !inboundPanelOpen;
   const panel = document.getElementById('inboundDetailPanel');
   if (!panel) return;
-
   if (inboundPanelOpen) {
     panel.style.display = 'block';
-    // Isi tabel inbound dari data yang sudah ada
     renderPanelInboundTable(window._inboundRows || []);
-    // Fetch inline proses
     fetchInlineProses();
-    // Scroll ke panel
-    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
     panel.style.display = 'none';
   }
 }
 
 function switchPanelTab(tab) {
-  const tblIn  = document.getElementById('panelInboundTable');
-  const tblInl = document.getElementById('panelInlineTable');
-  const btnIn  = document.getElementById('panelTabInbound');
-  const btnInl = document.getElementById('panelTabInline');
-
-  if (tab === 'inbound') {
-    tblIn.style.display  = '';
-    tblInl.style.display = 'none';
-    btnIn.style.color  = 'var(--accent)';
-    btnIn.style.borderBottom  = '2px solid var(--accent)';
-    btnInl.style.color = 'var(--text-3)';
-    btnInl.style.borderBottom = '2px solid transparent';
+  const tblIn=document.getElementById('panelInboundTable'), tblInl=document.getElementById('panelInlineTable');
+  const btnIn=document.getElementById('panelTabInbound'),   btnInl=document.getElementById('panelTabInline');
+  if (tab==='inbound') {
+    tblIn.style.display=''; tblInl.style.display='none';
+    btnIn.style.color='var(--accent)'; btnIn.style.borderBottom='2px solid var(--accent)';
+    btnInl.style.color='var(--text-3)'; btnInl.style.borderBottom='2px solid transparent';
   } else {
-    tblIn.style.display  = 'none';
-    tblInl.style.display = '';
-    btnIn.style.color  = 'var(--text-3)';
-    btnIn.style.borderBottom  = '2px solid transparent';
-    btnInl.style.color = 'var(--accent)';
-    btnInl.style.borderBottom = '2px solid var(--accent)';
+    tblIn.style.display='none'; tblInl.style.display='';
+    btnIn.style.color='var(--text-3)'; btnIn.style.borderBottom='2px solid transparent';
+    btnInl.style.color='var(--accent)'; btnInl.style.borderBottom='2px solid var(--accent)';
     if (!inlineLoaded) fetchInlineProses();
   }
 }
 
 function renderPanelInboundTable(rows) {
-  const tbody = document.getElementById('panelInboundBody');
-  if (!tbody) return;
-  if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';
-    return;
-  }
-  tbody.innerHTML = rows.map((r, i) => `
-    <tr>
-      <td class="mono" style="font-size:12px">${i+1}</td>
-      <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
-      <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
-      <td style="font-size:12px">${escHtml(r.ekspedisi)}</td>
-      <td style="font-size:12px">${escHtml(r.type)}</td>
-      <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
-      <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
-      <td style="font-size:11px">${r.stuffing||'—'}</td>
-      <td style="font-size:12px;color:${r.updateUnload?'var(--blue)':'var(--text-3)'};font-weight:${r.updateUnload?'700':'400'}">${r.updateUnload||'—'}</td>
-      <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')
-        ? '<span class="badge badge-green">🎯 HIT</span>'
-        : r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')
-        ? '<span class="badge badge-red">⚠️ MISS</span>'
-        : '<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
-    </tr>
-  `).join('');
+  const tbody=document.getElementById('panelInboundBody'); if(!tbody) return;
+  if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>'; return; }
+  tbody.innerHTML=rows.map((r,i)=>`<tr>
+    <td class="mono" style="font-size:12px">${i+1}</td>
+    <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
+    <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
+    <td style="font-size:12px">${escHtml(r.ekspedisi)}</td>
+    <td style="font-size:12px">${escHtml(r.type)}</td>
+    <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
+    <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
+    <td style="font-size:11px">${r.stuffing||'—'}</td>
+    <td style="font-size:12px;color:${r.updateUnload?'#2563eb':'var(--text-3)'};font-weight:${r.updateUnload?'700':'400'}">${r.updateUnload||'—'}</td>
+    <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
+  </tr>`).join('');
 }
 
 async function fetchInlineProses() {
   try {
     const res  = await fetch(GAS_DASHBOARD_URL + '?action=getInlineProses');
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-
+    if (!data.ok) throw new Error(data.error||'Gagal');
     inlineLoaded = true;
+    const tgl=document.getElementById('inlineTanggal'); if(tgl) tgl.textContent='📅 Tanggal Unload: '+data.tanggalUnload;
+    const footer=document.getElementById('panelFooter'); if(footer) footer.textContent=data.total+' LC/PO terdaftar hari ini';
+    const s=data.summary, isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
 
-    // Update tanggal
-    const tgl = document.getElementById('inlineTanggal');
-    if (tgl) tgl.textContent = '📅 Tanggal Unload: ' + data.tanggalUnload;
-
-    // Update footer
-    const footer = document.getElementById('panelFooter');
-    if (footer) footer.textContent = data.total + ' LC/PO terdaftar hari ini';
-
-    const s = data.summary;
-    const isDark = document.body.classList.contains('dark');
-    const border = isDark ? '#161b22' : '#ffffff';
-
-    const makeDonut = (canvasId, pct, color) => {
-      const el = document.getElementById(canvasId);
-      if (!el) return;
-      const existing = Chart.getChart(el);
-      if (existing) existing.destroy();
-      new Chart(el.getContext('2d'), {
-        type: 'doughnut',
-        data: { datasets: [{ data:[pct, Math.max(0,100-pct)], backgroundColor:[color, isDark?'#1e293b':'#e2e8f0'], borderColor:border, borderWidth:2 }] },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'72%',
-          plugins:{ legend:{display:false}, tooltip:{enabled:false}, datalabels:{display:false} } }
-      });
+    const makeDonut=(canvasId,pct,color)=>{
+      const el=document.getElementById(canvasId); if(!el) return;
+      const ex=Chart.getChart(el); if(ex) ex.destroy();
+      new Chart(el.getContext('2d'),{type:'doughnut',data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#1e293b':'#e2e8f0'],borderColor:border,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
     };
 
-    // Chart 1: Unloading (armada vs selesai dari INBOUND)
-    const inboundRows  = window._inboundRows || [];
-    const totalArmada  = inboundRows.length || 0;
-    const finishArmada = inboundRows.filter(r => r && r.updateUnload && r.updateUnload !== '').length;
-    const prosesArmada = inboundRows.filter(r => r && r.checkIn && r.checkIn !== '' && (!r.updateUnload || r.updateUnload === '')).length;
-    const belumArmada  = totalArmada - finishArmada - prosesArmada;
-    const pctUnload    = totalArmada > 0 ? Math.round((finishArmada/totalArmada)*100) : (s&&s.pctUnloading||0);
-    document.getElementById('pctUnloading').textContent = pctUnload + '%';
-    document.getElementById('infoUnloading').textContent = `✅ ${finishArmada} selesai · ⏳ ${prosesArmada} proses · 🕐 ${belumArmada} belum`;
-    makeDonut('chartUnloading', pctUnload, '#16a34a');
+    // Chart 1: Unloading
+    const inboundRows=window._inboundRows||[];
+    const totalArmada=inboundRows.length||0;
+    const finishArmada=inboundRows.filter(r=>r&&r.updateUnload&&r.updateUnload!=='').length;
+    const prosesArmada=inboundRows.filter(r=>r&&r.checkIn&&r.checkIn!==''&&(!r.updateUnload||r.updateUnload==='')).length;
+    const belumArmada=totalArmada-finishArmada-prosesArmada;
+    const pctUnload=totalArmada>0?Math.round((finishArmada/totalArmada)*100):(s&&s.pctUnloading||0);
+    document.getElementById('pctUnloading').textContent=pctUnload+'%';
+    document.getElementById('infoUnloading').textContent=`✅ ${finishArmada} selesai · ⏳ ${prosesArmada} proses · 🕐 ${belumArmada} belum`;
+    makeDonut('chartUnloading',pctUnload,'#16a34a');
 
-    // Chart 2: Aktual Receive kolom Q
-    const pctAkt = (s&&s.avgPctAkt) || 0;
-    document.getElementById('pctAktualRcv').textContent = pctAkt + '%';
-    document.getElementById('infoAktualRcv').textContent = '';
-    makeDonut('chartAktualRcv', pctAkt, '#0891b2');
+    // Chart 2: Aktual Receive (kolom Q)
+    const pctAkt=(s&&s.avgPctAkt)||0;
+    document.getElementById('pctAktualRcv').textContent=pctAkt+'%';
+    document.getElementById('infoAktualRcv').textContent='';
+    makeDonut('chartAktualRcv',pctAkt,'#0891b2');
 
-    // Chart 3: Putaway Inbound kolom X
-    const pctPutIn = (s&&s.avgPctPutIn2) || 0;
-    document.getElementById('pctPutawayIn').textContent = pctPutIn + '%';
-    document.getElementById('infoPutawayIn').textContent = `Sisa: ${Number(s&&s.sumSisaIn||0).toLocaleString()} LPN`;
-    makeDonut('chartPutawayIn', pctPutIn, '#2563eb');
+    // Chart 3: Putaway Inbound (kolom X)
+    const pctPutIn=(s&&s.avgPctPutIn2)||0;
+    document.getElementById('pctPutawayIn').textContent=pctPutIn+'%';
+    document.getElementById('infoPutawayIn').textContent=`Sisa: ${Number(s&&s.sumSisaIn||0).toLocaleString()} LPN`;
+    makeDonut('chartPutawayIn',pctPutIn,'#2563eb');
 
-    // Chart 4: Putaway Storing kolom AG
-    const pctPutStr = (s&&s.avgPctPutStr) || 0;
-    document.getElementById('pctPutawayStr').textContent = pctPutStr + '%';
-    document.getElementById('infoPutawayStr').textContent = `Sisa: ${Number(s&&s.sumSisaStr||0).toLocaleString()} LPN`;
-    makeDonut('chartPutawayStr', pctPutStr, '#d97706');
+    // Chart 4: Putaway Storing (kolom AG)
+    const pctPutStr=(s&&s.avgPctPutStr)||0;
+    document.getElementById('pctPutawayStr').textContent=pctPutStr+'%';
+    document.getElementById('infoPutawayStr').textContent=`Sisa: ${Number(s&&s.sumSisaStr||0).toLocaleString()} LPN`;
+    makeDonut('chartPutawayStr',pctPutStr,'#d97706');
 
-    // Render putaway table
     renderPanelInlineTable(data.data);
-
   } catch(e) {
-    console.warn('Inline proses error:', e);
-    const tbody = document.getElementById('panelInlineBody');
-    if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
+    console.warn('Inline proses error:',e);
+    const tbody=document.getElementById('panelInlineBody');
+    if(tbody) tbody.innerHTML=`<tr><td colspan="36" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
   }
 }
 
 function renderPanelInlineTable(rows) {
-  const tbody = document.getElementById('panelInlineBody');
-  if (!tbody) return;
-  if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="36" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
-    return;
-  }
-
-  const c  = 'text-align:center;font-size:11px;';
-  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;';
-
-  const pBar = (pct) => {
-    const n = parseInt(pct) || 0;
-    const col = n>=100?'#16a34a':n>=90?'#2563eb':n>=70?'#d97706':'#dc2626';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-      <div style="width:52px;height:5px;background:rgba(148,163,184,0.2);border-radius:3px;">
-        <div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div>
-      </div>
-      <span style="font-size:10px;font-weight:800;color:${col}">${pct||'—'}</span>
-    </div>`;
-  };
-
-  const statusBadge = (s) => {
-    const col = s==='OUT'?'#16a34a':'#d97706';
-    const bg  = s==='OUT'?'rgba(22,163,74,0.12)':'rgba(217,119,6,0.12)';
-    return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${col};font-weight:800;font-size:10px;border:1px solid ${col}44">${escHtml(s)||'—'}</span>`;
-  };
-
-  const num = (v) => (v !== undefined && v !== null && v !== '') ? Number(v).toLocaleString() : '—';
-  const sisa = (v) => { const n = Number(v)||0; return `<span style="font-weight:800;color:${n>0?'#d97706':'#16a34a'}">${n}</span>`; };
-
-  tbody.innerHTML = rows.map((r,i) => `<tr>
+  const tbody=document.getElementById('panelInlineBody'); if(!tbody) return;
+  if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="36" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';return;}
+  const c='text-align:center;font-size:11px;', cn='text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;';
+  const pBar=(pct)=>{const n=parseInt(pct)||0;const col=n>=100?'#16a34a':n>=90?'#2563eb':n>=70?'#d97706':'#dc2626';return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:52px;height:5px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${pct||'—'}</span></div>`;};
+  const statusBadge=(s)=>{const col=s==='OUT'?'#16a34a':'#d97706',bg=s==='OUT'?'rgba(22,163,74,0.12)':'rgba(217,119,6,0.12)';return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${col};font-weight:800;font-size:10px;border:1px solid ${col}44">${escHtml(s)||'—'}</span>`;};
+  const num=(v)=>(v!==undefined&&v!==null&&v!=='')&&!isNaN(Number(v))?Number(v).toLocaleString():'—';
+  const sisa=(v)=>{const n=Number(v)||0;return `<span style="font-weight:800;color:${n>0?'#d97706':'#16a34a'}">${n}</span>`;};
+  tbody.innerHTML=rows.map((r,i)=>`<tr>
     <td style="${c}">${i+1}</td>
     <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center">${escHtml(r.noLc)}</td>
-    <td style="${c}">${escHtml(r.type)}</td>
-    <td style="${cn}">${escHtml(r.nopol)}</td>
+    <td style="${c}">${escHtml(r.type)}</td><td style="${cn}">${escHtml(r.nopol)}</td>
     <td style="${c}">${escHtml(r.batch)}</td>
-    <td style="${cn}font-size:10px">${r.tglIn||'—'}</td>
-    <td style="${cn}font-size:10px">${r.tglOpen||'—'}</td>
-    <td style="${cn}font-size:10px">${r.tglClose||'—'}</td>
+    <td style="${cn}font-size:10px">${r.tglIn||'—'}</td><td style="${cn}font-size:10px">${r.tglOpen||'—'}</td><td style="${cn}font-size:10px">${r.tglClose||'—'}</td>
     <td style="${c}">${statusBadge(r.status)}</td>
-    <td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planQty)}</td>
-    <td style="${cn}background:rgba(8,145,178,0.04)">${r.planCbm||'—'}</td>
-    <td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planEstLpn)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktQty)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktLpn)}</td>
-    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.pctRcv)}</td>
-    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.pctAkt)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftQty)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftLpn)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInQty)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInLpn)}</td>
+    <td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planQty)}</td><td style="${cn}background:rgba(8,145,178,0.04)">${r.planCbm||'—'}</td><td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planEstLpn)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktQty)}</td><td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktLpn)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.pctRcv)}</td><td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.pctAkt)}</td>
+    <td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftQty)}</td><td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftLpn)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInQty)}</td><td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInLpn)}</td>
     <td style="${cn}background:rgba(37,99,235,0.04)">${sisa(r.sisaInLpn)}</td>
-    <td style="background:rgba(37,99,235,0.04);${c}">${pBar(r.putInPct1)}</td>
-    <td style="background:rgba(37,99,235,0.04);${c}">${pBar(r.putInPct2)}</td>
-    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InQty)}</td>
-    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InLpn)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InQty)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InLpn)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrQty)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrLpn)}</td>
+    <td style="background:rgba(37,99,235,0.04);${c}" colspan="2">${pBar(r.putInPct2)}</td>
+    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InQty)}</td><td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InLpn)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InQty)}</td><td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InLpn)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrQty)}</td><td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrLpn)}</td>
     <td style="${cn}background:rgba(22,163,74,0.04)">${sisa(r.sisaStrLpn)}</td>
-    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.putStrPct1)}</td>
-    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.putStrPct2)}</td>
-    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrQty)}</td>
-    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrLpn)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrQty)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrLpn)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}" colspan="2">${pBar(r.putStrPct1)}</td>
+    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrQty)}</td><td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrLpn)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrQty)}</td><td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrLpn)}</td>
   </tr>`).join('');
 }
 
-// ── TAB SWITCH (bottom table) ──
+// ══════════════════════════════════════
+//  TAB SWITCH (bottom table)
+// ══════════════════════════════════════
 let currentDashTab = 'inbound';
+let outboundDetailLoaded = false;   // ← deklarasi di sini!
 
 function switchDashTab(tab) {
-  currentDashTab = tab;
-  const inWrap  = document.getElementById('tableInboundWrap');
-  const outWrap = document.getElementById('tableOutboundWrap');
-  const btnIn   = document.getElementById('tabBtnInbound');
-  const btnOut  = document.getElementById('tabBtnOutbound');
-
-  if (tab === 'inbound') {
-    inWrap.style.display  = '';
-    outWrap.style.display = 'none';
-    btnIn.style.color  = 'var(--accent)';
-    btnIn.style.borderBottom  = '2px solid var(--accent)';
-    btnOut.style.color = 'var(--text-3)';
-    btnOut.style.borderBottom = '2px solid transparent';
-    const cnt = document.getElementById('dashTableCount');
-    if (cnt) cnt.textContent = (window._inboundRows || []).length + ' data inbound hari ini';
+  currentDashTab=tab;
+  const inWrap=document.getElementById('tableInboundWrap'), outWrap=document.getElementById('tableOutboundWrap');
+  const btnIn=document.getElementById('tabBtnInbound'), btnOut=document.getElementById('tabBtnOutbound');
+  if (tab==='inbound') {
+    inWrap.style.display=''; outWrap.style.display='none';
+    btnIn.style.color='var(--accent)'; btnIn.style.borderBottom='2px solid var(--accent)';
+    btnOut.style.color='var(--text-3)'; btnOut.style.borderBottom='2px solid transparent';
+    const cnt=document.getElementById('dashTableCount'); if(cnt) cnt.textContent=(window._inboundRows||[]).length+' data inbound hari ini';
   } else {
-    inWrap.style.display  = 'none';
-    outWrap.style.display = '';
-    btnIn.style.color  = 'var(--text-3)';
-    btnIn.style.borderBottom  = '2px solid transparent';
-    btnOut.style.color = 'var(--accent)';
-    btnOut.style.borderBottom = '2px solid var(--accent)';
-    if (!outboundDetailLoaded) fetchOutboundDetail();
+    inWrap.style.display='none'; outWrap.style.display='';
+    btnIn.style.color='var(--text-3)'; btnIn.style.borderBottom='2px solid transparent';
+    btnOut.style.color='var(--accent)'; btnOut.style.borderBottom='2px solid var(--accent)';
+    if(!outboundDetailLoaded) fetchOutboundDetail();
   }
 }
 
 async function fetchOutboundDetail() {
-  const tbody = document.getElementById('dashOutboundBody');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data outbound...</td></tr>';
+  const tbody=document.getElementById('dashOutboundBody'); if(!tbody) return;
+  tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data outbound...</td></tr>';
   try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getOutboundDetail');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-    outboundDetailLoaded = true;
-    renderDashOutboundTable(data.data);
-    const cnt = document.getElementById('dashTableCount');
-    if (cnt) cnt.textContent = data.total + ' data outbound hari ini';
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--red)">Gagal memuat: ${e.message}</td></tr>`;
-  }
+    const res=await fetch(GAS_DASHBOARD_URL+'?action=getOutboundDetail');
+    const data=await res.json();
+    if(!data.ok) throw new Error(data.error||'Gagal');
+    outboundDetailLoaded=true; renderDashOutboundTable(data.data);
+    const cnt=document.getElementById('dashTableCount'); if(cnt) cnt.textContent=data.total+' data outbound hari ini';
+  } catch(e) { tbody.innerHTML=`<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--red)">Gagal memuat: ${e.message}</td></tr>`; }
 }
 
 function renderDashOutboundTable(rows) {
-  const tbody = document.getElementById('dashOutboundBody');
-  if (!tbody) return;
-  if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data outbound hari ini</td></tr>';
-    return;
-  }
-  tbody.innerHTML = rows.map((r, i) => `
-    <tr>
-      <td class="mono" style="font-size:12px">${i+1}</td>
-      <td style="font-size:12px;font-weight:600">${escHtml(r.penyelesaian)}</td>
-      <td class="mono" style="font-size:11px">${escHtml(r.transno)}</td>
-      <td style="font-size:12px;text-align:center;color:${r.ppc==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.ppc||'—'}</td>
-      <td style="font-size:12px;text-align:center;color:${r.pstg==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.pstg||'—'}</td>
-      <td style="font-size:12px;text-align:center;color:${r.pld==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.pld||'—'}</td>
-      <td style="font-size:11px">${escHtml(r.shippingline)}</td>
-      <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
-      <td style="font-size:11px">${escHtml(r.carrierId)}</td>
-      <td style="font-size:12px;font-weight:600">${r.stuffingTime||'—'}</td>
-      <td style="font-size:11px">${escHtml(r.jenisArmada)}</td>
-      <td class="mono" style="font-size:11px">${escHtml(r.nopol)}</td>
-      <td>${r.status.toUpperCase().includes('SELESAI')||r.status.toUpperCase().includes('KELUAR')
-        ? `<span class="badge badge-green">✅ ${escHtml(r.status)}</span>`
-        : r.status.toUpperCase().includes('TERLAMBAT')
-        ? `<span class="badge badge-red">⚠️ ${escHtml(r.status)}</span>`
-        : `<span class="badge badge-orange">⏳ ${escHtml(r.status)}</span>`}</td>
-    </tr>
-  `).join('');
+  const tbody=document.getElementById('dashOutboundBody'); if(!tbody) return;
+  if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data outbound hari ini</td></tr>';return;}
+  tbody.innerHTML=rows.map((r,i)=>`<tr>
+    <td class="mono" style="font-size:12px">${i+1}</td>
+    <td style="font-size:12px;font-weight:600">${escHtml(r.penyelesaian)}</td>
+    <td class="mono" style="font-size:11px">${escHtml(r.transno)}</td>
+    <td style="font-size:12px;text-align:center;color:${r.ppc==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.ppc||'—'}</td>
+    <td style="font-size:12px;text-align:center;color:${r.pstg==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.pstg||'—'}</td>
+    <td style="font-size:12px;text-align:center;color:${r.pld==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.pld||'—'}</td>
+    <td style="font-size:11px">${escHtml(r.shippingline)}</td>
+    <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
+    <td style="font-size:11px">${escHtml(r.carrierId)}</td>
+    <td style="font-size:12px;font-weight:600">${r.stuffingTime||'—'}</td>
+    <td style="font-size:11px">${escHtml(r.jenisArmada)}</td>
+    <td class="mono" style="font-size:11px">${escHtml(r.nopol)}</td>
+    <td>${r.status.toUpperCase().includes('SELESAI')||r.status.toUpperCase().includes('KELUAR')?`<span class="badge badge-green">✅ ${escHtml(r.status)}</span>`:r.status.toUpperCase().includes('TERLAMBAT')?`<span class="badge badge-red">⚠️ ${escHtml(r.status)}</span>`:`<span class="badge badge-orange">⏳ ${escHtml(r.status)}</span>`}</td>
+  </tr>`).join('');
 }
 
-// ── FETCH REAL DATA STAT CARDS ──
-const GAS_DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
+// ══════════════════════════════════════
+//  STAT CARDS + CHARTS
+// ══════════════════════════════════════
+let dashInboundChart=null, dashOutboundChart=null;
 
-let dashInboundChart = null;
-let dashOutboundChart = null;
-
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function renderDashInboundChart(total, checkedIn, selesai, hit, miss) {
-  const belum  = Math.max(0, total - checkedIn);
-  const proses = Math.max(0, checkedIn - selesai);
-  const pct    = total > 0 ? Math.round((selesai / total) * 100) : 0;
-
-  document.getElementById('dashInboundPct').textContent    = pct + '%';
-  document.getElementById('inboundPctBadge').textContent   = pct + '% Selesai';
-  document.getElementById('piInSelesai').textContent = selesai + ' truck';
-  document.getElementById('piInProses').textContent  = proses  + ' truck';
-  document.getElementById('piInBelum').textContent   = belum   + ' truck';
-  document.getElementById('piInHitMiss').textContent = hit + ' HIT / ' + miss + ' MISS';
-
-  const isDark = document.body.classList.contains('dark');
-  const border = isDark ? '#161b22' : '#ffffff';
-  const ctx = document.getElementById('dashInboundChart').getContext('2d');
-  if (dashInboundChart) dashInboundChart.destroy();
-  dashInboundChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Selesai', 'Check In (Proses)', 'Belum Check In'],
-      datasets: [{ data: [selesai, proses, belum], backgroundColor: ['#16a34a','#2563eb','#dc2626'], borderColor: border, borderWidth: 3, hoverOffset: 6 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, cutout: '68%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)', titleColor:'#fff', bodyColor:'rgba(255,255,255,0.8)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10, cornerRadius:10,
-          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} truck` }
-        }
-      }
-    }
+function renderDashInboundChart(total,checkedIn,selesai,hit,miss) {
+  const proses=Math.max(0,checkedIn-selesai), belum=Math.max(0,total-checkedIn);
+  const pct=total>0?Math.round((selesai/total)*100):0;
+  document.getElementById('dashInboundPct').textContent=pct+'%';
+  document.getElementById('inboundPctBadge').textContent=pct+'% Selesai';
+  document.getElementById('piInSelesai').textContent=selesai+' truck';
+  document.getElementById('piInProses').textContent=proses+' truck';
+  const piAntri=document.getElementById('piInAntri'); if(piAntri) piAntri.textContent='— truck';
+  document.getElementById('piInBelum').textContent=belum+' truck';
+  document.getElementById('piInHitMiss').textContent=hit+' HIT / '+miss+' MISS';
+  const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
+  if(dashInboundChart) dashInboundChart.destroy();
+  dashInboundChart=new Chart(document.getElementById('dashInboundChart').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:['Selesai Unloading','Proses','Belum Datang'],datasets:[{data:[selesai,proses,belum],backgroundColor:['#16a34a','#2563eb','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} truck`}}}}
   });
 }
 
-function renderDashOutboundChart(total, selesai) {
-  const belum = Math.max(0, total - selesai);
-  const pct   = total > 0 ? Math.round((selesai / total) * 100) : 0;
-
-  document.getElementById('dashOutboundPct').textContent    = pct + '%';
-  document.getElementById('outboundPctBadge').textContent   = pct + '% Selesai';
-  document.getElementById('piOutSelesai').textContent = selesai + ' armada';
-  document.getElementById('piOutBelum').textContent   = belum   + ' armada';
-
-  const isDark = document.body.classList.contains('dark');
-  const border = isDark ? '#161b22' : '#ffffff';
-  const ctx = document.getElementById('dashOutboundChart').getContext('2d');
-  if (dashOutboundChart) dashOutboundChart.destroy();
-  dashOutboundChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Selesai', 'Belum Selesai'],
-      datasets: [{ data: [selesai, belum], backgroundColor: ['#16a34a','#f59e0b'], borderColor: border, borderWidth: 3, hoverOffset: 6 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, cutout: '68%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)', titleColor:'#fff', bodyColor:'rgba(255,255,255,0.8)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10, cornerRadius:10,
-          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} armada` }
-        }
-      }
-    }
+function renderDashOutboundChart(total,selesai,proses,antri,belum,hit,miss) {
+  proses=proses||0; antri=antri||0; belum=belum||0; hit=hit||0; miss=miss||0;
+  const pct=total>0?Math.round((selesai/total)*100):0;
+  document.getElementById('dashOutboundPct').textContent=pct+'%';
+  document.getElementById('outboundPctBadge').textContent=pct+'% Selesai';
+  document.getElementById('piOutSelesai').textContent=selesai+' armada';
+  const elP=document.getElementById('piOutProses'),elA=document.getElementById('piOutAntri'),elHM=document.getElementById('piOutHitMiss');
+  if(elP) elP.textContent=proses+' armada';
+  if(elA) elA.textContent=antri+' armada';
+  document.getElementById('piOutBelum').textContent=belum+' armada';
+  if(elHM) elHM.textContent=hit+' HIT / '+miss+' MISS';
+  const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
+  if(dashOutboundChart) dashOutboundChart.destroy();
+  dashOutboundChart=new Chart(document.getElementById('dashOutboundChart').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:['Selesai','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} armada`}}}}
   });
 }
 
 function renderDashInboundTable(rows) {
-  window._inboundRows = rows || [];
-  const tbody = document.getElementById('dashInboundBody');
-  const count = document.getElementById('dashTableCount');
-  if (!tbody) return;
-  if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';
-    if (count && currentDashTab === 'inbound') count.textContent = '0 data inbound hari ini';
-    return;
-  }
-  tbody.innerHTML = rows.map((r, i) => `
-    <tr>
-      <td class="mono" style="font-size:12px">${i+1}</td>
-      <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
-      <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
-      <td style="font-size:12px">${escHtml(r.ekspedisi)}</td>
-      <td style="font-size:12px">${escHtml(r.type)}</td>
-      <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
-      <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
-      <td style="font-size:11px;max-width:140px;white-space:normal">${r.stuffing||'—'}</td>
-      <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')
-        ? '<span class="badge badge-green">🎯 HIT</span>'
-        : r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')
-        ? '<span class="badge badge-red">⚠️ MISS</span>'
-        : '<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
-    </tr>
-  `).join('');
-  if (count && currentDashTab === 'inbound') count.textContent = rows.length + ' data inbound hari ini';
+  window._inboundRows=rows||[];
+  const tbody=document.getElementById('dashInboundBody'), count=document.getElementById('dashTableCount');
+  if(!tbody) return;
+  if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';if(count&&currentDashTab==='inbound')count.textContent='0 data inbound hari ini';return;}
+  tbody.innerHTML=rows.map((r,i)=>`<tr>
+    <td class="mono" style="font-size:12px">${i+1}</td>
+    <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
+    <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
+    <td style="font-size:12px">${escHtml(r.ekspedisi)}</td>
+    <td style="font-size:12px">${escHtml(r.type)}</td>
+    <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
+    <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
+    <td style="font-size:11px;max-width:140px;white-space:normal">${r.stuffing||'—'}</td>
+    <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
+  </tr>`).join('');
+  if(count&&currentDashTab==='inbound') count.textContent=rows.length+' data inbound hari ini';
 }
 
 async function fetchDashboardStats() {
-  let inboundTotal = 0, inboundSelesai = 0, inboundCheckedIn = 0, inboundHit = 0, inboundMiss = 0;
-  let outboundTotal = 0, outboundSelesai = 0;
-
+  let inboundTotal=0,inboundSelesai=0,inboundCheckedIn=0,inboundHit=0,inboundMiss=0;
+  let outboundTotal=0,outboundSelesai=0;
   try {
-    const resIn  = await fetch(GAS_DASHBOARD_URL + '?action=getInbound');
-    const dataIn = await resIn.json();
-    if (dataIn.ok) {
-      const { total, checkedIn, selesai, hit, miss } = dataIn.summary;
-      inboundTotal = total; inboundSelesai = selesai;
-      inboundCheckedIn = checkedIn; inboundHit = hit; inboundMiss = miss;
-
-      const el = document.querySelector('.stat-card.blue-bar .stat-value');
-      const sb = document.querySelector('.stat-card.blue-bar .stat-sub');
-      if (el) el.textContent = total;
-      if (sb) {
-        const finish  = selesai;
-        const proses  = checkedIn - selesai;
-        const belum   = total - checkedIn;
-        sb.innerHTML = `<span class="up">✅ ${finish} Finish</span> &nbsp;<span style="color:#d97706;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span class="dn">🕐 ${belum} Belum</span>`;
-      }
-
-      renderDashInboundChart(total, checkedIn, selesai, hit, miss);
+    const resIn=await fetch(GAS_DASHBOARD_URL+'?action=getInbound');
+    const dataIn=await resIn.json();
+    if(dataIn.ok){
+      const{total,checkedIn,selesai,hit,miss}=dataIn.summary;
+      inboundTotal=total; inboundSelesai=selesai; inboundCheckedIn=checkedIn; inboundHit=hit; inboundMiss=miss;
+      const el=document.querySelector('.stat-card.blue-bar .stat-value');
+      const sb=document.querySelector('.stat-card.blue-bar .stat-sub');
+      if(el) el.textContent=total;
+      if(sb){const proses=Math.max(0,checkedIn-selesai),blm=Math.max(0,total-checkedIn);sb.innerHTML=`<span class="up">✅ ${selesai} Finish</span> &nbsp;<span style="color:#d97706;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span class="dn">🕐 ${blm} Belum</span>`;}
+      renderDashInboundChart(total,checkedIn,selesai,hit,miss);
       renderDashInboundTable(dataIn.data);
     }
-  } catch(e) { console.warn('Inbound stats error:', e); }
-
+  } catch(e){console.warn('Inbound stats error:',e);}
   try {
-    const resOut  = await fetch(GAS_DASHBOARD_URL + '?action=getOutbound');
-    const dataOut = await resOut.json();
-    if (dataOut.ok) {
-      outboundTotal = dataOut.total; outboundSelesai = dataOut.selesai;
-
-      const el = document.querySelector('.stat-card.orange-bar .stat-value');
-      const sb = document.querySelector('.stat-card.orange-bar .stat-sub');
-      if (el) el.textContent = dataOut.total;
-      if (sb) sb.innerHTML  = `Armada hari ini &nbsp;<span class="up">✅ ${dataOut.selesai} selesai</span> &nbsp;<span class="dn">⏳ ${dataOut.total - dataOut.selesai} belum</span>`;
-
-      renderDashOutboundChart(dataOut.total, dataOut.selesai);
+    const resOut=await fetch(GAS_DASHBOARD_URL+'?action=getOutbound');
+    const dataOut=await resOut.json();
+    if(dataOut.ok){
+      outboundTotal=dataOut.total; outboundSelesai=dataOut.selesai;
+      const el=document.querySelector('.stat-card.orange-bar .stat-value');
+      const sb=document.querySelector('.stat-card.orange-bar .stat-sub');
+      if(el) el.textContent=dataOut.total;
+      if(sb) sb.innerHTML=`<span class="up">✅ ${dataOut.selesai} Selesai</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${dataOut.proses||0} Proses</span> &nbsp;<span class="dn">🕐 ${dataOut.belum||0} Belum</span>`;
+      renderDashOutboundChart(dataOut.total,dataOut.selesai,dataOut.proses||0,dataOut.antri||0,dataOut.belum||0,dataOut.hit||0,dataOut.miss||0);
     }
-  } catch(e) { console.warn('Outbound stats error:', e); }
-
-  // Update Inventory Status donut → progress inbound + outbound
-  updateInventoryStatusDonut(inboundTotal, inboundSelesai, outboundTotal, outboundSelesai);
-
-  // Fetch Inventory Value dari SUMMARY
+  } catch(e){console.warn('Outbound stats error:',e);}
+  updateInventoryStatusDonut(inboundTotal,inboundSelesai,outboundTotal,outboundSelesai);
   fetchInventoryValue();
 }
 
-// ── UPDATE INVENTORY STATUS DONUT ──
-function updateInventoryStatusDonut(inTotal, inSelesai, outTotal, outSelesai) {
-  const inPct  = inTotal  > 0 ? Math.round((inSelesai  / inTotal)  * 100) : 0;
-  const outPct = outTotal > 0 ? Math.round((outSelesai / outTotal) * 100) : 0;
-  const sisa   = Math.max(0, 100 - inPct - outPct);
-
-  const centerEl = document.querySelector('.donut-center .total');
-  const labelEl  = document.querySelector('.donut-center .total-label');
-  const overall  = inTotal+outTotal > 0
-    ? Math.round(((inSelesai+outSelesai)/(inTotal+outTotal))*100) : 0;
-  if (centerEl) centerEl.textContent = overall + '%';
-  if (labelEl)  labelEl.textContent  = 'Daily';
-
-  const items = document.querySelectorAll('.donut-legend-item');
-  if (items[0]) {
-    items[0].querySelector('.donut-legend-left').innerHTML = `<div class="donut-legend-dot" style="background:#16a34a"></div>Inbound`;
-    items[0].querySelector('.donut-legend-val').textContent = inPct + '%';
-  }
-  if (items[1]) {
-    items[1].querySelector('.donut-legend-left').innerHTML = `<div class="donut-legend-dot" style="background:#d97706"></div>Outbound`;
-    items[1].querySelector('.donut-legend-val').textContent = outPct + '%';
-  }
-  if (items[2]) {
-    items[2].querySelector('.donut-legend-left').innerHTML = `<div class="donut-legend-dot" style="background:#e2e8f0"></div>Belum Selesai`;
-    items[2].querySelector('.donut-legend-val').textContent = sisa + '%';
-  }
-
-  const ctx = document.getElementById('donutChart');
-  if (!ctx) return;
-  const chart = Chart.getChart(ctx);
-  if (chart) {
-    chart.data.datasets[0].data = [inPct, outPct, sisa];
-    chart.data.datasets[0].backgroundColor = ['#16a34a','#d97706', document.body.classList.contains('dark')?'#1e293b':'#e2e8f0'];
-    chart.update('none');
-  }
+function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
+  const inPct=inTotal>0?Math.round((inSelesai/inTotal)*100):0;
+  const outPct=outTotal>0?Math.round((outSelesai/outTotal)*100):0;
+  const sisa=Math.max(0,100-inPct-outPct);
+  const overall=inTotal+outTotal>0?Math.round(((inSelesai+outSelesai)/(inTotal+outTotal))*100):0;
+  const centerEl=document.querySelector('.donut-center .total'), labelEl=document.querySelector('.donut-center .total-label');
+  if(centerEl) centerEl.textContent=overall+'%'; if(labelEl) labelEl.textContent='Daily';
+  const items=document.querySelectorAll('.donut-legend-item');
+  if(items[0]){items[0].querySelector('.donut-legend-left').innerHTML=`<div class="donut-legend-dot" style="background:#16a34a"></div>Inbound`;items[0].querySelector('.donut-legend-val').textContent=inPct+'%';}
+  if(items[1]){items[1].querySelector('.donut-legend-left').innerHTML=`<div class="donut-legend-dot" style="background:#d97706"></div>Outbound`;items[1].querySelector('.donut-legend-val').textContent=outPct+'%';}
+  if(items[2]){items[2].querySelector('.donut-legend-left').innerHTML=`<div class="donut-legend-dot" style="background:#e2e8f0"></div>Belum Selesai`;items[2].querySelector('.donut-legend-val').textContent=sisa+'%';}
+  const ctx=document.getElementById('donutChart'); if(!ctx) return;
+  const chart=Chart.getChart(ctx);
+  if(chart){chart.data.datasets[0].data=[inPct,outPct,sisa];chart.data.datasets[0].backgroundColor=['#16a34a','#d97706',document.body.classList.contains('dark')?'#1e293b':'#e2e8f0'];chart.update('none');}
 }
 
-// ── FETCH INVENTORY VALUE ──
-async function fetchInventoryValue() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getDashboardData');
-    const data = await res.json();
-    if (!data.ok) return;
-
-    const inv = data.mtd && data.mtd.inventory ? data.mtd.inventory : 0;
-    const el  = document.querySelector('.stat-card.green-bar .stat-value');
-    const sb  = document.querySelector('.stat-card.green-bar .stat-sub');
-    if (el && inv) {
-      // Format angka besar
-      const fmt = inv >= 1000000
-        ? 'Rp ' + (inv / 1000000).toFixed(1).replace('.0','') + ' Jt'
-        : inv >= 1000
-        ? 'Rp ' + (inv / 1000).toFixed(0) + ' Rb'
-        : inv;
-      el.textContent = fmt;
-      el.style.fontSize = '16px';
-    }
-    if (sb && data.mtd) sb.textContent = 'Data bulan ' + (data.mtd.monthName || '');
-  } catch(e) { console.warn('Inventory value error:', e); }
+async function fetchInventoryValue(){
+  try{
+    const res=await fetch(GAS_DASHBOARD_URL+'?action=getDashboardData');
+    const data=await res.json(); if(!data.ok) return;
+    const inv=data.mtd&&data.mtd.inventory?data.mtd.inventory:0;
+    const el=document.querySelector('.stat-card.green-bar .stat-value');
+    const sb=document.querySelector('.stat-card.green-bar .stat-sub');
+    if(el&&inv){const fmt=inv>=1000000?'Rp '+(inv/1000000).toFixed(1).replace('.0','')+' Jt':inv>=1000?'Rp '+(inv/1000).toFixed(0)+' Rb':inv;el.textContent=fmt;el.style.fontSize='16px';}
+    if(sb&&data.mtd) sb.textContent='Data bulan '+(data.mtd.monthName||'');
+  }catch(e){console.warn('Inventory value error:',e);}
 }
 
 fetchDashboardStats();
-setInterval(fetchDashboardStats, 5 * 60 * 1000);
+setInterval(fetchDashboardStats,5*60*1000);
 
-// ── DAILY ACTIVITY CHART (Real Data) ──
-Chart.defaults.color = '#6b7280';
-Chart.defaults.font.family = 'Outfit';
-// Register datalabels plugin hanya untuk line chart
-Chart.register(ChartDataLabels);
-let lineChartInstance = null;
+// ══════════════════════════════════════
+//  CHARTS — DAILY ACTIVITY (custom datalabels, no CDN)
+// ══════════════════════════════════════
+Chart.defaults.color='#6b7280';
+Chart.defaults.font.family='Outfit';
 
-async function fetchDailyActivity() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getDailyActivity');
-    const data = await res.json();
-    if (!data.ok) return;
-
-    const isDark = document.body.classList.contains('dark');
-    const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(99,120,167,0.07)';
-    const tickColor = isDark ? '#484f58' : '#9ca3af';
-
-    if (lineChartInstance) lineChartInstance.destroy();
-
-    lineChartInstance = new Chart(document.getElementById('lineChart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: data.labels,
-        datasets: [
-          {
-            label: 'Inbound',
-            data: data.inbound,
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,0.08)',
-            tension: 0.4, fill: true,
-            pointBackgroundColor: '#2563eb',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-            borderWidth: 2.5,
-            datalabels: {
-              align: 'top', anchor: 'end',
-              color: '#2563eb',
-              font: { size: 11, weight: '800', family: 'Outfit' },
-              formatter: (v) => v > 0 ? v : '',
-            }
-          },
-          {
-            label: 'Outbound',
-            data: data.outbound,
-            borderColor: '#d97706',
-            backgroundColor: 'rgba(217,119,6,0.08)',
-            tension: 0.4, fill: true,
-            pointBackgroundColor: '#d97706',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-            borderWidth: 2.5,
-            datalabels: {
-              align: 'bottom', anchor: 'end',
-              color: '#d97706',
-              font: { size: 11, weight: '800', family: 'Outfit' },
-              formatter: (v) => v > 0 ? v : '',
-            }
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: { padding: { top: 20, bottom: 5 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)',
-            titleColor: '#fff', bodyColor: 'rgba(255,255,255,0.8)',
-            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-            padding: 12, cornerRadius: 10,
-          },
-          datalabels: { display: true }
-        },
-        scales: {
-          x: { grid:{color:gridColor}, ticks:{font:{size:11},color:tickColor} },
-          y: { grid:{color:gridColor}, ticks:{font:{size:11},color:tickColor,stepSize:1}, beginAtZero:true }
-        }
-      }
+const dataLabelPlugin={
+  id:'customDataLabels',
+  afterDatasetsDraw(chart){
+    const{ctx}=chart;
+    chart.data.datasets.forEach((dataset,i)=>{
+      const meta=chart.getDatasetMeta(i);
+      meta.data.forEach((point,j)=>{
+        const val=dataset.data[j]; if(!val||val===0) return;
+        ctx.save();
+        ctx.font='bold 11px Outfit, sans-serif';
+        ctx.fillStyle=dataset.borderColor;
+        ctx.textAlign='center';
+        ctx.textBaseline=i===0?'bottom':'top';
+        ctx.fillText(val,point.x,point.y+(i===0?-6:6));
+        ctx.restore();
+      });
     });
-
-    const cardTitle = document.querySelector('#page-dashboard .mid-grid .card-title');
-    if (cardTitle && data.weekStart) {
-      cardTitle.innerHTML = `<span class="live-dot"></span>Daily Activity <span style="font-size:10px;font-weight:500;color:var(--text-3);margin-left:6px">Minggu ini (ab ${data.weekStart})</span>`;
-    }
-
-  } catch(e) {
-    console.warn('Daily activity error:', e);
-    renderDummyLineChart();
   }
-}
+};
 
-function renderDummyLineChart() {
-  if (lineChartInstance) lineChartInstance.destroy();
-  lineChartInstance = new Chart(document.getElementById('lineChart').getContext('2d'), {
-    type: 'line',
-    data: { labels:['Sen','Sel','Rab','Kam','Jum','Sab'],
-      datasets:[
-        {label:'Inbound', data:[0,0,0,0,0,0],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5,datalabels:{display:false}},
-        {label:'Outbound',data:[0,0,0,0,0,0],borderColor:'#d97706',backgroundColor:'rgba(217,119,6,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#d97706',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5,datalabels:{display:false}}
+let lineChartInstance=null;
+
+async function fetchDailyActivity(){
+  try{
+    const res=await fetch(GAS_DASHBOARD_URL+'?action=getDailyActivity');
+    const data=await res.json(); if(!data.ok) return;
+    const isDark=document.body.classList.contains('dark');
+    const gridColor=isDark?'rgba(255,255,255,0.05)':'rgba(99,120,167,0.07)';
+    const tickColor=isDark?'#484f58':'#9ca3af';
+    if(lineChartInstance) lineChartInstance.destroy();
+    lineChartInstance=new Chart(document.getElementById('lineChart').getContext('2d'),{
+      type:'line', plugins:[dataLabelPlugin],
+      data:{labels:data.labels,datasets:[
+        {label:'Inbound', data:data.inbound, borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)',tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5},
+        {label:'Outbound',data:data.outbound,borderColor:'#d97706',backgroundColor:'rgba(217,119,6,0.08)', tension:0.4,fill:true,pointBackgroundColor:'#d97706',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5}
       ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'}},y:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'},beginAtZero:true}}}
-  });
-}
-
-fetchDailyActivity();
-
-async function fetchDailyActivity() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getDailyActivity');
-    const data = await res.json();
-    if (!data.ok) return;
-
-    const isDark = document.body.classList.contains('dark');
-
-    if (lineChartInstance) lineChartInstance.destroy();
-
-    lineChartInstance = new Chart(document.getElementById('lineChart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: data.labels,
-        datasets: [
-          {
-            label: 'Inbound',
-            data: data.inbound,
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,0.08)',
-            tension: 0.4, fill: true,
-            pointBackgroundColor: '#2563eb',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-            borderWidth: 2.5,
-          },
-          {
-            label: 'Outbound',
-            data: data.outbound,
-            borderColor: '#d97706',
-            backgroundColor: 'rgba(217,119,6,0.08)',
-            tension: 0.4, fill: true,
-            pointBackgroundColor: '#d97706',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-            borderWidth: 2.5,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)',
-            titleColor: '#fff',
-            bodyColor: 'rgba(255,255,255,0.8)',
-            borderColor: 'rgba(255,255,255,0.1)',
-            borderWidth: 1,
-            padding: 12,
-            cornerRadius: 10,
-          }
-        },
-        scales: {
-          x: {
-            grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(99,120,167,0.07)' },
-            ticks: { font: { size: 11 }, color: isDark ? '#484f58' : '#9ca3af' }
-          },
-          y: {
-            grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(99,120,167,0.07)' },
-            ticks: { font: { size: 11 }, color: isDark ? '#484f58' : '#9ca3af', stepSize: 1 },
-            beginAtZero: true,
-          }
-        }
-      }
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,bottom:5}},plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:12,cornerRadius:10}},scales:{x:{grid:{color:gridColor},ticks:{font:{size:11},color:tickColor}},y:{grid:{color:gridColor},ticks:{font:{size:11},color:tickColor,stepSize:1},beginAtZero:true}}}
     });
-
-    // Update subtitle chart
-    const cardTitle = document.querySelector('#page-dashboard .mid-grid .card-title');
-    if (cardTitle && data.weekStart) {
-      cardTitle.innerHTML = `<span class="live-dot"></span>Daily Activity <span style="font-size:10px;font-weight:500;color:var(--text-3);margin-left:6px">Minggu ini (ab ${data.weekStart})</span>`;
-    }
-
-  } catch(e) {
-    console.warn('Daily activity error:', e);
-    // Fallback ke dummy data jika gagal
-    renderDummyLineChart();
+    const cardTitle=document.querySelector('#page-dashboard .mid-grid .card-title');
+    if(cardTitle&&data.weekStart) cardTitle.innerHTML=`<span class="live-dot"></span>Daily Activity <span style="font-size:10px;font-weight:500;color:var(--text-3);margin-left:6px">Minggu ini (ab ${data.weekStart})</span>`;
+  }catch(e){
+    console.warn('Daily activity error:',e);
+    if(lineChartInstance) lineChartInstance.destroy();
+    lineChartInstance=new Chart(document.getElementById('lineChart').getContext('2d'),{type:'line',data:{labels:['Sen','Sel','Rab','Kam','Jum','Sab'],datasets:[{label:'Inbound',data:[0,0,0,0,0,0],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5},{label:'Outbound',data:[0,0,0,0,0,0],borderColor:'#d97706',backgroundColor:'rgba(217,119,6,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#d97706',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'}},y:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'},beginAtZero:true}}}});
   }
 }
-
-function renderDummyLineChart() {
-  new Chart(document.getElementById('lineChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: ['Sen','Sel','Rab','Kam','Jum','Sab'],
-      datasets: [
-        { label:'Inbound',  data:[0,0,0,0,0,0], borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.06)', tension:0.4, fill:true, pointBackgroundColor:'#2563eb', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, borderWidth:2.5 },
-        { label:'Outbound', data:[0,0,0,0,0,0], borderColor:'#d97706', backgroundColor:'rgba(217,119,6,0.06)',  tension:0.4, fill:true, pointBackgroundColor:'#d97706', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, borderWidth:2.5 }
-      ]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'}}, y:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'},beginAtZero:true} } }
-  });
-}
-
 fetchDailyActivity();
+
 new Chart(document.getElementById('donutChart').getContext('2d'),{
   type:'doughnut',
   data:{labels:['Inbound','Outbound','Belum Selesai'],datasets:[{data:[0,0,100],backgroundColor:['#16a34a','#d97706','#e2e8f0'],borderColor:['#fff','#fff','#fff'],borderWidth:3,hoverOffset:10}]},
@@ -1129,274 +635,81 @@ new Chart(document.getElementById('donutChart').getContext('2d'),{
 
 // ── 3D TILT ──
 document.querySelectorAll('.stat-card').forEach(card=>{
-  card.addEventListener('mousemove', e=>{
-    const r=card.getBoundingClientRect();
-    const x=(e.clientX-r.left)/r.width-0.5, y=(e.clientY-r.top)/r.height-0.5;
-    card.style.transform=`perspective(500px) rotateY(${x*16}deg) rotateX(${-y*16}deg) translateY(-6px) scale(1.03)`;
-  });
-  card.addEventListener('mouseleave',()=>{ card.style.transform=''; });
+  card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-0.5,y=(e.clientY-r.top)/r.height-0.5;card.style.transform=`perspective(500px) rotateY(${x*16}deg) rotateX(${-y*16}deg) translateY(-6px) scale(1.03)`;});
+  card.addEventListener('mouseleave',()=>{card.style.transform='';});
 });
 
 // ── NAVIGATION ──
-document.querySelectorAll('.nav-item').forEach(btn=>{
-  btn.addEventListener('click',()=>{ const p=btn.dataset.page; if(p) go(p); });
-});
+document.querySelectorAll('.nav-item').forEach(btn=>{btn.addEventListener('click',()=>{const p=btn.dataset.page;if(p)go(p);});});
 function go(p){
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  const nb=document.querySelector(`[data-page="${p}"]`);
-  if(nb) nb.classList.add('active');
+  const nb=document.querySelector(`[data-page="${p}"]`); if(nb) nb.classList.add('active');
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.iframe-page').forEach(el=>{el.classList.remove('active');el.style.display='none';});
-  document.querySelectorAll('.launcher-page').forEach(el=>{el.classList.remove('active');el.style.display='none';});
-  if(IFRAME_PAGES.includes(p)){
-    const pg=document.getElementById(`page-${p}`);
-    if(pg){pg.style.display='flex';pg.classList.add('active');}
-    loadIframe(p);
-  } else {
-    const pg=document.getElementById(`page-${p}`);
-    if(pg) pg.classList.add('active');
-  }
+  if(IFRAME_PAGES.includes(p)){const pg=document.getElementById(`page-${p}`);if(pg){pg.style.display='flex';pg.classList.add('active');}loadIframe(p);}
+  else{const pg=document.getElementById(`page-${p}`);if(pg)pg.classList.add('active');}
 }
-function goHome(){
-  go('dashboard');
-  IFRAME_PAGES.forEach(k=>{const f=document.getElementById(`ifr${cap(k)}`);if(f)f.src='about:blank';});
-}
+function goHome(){go('dashboard');IFRAME_PAGES.forEach(k=>{const f=document.getElementById(`ifr${cap(k)}`);if(f)f.src='about:blank';});}
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 function loadIframe(key){
   const url=URLS[key]; if(!url) return;
-  const f=document.getElementById(`ifr${cap(key)}`);
-  const ld=document.getElementById(`ld${cap(key)}`);
-  const er=document.getElementById(`err${cap(key)}`);
-  const tab=document.getElementById(`tab${cap(key)}`);
-  const errTab=document.getElementById(`errTab${cap(key)}`);
-  if(!f) return;
-  if(tab) tab.href=url; if(errTab) errTab.href=url;
-  ld.classList.remove('hidden'); er.classList.remove('show');
-  f.style.opacity='0';
+  const f=document.getElementById(`ifr${cap(key)}`), ld=document.getElementById(`ld${cap(key)}`), er=document.getElementById(`err${cap(key)}`);
+  const tab=document.getElementById(`tab${cap(key)}`), errTab=document.getElementById(`errTab${cap(key)}`);
+  if(!f) return; if(tab) tab.href=url; if(errTab) errTab.href=url;
+  ld.classList.remove('hidden'); er.classList.remove('show'); f.style.opacity='0';
   let realLoaded=false;
   const t=setTimeout(()=>{ld.classList.add('hidden');er.classList.add('show');},20000);
-  f.onload=()=>{ if(!realLoaded)return; clearTimeout(t); ld.classList.add('hidden'); f.style.opacity='1'; };
-  f.onerror=()=>{ if(!realLoaded)return; clearTimeout(t); ld.classList.add('hidden'); er.classList.add('show'); };
-  f.src='about:blank';
-  setTimeout(()=>{realLoaded=true; f.src=url;},150);
+  f.onload=()=>{if(!realLoaded)return;clearTimeout(t);ld.classList.add('hidden');f.style.opacity='1';};
+  f.onerror=()=>{if(!realLoaded)return;clearTimeout(t);ld.classList.add('hidden');er.classList.add('show');};
+  f.src='about:blank'; setTimeout(()=>{realLoaded=true;f.src=url;},150);
 }
-function reloadIframe(frameId,key){
-  const f=document.getElementById(frameId); const url=URLS[key];
-  if(!f||!url) return;
-  const ld=document.getElementById(`ld${cap(key)}`);
-  const er=document.getElementById(`err${cap(key)}`);
-  f.src='about:blank'; ld.classList.remove('hidden'); er.classList.remove('show');
-  f.style.opacity='0'; setTimeout(()=>{f.src=url;},100);
-}
+function reloadIframe(frameId,key){const f=document.getElementById(frameId),url=URLS[key];if(!f||!url)return;const ld=document.getElementById(`ld${cap(key)}`),er=document.getElementById(`err${cap(key)}`);f.src='about:blank';ld.classList.remove('hidden');er.classList.remove('show');f.style.opacity='0';setTimeout(()=>{f.src=url;},100);}
 
 // ── AI SUPPORT ──
-const GAS_AI_URL = 'https://script.google.com/macros/s/AKfycbzphhWpNaHVnvJzRl2dO2g-JsUnLByOPvkYZWIKoN_XrfD42uF_m7sqPgNkhUCIQlEu/exec';
 function setupAI(inId,btnId,msgsId,typingId){
   const inp=document.getElementById(inId),btn=document.getElementById(btnId),msgs=document.getElementById(msgsId),typing=document.getElementById(typingId);
   if(!inp||!btn||!msgs) return;
-  function addBubble(text,type){
-    const div=document.createElement('div'); div.className=`ai-bubble ${type}`;
-    div.style.whiteSpace='pre-wrap'; div.textContent=text;
-    if(typing&&msgs.contains(typing)) msgs.insertBefore(div,typing); else msgs.appendChild(div);
-    msgs.scrollTop=msgs.scrollHeight;
-  }
-  async function send(){
-    const txt=inp.value.trim(); if(!txt) return;
-    addBubble(txt,'user'); inp.value=''; inp.disabled=true; btn.disabled=true;
-    if(typing){typing.classList.add('show'); msgs.scrollTop=msgs.scrollHeight;}
-    try{
-      const res=await fetch(GAS_AI_URL+'?q='+encodeURIComponent(txt));
-      const data=await res.json();
-      if(typing) typing.classList.remove('show');
-      addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');
-    }catch(e){
-      if(typing) typing.classList.remove('show');
-      addBubble('Maaf, terjadi kesalahan koneksi.','bot');
-    }
-    inp.disabled=false; btn.disabled=false; inp.focus();
-  }
-  btn.addEventListener('click',send);
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+  function addBubble(text,type){const div=document.createElement('div');div.className=`ai-bubble ${type}`;div.style.whiteSpace='pre-wrap';div.textContent=text;if(typing&&msgs.contains(typing))msgs.insertBefore(div,typing);else msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
+  async function send(){const txt=inp.value.trim();if(!txt)return;addBubble(txt,'user');inp.value='';inp.disabled=true;btn.disabled=true;if(typing){typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;}try{const res=await fetch(GAS_AI_URL+'?q='+encodeURIComponent(txt));const data=await res.json();if(typing)typing.classList.remove('show');addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');}catch(e){if(typing)typing.classList.remove('show');addBubble('Maaf, terjadi kesalahan koneksi.','bot');}inp.disabled=false;btn.disabled=false;inp.focus();}
+  btn.addEventListener('click',send);inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 }
 setupAI('aiIn','aiBtn','aiMsg','aiTyping');
 setupAI('aiIn2','aiBtn2','aiMsg2','aiTyping2');
 
 // ── NOTIFIKASI ──
-function getLastSeenTs(){ return parseInt(localStorage.getItem('lastSeenTs_'+(me.name||'guest'))||'0'); }
-function setLastSeenTs(ts){ localStorage.setItem('lastSeenTs_'+(me.name||'guest'),ts); }
-function toggleNotif(){
-  notifOpen=!notifOpen;
-  document.getElementById('notifPanel').style.display=notifOpen?'block':'none';
-  if(notifOpen){ setLastSeenTs(Date.now()); document.getElementById('notifBadge').style.display='none'; document.getElementById('notifBadge').textContent='0'; }
-}
-function clearNotifs(){
-  notifList=[]; setLastSeenTs(Date.now());
-  document.getElementById('notifBadge').style.display='none';
-  document.getElementById('notifList').innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';
-}
-function addNotif(msg){
-  if(!msg||!msg.name) return;
-  if(me.name&&msg.name===me.name) return;
-  if(!msg.timestamp||msg.timestamp<=getLastSeenTs()) return;
-  notifList.unshift(msg); if(notifList.length>20) notifList.pop();
-  if(!notifOpen){
-    const badge=document.getElementById('notifBadge');
-    const count=parseInt(badge.textContent||'0')+1;
-    badge.textContent=count>9?'9+':count; badge.style.display='flex';
-    const btn=document.getElementById('notifBtn');
-    btn.style.animation='none'; setTimeout(()=>btn.style.animation='shakeBell 0.5s ease',10);
-  }
-  renderNotifList();
-}
-function renderNotifList(){
-  if(!notifList.length){ document.getElementById('notifList').innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>'; return; }
-  document.getElementById('notifList').innerHTML=notifList.map(m=>`
-    <div style="padding:12px 18px;border-bottom:1px solid rgba(200,215,240,0.3);display:flex;align-items:flex-start;gap:10px;cursor:pointer" onclick="go('discussion')">
-      <div style="width:36px;height:36px;border-radius:50%;background:${m.color||'#2563eb'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">${(m.name||'?').slice(0,2).toUpperCase()}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:700;color:#0f172a">${m.name||'User'} <span style="font-weight:400;color:#94a3b8">di Discussion</span></div>
-        <div style="font-size:12px;color:#334155;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.text||''}</div>
-        <div style="font-size:10px;color:#94a3b8;margin-top:3px">${m.timestamp?new Date(m.timestamp).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):''}</div>
-      </div>
-      <span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0">💬</span>
-    </div>
-  `).join('');
-}
-document.addEventListener('click',(e)=>{
-  if(notifOpen&&!document.getElementById('notifPanel').contains(e.target)&&!document.getElementById('notifBtn').contains(e.target)){
-    notifOpen=false; document.getElementById('notifPanel').style.display='none';
-  }
-});
+function getLastSeenTs(){return parseInt(localStorage.getItem('lastSeenTs_'+(me.name||'guest'))||'0');}
+function setLastSeenTs(ts){localStorage.setItem('lastSeenTs_'+(me.name||'guest'),ts);}
+function toggleNotif(){notifOpen=!notifOpen;document.getElementById('notifPanel').style.display=notifOpen?'block':'none';if(notifOpen){setLastSeenTs(Date.now());document.getElementById('notifBadge').style.display='none';document.getElementById('notifBadge').textContent='0';}}
+function clearNotifs(){notifList=[];setLastSeenTs(Date.now());document.getElementById('notifBadge').style.display='none';document.getElementById('notifList').innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';}
+function addNotif(msg){if(!msg||!msg.name)return;if(me.name&&msg.name===me.name)return;if(!msg.timestamp||msg.timestamp<=getLastSeenTs())return;notifList.unshift(msg);if(notifList.length>20)notifList.pop();if(!notifOpen){const badge=document.getElementById('notifBadge'),count=parseInt(badge.textContent||'0')+1;badge.textContent=count>9?'9+':count;badge.style.display='flex';const btn=document.getElementById('notifBtn');btn.style.animation='none';setTimeout(()=>btn.style.animation='shakeBell 0.5s ease',10);}renderNotifList();}
+function renderNotifList(){if(!notifList.length){document.getElementById('notifList').innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';return;}document.getElementById('notifList').innerHTML=notifList.map(m=>`<div style="padding:12px 18px;border-bottom:1px solid rgba(200,215,240,0.3);display:flex;align-items:flex-start;gap:10px;cursor:pointer" onclick="go('discussion')"><div style="width:36px;height:36px;border-radius:50%;background:${m.color||'#2563eb'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">${(m.name||'?').slice(0,2).toUpperCase()}</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#0f172a">${m.name||'User'} <span style="font-weight:400;color:#94a3b8">di Discussion</span></div><div style="font-size:12px;color:#334155;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.text||''}</div><div style="font-size:10px;color:#94a3b8;margin-top:3px">${m.timestamp?new Date(m.timestamp).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):''}</div></div><span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0">💬</span></div>`).join('');}
+document.addEventListener('click',e=>{if(notifOpen&&!document.getElementById('notifPanel').contains(e.target)&&!document.getElementById('notifBtn').contains(e.target)){notifOpen=false;document.getElementById('notifPanel').style.display='none';}});
 
 // ── DARK MODE ──
-let isDark = localStorage.getItem('wms_dark')==='1';
-function applyDark(){ document.body.classList.toggle('dark',isDark); updateDarkToggle(); }
-function toggleDark(){ isDark=!isDark; localStorage.setItem('wms_dark',isDark?'1':'0'); applyDark(); }
+let isDark=localStorage.getItem('wms_dark')==='1';
+function applyDark(){document.body.classList.toggle('dark',isDark);updateDarkToggle();}
+function toggleDark(){isDark=!isDark;localStorage.setItem('wms_dark',isDark?'1':'0');applyDark();}
 applyDark();
 
 // ── SETTINGS ──
-let settingsOpen=false;
 let profileColorIdx=parseInt(localStorage.getItem('wms_color')||'0');
-
-function updateSettingsUser(){
-  if(!me.name) return;
-  const ava=document.getElementById('settingsAva');
-  if(ava){ava.textContent=me.initials; ava.style.background=me.color.bg;}
-  const nm=document.getElementById('settingsName'); if(nm) nm.textContent=me.name;
-  const rl=document.getElementById('settingsRole'); if(rl) rl.textContent=me.jabatan||'Member AHI Sidoarjo';
-}
-function toggleSettings(){
-  settingsOpen=!settingsOpen;
-  document.getElementById('settingsPanel').classList.toggle('open',settingsOpen);
-  updateDarkToggle();
-}
-function updateDarkToggle(){
-  const toggle=document.getElementById('darkToggle');
-  if(toggle) toggle.classList.toggle('on',isDark);
-}
-function openProfile(){
-  settingsOpen=false;
-  document.getElementById('settingsPanel').classList.remove('open');
-  document.getElementById('profileOverlay').classList.remove('hidden');
-  document.getElementById('profileAvaBig').textContent      = me.initials||'?';
-  document.getElementById('profileAvaBig').style.background = me.color?me.color.bg:'#2563eb';
-  document.getElementById('profileNameShow').textContent    = me.name||'—';
-  document.getElementById('profileJabatan').textContent     = me.jabatan||'Staff';
-  document.getElementById('profileNipShow').value           = me.nip||'—';
-  profileColorIdx = parseInt(localStorage.getItem('wms_color')||'0');
-  document.querySelectorAll('#profileColorOpts .color-opt').forEach((el,i)=>{
-    el.classList.toggle('selected', i===profileColorIdx);
-    el.onclick=function(){
-      document.querySelectorAll('#profileColorOpts .color-opt').forEach(x=>x.classList.remove('selected'));
-      el.classList.add('selected');
-      profileColorIdx=parseInt(el.dataset.pidx||i);
-      document.getElementById('profileAvaBig').style.background=el.style.background;
-    };
-  });
-}
-
-document.getElementById('profileSaveBtn').addEventListener('click',function(){
-  me.color    = AVATAR_COLORS[profileColorIdx];
-  localStorage.setItem('wms_color', profileColorIdx);
-  document.getElementById('headerAvatar').textContent      = me.initials;
-  document.getElementById('headerAvatar').style.background = me.color.bg;
-  applyTheme(me.color.hex);
-  updateSettingsUser();
-  document.getElementById('profileOverlay').classList.add('hidden');
-});
-document.getElementById('profileCloseBtn').addEventListener('click',function(){
-  document.getElementById('profileOverlay').classList.add('hidden');
-});
-document.getElementById('profileOverlay').addEventListener('click',function(e){
-  if(e.target===this) this.classList.add('hidden');
-});
-document.addEventListener('click',function(e){
-  const panel=document.getElementById('settingsPanel');
-  const btn=document.getElementById('settingsBtn');
-  if(settingsOpen&&panel&&btn&&!panel.contains(e.target)&&!btn.contains(e.target)){
-    settingsOpen=false; panel.classList.remove('open');
-  }
-});
+function updateSettingsUser(){if(!me.name)return;const ava=document.getElementById('settingsAva');if(ava){ava.textContent=me.initials;ava.style.background=me.color.bg;}const nm=document.getElementById('settingsName');if(nm)nm.textContent=me.name;const rl=document.getElementById('settingsRole');if(rl)rl.textContent=me.jabatan||'Member AHI Sidoarjo';}
+function toggleSettings(){settingsOpen=!settingsOpen;document.getElementById('settingsPanel').classList.toggle('open',settingsOpen);updateDarkToggle();}
+function updateDarkToggle(){const toggle=document.getElementById('darkToggle');if(toggle)toggle.classList.toggle('on',isDark);}
+function openProfile(){settingsOpen=false;document.getElementById('settingsPanel').classList.remove('open');document.getElementById('profileOverlay').classList.remove('hidden');document.getElementById('profileAvaBig').textContent=me.initials||'?';document.getElementById('profileAvaBig').style.background=me.color?me.color.bg:'#2563eb';document.getElementById('profileNameShow').textContent=me.name||'—';document.getElementById('profileJabatan').textContent=me.jabatan||'Staff';document.getElementById('profileNipShow').value=me.nip||'—';profileColorIdx=parseInt(localStorage.getItem('wms_color')||'0');document.querySelectorAll('#profileColorOpts .color-opt').forEach((el,i)=>{el.classList.toggle('selected',i===profileColorIdx);el.onclick=function(){document.querySelectorAll('#profileColorOpts .color-opt').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');profileColorIdx=parseInt(el.dataset.pidx||i);document.getElementById('profileAvaBig').style.background=el.style.background;};});}
+document.getElementById('profileSaveBtn').addEventListener('click',function(){me.color=AVATAR_COLORS[profileColorIdx];localStorage.setItem('wms_color',profileColorIdx);document.getElementById('headerAvatar').textContent=me.initials;document.getElementById('headerAvatar').style.background=me.color.bg;applyTheme(me.color.hex);updateSettingsUser();document.getElementById('profileOverlay').classList.add('hidden');});
+document.getElementById('profileCloseBtn').addEventListener('click',function(){document.getElementById('profileOverlay').classList.add('hidden');});
+document.getElementById('profileOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
+document.addEventListener('click',function(e){const panel=document.getElementById('settingsPanel'),btn=document.getElementById('settingsBtn');if(settingsOpen&&panel&&btn&&!panel.contains(e.target)&&!btn.contains(e.target)){settingsOpen=false;panel.classList.remove('open');}});
 
 // ── SEARCH BAR ──
-const SEARCH_ITEMS=[
-  {label:'Dashboard',  page:'dashboard', icon:'🏠', desc:'Halaman utama'},
-  {label:'Planner',    page:'planner',   icon:'📋', desc:'Rencana Operasional'},
-  {label:'Inbound',    page:'inbound',   icon:'📦', desc:'Dashboard Inbound'},
-  {label:'Storing',    page:'storing',   icon:'🏗️', desc:'Dashboard Storing'},
-  {label:'Outbound',   page:'outbound',  icon:'🚚', desc:'Dashboard Outbound'},
-  {label:'Inventory',  page:'inventory', icon:'📊', desc:'Manajemen Stok'},
-  {label:'GA',         page:'ga',        icon:'🏢', desc:'General Affairs'},
-  {label:'HR',         page:'hr',        icon:'👥', desc:'Human Resources'},
-  {label:'Analyst',    page:'analyst',   icon:'📊', desc:'Dashboard Analitik Operasional'},
-  {label:'Discussion', page:'discussion',icon:'💬', desc:'Discussion Room'},
-  {label:'AI Support', page:'ai',        icon:'🤖', desc:'Asisten AI Warehouse'},
-];
-const searchInput=document.getElementById('searchInput');
-const searchDropdown=document.getElementById('searchDropdown');
-function renderSearch(query){
-  if(!query.trim()){searchDropdown.style.display='none';return;}
-  const q=query.toLowerCase();
-  const results=SEARCH_ITEMS.filter(item=>item.label.toLowerCase().includes(q)||item.desc.toLowerCase().includes(q));
-  if(!results.length){searchDropdown.innerHTML='<div style="padding:12px 14px;font-size:12.5px;color:var(--text-3);text-align:center;">Tidak ditemukan</div>';searchDropdown.style.display='block';return;}
-  searchDropdown.innerHTML=results.map(item=>`
-    <div class="search-item" data-page="${item.page}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:all 0.15s;">
-      <div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);display:grid;place-items:center;font-size:16px;flex-shrink:0;border:1px solid var(--accent-mid);">${item.icon}</div>
-      <div><div style="font-size:13px;font-weight:700;color:var(--text);">${item.label}</div><div style="font-size:11px;color:var(--text-3);font-weight:500;">${item.desc}</div></div>
-      <span style="margin-left:auto;font-size:10px;color:var(--text-3);">↵</span>
-    </div>
-  `).join('');
-  searchDropdown.style.display='block';
-  searchDropdown.querySelectorAll('.search-item').forEach(el=>{
-    el.addEventListener('mouseenter',()=>{el.style.background='var(--accent-light)';});
-    el.addEventListener('mouseleave',()=>{el.style.background='none';});
-    el.addEventListener('click',()=>{go(el.dataset.page);searchInput.value='';searchDropdown.style.display='none';});
-  });
-}
-if(searchInput){
-  searchInput.addEventListener('input',e=>renderSearch(e.target.value));
-  searchInput.addEventListener('keydown',e=>{
-    if(e.key==='Enter'){const first=searchDropdown.querySelector('.search-item');if(first){go(first.dataset.page);searchInput.value='';searchDropdown.style.display='none';}}
-    if(e.key==='Escape'){searchInput.value='';searchDropdown.style.display='none';}
-  });
-}
-document.addEventListener('click',e=>{
-  if(searchDropdown&&!searchDropdown.contains(e.target)&&e.target!==searchInput) searchDropdown.style.display='none';
-});
+const SEARCH_ITEMS=[{label:'Dashboard',page:'dashboard',icon:'🏠',desc:'Halaman utama'},{label:'Planner',page:'planner',icon:'📋',desc:'Rencana Operasional'},{label:'Inbound',page:'inbound',icon:'📦',desc:'Dashboard Inbound'},{label:'Storing',page:'storing',icon:'🏗️',desc:'Dashboard Storing'},{label:'Outbound',page:'outbound',icon:'🚚',desc:'Dashboard Outbound'},{label:'Inventory',page:'inventory',icon:'📊',desc:'Manajemen Stok'},{label:'GA',page:'ga',icon:'🏢',desc:'General Affairs'},{label:'HR',page:'hr',icon:'👥',desc:'Human Resources'},{label:'Analyst',page:'analyst',icon:'📊',desc:'Dashboard Analitik Operasional'},{label:'Discussion',page:'discussion',icon:'💬',desc:'Discussion Room'},{label:'AI Support',page:'ai',icon:'🤖',desc:'Asisten AI Warehouse'}];
+const searchInput=document.getElementById('searchInput'), searchDropdown=document.getElementById('searchDropdown');
+function renderSearch(query){if(!query.trim()){searchDropdown.style.display='none';return;}const q=query.toLowerCase(),results=SEARCH_ITEMS.filter(item=>item.label.toLowerCase().includes(q)||item.desc.toLowerCase().includes(q));if(!results.length){searchDropdown.innerHTML='<div style="padding:12px 14px;font-size:12.5px;color:var(--text-3);text-align:center;">Tidak ditemukan</div>';searchDropdown.style.display='block';return;}searchDropdown.innerHTML=results.map(item=>`<div class="search-item" data-page="${item.page}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:all 0.15s;"><div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);display:grid;place-items:center;font-size:16px;flex-shrink:0;border:1px solid var(--accent-mid);">${item.icon}</div><div><div style="font-size:13px;font-weight:700;color:var(--text);">${item.label}</div><div style="font-size:11px;color:var(--text-3);">${item.desc}</div></div><span style="margin-left:auto;font-size:10px;color:var(--text-3);">↵</span></div>`).join('');searchDropdown.style.display='block';searchDropdown.querySelectorAll('.search-item').forEach(el=>{el.addEventListener('mouseenter',()=>{el.style.background='var(--accent-light)';});el.addEventListener('mouseleave',()=>{el.style.background='none';});el.addEventListener('click',()=>{go(el.dataset.page);searchInput.value='';searchDropdown.style.display='none';});});}
+if(searchInput){searchInput.addEventListener('input',e=>renderSearch(e.target.value));searchInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const first=searchDropdown.querySelector('.search-item');if(first){go(first.dataset.page);searchInput.value='';searchDropdown.style.display='none';}}if(e.key==='Escape'){searchInput.value='';searchDropdown.style.display='none';}});}
+document.addEventListener('click',e=>{if(searchDropdown&&!searchDropdown.contains(e.target)&&e.target!==searchInput)searchDropdown.style.display='none';});
 
 // ── MOBILE SIDEBAR ──
-function toggleSidebar(){
-  const sidebar=document.querySelector('.sidebar');
-  const overlay=document.getElementById('sidebarOverlay');
-  const btn=document.getElementById('hamburgerBtn');
-  sidebar.classList.toggle('open'); overlay.classList.toggle('show'); btn.classList.toggle('active');
-}
-function closeSidebar(){
-  const sidebar=document.querySelector('.sidebar');
-  const overlay=document.getElementById('sidebarOverlay');
-  const btn=document.getElementById('hamburgerBtn');
-  sidebar.classList.remove('open'); overlay.classList.remove('show'); btn.classList.remove('active');
-}
-document.querySelectorAll('.nav-item').forEach(btn=>{
-  btn.addEventListener('click',()=>{ if(window.innerWidth<=768) closeSidebar(); });
-});
+function toggleSidebar(){const sidebar=document.querySelector('.sidebar'),overlay=document.getElementById('sidebarOverlay'),btn=document.getElementById('hamburgerBtn');sidebar.classList.toggle('open');overlay.classList.toggle('show');btn.classList.toggle('active');}
+function closeSidebar(){const sidebar=document.querySelector('.sidebar'),overlay=document.getElementById('sidebarOverlay'),btn=document.getElementById('hamburgerBtn');sidebar.classList.remove('open');overlay.classList.remove('show');btn.classList.remove('active');}
+document.querySelectorAll('.nav-item').forEach(btn=>{btn.addEventListener('click',()=>{if(window.innerWidth<=768)closeSidebar();});});
