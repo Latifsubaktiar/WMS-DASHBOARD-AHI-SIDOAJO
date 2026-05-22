@@ -172,9 +172,9 @@
       <div class="date-chip">📅 <span id="todayDate">—</span></div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card blue-bar">
+      <div class="stat-card blue-bar" id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;" title="Klik untuk lihat detail">
         <div class="stat-icon" style="background:var(--accent-light)">📦</div>
-        <div class="stat-content"><div class="stat-label">Inbound Today</div><div class="stat-value" style="color:var(--accent)">12</div><div class="stat-sub">Shipments &nbsp;<span class="up">↑ 3</span> dari kemarin</div></div>
+        <div class="stat-content"><div class="stat-label">Inbound Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--accent)">—</div><div class="stat-sub">Memuat data...</div></div>
       </div>
       <div class="stat-card orange-bar">
         <div class="stat-icon" style="background:var(--orange-bg)">🚚</div>
@@ -257,23 +257,30 @@
     </div>
 
     <div class="bottom-grid">
-      <!-- INBOUND TABLE REAL -->
+      <!-- TABEL INBOUND + OUTBOUND TAB -->
       <div class="card" style="overflow:hidden;">
-        <div class="card-header">
-          <span class="card-title"><span class="live-dot"></span>Data Inbound Hari Ini</span>
-          <span id="dashInboundCount" style="font-size:11px;color:var(--text-3);font-weight:600">Memuat...</span>
+        <div class="card-header" style="flex-direction:column;align-items:flex-start;gap:0;padding-bottom:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding-bottom:10px;">
+            <span class="card-title"><span class="live-dot"></span>Data Hari Ini</span>
+            <span id="dashTableCount" style="font-size:11px;color:var(--text-3);font-weight:600">Memuat...</span>
+          </div>
+          <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,215,240,0.3);width:100%;">
+            <button id="tabBtnInbound" onclick="switchDashTab('inbound')" style="padding:8px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);transition:all 0.2s;">📦 Inbound</button>
+            <button id="tabBtnOutbound" onclick="switchDashTab('outbound')" style="padding:8px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">🚚 Outbound</button>
+          </div>
         </div>
-        <div class="table-wrap" style="max-height:260px;overflow-y:auto;">
+        <!-- INBOUND TABLE -->
+        <div id="tableInboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;">
           <table>
-            <thead>
-              <tr>
-                <th>No</th><th>No LC</th><th>No Polisi</th><th>Ekspedisi</th>
-                <th>Type</th><th>BU</th><th>Check In</th><th>Stuffing</th><th>Hit/Miss</th>
-              </tr>
-            </thead>
-            <tbody id="dashInboundBody">
-              <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr>
-            </tbody>
+            <thead><tr><th>No</th><th>No LC</th><th>No Polisi</th><th>Ekspedisi</th><th>Type</th><th>BU</th><th>Check In</th><th>Stuffing</th><th>Hit/Miss</th></tr></thead>
+            <tbody id="dashInboundBody"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+        <!-- OUTBOUND TABLE -->
+        <div id="tableOutboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;display:none;">
+          <table>
+            <thead><tr><th>No</th><th>Penyelesaian</th><th>Trans No</th><th>%PC</th><th>%STG</th><th>%LD</th><th>Shipping Line</th><th>BU</th><th>Carrier ID</th><th>Stuffing Time</th><th>Jenis Armada</th><th>No Pol</th><th>Status</th></tr></thead>
+            <tbody id="dashOutboundBody"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
           </table>
         </div>
       </div>
