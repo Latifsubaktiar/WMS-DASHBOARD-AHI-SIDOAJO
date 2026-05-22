@@ -400,9 +400,174 @@ const dateStr = d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month
 document.getElementById('todayDate').textContent  = dateStr;
 document.getElementById('todayDate2').textContent = dateStr;
 
-// ── TAB SWITCH ──
+// ── INBOUND DETAIL PANEL ──
+let inboundPanelOpen   = false;
+let inlineLoaded       = false;
+let chartUnloadingInst = null;
+let chartPutawayInInst = null;
+let chartPutawayStrInst= null;
+
+function toggleInboundPanel() {
+  inboundPanelOpen = !inboundPanelOpen;
+  const panel = document.getElementById('inboundDetailPanel');
+  if (!panel) return;
+
+  if (inboundPanelOpen) {
+    panel.style.display = 'block';
+    // Isi tabel inbound dari data yang sudah ada
+    renderPanelInboundTable(window._inboundRows || []);
+    // Fetch inline proses
+    fetchInlineProses();
+    // Scroll ke panel
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function switchPanelTab(tab) {
+  const tblIn  = document.getElementById('panelInboundTable');
+  const tblInl = document.getElementById('panelInlineTable');
+  const btnIn  = document.getElementById('panelTabInbound');
+  const btnInl = document.getElementById('panelTabInline');
+
+  if (tab === 'inbound') {
+    tblIn.style.display  = '';
+    tblInl.style.display = 'none';
+    btnIn.style.color  = 'var(--accent)';
+    btnIn.style.borderBottom  = '2px solid var(--accent)';
+    btnInl.style.color = 'var(--text-3)';
+    btnInl.style.borderBottom = '2px solid transparent';
+  } else {
+    tblIn.style.display  = 'none';
+    tblInl.style.display = '';
+    btnIn.style.color  = 'var(--text-3)';
+    btnIn.style.borderBottom  = '2px solid transparent';
+    btnInl.style.color = 'var(--accent)';
+    btnInl.style.borderBottom = '2px solid var(--accent)';
+    if (!inlineLoaded) fetchInlineProses();
+  }
+}
+
+function renderPanelInboundTable(rows) {
+  const tbody = document.getElementById('panelInboundBody');
+  if (!tbody) return;
+  if (!rows || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td class="mono" style="font-size:12px">${i+1}</td>
+      <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
+      <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
+      <td style="font-size:12px">${escHtml(r.ekspedisi)}</td>
+      <td style="font-size:12px">${escHtml(r.type)}</td>
+      <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
+      <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
+      <td style="font-size:11px">${r.stuffing||'—'}</td>
+      <td style="font-size:12px;color:${r.updateUnload?'var(--blue)':'var(--text-3)'};font-weight:${r.updateUnload?'700':'400'}">${r.updateUnload||'—'}</td>
+      <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')
+        ? '<span class="badge badge-green">🎯 HIT</span>'
+        : r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')
+        ? '<span class="badge badge-red">⚠️ MISS</span>'
+        : '<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+async function fetchInlineProses() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getInlineProses');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal');
+
+    inlineLoaded = true;
+
+    // Update tanggal
+    const tgl = document.getElementById('inlineTanggal');
+    if (tgl) tgl.textContent = '📅 Tanggal Unload: ' + data.tanggalUnload;
+
+    // Update footer
+    const footer = document.getElementById('panelFooter');
+    if (footer) footer.textContent = data.total + ' LC/PO terdaftar hari ini';
+
+    const s = data.summary;
+    const isDark = document.body.classList.contains('dark');
+    const border = isDark ? '#161b22' : '#ffffff';
+
+    // Chart Unloading
+    document.getElementById('pctUnloading').textContent = s.pctUnloading + '%';
+    document.getElementById('infoUnloading').textContent =
+      `Aktual: ${s.sumAktualQty.toLocaleString()} / Plan: ${s.sumPlanQty.toLocaleString()} QTY`;
+    if (chartUnloadingInst) chartUnloadingInst.destroy();
+    chartUnloadingInst = new Chart(document.getElementById('chartUnloading').getContext('2d'), {
+      type: 'doughnut',
+      data: { datasets: [{ data: [s.pctUnloading, 100 - s.pctUnloading], backgroundColor: ['#16a34a', isDark?'#1e293b':'#e2e8f0'], borderColor: border, borderWidth: 2 }] },
+      options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
+    });
+
+    // Chart Putaway Inbound
+    document.getElementById('pctPutawayIn').textContent = s.pctPutawayIn + '%';
+    document.getElementById('infoPutawayIn').textContent =
+      `Selesai: ${s.sumPutawayIn.toLocaleString()} | Sisa: ${s.sumSisaIn.toLocaleString()} LPN`;
+    if (chartPutawayInInst) chartPutawayInInst.destroy();
+    chartPutawayInInst = new Chart(document.getElementById('chartPutawayIn').getContext('2d'), {
+      type: 'doughnut',
+      data: { datasets: [{ data: [s.pctPutawayIn, 100 - s.pctPutawayIn], backgroundColor: ['#2563eb', isDark?'#1e293b':'#e2e8f0'], borderColor: border, borderWidth: 2 }] },
+      options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
+    });
+
+    // Chart Putaway Storing
+    document.getElementById('pctPutawayStr').textContent = s.pctPutawayStr + '%';
+    document.getElementById('infoPutawayStr').textContent =
+      `Selesai: ${s.sumPutawayStr.toLocaleString()} | Sisa: ${s.sumSisaStr.toLocaleString()} LPN`;
+    if (chartPutawayStrInst) chartPutawayStrInst.destroy();
+    chartPutawayStrInst = new Chart(document.getElementById('chartPutawayStr').getContext('2d'), {
+      type: 'doughnut',
+      data: { datasets: [{ data: [s.pctPutawayStr, 100 - s.pctPutawayStr], backgroundColor: ['#d97706', isDark?'#1e293b':'#e2e8f0'], borderColor: border, borderWidth: 2 }] },
+      options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
+    });
+
+    // Render putaway table
+    renderPanelInlineTable(data.data);
+
+  } catch(e) {
+    console.warn('Inline proses error:', e);
+    const tbody = document.getElementById('panelInlineBody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
+  }
+}
+
+function renderPanelInlineTable(rows) {
+  const tbody = document.getElementById('panelInlineBody');
+  if (!tbody) return;
+  if (!rows || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td class="mono" style="font-size:11px">${i+1}</td>
+      <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
+      <td style="font-size:11px">${escHtml(r.type)}</td>
+      <td class="mono" style="font-size:11px">${escHtml(r.nopol)}</td>
+      <td><span class="badge ${r.status==='OUT'?'badge-green':'badge-orange'}">${escHtml(r.status)||'—'}</span></td>
+      <td class="mono" style="font-size:11px;text-align:right">${r.planQty.toLocaleString()}</td>
+      <td class="mono" style="font-size:11px;text-align:right">${r.aktualQty.toLocaleString()}</td>
+      <td style="font-size:11px;font-weight:700;color:${r.pctRcv==='100%'?'var(--green)':r.pctRcv&&parseInt(r.pctRcv)<90?'var(--red)':'var(--orange)'}">${r.pctRcv||'—'}</td>
+      <td class="mono" style="font-size:11px;text-align:right">${r.putInQty.toLocaleString()}</td>
+      <td class="mono" style="font-size:11px;text-align:right;color:${r.sisaInLpn>0?'var(--orange)':'var(--green)'}">${r.sisaInLpn}</td>
+      <td style="font-size:11px;font-weight:700;color:${r.putInPct==='100%'?'var(--green)':r.putInPct&&parseInt(r.putInPct)<90?'var(--red)':'var(--orange)'}">${r.putInPct||'—'}</td>
+      <td class="mono" style="font-size:11px;text-align:right">${r.putStrQty.toLocaleString()}</td>
+      <td class="mono" style="font-size:11px;text-align:right;color:${r.sisaStrLpn>0?'var(--orange)':'var(--green)'}">${r.sisaStrLpn}</td>
+      <td style="font-size:11px;font-weight:700;color:${r.putStrPct==='100%'?'var(--green)':r.putStrPct&&parseInt(r.putStrPct)<90?'var(--red)':'var(--orange)'}">${r.putStrPct||'—'}</td>
+    </tr>
+  `).join('');
+}
+
+// ── TAB SWITCH (bottom table) ──
 let currentDashTab = 'inbound';
-let outboundDetailLoaded = false;
 
 function switchDashTab(tab) {
   currentDashTab = tab;
