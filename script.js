@@ -322,15 +322,16 @@ async function fetchInlineProses() {
       new Chart(el.getContext('2d'),{type:'doughnut',data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#1e293b':'#e2e8f0'],borderColor:border,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
     };
 
-    // Chart 1: Unloading
+    // Chart 1: Unloading — 4 kategori dari data inbound
     const inboundRows=window._inboundRows||[];
-    const totalArmada=inboundRows.length||0;
     const finishArmada=inboundRows.filter(r=>r&&r.updateUnload&&r.updateUnload!=='').length;
-    const prosesArmada=inboundRows.filter(r=>r&&r.checkIn&&r.checkIn!==''&&(!r.updateUnload||r.updateUnload==='')).length;
-    const belumArmada=totalArmada-finishArmada-prosesArmada;
+    const prosesArmada=inboundRows.filter(r=>r&&r.checkIn&&r.checkIn!==''&&r.open&&r.open!==''&&(!r.updateUnload||r.updateUnload==='')).length;
+    const antriArmada =inboundRows.filter(r=>r&&r.checkIn&&r.checkIn!==''&&(!r.open||r.open==='')&&(!r.updateUnload||r.updateUnload==='')).length;
+    const belumArmada =inboundRows.filter(r=>r&&(!r.checkIn||r.checkIn==='')).length;
+    const totalArmada =inboundRows.length||0;
     const pctUnload=totalArmada>0?Math.round((finishArmada/totalArmada)*100):(s&&s.pctUnloading||0);
     document.getElementById('pctUnloading').textContent=pctUnload+'%';
-    document.getElementById('infoUnloading').textContent=`✅ ${finishArmada} selesai · ⏳ ${prosesArmada} proses · 🕐 ${belumArmada} belum`;
+    document.getElementById('infoUnloading').textContent=`✅ ${finishArmada} Finish · ⏳ ${prosesArmada} Proses · 🕐 ${antriArmada} Antri · 🔴 ${belumArmada} Belum`;
     makeDonut('chartUnloading',pctUnload,'#16a34a');
 
     // Chart 2: Aktual Receive (kolom Q)
@@ -451,21 +452,20 @@ function renderDashOutboundTable(rows) {
 // ══════════════════════════════════════
 let dashInboundChart=null, dashOutboundChart=null;
 
-function renderDashInboundChart(total,checkedIn,selesai,hit,miss) {
-  const proses=Math.max(0,checkedIn-selesai), belum=Math.max(0,total-checkedIn);
+function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
   const pct=total>0?Math.round((selesai/total)*100):0;
   document.getElementById('dashInboundPct').textContent=pct+'%';
   document.getElementById('inboundPctBadge').textContent=pct+'% Selesai';
   document.getElementById('piInSelesai').textContent=selesai+' truck';
   document.getElementById('piInProses').textContent=proses+' truck';
-  const piAntri=document.getElementById('piInAntri'); if(piAntri) piAntri.textContent='— truck';
+  const piAntri=document.getElementById('piInAntri'); if(piAntri) piAntri.textContent=antri+' truck';
   document.getElementById('piInBelum').textContent=belum+' truck';
   document.getElementById('piInHitMiss').textContent=hit+' HIT / '+miss+' MISS';
   const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
   if(dashInboundChart) dashInboundChart.destroy();
   dashInboundChart=new Chart(document.getElementById('dashInboundChart').getContext('2d'),{
     type:'doughnut',
-    data:{labels:['Selesai Unloading','Proses','Belum Datang'],datasets:[{data:[selesai,proses,belum],backgroundColor:['#16a34a','#2563eb','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
+    data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} truck`}}}}
   });
 }
@@ -516,13 +516,13 @@ async function fetchDashboardStats() {
     const resIn=await fetch(GAS_DASHBOARD_URL+'?action=getInbound');
     const dataIn=await resIn.json();
     if(dataIn.ok){
-      const{total,checkedIn,selesai,hit,miss}=dataIn.summary;
+      const{total,checkedIn,selesai,proses,antri,belum,hit,miss}=dataIn.summary;
       inboundTotal=total; inboundSelesai=selesai; inboundCheckedIn=checkedIn; inboundHit=hit; inboundMiss=miss;
       const el=document.querySelector('.stat-card.blue-bar .stat-value');
       const sb=document.querySelector('.stat-card.blue-bar .stat-sub');
       if(el) el.textContent=total;
-      if(sb){const proses=Math.max(0,checkedIn-selesai),blm=Math.max(0,total-checkedIn);sb.innerHTML=`<span class="up">✅ ${selesai} Finish</span> &nbsp;<span style="color:#d97706;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span class="dn">🕐 ${blm} Belum</span>`;}
-      renderDashInboundChart(total,checkedIn,selesai,hit,miss);
+      if(sb) sb.innerHTML=`<span class="up">✅ ${selesai} Finish</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span style="color:#f59e0b;font-weight:700">🕐 ${antri} Antri</span> &nbsp;<span class="dn">🔴 ${belum} Belum</span>`;
+      renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss);
       renderDashInboundTable(dataIn.data);
     }
   } catch(e){console.warn('Inbound stats error:',e);}
