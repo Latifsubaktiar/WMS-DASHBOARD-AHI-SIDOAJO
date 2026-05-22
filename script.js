@@ -574,8 +574,8 @@ function renderPanelInlineTable(rows) {
     return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${col};font-weight:800;font-size:10px;border:1px solid ${col}44">${escHtml(s)||'—'}</span>`;
   };
 
-  const num = (v) => v ? v.toLocaleString() : '—';
-  const sisa = (v) => `<span style="font-weight:800;color:${v>0?'#d97706':'#16a34a'}">${v||0}</span>`;
+  const num = (v) => (v !== undefined && v !== null && v !== '') ? Number(v).toLocaleString() : '—';
+  const sisa = (v) => { const n = Number(v)||0; return `<span style="font-weight:800;color:${n>0?'#d97706':'#16a34a'}">${n}</span>`; };
 
   tbody.innerHTML = rows.map((r,i) => `<tr>
     <td style="${c}">${i+1}</td>
