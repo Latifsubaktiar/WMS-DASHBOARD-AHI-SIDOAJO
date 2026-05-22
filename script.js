@@ -592,7 +592,7 @@ async function fetchDashboardStats() {
       const el = document.querySelector('.stat-card.blue-bar .stat-value');
       const sb = document.querySelector('.stat-card.blue-bar .stat-sub');
       if (el) el.textContent = total;
-      if (sb) sb.innerHTML  = `Plan masuk &nbsp;<span class="up">✅ ${checkedIn} check in</span> &nbsp;<span class="up">🎯 ${hit} HIT</span>`;
+      if (sb) sb.innerHTML  = `Update Unloading: <span class="up">✅ ${selesai}</span> &nbsp; Sisa: <span class="dn">${total - selesai}</span>`;
       renderDashInboundChart(total, checkedIn, selesai, hit, miss);
       renderDashInboundTable(dataIn.data);
     }
