@@ -584,15 +584,22 @@ function renderDashInboundTable(rows) {
 }
 
 async function fetchDashboardStats() {
+  let inboundTotal = 0, inboundSelesai = 0, inboundCheckedIn = 0, inboundHit = 0, inboundMiss = 0;
+  let outboundTotal = 0, outboundSelesai = 0;
+
   try {
     const resIn  = await fetch(GAS_DASHBOARD_URL + '?action=getInbound');
     const dataIn = await resIn.json();
     if (dataIn.ok) {
       const { total, checkedIn, selesai, hit, miss } = dataIn.summary;
+      inboundTotal = total; inboundSelesai = selesai;
+      inboundCheckedIn = checkedIn; inboundHit = hit; inboundMiss = miss;
+
       const el = document.querySelector('.stat-card.blue-bar .stat-value');
       const sb = document.querySelector('.stat-card.blue-bar .stat-sub');
       if (el) el.textContent = total;
       if (sb) sb.innerHTML  = `Update Unloading: <span class="up">✅ ${selesai}</span> &nbsp; Sisa: <span class="dn">${total - selesai}</span>`;
+
       renderDashInboundChart(total, checkedIn, selesai, hit, miss);
       renderDashInboundTable(dataIn.data);
     }
@@ -602,35 +609,201 @@ async function fetchDashboardStats() {
     const resOut  = await fetch(GAS_DASHBOARD_URL + '?action=getOutbound');
     const dataOut = await resOut.json();
     if (dataOut.ok) {
+      outboundTotal = dataOut.total; outboundSelesai = dataOut.selesai;
+
       const el = document.querySelector('.stat-card.orange-bar .stat-value');
       const sb = document.querySelector('.stat-card.orange-bar .stat-sub');
       if (el) el.textContent = dataOut.total;
       if (sb) sb.innerHTML  = `Armada hari ini &nbsp;<span class="up">✅ ${dataOut.selesai} selesai</span> &nbsp;<span class="dn">⏳ ${dataOut.total - dataOut.selesai} belum</span>`;
+
       renderDashOutboundChart(dataOut.total, dataOut.selesai);
     }
   } catch(e) { console.warn('Outbound stats error:', e); }
+
+  // Update Inventory Status donut → progress inbound + outbound
+  updateInventoryStatusDonut(inboundTotal, inboundSelesai, outboundTotal, outboundSelesai);
+
+  // Fetch Inventory Value dari SUMMARY
+  fetchInventoryValue();
+}
+
+// ── UPDATE INVENTORY STATUS DONUT ──
+function updateInventoryStatusDonut(inTotal, inSelesai, outTotal, outSelesai) {
+  const inPct  = inTotal  > 0 ? Math.round((inSelesai  / inTotal)  * 100) : 0;
+  const outPct = outTotal > 0 ? Math.round((outSelesai / outTotal) * 100) : 0;
+  const avgPct = (inTotal + outTotal) > 0
+    ? Math.round(((inSelesai + outSelesai) / (inTotal + outTotal)) * 100)
+    : 0;
+
+  // Update center text
+  const centerEl = document.querySelector('.donut-center .total');
+  const labelEl  = document.querySelector('.donut-center .total-label');
+  if (centerEl) centerEl.textContent = avgPct + '%';
+  if (labelEl)  labelEl.textContent  = 'Overall';
+
+  // Update legend
+  const legendItems = document.querySelectorAll('.donut-legend-item');
+  if (legendItems[0]) {
+    legendItems[0].querySelector('.donut-legend-left').innerHTML =
+      `<div class="donut-legend-dot" style="background:#16a34a"></div>Inbound`;
+    legendItems[0].querySelector('.donut-legend-val').textContent = inPct + '%';
+  }
+  if (legendItems[1]) {
+    legendItems[1].querySelector('.donut-legend-left').innerHTML =
+      `<div class="donut-legend-dot" style="background:#d97706"></div>Outbound`;
+    legendItems[1].querySelector('.donut-legend-val').textContent = outPct + '%';
+  }
+  if (legendItems[2]) {
+    legendItems[2].querySelector('.donut-legend-left').innerHTML =
+      `<div class="donut-legend-dot" style="background:#e2e8f0"></div>Belum Selesai`;
+    legendItems[2].querySelector('.donut-legend-val').textContent = (100 - avgPct) + '%';
+  }
+
+  // Update donut chart
+  const isDark = document.body.classList.contains('dark');
+  const ctx = document.getElementById('donutChart');
+  if (!ctx) return;
+  const chart = Chart.getChart(ctx);
+  if (chart) {
+    chart.data.datasets[0].data = [inPct, outPct, Math.max(0, 100 - inPct - outPct)];
+    chart.data.datasets[0].backgroundColor = ['#16a34a', '#d97706', isDark ? '#1e293b' : '#e2e8f0'];
+    chart.update();
+  }
+}
+
+// ── FETCH INVENTORY VALUE ──
+async function fetchInventoryValue() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getDashboardData');
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const inv = data.mtd && data.mtd.inventory ? data.mtd.inventory : 0;
+    const el  = document.querySelector('.stat-card.green-bar .stat-value');
+    const sb  = document.querySelector('.stat-card.green-bar .stat-sub');
+    if (el && inv) {
+      // Format angka besar
+      const fmt = inv >= 1000000
+        ? 'Rp ' + (inv / 1000000).toFixed(1).replace('.0','') + ' Jt'
+        : inv >= 1000
+        ? 'Rp ' + (inv / 1000).toFixed(0) + ' Rb'
+        : inv;
+      el.textContent = fmt;
+      el.style.fontSize = '16px';
+    }
+    if (sb && data.mtd) sb.textContent = 'Data bulan ' + (data.mtd.monthName || '');
+  } catch(e) { console.warn('Inventory value error:', e); }
 }
 
 fetchDashboardStats();
 setInterval(fetchDashboardStats, 5 * 60 * 1000);
 
-// ── CHARTS ──
+// ── DAILY ACTIVITY CHART (Real Data) ──
 Chart.defaults.color = '#6b7280';
 Chart.defaults.font.family = 'Outfit';
-new Chart(document.getElementById('lineChart').getContext('2d'),{
-  type:'line',
-  data:{ labels:['Sen','Sel','Rab','Kam','Jum','Sab'], datasets:[
-    {label:'Inbound', data:[120,190,170,240,210,290],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5},
-    {label:'Outbound',data:[100,130,150,110,170,200],borderColor:'#d97706',backgroundColor:'rgba(217,119,6,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#d97706',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5}
-  ]},
-  options:{ responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:12,cornerRadius:10}},
-    scales:{x:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'}},y:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'}}}
+let lineChartInstance = null;
+
+async function fetchDailyActivity() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getDailyActivity');
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const isDark = document.body.classList.contains('dark');
+
+    if (lineChartInstance) lineChartInstance.destroy();
+
+    lineChartInstance = new Chart(document.getElementById('lineChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Inbound',
+            data: data.inbound,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.08)',
+            tension: 0.4, fill: true,
+            pointBackgroundColor: '#2563eb',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            borderWidth: 2.5,
+          },
+          {
+            label: 'Outbound',
+            data: data.outbound,
+            borderColor: '#d97706',
+            backgroundColor: 'rgba(217,119,6,0.08)',
+            tension: 0.4, fill: true,
+            pointBackgroundColor: '#d97706',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            borderWidth: 2.5,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)',
+            titleColor: '#fff',
+            bodyColor: 'rgba(255,255,255,0.8)',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 10,
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(99,120,167,0.07)' },
+            ticks: { font: { size: 11 }, color: isDark ? '#484f58' : '#9ca3af' }
+          },
+          y: {
+            grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(99,120,167,0.07)' },
+            ticks: { font: { size: 11 }, color: isDark ? '#484f58' : '#9ca3af', stepSize: 1 },
+            beginAtZero: true,
+          }
+        }
+      }
+    });
+
+    // Update subtitle chart
+    const cardTitle = document.querySelector('#page-dashboard .mid-grid .card-title');
+    if (cardTitle && data.weekStart) {
+      cardTitle.innerHTML = `<span class="live-dot"></span>Daily Activity <span style="font-size:10px;font-weight:500;color:var(--text-3);margin-left:6px">Minggu ini (ab ${data.weekStart})</span>`;
+    }
+
+  } catch(e) {
+    console.warn('Daily activity error:', e);
+    // Fallback ke dummy data jika gagal
+    renderDummyLineChart();
   }
-});
+}
+
+function renderDummyLineChart() {
+  new Chart(document.getElementById('lineChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: ['Sen','Sel','Rab','Kam','Jum','Sab'],
+      datasets: [
+        { label:'Inbound',  data:[0,0,0,0,0,0], borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.06)', tension:0.4, fill:true, pointBackgroundColor:'#2563eb', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, borderWidth:2.5 },
+        { label:'Outbound', data:[0,0,0,0,0,0], borderColor:'#d97706', backgroundColor:'rgba(217,119,6,0.06)',  tension:0.4, fill:true, pointBackgroundColor:'#d97706', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, borderWidth:2.5 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'}}, y:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'},beginAtZero:true} } }
+  });
+}
+
+fetchDailyActivity();
 new Chart(document.getElementById('donutChart').getContext('2d'),{
   type:'doughnut',
-  data:{labels:['Available','Reserved','Low Stock'],datasets:[{data:[60,25,15],backgroundColor:['#16a34a','#d97706','#dc2626'],borderColor:['#fff','#fff','#fff'],borderWidth:3,hoverOffset:10}]},
+  data:{labels:['Inbound','Outbound','Belum Selesai'],datasets:[{data:[0,0,100],backgroundColor:['#16a34a','#d97706','#e2e8f0'],borderColor:['#fff','#fff','#fff'],borderWidth:3,hoverOffset:10}]},
   options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(17,24,39,0.9)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}%`},padding:10,cornerRadius:10}}}
 });
 
