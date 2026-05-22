@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="style.css">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
@@ -356,9 +355,10 @@
           </div>
           <div class="progress-legend">
             <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#16a34a"></span><span class="prog-leg-text">Selesai Unloading</span><span class="prog-leg-val" id="piInSelesai" style="color:#16a34a">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#2563eb"></span><span class="prog-leg-text">Check In (Proses)</span><span class="prog-leg-val" id="piInProses" style="color:#2563eb">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#dc2626"></span><span class="prog-leg-text">Belum Check In</span><span class="prog-leg-val" id="piInBelum" style="color:#dc2626">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">HIT / MISS</span><span class="prog-leg-val" id="piInHitMiss" style="color:#f59e0b">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#2563eb"></span><span class="prog-leg-text">Proses</span><span class="prog-leg-val" id="piInProses" style="color:#2563eb">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Antri</span><span class="prog-leg-val" id="piInAntri" style="color:#f59e0b">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#dc2626"></span><span class="prog-leg-text">Belum Datang</span><span class="prog-leg-val" id="piInBelum" style="color:#dc2626">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#8b5cf6"></span><span class="prog-leg-text">HIT / MISS</span><span class="prog-leg-val" id="piInHitMiss" style="color:#8b5cf6">—</span></div>
           </div>
         </div>
       </div>
@@ -378,7 +378,10 @@
           </div>
           <div class="progress-legend">
             <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#16a34a"></span><span class="prog-leg-text">Selesai</span><span class="prog-leg-val" id="piOutSelesai" style="color:#16a34a">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Belum Selesai</span><span class="prog-leg-val" id="piOutBelum" style="color:#f59e0b">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#2563eb"></span><span class="prog-leg-text">Proses</span><span class="prog-leg-val" id="piOutProses" style="color:#2563eb">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Antri</span><span class="prog-leg-val" id="piOutAntri" style="color:#f59e0b">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#dc2626"></span><span class="prog-leg-text">Belum Datang</span><span class="prog-leg-val" id="piOutBelum" style="color:#dc2626">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#8b5cf6"></span><span class="prog-leg-text">HIT / MISS</span><span class="prog-leg-val" id="piOutHitMiss" style="color:#8b5cf6">—</span></div>
           </div>
         </div>
       </div>
