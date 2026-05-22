@@ -601,7 +601,8 @@ function renderPanelInlineTable(rows) {
     <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInQty)}</td>
     <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInLpn)}</td>
     <td style="${cn}background:rgba(37,99,235,0.04)">${sisa(r.sisaInLpn)}</td>
-    <td style="background:rgba(37,99,235,0.04);${c}" colspan="2">${pBar(r.putInPct2)}</td>
+    <td style="background:rgba(37,99,235,0.04);${c}">${pBar(r.putInPct1)}</td>
+    <td style="background:rgba(37,99,235,0.04);${c}">${pBar(r.putInPct2)}</td>
     <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InQty)}</td>
     <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InLpn)}</td>
     <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InQty)}</td>
@@ -609,7 +610,8 @@ function renderPanelInlineTable(rows) {
     <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrQty)}</td>
     <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrLpn)}</td>
     <td style="${cn}background:rgba(22,163,74,0.04)">${sisa(r.sisaStrLpn)}</td>
-    <td style="background:rgba(22,163,74,0.04);${c}" colspan="2">${pBar(r.putStrPct1)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.putStrPct1)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.putStrPct2)}</td>
     <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrQty)}</td>
     <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrLpn)}</td>
     <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrQty)}</td>
@@ -705,18 +707,16 @@ function escHtml(s) {
 }
 
 function renderDashInboundChart(total, checkedIn, selesai, hit, miss) {
-  const proses = Math.max(0, checkedIn - selesai);
   const belum  = Math.max(0, total - checkedIn);
+  const proses = Math.max(0, checkedIn - selesai);
   const pct    = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
   document.getElementById('dashInboundPct').textContent    = pct + '%';
   document.getElementById('inboundPctBadge').textContent   = pct + '% Selesai';
-  document.getElementById('piInSelesai').textContent  = selesai + ' truck';
-  document.getElementById('piInProses').textContent   = proses  + ' truck';
-  const piAntri = document.getElementById('piInAntri');
-  if (piAntri) piAntri.textContent = '— truck';
-  document.getElementById('piInBelum').textContent    = belum   + ' truck';
-  document.getElementById('piInHitMiss').textContent  = hit + ' HIT / ' + miss + ' MISS';
+  document.getElementById('piInSelesai').textContent = selesai + ' truck';
+  document.getElementById('piInProses').textContent  = proses  + ' truck';
+  document.getElementById('piInBelum').textContent   = belum   + ' truck';
+  document.getElementById('piInHitMiss').textContent = hit + ' HIT / ' + miss + ' MISS';
 
   const isDark = document.body.classList.contains('dark');
   const border = isDark ? '#161b22' : '#ffffff';
@@ -725,13 +725,13 @@ function renderDashInboundChart(total, checkedIn, selesai, hit, miss) {
   dashInboundChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['Selesai Unloading', 'Proses', 'Belum Datang'],
+      labels: ['Selesai', 'Check In (Proses)', 'Belum Check In'],
       datasets: [{ data: [selesai, proses, belum], backgroundColor: ['#16a34a','#2563eb','#dc2626'], borderColor: border, borderWidth: 3, hoverOffset: 6 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '68%',
       plugins: {
-        legend: { display: false }, datalabels: { display: false },
+        legend: { display: false },
         tooltip: { backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)', titleColor:'#fff', bodyColor:'rgba(255,255,255,0.8)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10, cornerRadius:10,
           callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} truck` }
         }
@@ -740,20 +740,14 @@ function renderDashInboundChart(total, checkedIn, selesai, hit, miss) {
   });
 }
 
-function renderDashOutboundChart(total, selesai, proses, antri, belum, hit, miss) {
-  proses = proses || 0; antri = antri || 0; belum = belum || 0; hit = hit || 0; miss = miss || 0;
-  const pct = total > 0 ? Math.round((selesai / total) * 100) : 0;
+function renderDashOutboundChart(total, selesai) {
+  const belum = Math.max(0, total - selesai);
+  const pct   = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
   document.getElementById('dashOutboundPct').textContent    = pct + '%';
   document.getElementById('outboundPctBadge').textContent   = pct + '% Selesai';
-  document.getElementById('piOutSelesai').textContent  = selesai + ' armada';
-  const elProses = document.getElementById('piOutProses');
-  const elAntri  = document.getElementById('piOutAntri');
-  const elHM     = document.getElementById('piOutHitMiss');
-  if (elProses) elProses.textContent = proses + ' armada';
-  if (elAntri)  elAntri.textContent  = antri  + ' armada';
-  document.getElementById('piOutBelum').textContent    = belum   + ' armada';
-  if (elHM) elHM.textContent = hit + ' HIT / ' + miss + ' MISS';
+  document.getElementById('piOutSelesai').textContent = selesai + ' armada';
+  document.getElementById('piOutBelum').textContent   = belum   + ' armada';
 
   const isDark = document.body.classList.contains('dark');
   const border = isDark ? '#161b22' : '#ffffff';
@@ -762,13 +756,13 @@ function renderDashOutboundChart(total, selesai, proses, antri, belum, hit, miss
   dashOutboundChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['Selesai', 'Proses', 'Antri', 'Belum Datang'],
-      datasets: [{ data: [selesai, proses, antri, belum], backgroundColor: ['#16a34a','#2563eb','#f59e0b','#dc2626'], borderColor: border, borderWidth: 3, hoverOffset: 6 }]
+      labels: ['Selesai', 'Belum Selesai'],
+      datasets: [{ data: [selesai, belum], backgroundColor: ['#16a34a','#f59e0b'], borderColor: border, borderWidth: 3, hoverOffset: 6 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '68%',
       plugins: {
-        legend: { display: false }, datalabels: { display: false },
+        legend: { display: false },
         tooltip: { backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)', titleColor:'#fff', bodyColor:'rgba(255,255,255,0.8)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10, cornerRadius:10,
           callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} armada` }
         }
@@ -823,10 +817,10 @@ async function fetchDashboardStats() {
       const sb = document.querySelector('.stat-card.blue-bar .stat-sub');
       if (el) el.textContent = total;
       if (sb) {
-        const finish = selesai;
-        const proses = Math.max(0, checkedIn - selesai);
-        const blm    = Math.max(0, total - checkedIn);
-        sb.innerHTML = `<span class="up">✅ ${finish} Finish</span> &nbsp;<span style="color:#d97706;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span class="dn">🕐 ${blm} Belum</span>`;
+        const finish  = selesai;
+        const proses  = checkedIn - selesai;
+        const belum   = total - checkedIn;
+        sb.innerHTML = `<span class="up">✅ ${finish} Finish</span> &nbsp;<span style="color:#d97706;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span class="dn">🕐 ${belum} Belum</span>`;
       }
 
       renderDashInboundChart(total, checkedIn, selesai, hit, miss);
@@ -843,9 +837,9 @@ async function fetchDashboardStats() {
       const el = document.querySelector('.stat-card.orange-bar .stat-value');
       const sb = document.querySelector('.stat-card.orange-bar .stat-sub');
       if (el) el.textContent = dataOut.total;
-      if (sb) sb.innerHTML  = `<span class="up">✅ ${dataOut.selesai} Selesai</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${dataOut.proses||0} Proses</span> &nbsp;<span class="dn">🕐 ${dataOut.belum||0} Belum</span>`;
+      if (sb) sb.innerHTML  = `Armada hari ini &nbsp;<span class="up">✅ ${dataOut.selesai} selesai</span> &nbsp;<span class="dn">⏳ ${dataOut.total - dataOut.selesai} belum</span>`;
 
-      renderDashOutboundChart(dataOut.total, dataOut.selesai, dataOut.proses||0, dataOut.antri||0, dataOut.belum||0, dataOut.hit||0, dataOut.miss||0);
+      renderDashOutboundChart(dataOut.total, dataOut.selesai);
     }
   } catch(e) { console.warn('Outbound stats error:', e); }
 
@@ -923,30 +917,8 @@ setInterval(fetchDashboardStats, 5 * 60 * 1000);
 // ── DAILY ACTIVITY CHART (Real Data) ──
 Chart.defaults.color = '#6b7280';
 Chart.defaults.font.family = 'Outfit';
-
-// Custom datalabels plugin (no external CDN needed)
-const dataLabelPlugin = {
-  id: 'customDataLabels',
-  afterDatasetsDraw(chart) {
-    const { ctx } = chart;
-    chart.data.datasets.forEach((dataset, i) => {
-      const meta = chart.getDatasetMeta(i);
-      meta.data.forEach((point, j) => {
-        const val = dataset.data[j];
-        if (!val || val === 0) return;
-        ctx.save();
-        ctx.font = 'bold 11px Outfit, sans-serif';
-        ctx.fillStyle = dataset.borderColor;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = i === 0 ? 'bottom' : 'top';
-        const offset = i === 0 ? -6 : 6;
-        ctx.fillText(val, point.x, point.y + offset);
-        ctx.restore();
-      });
-    });
-  }
-};
-
+// Register datalabels plugin hanya untuk line chart
+Chart.register(ChartDataLabels);
 let lineChartInstance = null;
 
 async function fetchDailyActivity() {
@@ -963,20 +935,60 @@ async function fetchDailyActivity() {
 
     lineChartInstance = new Chart(document.getElementById('lineChart').getContext('2d'), {
       type: 'line',
-      plugins: [dataLabelPlugin],
       data: {
         labels: data.labels,
         datasets: [
-          { label:'Inbound',  data:data.inbound,  borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.08)', tension:0.4, fill:true, pointBackgroundColor:'#2563eb', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, borderWidth:2.5 },
-          { label:'Outbound', data:data.outbound, borderColor:'#d97706', backgroundColor:'rgba(217,119,6,0.08)',  tension:0.4, fill:true, pointBackgroundColor:'#d97706', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, borderWidth:2.5 }
+          {
+            label: 'Inbound',
+            data: data.inbound,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.08)',
+            tension: 0.4, fill: true,
+            pointBackgroundColor: '#2563eb',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            borderWidth: 2.5,
+            datalabels: {
+              align: 'top', anchor: 'end',
+              color: '#2563eb',
+              font: { size: 11, weight: '800', family: 'Outfit' },
+              formatter: (v) => v > 0 ? v : '',
+            }
+          },
+          {
+            label: 'Outbound',
+            data: data.outbound,
+            borderColor: '#d97706',
+            backgroundColor: 'rgba(217,119,6,0.08)',
+            tension: 0.4, fill: true,
+            pointBackgroundColor: '#d97706',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            borderWidth: 2.5,
+            datalabels: {
+              align: 'bottom', anchor: 'end',
+              color: '#d97706',
+              font: { size: 11, weight: '800', family: 'Outfit' },
+              formatter: (v) => v > 0 ? v : '',
+            }
+          }
         ]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
-        layout: { padding: { top: 24, bottom: 5 } },
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 20, bottom: 5 } },
         plugins: {
           legend: { display: false },
-          tooltip: { backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)', titleColor:'#fff', bodyColor:'rgba(255,255,255,0.8)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:12, cornerRadius:10 },
+          tooltip: {
+            backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)',
+            titleColor: '#fff', bodyColor: 'rgba(255,255,255,0.8)',
+            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+            padding: 12, cornerRadius: 10,
+          },
+          datalabels: { display: true }
         },
         scales: {
           x: { grid:{color:gridColor}, ticks:{font:{size:11},color:tickColor} },
