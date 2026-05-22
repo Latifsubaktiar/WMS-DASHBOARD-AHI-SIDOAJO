@@ -292,7 +292,9 @@ function switchPanelTab(tab) {
 function renderPanelInboundTable(rows) {
   const tbody=document.getElementById('panelInboundBody'); if(!tbody) return;
   if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>'; return; }
-  tbody.innerHTML=rows.map((r,i)=>`<tr>
+  const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
+  const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
+  tbody.innerHTML=sorted.map((r,i)=>`<tr>
     <td class="mono" style="font-size:12px">${i+1}</td>
     <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
     <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
@@ -495,7 +497,9 @@ function renderDashInboundTable(rows) {
   const tbody=document.getElementById('dashInboundBody'), count=document.getElementById('dashTableCount');
   if(!tbody) return;
   if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';if(count&&currentDashTab==='inbound')count.textContent='0 data inbound hari ini';return;}
-  tbody.innerHTML=rows.map((r,i)=>`<tr>
+  const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
+  const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
+  tbody.innerHTML=sorted.map((r,i)=>`<tr>
     <td class="mono" style="font-size:12px">${i+1}</td>
     <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
     <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
