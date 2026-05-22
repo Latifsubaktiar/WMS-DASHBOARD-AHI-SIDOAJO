@@ -189,6 +189,67 @@
         <div class="stat-content"><div class="stat-label">Pending Alerts</div><div class="stat-value" style="color:var(--red)">3</div><div class="stat-sub"><span class="dn">! Perlu tindakan</span></div></div>
       </div>
     </div>
+
+    <!-- ═══ INBOUND DETAIL PANEL (toggle saat klik stat card) ═══ -->
+    <div id="inboundDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;">
+        <div class="card-header" style="background:linear-gradient(135deg,rgba(37,99,235,0.08),transparent);">
+          <div><span class="card-title"><span class="live-dot"></span>📦 Detail Inbound — Monitoring Putaway</span>
+          <div id="inlineTanggal" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div></div>
+          <button onclick="toggleInboundPanel()" style="border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+        </div>
+        <!-- CHARTS -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:18px 20px;border-bottom:1px solid rgba(200,215,240,0.25);">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="font-size:12px;font-weight:800;color:var(--text);">📥 Unloading</div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="chartUnloading"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div id="pctUnloading" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
+                <div style="font-size:10px;color:var(--text-3)">Selesai</div>
+              </div>
+            </div>
+            <div id="infoUnloading" style="font-size:11px;color:var(--text-3);text-align:center;">—</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="font-size:12px;font-weight:800;color:var(--text);">🏬 Putaway Inbound</div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="chartPutawayIn"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div id="pctPutawayIn" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
+                <div style="font-size:10px;color:var(--text-3)">Selesai</div>
+              </div>
+            </div>
+            <div id="infoPutawayIn" style="font-size:11px;color:var(--text-3);text-align:center;">—</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="font-size:12px;font-weight:800;color:var(--text);">📦 Putaway Storing</div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="chartPutawayStr"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div id="pctPutawayStr" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
+                <div style="font-size:10px;color:var(--text-3)">Selesai</div>
+              </div>
+            </div>
+            <div id="infoPutawayStr" style="font-size:11px;color:var(--text-3);text-align:center;">—</div>
+          </div>
+        </div>
+        <!-- TABS -->
+        <div style="display:flex;border-bottom:1px solid rgba(200,215,240,0.3);padding:0 20px;">
+          <button id="panelTabInbound" onclick="switchPanelTab('inbound')" style="padding:10px 18px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);">📋 Data Inbound</button>
+          <button id="panelTabInline" onclick="switchPanelTab('inline')" style="padding:10px 18px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);">🏬 Monitoring Putaway</button>
+        </div>
+        <!-- TABLE Inbound -->
+        <div id="panelInboundTable" style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+          <table><thead><tr><th>No</th><th>No LC</th><th>No Polisi</th><th>Ekspedisi</th><th>Type</th><th>BU</th><th>Check In</th><th>Stuffing</th><th>Unloading</th><th>Hit/Miss</th></tr></thead>
+          <tbody id="panelInboundBody"><tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Memuat...</td></tr></tbody></table>
+        </div>
+        <!-- TABLE Putaway -->
+        <div id="panelInlineTable" style="overflow-x:auto;max-height:280px;overflow-y:auto;display:none;">
+          <table><thead><tr><th>No</th><th>No LC/PO</th><th>Type</th><th>No Pol</th><th>Status</th><th>Plan QTY</th><th>Aktual QTY</th><th>%RCV</th><th>Putaway IN</th><th>Sisa LPN</th><th>%IN</th><th>Putaway STR</th><th>Sisa LPN</th><th>%STR</th></tr></thead>
+          <tbody id="panelInlineBody"><tr><td colspan="14" style="text-align:center;padding:20px;color:var(--text-3)">Klik tab Monitoring Putaway untuk memuat...</td></tr></tbody></table>
+        </div>
+        <div id="panelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+      </div>
+    </div>
+
     <div class="mid-grid">
       <div class="card">
         <div class="card-header"><span class="card-title"><span class="live-dot"></span>Daily Activity</span><div class="card-more">⋯</div></div>
