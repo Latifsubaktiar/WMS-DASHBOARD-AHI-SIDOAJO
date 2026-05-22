@@ -546,22 +546,43 @@ function renderPanelInlineTable(rows) {
     tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
     return;
   }
+
+  const pctColor = (pct) => {
+    const n = parseInt(pct);
+    if (!pct || pct === '—') return 'var(--text-3)';
+    if (n >= 100) return '#16a34a';
+    if (n >= 90)  return '#2563eb';
+    if (n >= 70)  return '#d97706';
+    return '#dc2626';
+  };
+
+  const pctBar = (pct) => {
+    const n = parseInt(pct) || 0;
+    const color = n >= 100 ? '#16a34a' : n >= 90 ? '#2563eb' : n >= 70 ? '#d97706' : '#dc2626';
+    return `<div style="display:flex;align-items:center;gap:6px;">
+      <div style="flex:1;height:6px;background:rgba(148,163,184,0.2);border-radius:4px;min-width:50px;">
+        <div style="width:${Math.min(n,100)}%;height:100%;background:${color};border-radius:4px;"></div>
+      </div>
+      <span style="font-size:11px;font-weight:800;color:${color};min-width:36px;text-align:right">${pct||'—'}</span>
+    </div>`;
+  };
+
   tbody.innerHTML = rows.map((r, i) => `
     <tr>
-      <td class="mono" style="font-size:11px">${i+1}</td>
-      <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
+      <td style="font-size:11px;color:var(--text-3)">${i+1}</td>
+      <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text)">${escHtml(r.noLc)}</td>
       <td style="font-size:11px">${escHtml(r.type)}</td>
-      <td class="mono" style="font-size:11px">${escHtml(r.nopol)}</td>
-      <td><span class="badge ${r.status==='OUT'?'badge-green':'badge-orange'}">${escHtml(r.status)||'—'}</span></td>
-      <td class="mono" style="font-size:11px;text-align:right">${r.planQty.toLocaleString()}</td>
-      <td class="mono" style="font-size:11px;text-align:right">${r.aktualQty.toLocaleString()}</td>
-      <td style="font-size:11px;font-weight:700;color:${r.pctRcv==='100%'?'var(--green)':r.pctRcv&&parseInt(r.pctRcv)<90?'var(--red)':'var(--orange)'}">${r.pctRcv||'—'}</td>
-      <td class="mono" style="font-size:11px;text-align:right">${r.putInQty.toLocaleString()}</td>
-      <td class="mono" style="font-size:11px;text-align:right;color:${r.sisaInLpn>0?'var(--orange)':'var(--green)'}">${r.sisaInLpn}</td>
-      <td style="font-size:11px;font-weight:700;color:${r.putInPct==='100%'?'var(--green)':r.putInPct&&parseInt(r.putInPct)<90?'var(--red)':'var(--orange)'}">${r.putInPct||'—'}</td>
-      <td class="mono" style="font-size:11px;text-align:right">${r.putStrQty.toLocaleString()}</td>
-      <td class="mono" style="font-size:11px;text-align:right;color:${r.sisaStrLpn>0?'var(--orange)':'var(--green)'}">${r.sisaStrLpn}</td>
-      <td style="font-size:11px;font-weight:700;color:${r.putStrPct==='100%'?'var(--green)':r.putStrPct&&parseInt(r.putStrPct)<90?'var(--red)':'var(--orange)'}">${r.putStrPct||'—'}</td>
+      <td style="font-size:11px;font-family:'JetBrains Mono',monospace">${escHtml(r.nopol)}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:2px 9px;border-radius:20px;background:${r.status==='OUT'?'rgba(22,163,74,0.15)':'rgba(217,119,6,0.15)'};color:${r.status==='OUT'?'#16a34a':'#d97706'};border:1px solid ${r.status==='OUT'?'rgba(22,163,74,0.3)':'rgba(217,119,6,0.3)'}">${escHtml(r.status)||'—'}</span></td>
+      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right">${r.planQty.toLocaleString()}</td>
+      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right">${r.aktualQty.toLocaleString()}</td>
+      <td style="min-width:90px">${pctBar(r.pctRcv)}</td>
+      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right">${r.putInQty.toLocaleString()}</td>
+      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right;color:${r.sisaInLpn>0?'#d97706':'#16a34a'};font-weight:700">${r.sisaInLpn}</td>
+      <td style="min-width:90px">${pctBar(r.putInPct)}</td>
+      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right">${r.putStrQty.toLocaleString()}</td>
+      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right;color:${r.sisaStrLpn>0?'#d97706':'#16a34a'};font-weight:700">${r.sisaStrLpn}</td>
+      <td style="min-width:90px">${pctBar(r.putStrPct)}</td>
     </tr>
   `).join('');
 }
