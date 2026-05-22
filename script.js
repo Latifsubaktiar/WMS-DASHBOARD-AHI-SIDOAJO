@@ -496,38 +496,45 @@ async function fetchInlineProses() {
     const isDark = document.body.classList.contains('dark');
     const border = isDark ? '#161b22' : '#ffffff';
 
-    // Chart Unloading
-    document.getElementById('pctUnloading').textContent = s.pctUnloading + '%';
-    document.getElementById('infoUnloading').textContent =
-      `Aktual: ${s.sumAktualQty.toLocaleString()} / Plan: ${s.sumPlanQty.toLocaleString()} QTY`;
-    if (chartUnloadingInst) chartUnloadingInst.destroy();
-    chartUnloadingInst = new Chart(document.getElementById('chartUnloading').getContext('2d'), {
-      type: 'doughnut',
-      data: { datasets: [{ data: [s.pctUnloading, 100 - s.pctUnloading], backgroundColor: ['#16a34a', isDark?'#1e293b':'#e2e8f0'], borderColor: border, borderWidth: 2 }] },
-      options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
-    });
+    const makeDonut = (canvasId, pct, color) => {
+      const el = document.getElementById(canvasId);
+      if (!el) return;
+      const existing = Chart.getChart(el);
+      if (existing) existing.destroy();
+      new Chart(el.getContext('2d'), {
+        type: 'doughnut',
+        data: { datasets: [{ data:[pct, Math.max(0,100-pct)], backgroundColor:[color, isDark?'#1e293b':'#e2e8f0'], borderColor:border, borderWidth:2 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'72%',
+          plugins:{ legend:{display:false}, tooltip:{enabled:false}, datalabels:{display:false} } }
+      });
+    };
 
-    // Chart Putaway Inbound
-    document.getElementById('pctPutawayIn').textContent = s.pctPutawayIn + '%';
-    document.getElementById('infoPutawayIn').textContent =
-      `Selesai: ${s.sumPutawayIn.toLocaleString()} | Sisa: ${s.sumSisaIn.toLocaleString()} LPN`;
-    if (chartPutawayInInst) chartPutawayInInst.destroy();
-    chartPutawayInInst = new Chart(document.getElementById('chartPutawayIn').getContext('2d'), {
-      type: 'doughnut',
-      data: { datasets: [{ data: [s.pctPutawayIn, 100 - s.pctPutawayIn], backgroundColor: ['#2563eb', isDark?'#1e293b':'#e2e8f0'], borderColor: border, borderWidth: 2 }] },
-      options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
-    });
+    // Chart 1: Unloading (armada vs selesai dari INBOUND)
+    const inboundRows = window._inboundRows || [];
+    const totalArmada  = inboundRows.length || 0;
+    const finishArmada = inboundRows.filter(r => r.updateUnload).length;
+    const pctUnload    = totalArmada > 0 ? Math.round((finishArmada/totalArmada)*100) : s.pctUnloading;
+    document.getElementById('pctUnloading').textContent = pctUnload + '%';
+    document.getElementById('infoUnloading').textContent = `Selesai: ${finishArmada} / Total: ${totalArmada} armada`;
+    makeDonut('chartUnloading', pctUnload, '#16a34a');
 
-    // Chart Putaway Storing
-    document.getElementById('pctPutawayStr').textContent = s.pctPutawayStr + '%';
-    document.getElementById('infoPutawayStr').textContent =
-      `Selesai: ${s.sumPutawayStr.toLocaleString()} | Sisa: ${s.sumSisaStr.toLocaleString()} LPN`;
-    if (chartPutawayStrInst) chartPutawayStrInst.destroy();
-    chartPutawayStrInst = new Chart(document.getElementById('chartPutawayStr').getContext('2d'), {
-      type: 'doughnut',
-      data: { datasets: [{ data: [s.pctPutawayStr, 100 - s.pctPutawayStr], backgroundColor: ['#d97706', isDark?'#1e293b':'#e2e8f0'], borderColor: border, borderWidth: 2 }] },
-      options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
-    });
+    // Chart 2: Aktual Receive kolom Q
+    const pctAkt = s.avgPctAkt || 0;
+    document.getElementById('pctAktualRcv').textContent = pctAkt + '%';
+    document.getElementById('infoAktualRcv').textContent = `Avg % Receive (Kol Q)`;
+    makeDonut('chartAktualRcv', pctAkt, '#0891b2');
+
+    // Chart 3: Putaway Inbound kolom X
+    const pctPutIn = s.avgPctPutIn2 || 0;
+    document.getElementById('pctPutawayIn').textContent = pctPutIn + '%';
+    document.getElementById('infoPutawayIn').textContent = `Sisa: ${(s.sumSisaIn||0).toLocaleString()} LPN`;
+    makeDonut('chartPutawayIn', pctPutIn, '#2563eb');
+
+    // Chart 4: Putaway Storing kolom AG
+    const pctPutStr = s.avgPctPutStr || 0;
+    document.getElementById('pctPutawayStr').textContent = pctPutStr + '%';
+    document.getElementById('infoPutawayStr').textContent = `Sisa: ${(s.sumSisaStr||0).toLocaleString()} LPN`;
+    makeDonut('chartPutawayStr', pctPutStr, '#d97706');
 
     // Render putaway table
     renderPanelInlineTable(data.data);
@@ -910,7 +917,111 @@ setInterval(fetchDashboardStats, 5 * 60 * 1000);
 // ── DAILY ACTIVITY CHART (Real Data) ──
 Chart.defaults.color = '#6b7280';
 Chart.defaults.font.family = 'Outfit';
+// Register datalabels plugin hanya untuk line chart
+Chart.register(ChartDataLabels);
 let lineChartInstance = null;
+
+async function fetchDailyActivity() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getDailyActivity');
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const isDark = document.body.classList.contains('dark');
+    const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(99,120,167,0.07)';
+    const tickColor = isDark ? '#484f58' : '#9ca3af';
+
+    if (lineChartInstance) lineChartInstance.destroy();
+
+    lineChartInstance = new Chart(document.getElementById('lineChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Inbound',
+            data: data.inbound,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.08)',
+            tension: 0.4, fill: true,
+            pointBackgroundColor: '#2563eb',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            borderWidth: 2.5,
+            datalabels: {
+              align: 'top', anchor: 'end',
+              color: '#2563eb',
+              font: { size: 11, weight: '800', family: 'Outfit' },
+              formatter: (v) => v > 0 ? v : '',
+            }
+          },
+          {
+            label: 'Outbound',
+            data: data.outbound,
+            borderColor: '#d97706',
+            backgroundColor: 'rgba(217,119,6,0.08)',
+            tension: 0.4, fill: true,
+            pointBackgroundColor: '#d97706',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            borderWidth: 2.5,
+            datalabels: {
+              align: 'bottom', anchor: 'end',
+              color: '#d97706',
+              font: { size: 11, weight: '800', family: 'Outfit' },
+              formatter: (v) => v > 0 ? v : '',
+            }
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 20, bottom: 5 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isDark ? 'rgba(22,27,34,0.95)' : 'rgba(17,24,39,0.9)',
+            titleColor: '#fff', bodyColor: 'rgba(255,255,255,0.8)',
+            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+            padding: 12, cornerRadius: 10,
+          },
+          datalabels: { display: true }
+        },
+        scales: {
+          x: { grid:{color:gridColor}, ticks:{font:{size:11},color:tickColor} },
+          y: { grid:{color:gridColor}, ticks:{font:{size:11},color:tickColor,stepSize:1}, beginAtZero:true }
+        }
+      }
+    });
+
+    const cardTitle = document.querySelector('#page-dashboard .mid-grid .card-title');
+    if (cardTitle && data.weekStart) {
+      cardTitle.innerHTML = `<span class="live-dot"></span>Daily Activity <span style="font-size:10px;font-weight:500;color:var(--text-3);margin-left:6px">Minggu ini (ab ${data.weekStart})</span>`;
+    }
+
+  } catch(e) {
+    console.warn('Daily activity error:', e);
+    renderDummyLineChart();
+  }
+}
+
+function renderDummyLineChart() {
+  if (lineChartInstance) lineChartInstance.destroy();
+  lineChartInstance = new Chart(document.getElementById('lineChart').getContext('2d'), {
+    type: 'line',
+    data: { labels:['Sen','Sel','Rab','Kam','Jum','Sab'],
+      datasets:[
+        {label:'Inbound', data:[0,0,0,0,0,0],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5,datalabels:{display:false}},
+        {label:'Outbound',data:[0,0,0,0,0,0],borderColor:'#d97706',backgroundColor:'rgba(217,119,6,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#d97706',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5,datalabels:{display:false}}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:false}},scales:{x:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'}},y:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'},beginAtZero:true}}}
+  });
+}
+
+fetchDailyActivity();
 
 async function fetchDailyActivity() {
   try {
