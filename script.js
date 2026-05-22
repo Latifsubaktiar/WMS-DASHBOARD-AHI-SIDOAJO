@@ -400,6 +400,84 @@ const dateStr = d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month
 document.getElementById('todayDate').textContent  = dateStr;
 document.getElementById('todayDate2').textContent = dateStr;
 
+// ── TAB SWITCH ──
+let currentDashTab = 'inbound';
+let outboundDetailLoaded = false;
+
+function switchDashTab(tab) {
+  currentDashTab = tab;
+  const inWrap  = document.getElementById('tableInboundWrap');
+  const outWrap = document.getElementById('tableOutboundWrap');
+  const btnIn   = document.getElementById('tabBtnInbound');
+  const btnOut  = document.getElementById('tabBtnOutbound');
+
+  if (tab === 'inbound') {
+    inWrap.style.display  = '';
+    outWrap.style.display = 'none';
+    btnIn.style.color  = 'var(--accent)';
+    btnIn.style.borderBottom  = '2px solid var(--accent)';
+    btnOut.style.color = 'var(--text-3)';
+    btnOut.style.borderBottom = '2px solid transparent';
+    const cnt = document.getElementById('dashTableCount');
+    if (cnt) cnt.textContent = (window._inboundRows || []).length + ' data inbound hari ini';
+  } else {
+    inWrap.style.display  = 'none';
+    outWrap.style.display = '';
+    btnIn.style.color  = 'var(--text-3)';
+    btnIn.style.borderBottom  = '2px solid transparent';
+    btnOut.style.color = 'var(--accent)';
+    btnOut.style.borderBottom = '2px solid var(--accent)';
+    if (!outboundDetailLoaded) fetchOutboundDetail();
+  }
+}
+
+async function fetchOutboundDetail() {
+  const tbody = document.getElementById('dashOutboundBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data outbound...</td></tr>';
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getOutboundDetail');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal');
+    outboundDetailLoaded = true;
+    renderDashOutboundTable(data.data);
+    const cnt = document.getElementById('dashTableCount');
+    if (cnt) cnt.textContent = data.total + ' data outbound hari ini';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--red)">Gagal memuat: ${e.message}</td></tr>`;
+  }
+}
+
+function renderDashOutboundTable(rows) {
+  const tbody = document.getElementById('dashOutboundBody');
+  if (!tbody) return;
+  if (!rows || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data outbound hari ini</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td class="mono" style="font-size:12px">${i+1}</td>
+      <td style="font-size:12px;font-weight:600">${escHtml(r.penyelesaian)}</td>
+      <td class="mono" style="font-size:11px">${escHtml(r.transno)}</td>
+      <td style="font-size:12px;text-align:center;color:${r.ppc==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.ppc||'—'}</td>
+      <td style="font-size:12px;text-align:center;color:${r.pstg==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.pstg||'—'}</td>
+      <td style="font-size:12px;text-align:center;color:${r.pld==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.pld||'—'}</td>
+      <td style="font-size:11px">${escHtml(r.shippingline)}</td>
+      <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
+      <td style="font-size:11px">${escHtml(r.carrierId)}</td>
+      <td style="font-size:12px;font-weight:600">${r.stuffingTime||'—'}</td>
+      <td style="font-size:11px">${escHtml(r.jenisArmada)}</td>
+      <td class="mono" style="font-size:11px">${escHtml(r.nopol)}</td>
+      <td>${r.status.toUpperCase().includes('SELESAI')||r.status.toUpperCase().includes('KELUAR')
+        ? `<span class="badge badge-green">✅ ${escHtml(r.status)}</span>`
+        : r.status.toUpperCase().includes('TERLAMBAT')
+        ? `<span class="badge badge-red">⚠️ ${escHtml(r.status)}</span>`
+        : `<span class="badge badge-orange">⏳ ${escHtml(r.status)}</span>`}</td>
+    </tr>
+  `).join('');
+}
+
 // ── FETCH REAL DATA STAT CARDS ──
 const GAS_DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
@@ -476,12 +554,13 @@ function renderDashOutboundChart(total, selesai) {
 }
 
 function renderDashInboundTable(rows) {
+  window._inboundRows = rows || [];
   const tbody = document.getElementById('dashInboundBody');
-  const count = document.getElementById('dashInboundCount');
+  const count = document.getElementById('dashTableCount');
   if (!tbody) return;
   if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data hari ini</td></tr>';
-    if (count) count.textContent = '0 data';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';
+    if (count && currentDashTab === 'inbound') count.textContent = '0 data inbound hari ini';
     return;
   }
   tbody.innerHTML = rows.map((r, i) => `
@@ -501,7 +580,7 @@ function renderDashInboundTable(rows) {
         : '<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
     </tr>
   `).join('');
-  if (count) count.textContent = rows.length + ' data hari ini';
+  if (count && currentDashTab === 'inbound') count.textContent = rows.length + ' data inbound hari ini';
 }
 
 async function fetchDashboardStats() {
