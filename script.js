@@ -377,7 +377,7 @@ function renderPanelInlineTable(rows) {
     <td style="${c}">${statusBadge(r.status)}</td>
     <td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planQty)}</td><td style="${cn}background:rgba(8,145,178,0.04)">${r.planCbm||'—'}</td><td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planEstLpn)}</td>
     <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktQty)}</td><td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktLpn)}</td>
-    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.pctRcv)}</td><td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.pctAkt)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}" colspan="2">${pBar(r.pctAkt)}</td>
     <td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftQty)}</td><td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftLpn)}</td>
     <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInQty)}</td><td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInLpn)}</td>
     <td style="${cn}background:rgba(37,99,235,0.04)">${sisa(r.sisaInLpn)}</td>
