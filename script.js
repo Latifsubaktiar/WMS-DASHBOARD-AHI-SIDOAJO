@@ -510,30 +510,32 @@ async function fetchInlineProses() {
     };
 
     // Chart 1: Unloading (armada vs selesai dari INBOUND)
-    const inboundRows = window._inboundRows || [];
+    const inboundRows  = window._inboundRows || [];
     const totalArmada  = inboundRows.length || 0;
-    const finishArmada = inboundRows.filter(r => r.updateUnload).length;
-    const pctUnload    = totalArmada > 0 ? Math.round((finishArmada/totalArmada)*100) : s.pctUnloading;
+    const finishArmada = inboundRows.filter(r => r && r.updateUnload && r.updateUnload !== '').length;
+    const prosesArmada = inboundRows.filter(r => r && r.checkIn && r.checkIn !== '' && (!r.updateUnload || r.updateUnload === '')).length;
+    const belumArmada  = totalArmada - finishArmada - prosesArmada;
+    const pctUnload    = totalArmada > 0 ? Math.round((finishArmada/totalArmada)*100) : (s&&s.pctUnloading||0);
     document.getElementById('pctUnloading').textContent = pctUnload + '%';
-    document.getElementById('infoUnloading').textContent = `Selesai: ${finishArmada} / Total: ${totalArmada} armada`;
+    document.getElementById('infoUnloading').textContent = `✅ ${finishArmada} selesai · ⏳ ${prosesArmada} proses · 🕐 ${belumArmada} belum`;
     makeDonut('chartUnloading', pctUnload, '#16a34a');
 
     // Chart 2: Aktual Receive kolom Q
-    const pctAkt = s.avgPctAkt || 0;
+    const pctAkt = (s&&s.avgPctAkt) || 0;
     document.getElementById('pctAktualRcv').textContent = pctAkt + '%';
-    document.getElementById('infoAktualRcv').textContent = `Avg % Receive (Kol Q)`;
+    document.getElementById('infoAktualRcv').textContent = '';
     makeDonut('chartAktualRcv', pctAkt, '#0891b2');
 
     // Chart 3: Putaway Inbound kolom X
-    const pctPutIn = s.avgPctPutIn2 || 0;
+    const pctPutIn = (s&&s.avgPctPutIn2) || 0;
     document.getElementById('pctPutawayIn').textContent = pctPutIn + '%';
-    document.getElementById('infoPutawayIn').textContent = `Sisa: ${(s.sumSisaIn||0).toLocaleString()} LPN`;
+    document.getElementById('infoPutawayIn').textContent = `Sisa: ${Number(s&&s.sumSisaIn||0).toLocaleString()} LPN`;
     makeDonut('chartPutawayIn', pctPutIn, '#2563eb');
 
     // Chart 4: Putaway Storing kolom AG
-    const pctPutStr = s.avgPctPutStr || 0;
+    const pctPutStr = (s&&s.avgPctPutStr) || 0;
     document.getElementById('pctPutawayStr').textContent = pctPutStr + '%';
-    document.getElementById('infoPutawayStr').textContent = `Sisa: ${(s.sumSisaStr||0).toLocaleString()} LPN`;
+    document.getElementById('infoPutawayStr').textContent = `Sisa: ${Number(s&&s.sumSisaStr||0).toLocaleString()} LPN`;
     makeDonut('chartPutawayStr', pctPutStr, '#d97706');
 
     // Render putaway table
@@ -814,7 +816,12 @@ async function fetchDashboardStats() {
       const el = document.querySelector('.stat-card.blue-bar .stat-value');
       const sb = document.querySelector('.stat-card.blue-bar .stat-sub');
       if (el) el.textContent = total;
-      if (sb) sb.innerHTML  = `Update Unloading: <span class="up">✅ ${selesai}</span> &nbsp; Sisa: <span class="dn">${total - selesai}</span>`;
+      if (sb) {
+        const finish  = selesai;
+        const proses  = checkedIn - selesai;
+        const belum   = total - checkedIn;
+        sb.innerHTML = `<span class="up">✅ ${finish} Finish</span> &nbsp;<span style="color:#d97706;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span class="dn">🕐 ${belum} Belum</span>`;
+      }
 
       renderDashInboundChart(total, checkedIn, selesai, hit, miss);
       renderDashInboundTable(dataIn.data);
@@ -847,43 +854,36 @@ async function fetchDashboardStats() {
 function updateInventoryStatusDonut(inTotal, inSelesai, outTotal, outSelesai) {
   const inPct  = inTotal  > 0 ? Math.round((inSelesai  / inTotal)  * 100) : 0;
   const outPct = outTotal > 0 ? Math.round((outSelesai / outTotal) * 100) : 0;
-  const avgPct = (inTotal + outTotal) > 0
-    ? Math.round(((inSelesai + outSelesai) / (inTotal + outTotal)) * 100)
-    : 0;
+  const sisa   = Math.max(0, 100 - inPct - outPct);
 
-  // Update center text
   const centerEl = document.querySelector('.donut-center .total');
   const labelEl  = document.querySelector('.donut-center .total-label');
-  if (centerEl) centerEl.textContent = avgPct + '%';
-  if (labelEl)  labelEl.textContent  = 'Overall';
+  const overall  = inTotal+outTotal > 0
+    ? Math.round(((inSelesai+outSelesai)/(inTotal+outTotal))*100) : 0;
+  if (centerEl) centerEl.textContent = overall + '%';
+  if (labelEl)  labelEl.textContent  = 'Daily';
 
-  // Update legend
-  const legendItems = document.querySelectorAll('.donut-legend-item');
-  if (legendItems[0]) {
-    legendItems[0].querySelector('.donut-legend-left').innerHTML =
-      `<div class="donut-legend-dot" style="background:#16a34a"></div>Inbound`;
-    legendItems[0].querySelector('.donut-legend-val').textContent = inPct + '%';
+  const items = document.querySelectorAll('.donut-legend-item');
+  if (items[0]) {
+    items[0].querySelector('.donut-legend-left').innerHTML = `<div class="donut-legend-dot" style="background:#16a34a"></div>Inbound`;
+    items[0].querySelector('.donut-legend-val').textContent = inPct + '%';
   }
-  if (legendItems[1]) {
-    legendItems[1].querySelector('.donut-legend-left').innerHTML =
-      `<div class="donut-legend-dot" style="background:#d97706"></div>Outbound`;
-    legendItems[1].querySelector('.donut-legend-val').textContent = outPct + '%';
+  if (items[1]) {
+    items[1].querySelector('.donut-legend-left').innerHTML = `<div class="donut-legend-dot" style="background:#d97706"></div>Outbound`;
+    items[1].querySelector('.donut-legend-val').textContent = outPct + '%';
   }
-  if (legendItems[2]) {
-    legendItems[2].querySelector('.donut-legend-left').innerHTML =
-      `<div class="donut-legend-dot" style="background:#e2e8f0"></div>Belum Selesai`;
-    legendItems[2].querySelector('.donut-legend-val').textContent = (100 - avgPct) + '%';
+  if (items[2]) {
+    items[2].querySelector('.donut-legend-left').innerHTML = `<div class="donut-legend-dot" style="background:#e2e8f0"></div>Belum Selesai`;
+    items[2].querySelector('.donut-legend-val').textContent = sisa + '%';
   }
 
-  // Update donut chart
-  const isDark = document.body.classList.contains('dark');
   const ctx = document.getElementById('donutChart');
   if (!ctx) return;
   const chart = Chart.getChart(ctx);
   if (chart) {
-    chart.data.datasets[0].data = [inPct, outPct, Math.max(0, 100 - inPct - outPct)];
-    chart.data.datasets[0].backgroundColor = ['#16a34a', '#d97706', isDark ? '#1e293b' : '#e2e8f0'];
-    chart.update();
+    chart.data.datasets[0].data = [inPct, outPct, sisa];
+    chart.data.datasets[0].backgroundColor = ['#16a34a','#d97706', document.body.classList.contains('dark')?'#1e293b':'#e2e8f0'];
+    chart.update('none');
   }
 }
 
