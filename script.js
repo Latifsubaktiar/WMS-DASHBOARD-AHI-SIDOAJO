@@ -262,19 +262,22 @@ let inlineLoaded     = false;
 
 function toggleInboundPanel() {
   inboundPanelOpen = !inboundPanelOpen;
-  const panel   = document.getElementById('inboundDetailPanel');
-  const midGrid = document.querySelector('#page-dashboard .mid-grid');
+  const panel       = document.getElementById('inboundDetailPanel');
+  const midGrid     = document.querySelector('.mid-grid');
+  const progressRow = document.querySelector('.progress-row');
   if (!panel) return;
 
   if (inboundPanelOpen) {
     panel.style.display = 'block';
-    if (midGrid) { midGrid.style.transition='all 0.3s ease'; midGrid.style.opacity='0'; midGrid.style.maxHeight='0'; midGrid.style.overflow='hidden'; midGrid.style.marginBottom='0'; }
+    if (midGrid)     { midGrid.style.display     = 'none'; }
+    if (progressRow) { progressRow.style.display = 'none'; }
     renderPanelInboundTable(window._inboundRows || []);
     fetchInlineProses();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
     panel.style.display = 'none';
-    if (midGrid) { midGrid.style.opacity='1'; midGrid.style.maxHeight=''; midGrid.style.overflow=''; midGrid.style.marginBottom=''; }
+    if (midGrid)     { midGrid.style.display     = ''; }
+    if (progressRow) { progressRow.style.display = ''; }
   }
 }
 
@@ -505,12 +508,11 @@ function renderDashInboundTable(rows) {
   if(!tbody) return;
   if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';if(count&&currentDashTab==='inbound')count.textContent='0 data inbound hari ini';return;}
   const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
-  const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.1)';if(wt===3)return 'rgba(139,92,246,0.1)';return '';};
-  const wtLeftBorder=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:3px solid rgba(59,130,246,0.6)';if(wt===3)return 'border-left:3px solid rgba(139,92,246,0.6)';return '';};
-  const wtTextColor=(s)=>{const wt=getWt(s);if(wt===2)return '#93c5fd';if(wt===3)return '#c4b5fd';return 'var(--text-2)';};
+  const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.12)';if(wt===3)return 'rgba(139,92,246,0.12)';return '';};
+  const wtBL=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:3px solid rgba(59,130,246,0.7)';if(wt===3)return 'border-left:3px solid rgba(139,92,246,0.7)';return '';};
+  const wtCol=(s)=>{const wt=getWt(s);if(wt===2)return '#93c5fd';if(wt===3)return '#c4b5fd';return 'var(--text-2)';};
   const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
-  tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtLeftBorder(r.stuffing)}">
-  tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtBorder(r.stuffing)?'border-left:3px solid '+(['rgba(59,130,246,0.6)','rgba(139,92,246,0.6)'][getWt(r.stuffing)-2]||'transparent'):''}">`+`
+  tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtBL(r.stuffing)}">
     <td class="mono" style="font-size:12px">${i+1}</td>
     <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
     <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
@@ -518,7 +520,7 @@ function renderDashInboundTable(rows) {
     <td style="font-size:12px">${escHtml(r.type)}</td>
     <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
     <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
-    <td style="font-size:11px;max-width:140px;white-space:normal;font-weight:700;color:${getWt(r.stuffing)===2?'#93c5fd':getWt(r.stuffing)===3?'#c4b5fd':'var(--text-2)'}">${r.stuffing||'—'}</td>
+    <td style="font-size:11px;max-width:140px;white-space:normal;font-weight:700;color:${wtCol(r.stuffing)}">${r.stuffing||'—'}</td>
     <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
   </tr>`).join('');
   if(count&&currentDashTab==='inbound') count.textContent=rows.length+' data inbound hari ini';
