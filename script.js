@@ -543,48 +543,71 @@ function renderPanelInlineTable(rows) {
   const tbody = document.getElementById('panelInlineBody');
   if (!tbody) return;
   if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="36" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
     return;
   }
 
-  const pctColor = (pct) => {
-    const n = parseInt(pct);
-    if (!pct || pct === '—') return 'var(--text-3)';
-    if (n >= 100) return '#16a34a';
-    if (n >= 90)  return '#2563eb';
-    if (n >= 70)  return '#d97706';
-    return '#dc2626';
-  };
+  const c  = 'text-align:center;font-size:11px;';
+  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;';
 
-  const pctBar = (pct) => {
+  const pBar = (pct) => {
     const n = parseInt(pct) || 0;
-    const color = n >= 100 ? '#16a34a' : n >= 90 ? '#2563eb' : n >= 70 ? '#d97706' : '#dc2626';
-    return `<div style="display:flex;align-items:center;gap:6px;">
-      <div style="flex:1;height:6px;background:rgba(148,163,184,0.2);border-radius:4px;min-width:50px;">
-        <div style="width:${Math.min(n,100)}%;height:100%;background:${color};border-radius:4px;"></div>
+    const col = n>=100?'#16a34a':n>=90?'#2563eb':n>=70?'#d97706':'#dc2626';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div style="width:52px;height:5px;background:rgba(148,163,184,0.2);border-radius:3px;">
+        <div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div>
       </div>
-      <span style="font-size:11px;font-weight:800;color:${color};min-width:36px;text-align:right">${pct||'—'}</span>
+      <span style="font-size:10px;font-weight:800;color:${col}">${pct||'—'}</span>
     </div>`;
   };
 
-  tbody.innerHTML = rows.map((r, i) => `
-    <tr>
-      <td style="font-size:11px;color:var(--text-3)">${i+1}</td>
-      <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text)">${escHtml(r.noLc)}</td>
-      <td style="font-size:11px">${escHtml(r.type)}</td>
-      <td style="font-size:11px;font-family:'JetBrains Mono',monospace">${escHtml(r.nopol)}</td>
-      <td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:2px 9px;border-radius:20px;background:${r.status==='OUT'?'rgba(22,163,74,0.15)':'rgba(217,119,6,0.15)'};color:${r.status==='OUT'?'#16a34a':'#d97706'};border:1px solid ${r.status==='OUT'?'rgba(22,163,74,0.3)':'rgba(217,119,6,0.3)'}">${escHtml(r.status)||'—'}</span></td>
-      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right">${r.planQty.toLocaleString()}</td>
-      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right">${r.aktualQty.toLocaleString()}</td>
-      <td style="min-width:90px">${pctBar(r.pctRcv)}</td>
-      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right">${r.putInQty.toLocaleString()}</td>
-      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right;color:${r.sisaInLpn>0?'#d97706':'#16a34a'};font-weight:700">${r.sisaInLpn}</td>
-      <td style="min-width:90px">${pctBar(r.putInPct)}</td>
-      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right">${r.putStrQty.toLocaleString()}</td>
-      <td style="font-size:11px;font-family:'JetBrains Mono',monospace;text-align:right;color:${r.sisaStrLpn>0?'#d97706':'#16a34a'};font-weight:700">${r.sisaStrLpn}</td>
-      <td style="min-width:90px">${pctBar(r.putStrPct)}</td>
-    </tr>
-  `).join('');
+  const statusBadge = (s) => {
+    const col = s==='OUT'?'#16a34a':'#d97706';
+    const bg  = s==='OUT'?'rgba(22,163,74,0.12)':'rgba(217,119,6,0.12)';
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${col};font-weight:800;font-size:10px;border:1px solid ${col}44">${escHtml(s)||'—'}</span>`;
+  };
+
+  const num = (v) => v ? v.toLocaleString() : '—';
+  const sisa = (v) => `<span style="font-weight:800;color:${v>0?'#d97706':'#16a34a'}">${v||0}</span>`;
+
+  tbody.innerHTML = rows.map((r,i) => `<tr>
+    <td style="${c}">${i+1}</td>
+    <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center">${escHtml(r.noLc)}</td>
+    <td style="${c}">${escHtml(r.type)}</td>
+    <td style="${cn}">${escHtml(r.nopol)}</td>
+    <td style="${c}">${escHtml(r.batch)}</td>
+    <td style="${cn}font-size:10px">${r.tglIn||'—'}</td>
+    <td style="${cn}font-size:10px">${r.tglOpen||'—'}</td>
+    <td style="${cn}font-size:10px">${r.tglClose||'—'}</td>
+    <td style="${c}">${statusBadge(r.status)}</td>
+    <td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planQty)}</td>
+    <td style="${cn}background:rgba(8,145,178,0.04)">${r.planCbm||'—'}</td>
+    <td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planEstLpn)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktQty)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktLpn)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.pctRcv)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.pctAkt)}</td>
+    <td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftQty)}</td>
+    <td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftLpn)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInQty)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInLpn)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.04)">${sisa(r.sisaInLpn)}</td>
+    <td style="background:rgba(37,99,235,0.04);${c}">${pBar(r.putInPct1)}</td>
+    <td style="background:rgba(37,99,235,0.04);${c}">${pBar(r.putInPct2)}</td>
+    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InQty)}</td>
+    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InLpn)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InQty)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InLpn)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrQty)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrLpn)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.04)">${sisa(r.sisaStrLpn)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.putStrPct1)}</td>
+    <td style="background:rgba(22,163,74,0.04);${c}">${pBar(r.putStrPct2)}</td>
+    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrQty)}</td>
+    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrLpn)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrQty)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrLpn)}</td>
+  </tr>`).join('');
 }
 
 // ── TAB SWITCH (bottom table) ──
