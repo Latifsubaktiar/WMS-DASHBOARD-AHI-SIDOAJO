@@ -307,9 +307,9 @@ async function fetchOutboundPanel() {
     const total   = rows.length || 1;
 
     const toNum = (v) => { const n=parseFloat(v)||0; return n>1?n:Math.round(n*100); };
-    const avgPc  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pctPc),0)/total)  : 0;
-    const avgStg = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pctStg),0)/total) : 0;
-    const avgLd  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pctLd),0)/total)  : 0;
+    const avgPc  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.ppc),0)/total)  : 0;
+    const avgStg = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pstg),0)/total) : 0;
+    const avgLd  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pld),0)/total)  : 0;
     const pctSel = Math.round((selesai/total)*100);
 
     if (sub)    sub.textContent = `Total: ${rows.length} armada hari ini`;
@@ -381,9 +381,9 @@ function renderOutboundPanelTable(rows) {
     <td style="${cn}">${i+1}</td>
     <td style="${c}">${r.penyelesaian||'—'}</td>
     <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text)">${escHtml(r.transno||'—')}</td>
-    <td style="background:rgba(22,163,74,0.05)">${pBar(r.pctPc)}</td>
-    <td style="background:rgba(37,99,235,0.05)">${pBar(r.pctStg)}</td>
-    <td style="background:rgba(245,158,11,0.05)">${pBar(r.pctLd)}</td>
+    <td style="background:rgba(22,163,74,0.05)">${pBar(r.ppc)}</td>
+    <td style="background:rgba(37,99,235,0.05)">${pBar(r.pstg)}</td>
+    <td style="background:rgba(245,158,11,0.05)">${pBar(r.pld)}</td>
     <td style="${c}">${escHtml(r.shippingline||'—')}</td>
     <td style="${cn}">${escHtml(r.bu||'—')}</td>
     <td style="${cn}">${escHtml(r.carrierId||'—')}</td>
