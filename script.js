@@ -298,6 +298,9 @@ async function fetchStoringStatCard() {
     if (sb) sb.innerHTML = `<span style="color:var(--green);font-weight:700">📦 ${s.sumPicked.toLocaleString()} Picked</span> &nbsp;<span class="dn">📋 ${s.sumSisa.toLocaleString()} Sisa</span>`;
     // Simpan data untuk panel
     window._storingData = data;
+    renderDashStoringChart();
+    // Update donut juga kalau sudah ada data inbound/outbound
+    if (window._lastInTotal !== undefined) updateInventoryStatusDonut(window._lastInTotal, window._lastInSelesai, window._lastOutTotal, window._lastOutSelesai);
   } catch(e) { console.warn('Storing stat card error:', e); }
 }
 
@@ -718,6 +721,8 @@ async function fetchDashboardStats() {
     }
   } catch(e){console.warn('Outbound stats error:',e);}
   updateInventoryStatusDonut(inboundTotal,inboundSelesai,outboundTotal,outboundSelesai);
+  window._lastInTotal=inboundTotal; window._lastInSelesai=inboundSelesai;
+  window._lastOutTotal=outboundTotal; window._lastOutSelesai=outboundSelesai;
   fetchInventoryValue();
 
   // Fetch storing stat card
@@ -725,19 +730,76 @@ async function fetchDashboardStats() {
 }
 
 function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
-  const inPct=inTotal>0?Math.round((inSelesai/inTotal)*100):0;
-  const outPct=outTotal>0?Math.round((outSelesai/outTotal)*100):0;
-  const sisa=Math.max(0,100-inPct-outPct);
-  const overall=inTotal+outTotal>0?Math.round(((inSelesai+outSelesai)/(inTotal+outTotal))*100):0;
-  const centerEl=document.querySelector('.donut-center .total'), labelEl=document.querySelector('.donut-center .total-label');
-  if(centerEl) centerEl.textContent=overall+'%'; if(labelEl) labelEl.textContent='Daily';
-  const items=document.querySelectorAll('.donut-legend-item');
-  if(items[0]){items[0].querySelector('.donut-legend-left').innerHTML=`<div class="donut-legend-dot" style="background:#16a34a"></div>Inbound`;items[0].querySelector('.donut-legend-val').textContent=inPct+'%';}
-  if(items[1]){items[1].querySelector('.donut-legend-left').innerHTML=`<div class="donut-legend-dot" style="background:#d97706"></div>Outbound`;items[1].querySelector('.donut-legend-val').textContent=outPct+'%';}
-  if(items[2]){items[2].querySelector('.donut-legend-left').innerHTML=`<div class="donut-legend-dot" style="background:#e2e8f0"></div>Belum Selesai`;items[2].querySelector('.donut-legend-val').textContent=sisa+'%';}
-  const ctx=document.getElementById('donutChart'); if(!ctx) return;
-  const chart=Chart.getChart(ctx);
-  if(chart){chart.data.datasets[0].data=[inPct,outPct,sisa];chart.data.datasets[0].backgroundColor=['#16a34a','#d97706',document.body.classList.contains('dark')?'#1e293b':'#e2e8f0'];chart.update('none');}
+  const inPct  = inTotal>0  ? Math.round((inSelesai/inTotal)*100)   : 0;
+  const outPct = outTotal>0 ? Math.round((outSelesai/outTotal)*100) : 0;
+
+  // Storing % = avg(pickingOverall, stagedOverall)
+  const s = window._storingData && window._storingData.summary;
+  const storePct = s ? Math.round((s.pctPickingOverall + s.pctStagedOverall) / 2) : 0;
+
+  const sisa   = Math.max(0, 100 - inPct - storePct - outPct);
+  const overall = Math.round((inPct + storePct + outPct) / 3);
+
+  // Center
+  const centerEl = document.getElementById('donutTotal');
+  if (centerEl) centerEl.textContent = overall + '%';
+
+  // Legend
+  const iv = document.getElementById('donutInboundVal');  if(iv)  iv.textContent  = inPct    + '%';
+  const sv = document.getElementById('donutStoringVal');  if(sv)  sv.textContent  = storePct + '%';
+  const ov = document.getElementById('donutOutboundVal'); if(ov)  ov.textContent  = outPct   + '%';
+  const bv = document.getElementById('donutBelumVal');    if(bv)  bv.textContent  = sisa     + '%';
+
+  // Chart
+  const ctx = document.getElementById('donutChart'); if(!ctx) return;
+  const isDark = document.body.classList.contains('dark');
+  const belumColor = isDark ? '#1e293b' : '#e2e8f0';
+  const chart = Chart.getChart(ctx);
+  if (chart) {
+    chart.data.datasets[0].data = [inPct, storePct, outPct, sisa];
+    chart.data.datasets[0].backgroundColor = ['#16a34a','#8b5cf6','#d97706', belumColor];
+    chart.update('none');
+  }
+}
+
+function renderDashStoringChart() {
+  const s = window._storingData && window._storingData.summary;
+  if (!s) return;
+
+  const pickPct  = s.pctPickingOverall || 0;
+  const stagePct = s.pctStagedOverall  || 0;
+  const sisaPct  = Math.max(0, 100 - pickPct);
+  const avgPct   = Math.round((pickPct + stagePct) / 2);
+
+  const badge = document.getElementById('storingPctBadge');
+  const pctEl = document.getElementById('dashStoringPct');
+  if (badge) badge.textContent = avgPct + '% Progres';
+  if (pctEl) pctEl.textContent = avgPct + '%';
+
+  // Legend values
+  const pp = document.getElementById('piStorePickingVal'); if(pp) pp.textContent = pickPct  + '%';
+  const ps = document.getElementById('piStoreStagedVal');  if(ps) ps.textContent = stagePct + '%';
+  const pr = document.getElementById('piStoreSisaVal');    if(pr) pr.textContent = sisaPct  + '%';
+  const pk = document.getElementById('piStoreKapVal');     if(pk) pk.textContent = (s.avgKapasitas||0) + '%';
+
+  const canvas = document.getElementById('dashStoringChart'); if(!canvas) return;
+  const ex = Chart.getChart(canvas); if(ex) ex.destroy();
+  const isDark = document.body.classList.contains('dark');
+  new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [pickPct, stagePct, sisaPct],
+        backgroundColor: ['#16a34a','#f59e0b', isDark?'#1e293b':'#fecaca'],
+        borderColor: isDark?'#060912':'#ffffff',
+        borderWidth: 3,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'72%',
+      plugins:{legend:{display:false},tooltip:{enabled:false}}
+    }
+  });
 }
 
 async function fetchInventoryValue(){
@@ -811,7 +873,7 @@ fetchDailyActivity();
 
 new Chart(document.getElementById('donutChart').getContext('2d'),{
   type:'doughnut',
-  data:{labels:['Inbound','Outbound','Belum Selesai'],datasets:[{data:[0,0,100],backgroundColor:['#16a34a','#d97706','#e2e8f0'],borderColor:['#fff','#fff','#fff'],borderWidth:3,hoverOffset:10}]},
+  data:{labels:['Inbound','Storing','Outbound','Belum Selesai'],datasets:[{data:[0,0,0,100],backgroundColor:['#16a34a','#8b5cf6','#d97706','#e2e8f0'],borderColor:['#fff','#fff','#fff','#fff'],borderWidth:3,hoverOffset:10}]},
   options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(17,24,39,0.9)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}%`},padding:10,cornerRadius:10}}}
 });
 
