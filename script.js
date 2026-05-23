@@ -286,57 +286,72 @@ function toggleStoringPanel() {
   }
 }
 
-async function fetchStoringToday() {
+async function fetchStoringStatCard() {
   try {
     const res  = await fetch(GAS_DASHBOARD_URL + '?action=getStoringToday');
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-    storingLoaded = true;
-
+    if (!data.ok) return;
     const s = data.summary;
-    const isDark = document.body.classList.contains('dark');
-    const border = isDark ? '#060912' : '#ffffff';
-
-    // Update stat card
     const el = document.querySelector('.stat-card.green-bar .stat-value');
     const sb = document.querySelector('.stat-card.green-bar .stat-sub');
     if (el) { el.textContent = s.total; el.style.color = 'var(--green)'; }
     if (sb) sb.innerHTML = `<span style="color:var(--green);font-weight:700">📦 ${s.sumPicked.toLocaleString()} Picked</span> &nbsp;<span class="dn">📋 ${s.sumSisa.toLocaleString()} Sisa</span>`;
+    // Simpan data untuk panel
+    window._storingData = data;
+  } catch(e) { console.warn('Storing stat card error:', e); }
+}
 
-    document.getElementById('storingSubtitle').textContent = `Total: ${s.total} LC/PO | Release: ${s.sumRelease.toLocaleString()} Case`;
-    document.getElementById('storingFooter').textContent = s.total + ' LC/PO terdaftar';
-
-    const makeDonut = (id, pct, color) => {
-      const el = document.getElementById(id); if(!el) return;
-      const ex = Chart.getChart(el); if(ex) ex.destroy();
-      new Chart(el.getContext('2d'), {
-        type:'doughnut',
-        data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#0e1525':'#e2e8f0'],borderColor:border,borderWidth:2}]},
-        options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
-      });
-    };
-
-    // Chart 1: Picking
-    document.getElementById('pctStorePicking').textContent = s.pctPickingOverall + '%';
-    document.getElementById('infoStorePicking').textContent = `Picked: ${s.sumPicked.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
-    makeDonut('chartStorePicking', s.pctPickingOverall, '#16a34a');
-
-    // Chart 2: Staged
-    document.getElementById('pctStoreStaged').textContent = s.pctStagedOverall + '%';
-    document.getElementById('infoStoreStaged').textContent = `Staged: ${s.sumStaged.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
-    makeDonut('chartStoreStaged', s.pctStagedOverall, '#f59e0b');
-
-    // Chart 3: % Kapasitas
-    document.getElementById('pctStoreKapasitas').textContent = s.avgKapasitas + '%';
-    document.getElementById('infoStoreKapasitas').textContent = `Avg % Kapasitas Armada`;
-    makeDonut('chartStoreKapasitas', s.avgKapasitas, '#6366f1');
-
-    renderStoringTable(data.data);
+async function fetchStoringToday() {
+  // Pakai cache kalau sudah ada
+  if (window._storingData && window._storingData.ok) {
+    renderStoringPanel(window._storingData);
+    return;
+  }
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getStoringToday');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal');
+    window._storingData = data;
+    renderStoringPanel(data);
   } catch(e) {
     console.warn('Storing error:', e);
     const tb = document.getElementById('storingTableBody');
     if (tb) tb.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
   }
+}
+
+function renderStoringPanel(data) {
+  storingLoaded = true;
+  const s = data.summary;
+  const isDark = document.body.classList.contains('dark');
+  const border = isDark ? '#060912' : '#ffffff';
+
+  document.getElementById('storingSubtitle').textContent = `Total: ${s.total} LC/PO | Release: ${s.sumRelease.toLocaleString()} Case`;
+  document.getElementById('storingFooter').textContent = s.total + ' LC/PO terdaftar';
+
+  const makeDonut = (id, pct, color) => {
+    const el = document.getElementById(id); if(!el) return;
+    const ex = Chart.getChart(el); if(ex) ex.destroy();
+    new Chart(el.getContext('2d'), {
+      type:'doughnut',
+      data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#0e1525':'#e2e8f0'],borderColor:border,borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
+    });
+  };
+
+  document.getElementById('pctStorePicking').textContent   = s.pctPickingOverall + '%';
+  document.getElementById('infoStorePicking').textContent  = `Picked: ${s.sumPicked.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
+  makeDonut('chartStorePicking', s.pctPickingOverall, '#16a34a');
+
+  document.getElementById('pctStoreStaged').textContent    = s.pctStagedOverall + '%';
+  document.getElementById('infoStoreStaged').textContent   = `Staged: ${s.sumStaged.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
+  makeDonut('chartStoreStaged', s.pctStagedOverall, '#f59e0b');
+
+  document.getElementById('pctStoreKapasitas').textContent = s.avgKapasitas + '%';
+  document.getElementById('infoStoreKapasitas').textContent = `Avg % Kapasitas Armada`;
+  makeDonut('chartStoreKapasitas', s.avgKapasitas, '#6366f1');
+
+  renderStoringTable(data.data);
 }
 
 function renderStoringTable(rows) {
@@ -698,6 +713,9 @@ async function fetchDashboardStats() {
   } catch(e){console.warn('Outbound stats error:',e);}
   updateInventoryStatusDonut(inboundTotal,inboundSelesai,outboundTotal,outboundSelesai);
   fetchInventoryValue();
+
+  // Fetch storing stat card
+  fetchStoringStatCard();
 }
 
 function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
