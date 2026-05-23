@@ -573,23 +573,80 @@ function renderPanelInlineTable(rows) {
 //  TAB SWITCH (bottom table)
 // ══════════════════════════════════════
 let currentDashTab = 'inbound';
-let outboundDetailLoaded = false;   // ← deklarasi di sini!
+let outboundDetailLoaded = false;
 
 function switchDashTab(tab) {
-  currentDashTab=tab;
-  const inWrap=document.getElementById('tableInboundWrap'), outWrap=document.getElementById('tableOutboundWrap');
-  const btnIn=document.getElementById('tabBtnInbound'), btnOut=document.getElementById('tabBtnOutbound');
-  if (tab==='inbound') {
-    inWrap.style.display=''; outWrap.style.display='none';
-    btnIn.style.color='var(--accent)'; btnIn.style.borderBottom='2px solid var(--accent)';
-    btnOut.style.color='var(--text-3)'; btnOut.style.borderBottom='2px solid transparent';
-    const cnt=document.getElementById('dashTableCount'); if(cnt) cnt.textContent=(window._inboundRows||[]).length+' data inbound hari ini';
+  currentDashTab = tab;
+  const inWrap  = document.getElementById('tableInboundWrap');
+  const stWrap  = document.getElementById('tableStoringWrap');
+  const outWrap = document.getElementById('tableOutboundWrap');
+  const btnIn   = document.getElementById('tabBtnInbound');
+  const btnSt   = document.getElementById('tabBtnStoring');
+  const btnOut  = document.getElementById('tabBtnOutbound');
+  const cnt     = document.getElementById('dashTableCount');
+
+  // Reset semua
+  [inWrap,stWrap,outWrap].forEach(w=>{ if(w) w.style.display='none'; });
+  [btnIn,btnSt,btnOut].forEach(b=>{ if(b){ b.style.color='var(--text-3)'; b.style.borderBottom='2px solid transparent'; }});
+
+  if (tab === 'inbound') {
+    if(inWrap)  inWrap.style.display  = '';
+    if(btnIn) { btnIn.style.color='var(--accent)'; btnIn.style.borderBottom='2px solid var(--accent)'; }
+    if(cnt) cnt.textContent = (window._inboundRows||[]).length + ' data inbound hari ini';
+
+  } else if (tab === 'storing') {
+    if(stWrap)  stWrap.style.display  = '';
+    if(btnSt) { btnSt.style.color='#8b5cf6'; btnSt.style.borderBottom='2px solid #8b5cf6'; }
+    // Render dari cache
+    if (window._storingData && window._storingData.data) {
+      renderDashStoringBody(window._storingData.data);
+      if(cnt) cnt.textContent = window._storingData.total + ' data storing hari ini';
+    } else {
+      fetchStoringStatCard().then(()=>{
+        if(window._storingData) { renderDashStoringBody(window._storingData.data); if(cnt) cnt.textContent=window._storingData.total+' data storing hari ini'; }
+      });
+    }
+
   } else {
-    inWrap.style.display='none'; outWrap.style.display='';
-    btnIn.style.color='var(--text-3)'; btnIn.style.borderBottom='2px solid transparent';
-    btnOut.style.color='var(--accent)'; btnOut.style.borderBottom='2px solid var(--accent)';
+    if(outWrap) outWrap.style.display = '';
+    if(btnOut){ btnOut.style.color='var(--accent)'; btnOut.style.borderBottom='2px solid var(--accent)'; }
     if(!outboundDetailLoaded) fetchOutboundDetail();
   }
+}
+
+function renderDashStoringBody(rows) {
+  const tbody = document.getElementById('dashStoringBody'); if(!tbody) return;
+  if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data storing hari ini</td></tr>';return;}
+  const c  = 'text-align:center;font-size:11px;color:var(--text-2);';
+  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;color:var(--text-2);';
+  const num = (v) => (!isNaN(Number(v))&&v!=='') ? Number(v).toLocaleString() : '—';
+  const dec = (v) => (!isNaN(Number(v))&&v!=='') ? Number(v).toFixed(2) : '—';
+  const pBar = (pct) => {
+    const n=parseInt(pct)||0, col=n>=80?'#16a34a':n>=50?'#f59e0b':'#ef4444';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:4px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${pct||'0%'}</span></div>`;
+  };
+  tbody.innerHTML = rows.map((r,i)=>`<tr>
+    <td style="${c}">${i+1}</td>
+    <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text)">${escHtml(r.noLc)}</td>
+    <td style="${c}">${escHtml(r.batch)}</td>
+    <td style="font-size:11px;color:var(--text-2);max-width:130px">${escHtml(r.tujuan)}</td>
+    <td style="${c}">${escHtml(r.tipeArmada)}</td>
+    <td style="${cn}">${num(r.kapasitas)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.05)">${num(r.releaseCase)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.05)">${dec(r.releaseCbm)}</td>
+    <td style="${cn}background:rgba(139,92,246,0.05)">${dec(r.astorCbm)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.05)">${num(r.pickedCase)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.05)">${dec(r.pickedCbm)}</td>
+    <td style="${cn}background:rgba(239,68,68,0.05);color:${r.sisaCase>0?'#ef4444':'#16a34a'};font-weight:800">${num(r.sisaCase)}</td>
+    <td style="background:rgba(16,185,129,0.05);${c}">${pBar(r.pctPicking)}</td>
+    <td style="${cn}background:rgba(16,185,129,0.05)">${dec(r.pencPickCbm)}</td>
+    <td style="${cn}background:rgba(245,158,11,0.05);color:${r.sisaPick99>0?'#f59e0b':'#16a34a'};font-weight:800">${num(r.sisaPick99)}</td>
+    <td style="${cn}background:rgba(99,102,241,0.05)">${num(r.stagedCase)}</td>
+    <td style="${cn}background:rgba(99,102,241,0.05)">${dec(r.stagedCbm)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.05)">${num(r.pencDsCase)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.05)">${dec(r.pencDsCbm)}</td>
+    <td style="background:rgba(234,179,8,0.05);${c}">${pBar(r.pctKapasitas)}</td>
+  </tr>`).join('');
 }
 
 async function fetchOutboundDetail() {
