@@ -313,7 +313,17 @@ function renderPanelInboundTable(rows) {
     <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
     <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
     <td style="font-size:11px;font-weight:700;color:${wtCol(r.stuffing)}">${r.stuffing||'—'}</td>
-    <td style="font-size:12px;color:${r.updateUnload?'#2563eb':'var(--text-3)'};font-weight:${r.updateUnload?'700':'400'}">${r.updateUnload||'—'}</td>
+    <td style="font-size:12px;color:${r.updateUnload?'#2563eb':'var(--text-3)'};font-weight:${r.updateUnload?'700':'400'}">${
+      r.updateUnload
+        ? String(r.updateUnload).toUpperCase()==='FINISH'
+          ? '<span class="badge badge-green">✅ FINISH</span>'
+          : String(r.updateUnload).toUpperCase()==='PROSES'
+          ? '<span class="badge badge-blue">⏳ PROSES</span>'
+          : String(r.updateUnload).toUpperCase()==='ANTRI'
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">🕐 ANTRI</span>'
+          : escHtml(r.updateUnload)
+        : '—'
+    }</td>
     <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
   </tr>`).join('');
 }
