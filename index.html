@@ -508,6 +508,7 @@
           </div>
           <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,215,240,0.3);width:100%;">
             <button id="tabBtnInbound" onclick="switchDashTab('inbound')" style="padding:8px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);transition:all 0.2s;">📦 Inbound</button>
+            <button id="tabBtnStoring" onclick="switchDashTab('storing')" style="padding:8px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">🏗️ Storing</button>
             <button id="tabBtnOutbound" onclick="switchDashTab('outbound')" style="padding:8px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">🚚 Outbound</button>
           </div>
         </div>
@@ -516,6 +517,47 @@
           <table>
             <thead><tr><th>No</th><th>No LC</th><th>No Polisi</th><th>Ekspedisi</th><th>Type</th><th>BU</th><th>Check In</th><th>Stuffing</th><th>Hit/Miss</th></tr></thead>
             <tbody id="dashInboundBody"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+        <!-- STORING TABLE -->
+        <div id="tableStoringWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;display:none;">
+          <table>
+            <thead>
+              <tr>
+                <th rowspan="2" style="text-align:center">No</th>
+                <th rowspan="2">No LC</th>
+                <th rowspan="2" style="text-align:center">Batch</th>
+                <th rowspan="2">Tujuan</th>
+                <th rowspan="2">Tipe Armada</th>
+                <th rowspan="2" style="text-align:center">Kap.</th>
+                <th colspan="2" style="text-align:center;background:rgba(37,99,235,0.1);color:#3b82f6">RELEASE</th>
+                <th colspan="1" style="text-align:center;background:rgba(139,92,246,0.1);color:#8b5cf6">ASTOR</th>
+                <th colspan="2" style="text-align:center;background:rgba(22,163,74,0.1);color:#16a34a">PICKED</th>
+                <th colspan="1" style="text-align:center;background:rgba(239,68,68,0.1);color:#ef4444">SISA</th>
+                <th colspan="2" style="text-align:center;background:rgba(16,185,129,0.1);color:#10b981">PENCAPAIAN PICKING</th>
+                <th colspan="1" style="text-align:center;background:rgba(245,158,11,0.1);color:#f59e0b">SISA 99%</th>
+                <th colspan="2" style="text-align:center;background:rgba(99,102,241,0.1);color:#6366f1">STAGED DS</th>
+                <th colspan="2" style="text-align:center;background:rgba(59,130,246,0.1);color:#3b82f6">PENCAPAIAN DS</th>
+                <th colspan="1" style="text-align:center;background:rgba(234,179,8,0.1);color:#ca8a04">% KAP</th>
+              </tr>
+              <tr>
+                <th style="text-align:center;background:rgba(37,99,235,0.05)">Case</th>
+                <th style="text-align:center;background:rgba(37,99,235,0.05)">Cbm</th>
+                <th style="text-align:center;background:rgba(139,92,246,0.05)">Cbm</th>
+                <th style="text-align:center;background:rgba(22,163,74,0.05)">Case</th>
+                <th style="text-align:center;background:rgba(22,163,74,0.05)">Cbm</th>
+                <th style="text-align:center;background:rgba(239,68,68,0.05)">Case</th>
+                <th style="text-align:center;background:rgba(16,185,129,0.05)">Case</th>
+                <th style="text-align:center;background:rgba(16,185,129,0.05)">Cbm</th>
+                <th style="text-align:center;background:rgba(245,158,11,0.05)">Case</th>
+                <th style="text-align:center;background:rgba(99,102,241,0.05)">Case</th>
+                <th style="text-align:center;background:rgba(99,102,241,0.05)">Cbm</th>
+                <th style="text-align:center;background:rgba(59,130,246,0.05)">Case</th>
+                <th style="text-align:center;background:rgba(59,130,246,0.05)">Cbm</th>
+                <th style="text-align:center;background:rgba(234,179,8,0.05)">%</th>
+              </tr>
+            </thead>
+            <tbody id="dashStoringBody"><tr><td colspan="20" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
           </table>
         </div>
         <!-- OUTBOUND TABLE -->
