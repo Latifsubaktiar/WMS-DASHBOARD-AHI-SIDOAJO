@@ -176,13 +176,15 @@
         <div class="stat-icon" style="background:var(--accent-light)">📦</div>
         <div class="stat-content"><div class="stat-label">Inbound Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--accent)">—</div><div class="stat-sub">Memuat data...</div></div>
       </div>
+      <!-- STORING TODAY -->
+      <div class="stat-card green-bar" id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;" title="Klik untuk lihat detail">
+        <div class="stat-icon" style="background:var(--green-bg)">🏗️</div>
+        <div class="stat-content"><div class="stat-label">Storing Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--green)">—</div><div class="stat-sub">Memuat data...</div></div>
+      </div>
+      <!-- OUTBOUND TODAY -->
       <div class="stat-card orange-bar">
         <div class="stat-icon" style="background:var(--orange-bg)">🚚</div>
-        <div class="stat-content"><div class="stat-label">Outbound Today</div><div class="stat-value" style="color:var(--orange)">8</div><div class="stat-sub">Shipments &nbsp;<span class="dn">↓ 2</span> dari kemarin</div></div>
-      </div>
-      <div class="stat-card green-bar">
-        <div class="stat-icon" style="background:var(--green-bg)">💰</div>
-        <div class="stat-content"><div class="stat-label">Inventory Value</div><div class="stat-value" style="color:var(--green);font-size:15px;margin-top:6px">Rp 450.000.000</div><div class="stat-sub">Total nilai stok gudang</div></div>
+        <div class="stat-content"><div class="stat-label">Outbound Today</div><div class="stat-value" style="color:var(--orange)">—</div><div class="stat-sub">Memuat data...</div></div>
       </div>
       <div class="stat-card red-bar">
         <div class="stat-icon" style="background:var(--red-bg)">🔔</div>
@@ -190,7 +192,87 @@
       </div>
     </div>
 
-    <!-- ═══ INBOUND DETAIL PANEL (toggle saat klik stat card) ═══ -->
+    <!-- ═══ STORING DETAIL PANEL ═══ -->
+    <div id="storingDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
+        <div class="card-header" style="background:linear-gradient(135deg,rgba(22,163,74,0.08),transparent);">
+          <div>
+            <span class="card-title"><span class="live-dot"></span>🏗️ Storing Dashboard — Plan Loading</span>
+            <div id="storingSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div>
+          </div>
+          <button onclick="toggleStoringPanel()" style="border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+        </div>
+        <!-- CHARTS -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.25);">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <div style="font-size:11.5px;font-weight:800;color:var(--text)">📦 Picking Progress</div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="chartStorePicking"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div id="pctStorePicking" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
+                <div style="font-size:9px;color:var(--text-3)">Picked/Release</div>
+              </div>
+            </div>
+            <div id="infoStorePicking" style="font-size:10px;color:var(--text-3);text-align:center;">—</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <div style="font-size:11.5px;font-weight:800;color:var(--text)">🚛 Staged (DS)</div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="chartStoreStaged"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div id="pctStoreStaged" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
+                <div style="font-size:9px;color:var(--text-3)">Staged/Release</div>
+              </div>
+            </div>
+            <div id="infoStoreStaged" style="font-size:10px;color:var(--text-3);text-align:center;">—</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <div style="font-size:11.5px;font-weight:800;color:var(--text)">📊 % Kapasitas Armada</div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="chartStoreKapasitas"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div id="pctStoreKapasitas" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
+                <div style="font-size:9px;color:var(--text-3)">Avg %</div>
+              </div>
+            </div>
+            <div id="infoStoreKapasitas" style="font-size:10px;color:var(--text-3);text-align:center;">—</div>
+          </div>
+        </div>
+        <!-- TABLE -->
+        <div style="overflow-x:auto;flex:1;overflow-y:auto;">
+          <table id="storingTable">
+            <thead>
+              <tr>
+                <th rowspan="2" style="text-align:center">No</th>
+                <th rowspan="2" style="text-align:center">No LC</th>
+                <th rowspan="2" style="text-align:center">Batch</th>
+                <th rowspan="2" style="text-align:center">Tujuan</th>
+                <th rowspan="2" style="text-align:center">Tipe Armada</th>
+                <th rowspan="2" style="text-align:center">Kapasitas</th>
+                <th colspan="2" style="text-align:center;background:rgba(37,99,235,0.12);color:#3b82f6">RELEASE</th>
+                <th colspan="1" style="text-align:center;background:rgba(139,92,246,0.12);color:#8b5cf6">ASTOR</th>
+                <th colspan="2" style="text-align:center;background:rgba(22,163,74,0.12);color:#16a34a">PICKED</th>
+                <th colspan="2" style="text-align:center;background:rgba(239,68,68,0.12);color:#ef4444">SISA</th>
+                <th colspan="1" style="text-align:center;background:rgba(16,185,129,0.12);color:#10b981">PENCAPAIAN PICKING</th>
+                <th colspan="1" style="text-align:center;background:rgba(245,158,11,0.12);color:#f59e0b">STAGED DS</th>
+                <th colspan="1" style="text-align:center;background:rgba(99,102,241,0.12);color:#6366f1">% KAPASITAS</th>
+              </tr>
+              <tr>
+                <th style="text-align:center;background:rgba(37,99,235,0.06)">Case</th>
+                <th style="text-align:center;background:rgba(37,99,235,0.06)">Cbm</th>
+                <th style="text-align:center;background:rgba(139,92,246,0.06)">Case</th>
+                <th style="text-align:center;background:rgba(22,163,74,0.06)">Case</th>
+                <th style="text-align:center;background:rgba(22,163,74,0.06)">Cbm</th>
+                <th style="text-align:center;background:rgba(239,68,68,0.06)">Case</th>
+                <th style="text-align:center;background:rgba(239,68,68,0.06)">Cbm</th>
+                <th style="text-align:center;background:rgba(16,185,129,0.06)">%</th>
+                <th style="text-align:center;background:rgba(245,158,11,0.06)">Case</th>
+                <th style="text-align:center;background:rgba(99,102,241,0.06)">% Picked</th>
+              </tr>
+            </thead>
+            <tbody id="storingTableBody"><tr><td colspan="16" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="storingFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+      </div>
+    </div>
     <div id="inboundDetailPanel" style="display:none;margin-bottom:18px;">
       <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
         <div class="card-header" style="background:linear-gradient(135deg,rgba(37,99,235,0.08),transparent);">
