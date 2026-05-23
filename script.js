@@ -287,6 +287,8 @@ function toggleOutboundPanel() {
     switchOutboundTab('data');
   }
 }
+
+async function fetchOutboundPanel() {
   const tbody   = document.getElementById('outboundPanelBody');
   const summary = document.getElementById('outboundPanelSummary');
   const footer  = document.getElementById('outboundPanelFooter');
