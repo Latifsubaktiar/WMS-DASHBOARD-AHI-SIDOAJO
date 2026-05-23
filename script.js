@@ -358,12 +358,14 @@ function renderStoringTable(rows) {
   const tbody = document.getElementById('storingTableBody');
   if (!tbody) return;
   if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
     return;
   }
-  const c  = 'text-align:center;font-size:11px;';
-  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;';
-  const num = (v) => (v !== undefined && v !== null && !isNaN(Number(v)) && v !== '') ? Number(v).toLocaleString() : '—';
+  const c  = 'text-align:center;font-size:11px;color:var(--text-2);';
+  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;color:var(--text-2);';
+  const num = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toLocaleString() : '—';
+  const dec = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toFixed(2) : '—';
+
   const pBar = (pct) => {
     const n = parseInt(pct) || 0;
     const col = n>=80?'#16a34a':n>=50?'#f59e0b':'#ef4444';
@@ -377,21 +379,25 @@ function renderStoringTable(rows) {
 
   tbody.innerHTML = rows.map((r,i) => `<tr>
     <td style="${c}">${i+1}</td>
-    <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center">${escHtml(r.noLc)}</td>
+    <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:var(--text)">${escHtml(r.noLc)}</td>
     <td style="${c}">${escHtml(r.batch)}</td>
-    <td style="${c};max-width:120px">${escHtml(r.tujuan)}</td>
+    <td style="font-size:11px;color:var(--text-2);max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
     <td style="${c}">${escHtml(r.tipeArmada)}</td>
     <td style="${cn}">${num(r.kapasitas)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.05)">${num(r.releaseCase)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.05)">${num(r.releaseCbm)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.05)">${num(r.astorCase)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.05)">${num(r.pickedCase)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.05)">${num(r.pickedCbm)}</td>
-    <td style="${cn}background:rgba(239,68,68,0.05);color:${r.sisaCase>0?'#ef4444':'#16a34a'};font-weight:800">${num(r.sisaCase)}</td>
-    <td style="${cn}background:rgba(239,68,68,0.05)">${num(r.sisaCbm)}</td>
-    <td style="background:rgba(16,185,129,0.05);${c}">${pBar(r.pctPicking)}</td>
-    <td style="${cn}background:rgba(245,158,11,0.05)">${num(r.stagedCase)}</td>
-    <td style="background:rgba(99,102,241,0.05);${c}">${pBar(r.pctKapasitas)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.06)">${num(r.releaseCase)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.06)">${dec(r.releaseCbm)}</td>
+    <td style="${cn}background:rgba(139,92,246,0.06)">${dec(r.astorCbm)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.06)">${num(r.pickedCase)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.06)">${dec(r.pickedCbm)}</td>
+    <td style="${cn}background:rgba(239,68,68,0.06);color:${r.sisaCase>0?'#ef4444':'#16a34a'};font-weight:800">${num(r.sisaCase)}</td>
+    <td style="background:rgba(16,185,129,0.06);${c}">${pBar(r.pctPicking)}</td>
+    <td style="${cn}background:rgba(16,185,129,0.06)">${dec(r.pencPickCbm)}</td>
+    <td style="${cn}background:rgba(245,158,11,0.06);color:${r.sisaPick99>0?'#f59e0b':'#16a34a'};font-weight:800">${num(r.sisaPick99)}</td>
+    <td style="${cn}background:rgba(99,102,241,0.06)">${num(r.stagedCase)}</td>
+    <td style="${cn}background:rgba(99,102,241,0.06)">${dec(r.stagedCbm)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.06)">${num(r.pencDsCase)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.06)">${dec(r.pencDsCbm)}</td>
+    <td style="background:rgba(234,179,8,0.06);${c}">${pBar(r.pctKapasitas)}</td>
   </tr>`).join('');
 }
 
