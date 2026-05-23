@@ -304,15 +304,54 @@ async function fetchOutboundPanel() {
     const proses  = rows.filter(r=>String(r.status).toUpperCase().includes('PROSES')||String(r.status).toUpperCase().includes('LOADING')).length;
     const antri   = rows.filter(r=>String(r.status).toUpperCase().includes('ANTRI')).length;
     const belum   = rows.length - selesai - proses - antri;
+    const total   = rows.length || 1;
 
-    if (sub)     sub.textContent = `Total: ${rows.length} armada hari ini`;
-    if (footer)  footer.textContent = rows.length + ' data outbound hari ini';
+    const toNum = (v) => { const n=parseFloat(v)||0; return n>1?n:Math.round(n*100); };
+    const avgPc  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pctPc),0)/total)  : 0;
+    const avgStg = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pctStg),0)/total) : 0;
+    const avgLd  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pctLd),0)/total)  : 0;
+    const pctSel = Math.round((selesai/total)*100);
+
+    if (sub)    sub.textContent = `Total: ${rows.length} armada hari ini`;
+    if (footer) footer.textContent = rows.length + ' data outbound hari ini';
     if (summary) summary.innerHTML = `
       <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(22,163,74,0.12);color:#16a34a;border:1px solid rgba(22,163,74,0.25)">✅ ${selesai} Selesai</span>
       <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(37,99,235,0.12);color:#3b82f6;border:1px solid rgba(37,99,235,0.25)">⏳ ${proses} Proses</span>
       <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)">🕐 ${antri} Antri</span>
       <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">🔴 ${belum} Belum</span>
     `;
+
+    // Render charts
+    const isDark = document.body.classList.contains('dark');
+    const border = isDark ? '#060912' : '#ffffff';
+    const bg2    = isDark ? '#0e1525' : '#e2e8f0';
+
+    const makeDonut = (id, val, colors, labels) => {
+      const el = document.getElementById(id); if(!el) return;
+      const ex = Chart.getChart(el); if(ex) ex.destroy();
+      new Chart(el.getContext('2d'), {
+        type: 'doughnut',
+        data: { datasets: [{ data: val, backgroundColor: colors, borderColor: border, borderWidth: 2 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
+      });
+    };
+
+    // Chart 1: Status
+    document.getElementById('pctOutSelesai').textContent = pctSel + '%';
+    document.getElementById('infoOutStatus').textContent = `Selesai:${selesai} Proses:${proses} Antri:${antri} Belum:${belum}`;
+    makeDonut('chartOutStatus', [selesai,proses,antri,Math.max(belum,0)], ['#16a34a','#3b82f6','#f59e0b','#ef4444']);
+
+    // Chart 2: %PC
+    document.getElementById('pctOutPc').textContent  = avgPc + '%';
+    makeDonut('chartOutPc',  [avgPc, Math.max(0,100-avgPc)],  ['#16a34a', bg2]);
+
+    // Chart 3: %STG
+    document.getElementById('pctOutStg').textContent = avgStg + '%';
+    makeDonut('chartOutStg', [avgStg, Math.max(0,100-avgStg)], ['#3b82f6', bg2]);
+
+    // Chart 4: %LD
+    document.getElementById('pctOutLd').textContent  = avgLd + '%';
+    makeDonut('chartOutLd',  [avgLd, Math.max(0,100-avgLd)],  ['#f59e0b', bg2]);
 
     renderOutboundPanelTable(rows);
   } catch(e) {
