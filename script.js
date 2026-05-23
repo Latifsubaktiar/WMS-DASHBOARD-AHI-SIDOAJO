@@ -265,19 +265,22 @@ function toggleInboundPanel() {
   const panel       = document.getElementById('inboundDetailPanel');
   const midGrid     = document.querySelector('.mid-grid');
   const progressRow = document.querySelector('.progress-row');
+  const bottomGrid  = document.querySelector('.bottom-grid');
   if (!panel) return;
 
   if (inboundPanelOpen) {
     panel.style.display = 'block';
-    if (midGrid)     { midGrid.style.display     = 'none'; }
-    if (progressRow) { progressRow.style.display = 'none'; }
+    if (midGrid)     midGrid.style.display     = 'none';
+    if (progressRow) progressRow.style.display = 'none';
+    if (bottomGrid)  bottomGrid.style.display  = 'none';
     renderPanelInboundTable(window._inboundRows || []);
     fetchInlineProses();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
     panel.style.display = 'none';
-    if (midGrid)     { midGrid.style.display     = ''; }
-    if (progressRow) { progressRow.style.display = ''; }
+    if (midGrid)     midGrid.style.display     = '';
+    if (progressRow) progressRow.style.display = '';
+    if (bottomGrid)  bottomGrid.style.display  = '';
   }
 }
 
