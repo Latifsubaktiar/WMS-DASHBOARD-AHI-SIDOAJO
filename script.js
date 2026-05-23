@@ -255,6 +255,132 @@ document.getElementById('todayDate').textContent=dateStr;
 document.getElementById('todayDate2').textContent=dateStr;
 
 // ══════════════════════════════════════
+//  STORING DETAIL PANEL
+// ══════════════════════════════════════
+let storingPanelOpen = false;
+let storingLoaded    = false;
+
+function toggleStoringPanel() {
+  storingPanelOpen = !storingPanelOpen;
+  const panel       = document.getElementById('storingDetailPanel');
+  const midGrid     = document.querySelector('.mid-grid');
+  const progressRow = document.querySelector('.progress-row');
+  const bottomGrid  = document.querySelector('.bottom-grid');
+  const inboundPanel= document.getElementById('inboundDetailPanel');
+  if (!panel) return;
+
+  if (storingPanelOpen) {
+    // Tutup inbound panel kalau terbuka
+    if (inboundPanelOpen) { inboundPanelOpen = false; if(inboundPanel) inboundPanel.style.display='none'; }
+    panel.style.display = 'block';
+    if (midGrid)     midGrid.style.display     = 'none';
+    if (progressRow) progressRow.style.display = 'none';
+    if (bottomGrid)  bottomGrid.style.display  = 'none';
+    if (!storingLoaded) fetchStoringToday();
+    setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
+  } else {
+    panel.style.display = 'none';
+    if (midGrid)     midGrid.style.display     = '';
+    if (progressRow) progressRow.style.display = '';
+    if (bottomGrid)  bottomGrid.style.display  = '';
+  }
+}
+
+async function fetchStoringToday() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getStoringToday');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal');
+    storingLoaded = true;
+
+    const s = data.summary;
+    const isDark = document.body.classList.contains('dark');
+    const border = isDark ? '#060912' : '#ffffff';
+
+    // Update stat card
+    const el = document.querySelector('.stat-card.green-bar .stat-value');
+    const sb = document.querySelector('.stat-card.green-bar .stat-sub');
+    if (el) { el.textContent = s.total; el.style.color = 'var(--green)'; }
+    if (sb) sb.innerHTML = `<span style="color:var(--green);font-weight:700">📦 ${s.sumPicked.toLocaleString()} Picked</span> &nbsp;<span class="dn">📋 ${s.sumSisa.toLocaleString()} Sisa</span>`;
+
+    document.getElementById('storingSubtitle').textContent = `Total: ${s.total} LC/PO | Release: ${s.sumRelease.toLocaleString()} Case`;
+    document.getElementById('storingFooter').textContent = s.total + ' LC/PO terdaftar';
+
+    const makeDonut = (id, pct, color) => {
+      const el = document.getElementById(id); if(!el) return;
+      const ex = Chart.getChart(el); if(ex) ex.destroy();
+      new Chart(el.getContext('2d'), {
+        type:'doughnut',
+        data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#0e1525':'#e2e8f0'],borderColor:border,borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
+      });
+    };
+
+    // Chart 1: Picking
+    document.getElementById('pctStorePicking').textContent = s.pctPickingOverall + '%';
+    document.getElementById('infoStorePicking').textContent = `Picked: ${s.sumPicked.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
+    makeDonut('chartStorePicking', s.pctPickingOverall, '#16a34a');
+
+    // Chart 2: Staged
+    document.getElementById('pctStoreStaged').textContent = s.pctStagedOverall + '%';
+    document.getElementById('infoStoreStaged').textContent = `Staged: ${s.sumStaged.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
+    makeDonut('chartStoreStaged', s.pctStagedOverall, '#f59e0b');
+
+    // Chart 3: % Kapasitas
+    document.getElementById('pctStoreKapasitas').textContent = s.avgKapasitas + '%';
+    document.getElementById('infoStoreKapasitas').textContent = `Avg % Kapasitas Armada`;
+    makeDonut('chartStoreKapasitas', s.avgKapasitas, '#6366f1');
+
+    renderStoringTable(data.data);
+  } catch(e) {
+    console.warn('Storing error:', e);
+    const tb = document.getElementById('storingTableBody');
+    if (tb) tb.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
+  }
+}
+
+function renderStoringTable(rows) {
+  const tbody = document.getElementById('storingTableBody');
+  if (!tbody) return;
+  if (!rows || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="16" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
+    return;
+  }
+  const c  = 'text-align:center;font-size:11px;';
+  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;';
+  const num = (v) => (v !== undefined && v !== null && !isNaN(Number(v)) && v !== '') ? Number(v).toLocaleString() : '—';
+  const pBar = (pct) => {
+    const n = parseInt(pct) || 0;
+    const col = n>=80?'#16a34a':n>=50?'#f59e0b':'#ef4444';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div style="width:52px;height:5px;background:rgba(148,163,184,0.2);border-radius:3px;">
+        <div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div>
+      </div>
+      <span style="font-size:10px;font-weight:800;color:${col}">${pct||'0%'}</span>
+    </div>`;
+  };
+
+  tbody.innerHTML = rows.map((r,i) => `<tr>
+    <td style="${c}">${i+1}</td>
+    <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center">${escHtml(r.noLc)}</td>
+    <td style="${c}">${escHtml(r.batch)}</td>
+    <td style="${c};max-width:120px">${escHtml(r.tujuan)}</td>
+    <td style="${c}">${escHtml(r.tipeArmada)}</td>
+    <td style="${cn}">${num(r.kapasitas)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.05)">${num(r.releaseCase)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.05)">${num(r.releaseCbm)}</td>
+    <td style="${cn}background:rgba(139,92,246,0.05)">${num(r.astorCase)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.05)">${num(r.pickedCase)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.05)">${num(r.pickedCbm)}</td>
+    <td style="${cn}background:rgba(239,68,68,0.05);color:${r.sisaCase>0?'#ef4444':'#16a34a'};font-weight:800">${num(r.sisaCase)}</td>
+    <td style="${cn}background:rgba(239,68,68,0.05)">${num(r.sisaCbm)}</td>
+    <td style="background:rgba(16,185,129,0.05);${c}">${pBar(r.pctPicking)}</td>
+    <td style="${cn}background:rgba(245,158,11,0.05)">${num(r.stagedCase)}</td>
+    <td style="background:rgba(99,102,241,0.05);${c}">${pBar(r.pctKapasitas)}</td>
+  </tr>`).join('');
+}
+
+// ══════════════════════════════════════
 //  INBOUND DETAIL PANEL
 // ══════════════════════════════════════
 let inboundPanelOpen = false;
@@ -269,6 +395,8 @@ function toggleInboundPanel() {
   if (!panel) return;
 
   if (inboundPanelOpen) {
+    // Tutup storing panel kalau terbuka
+    if (storingPanelOpen) { storingPanelOpen = false; const sp=document.getElementById('storingDetailPanel'); if(sp) sp.style.display='none'; }
     panel.style.display = 'block';
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
