@@ -255,6 +255,107 @@ document.getElementById('todayDate').textContent=dateStr;
 document.getElementById('todayDate2').textContent=dateStr;
 
 // ══════════════════════════════════════
+//  OUTBOUND DETAIL PANEL
+// ══════════════════════════════════════
+let outboundPanelOpen = false;
+
+function toggleOutboundPanel() {
+  outboundPanelOpen = !outboundPanelOpen;
+  const panel       = document.getElementById('outboundDetailPanel');
+  const midGrid     = document.querySelector('.mid-grid');
+  const progressRow = document.querySelector('.progress-row');
+  const bottomGrid  = document.querySelector('.bottom-grid');
+  if (!panel) return;
+
+  // Tutup panel lain
+  if (inboundPanelOpen)  { inboundPanelOpen  = false; const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
+  if (storingPanelOpen)  { storingPanelOpen  = false; const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
+
+  if (outboundPanelOpen) {
+    panel.style.display = 'block';
+    if (midGrid)     midGrid.style.display     = 'none';
+    if (progressRow) progressRow.style.display = 'none';
+    if (bottomGrid)  bottomGrid.style.display  = 'none';
+    fetchOutboundPanel();
+    setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
+  } else {
+    panel.style.display = 'none';
+    if (midGrid)     midGrid.style.display     = '';
+    if (progressRow) progressRow.style.display = '';
+    if (bottomGrid)  bottomGrid.style.display  = '';
+  }
+}
+
+async function fetchOutboundPanel() {
+  const tbody   = document.getElementById('outboundPanelBody');
+  const summary = document.getElementById('outboundPanelSummary');
+  const footer  = document.getElementById('outboundPanelFooter');
+  const sub     = document.getElementById('outboundPanelSubtitle');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data outbound...</td></tr>';
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getOutboundDetail');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal');
+
+    // Summary badges
+    const rows = data.data || [];
+    const selesai = rows.filter(r=>String(r.status).toUpperCase().includes('SELESAI')||String(r.status).toUpperCase().includes('KELUAR')).length;
+    const proses  = rows.filter(r=>String(r.status).toUpperCase().includes('PROSES')||String(r.status).toUpperCase().includes('LOADING')).length;
+    const antri   = rows.filter(r=>String(r.status).toUpperCase().includes('ANTRI')).length;
+    const belum   = rows.length - selesai - proses - antri;
+
+    if (sub)     sub.textContent = `Total: ${rows.length} armada hari ini`;
+    if (footer)  footer.textContent = rows.length + ' data outbound hari ini';
+    if (summary) summary.innerHTML = `
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(22,163,74,0.12);color:#16a34a;border:1px solid rgba(22,163,74,0.25)">✅ ${selesai} Selesai</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(37,99,235,0.12);color:#3b82f6;border:1px solid rgba(37,99,235,0.25)">⏳ ${proses} Proses</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)">🕐 ${antri} Antri</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">🔴 ${belum} Belum</span>
+    `;
+
+    renderOutboundPanelTable(rows);
+  } catch(e) {
+    if(tbody) tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
+  }
+}
+
+function renderOutboundPanelTable(rows) {
+  const tbody = document.getElementById('outboundPanelBody'); if(!tbody) return;
+  if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>'; return; }
+  const cn = 'text-align:center;font-size:12px;font-family:"JetBrains Mono",monospace;color:var(--text-2);';
+  const c  = 'font-size:12px;color:var(--text-2);';
+  const pBar = (v) => {
+    const n=parseFloat(v)||0, pct=n>1?Math.round(n):Math.round(n*100);
+    const col=pct>=80?'#16a34a':pct>=50?'#f59e0b':'#ef4444';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:4px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(pct,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${pct}%</span></div>`;
+  };
+  const statusBadge = (s) => {
+    const u=String(s||'').toUpperCase();
+    if(u.includes('SELESAI')||u.includes('KELUAR')) return `<span class="badge badge-green">✅ ${s}</span>`;
+    if(u.includes('TERLAMBAT')) return `<span class="badge badge-red">⚠️ ${s}</span>`;
+    if(u.includes('PROSES')||u.includes('LOADING')) return `<span class="badge badge-blue">⏳ ${s}</span>`;
+    if(u.includes('ANTRI')) return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)">🕐 ${s}</span>`;
+    return `<span style="color:var(--text-3);font-size:12px">${s||'—'}</span>`;
+  };
+  tbody.innerHTML = rows.map((r,i)=>`<tr>
+    <td style="${cn}">${i+1}</td>
+    <td style="${c}">${r.penyelesaian||'—'}</td>
+    <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text)">${escHtml(r.transno||'—')}</td>
+    <td style="background:rgba(22,163,74,0.05)">${pBar(r.pctPc)}</td>
+    <td style="background:rgba(37,99,235,0.05)">${pBar(r.pctStg)}</td>
+    <td style="background:rgba(245,158,11,0.05)">${pBar(r.pctLd)}</td>
+    <td style="${c}">${escHtml(r.shippingline||'—')}</td>
+    <td style="${cn}">${escHtml(r.bu||'—')}</td>
+    <td style="${cn}">${escHtml(r.carrierId||'—')}</td>
+    <td style="${cn}">${r.stuffingTime||'—'}</td>
+    <td style="${c}">${escHtml(r.jenisArmada||'—')}</td>
+    <td style="${cn}">${escHtml(r.nopol||'—')}</td>
+    <td style="text-align:center">${statusBadge(r.status)}</td>
+  </tr>`).join('');
+}
+
+// ══════════════════════════════════════
 //  STORING DETAIL PANEL
 // ══════════════════════════════════════
 let storingPanelOpen = false;
@@ -421,6 +522,7 @@ function toggleInboundPanel() {
   if (inboundPanelOpen) {
     // Tutup storing panel kalau terbuka
     if (storingPanelOpen) { storingPanelOpen = false; const sp=document.getElementById('storingDetailPanel'); if(sp) sp.style.display='none'; }
+    if (outboundPanelOpen) { outboundPanelOpen = false; const op=document.getElementById('outboundDetailPanel'); if(op) op.style.display='none'; }
     panel.style.display = 'block';
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
