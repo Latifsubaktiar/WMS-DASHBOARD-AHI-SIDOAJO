@@ -332,8 +332,13 @@
             <div id="infoOutLd" style="font-size:10px;color:var(--text-3);text-align:center">Rata-rata % Loading</div>
           </div>
         </div>
-        <!-- TABLE -->
-        <div style="overflow-x:auto;flex:1;overflow-y:auto;">
+        <!-- TABS -->
+        <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,215,240,0.3);padding:0 20px;">
+          <button id="outTabData" onclick="switchOutboundTab('data')" style="padding:10px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);transition:all 0.2s;">📋 Data Outbound</button>
+          <button id="outTabLine" onclick="switchOutboundTab('line')" style="padding:10px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">📊 Line Outbound</button>
+        </div>
+        <!-- TABLE DATA OUTBOUND -->
+        <div id="outWrapData" style="overflow-x:auto;flex:1;overflow-y:auto;">
           <table>
             <thead><tr>
               <th>No</th><th>Penyelesaian</th><th>Trans No</th>
@@ -345,6 +350,30 @@
               <th style="text-align:center">Status</th>
             </tr></thead>
             <tbody id="outboundPanelBody"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+        <!-- TABLE LINE OUTBOUND -->
+        <div id="outWrapLine" style="overflow-x:auto;flex:1;overflow-y:auto;display:none;">
+          <table id="lineOutboundTable">
+            <thead>
+              <tr>
+                <th style="text-align:center">No</th>
+                <th style="text-align:center">No LINE</th>
+                <th>No LC</th>
+                <th>Shipping Line</th>
+                <th style="text-align:center">Batch</th>
+                <th style="text-align:center">Stuffing</th>
+                <th>Armada</th>
+                <th style="text-align:center">CBM S2</th>
+                <th style="text-align:center;background:rgba(22,163,74,0.1);color:#16a34a">%PC</th>
+                <th style="text-align:center;background:rgba(37,99,235,0.1);color:#3b82f6">%STG</th>
+                <th style="text-align:center">Type</th>
+                <th style="text-align:center">No Pol</th>
+                <th style="text-align:center">Ket</th>
+                <th style="text-align:center">Loading</th>
+              </tr>
+            </thead>
+            <tbody id="lineOutboundBody"><tr><td colspan="14" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
           </table>
         </div>
         <div id="outboundPanelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
