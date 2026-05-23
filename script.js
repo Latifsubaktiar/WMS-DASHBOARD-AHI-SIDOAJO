@@ -283,10 +283,10 @@ function toggleOutboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
+    lineOutboundLoaded = false;
+    switchOutboundTab('data');
   }
 }
-
-async function fetchOutboundPanel() {
   const tbody   = document.getElementById('outboundPanelBody');
   const summary = document.getElementById('outboundPanelSummary');
   const footer  = document.getElementById('outboundPanelFooter');
@@ -306,7 +306,7 @@ async function fetchOutboundPanel() {
     const belum   = rows.length - selesai - proses - antri;
     const total   = rows.length || 1;
 
-    const toNum = (v) => { const n=parseFloat(v)||0; return n>1?n:Math.round(n*100); };
+    const toNum = (v) => { const n=parseFloat(String(v).replace('%','')||'0'); return isNaN(n)?0:(n>1?n:Math.round(n*100)); };
     const avgPc  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.ppc),0)/total)  : 0;
     const avgStg = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pstg),0)/total) : 0;
     const avgLd  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pld),0)/total)  : 0;
@@ -359,15 +359,105 @@ async function fetchOutboundPanel() {
   }
 }
 
+function switchOutboundTab(tab) {
+  const wData = document.getElementById('outWrapData');
+  const wLine = document.getElementById('outWrapLine');
+  const bData = document.getElementById('outTabData');
+  const bLine = document.getElementById('outTabLine');
+  if (tab === 'data') {
+    if(wData) wData.style.display = '';
+    if(wLine) wLine.style.display = 'none';
+    if(bData) { bData.style.color='var(--accent)'; bData.style.borderBottom='2px solid var(--accent)'; }
+    if(bLine) { bLine.style.color='var(--text-3)'; bLine.style.borderBottom='2px solid transparent'; }
+  } else {
+    if(wData) wData.style.display = 'none';
+    if(wLine) wLine.style.display = '';
+    if(bLine) { bLine.style.color='var(--accent)'; bLine.style.borderBottom='2px solid var(--accent)'; }
+    if(bData) { bData.style.color='var(--text-3)'; bData.style.borderBottom='2px solid transparent'; }
+    fetchLineOutbound();
+  }
+}
+
+let lineOutboundLoaded = false;
+async function fetchLineOutbound() {
+  if (lineOutboundLoaded) return;
+  const tbody = document.getElementById('lineOutboundBody'); if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:24px;color:var(--text-3)">Memuat Line Outbound...</td></tr>';
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getLineOutbound');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal');
+    lineOutboundLoaded = true;
+    renderLineOutboundTable(data.data, data.summary);
+  } catch(e) {
+    if(tbody) tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
+  }
+}
+
+function renderLineOutboundTable(rows, summary) {
+  const tbody = document.getElementById('lineOutboundBody'); if(!tbody) return;
+  if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>'; return; }
+
+  const isDark = document.body.classList.contains('dark');
+  // Header row style: hitam solid
+  const hdrBg    = isDark ? '#0a0f1e' : '#1e293b';
+  const hdrText  = '#ffffff';
+  const hdrStyle = `background:${hdrBg};color:${hdrText};font-weight:800;font-size:11px;text-align:center;padding:8px 10px;letter-spacing:0.5px;`;
+
+  const c  = 'text-align:center;font-size:11px;color:var(--text-2);padding:7px 10px;';
+  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;color:var(--text-2);padding:7px 10px;';
+
+  const ketBadge = (v) => {
+    const u = String(v||'').toUpperCase();
+    if (u.includes('PROSES'))  return `<span class="badge badge-blue">⏳ ${v}</span>`;
+    if (u.includes('ANTRI'))   return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)">🕐 ${v}</span>`;
+    if (u.includes('BELUM'))   return `<span class="badge badge-red">🔴 ${v}</span>`;
+    if (u.includes('SELESAI')||u.includes('KELUAR')) return `<span class="badge badge-green">✅ ${v}</span>`;
+    return `<span style="color:var(--text-3);font-size:11px">${v||'—'}</span>`;
+  };
+
+  const pBar = (pct) => {
+    const n = parseFloat(pct)||0, p = n>1?Math.round(n):Math.round(n*100);
+    const col = p>=80?'#16a34a':p>=50?'#f59e0b':'#ef4444';
+    if (p===0) return `<span style="color:var(--text-3);font-size:11px">0%</span>`;
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:4px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(p,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${p}%</span></div>`;
+  };
+
+  tbody.innerHTML = rows.map(r => {
+    if (r.isHeader) {
+      return `<tr style="background:${hdrBg}">
+        ${r.cols.map(c => `<td style="${hdrStyle}">${c||'—'}</td>`).join('')}
+      </tr>`;
+    }
+    return `<tr>
+      <td style="${c}">${r.no||'—'}</td>
+      <td style="${cn}font-weight:800;color:var(--accent)">${r.noLine||'—'}</td>
+      <td style="font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);padding:7px 10px">${r.noLc||'—'}</td>
+      <td style="font-size:11px;color:var(--text-2);padding:7px 10px;max-width:180px">${r.shipping||'—'}</td>
+      <td style="${c}font-weight:800;color:var(--accent)">${r.batch||'—'}</td>
+      <td style="${cn}">${r.stuffing||'—'}</td>
+      <td style="font-size:11px;color:var(--text-2);padding:7px 10px">${r.armada||'—'}</td>
+      <td style="${cn}">${r.cbmS2||'—'}</td>
+      <td style="background:rgba(22,163,74,0.05);padding:7px 10px;text-align:center">${pBar(r.pctPc)}</td>
+      <td style="background:rgba(37,99,235,0.05);padding:7px 10px;text-align:center">${pBar(r.pctStg)}</td>
+      <td style="${c}">${r.type||'—'}</td>
+      <td style="${cn}">${r.nopol||'—'}</td>
+      <td style="padding:7px 10px;text-align:center">${ketBadge(r.ket)}</td>
+      <td style="${c}font-weight:700;color:var(--text)">${r.loading||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
 function renderOutboundPanelTable(rows) {
   const tbody = document.getElementById('outboundPanelBody'); if(!tbody) return;
   if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>'; return; }
   const cn = 'text-align:center;font-size:12px;font-family:"JetBrains Mono",monospace;color:var(--text-2);';
   const c  = 'font-size:12px;color:var(--text-2);';
   const pBar = (v) => {
-    const n=parseFloat(v)||0, pct=n>1?Math.round(n):Math.round(n*100);
-    const col=pct>=80?'#16a34a':pct>=50?'#f59e0b':'#ef4444';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:4px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(pct,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${pct}%</span></div>`;
+    const pct = parseFloat(String(v||'0').replace('%',''))||0;
+    const n = pct>1?Math.round(pct):Math.round(pct*100);
+    const col=n>=80?'#16a34a':n>=50?'#f59e0b':'#ef4444';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:4px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${n}%</span></div>`;
   };
   const statusBadge = (s) => {
     const u=String(s||'').toUpperCase();
