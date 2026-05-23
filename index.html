@@ -416,17 +416,18 @@
       <div class="card">
         <div class="card-header"><span class="card-title">📊 Persentase Progres Daily AHI</span><div class="card-more">⋯</div></div>
         <div class="donut-wrap">
-          <div class="donut-canvas-wrap"><canvas id="donutChart"></canvas><div class="donut-center"><div class="total">100%</div><div class="total-label">Total Stok</div></div></div>
+          <div class="donut-canvas-wrap"><canvas id="donutChart"></canvas><div class="donut-center"><div class="total" id="donutTotal">0%</div><div class="total-label">Daily</div></div></div>
           <div class="donut-legend">
-            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#16a34a"></div>Available</div><div class="donut-legend-val">60%</div></div>
-            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#d97706"></div>Reserved</div><div class="donut-legend-val">25%</div></div>
-            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#dc2626"></div>Low Stock</div><div class="donut-legend-val">15%</div></div>
+            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#16a34a"></div>Inbound</div><div class="donut-legend-val" id="donutInboundVal">0%</div></div>
+            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#8b5cf6"></div>Storing</div><div class="donut-legend-val" id="donutStoringVal">0%</div></div>
+            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#d97706"></div>Outbound</div><div class="donut-legend-val" id="donutOutboundVal">0%</div></div>
+            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#e2e8f0"></div>Belum Selesai</div><div class="donut-legend-val" id="donutBelumVal">100%</div></div>
           </div>
         </div>
       </div>
     </div>
     <!-- PROGRESS CHARTS ROW -->
-    <div class="progress-row">
+    <div class="progress-row" style="grid-template-columns:1fr 1fr 1fr;">
       <!-- Inbound Progress -->
       <div class="card progress-card">
         <div class="card-header">
@@ -447,6 +448,28 @@
             <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Antri</span><span class="prog-leg-val" id="piInAntri" style="color:#f59e0b">—</span></div>
             <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#dc2626"></span><span class="prog-leg-text">Belum Datang</span><span class="prog-leg-val" id="piInBelum" style="color:#dc2626">—</span></div>
             <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#8b5cf6"></span><span class="prog-leg-text">HIT / MISS</span><span class="prog-leg-val" id="piInHitMiss" style="color:#8b5cf6">—</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Storing Progress -->
+      <div class="card progress-card">
+        <div class="card-header">
+          <span class="card-title"><span class="live-dot"></span>🏗️ Storing Progress Hari Ini</span>
+          <span id="storingPctBadge" style="font-size:12px;font-weight:800;color:#8b5cf6;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);padding:3px 10px;border-radius:20px;">—%</span>
+        </div>
+        <div class="progress-body">
+          <div class="progress-chart-wrap">
+            <canvas id="dashStoringChart"></canvas>
+            <div class="progress-center">
+              <div class="progress-pct" id="dashStoringPct">—</div>
+              <div class="progress-label">Progres</div>
+            </div>
+          </div>
+          <div class="progress-legend">
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#16a34a"></span><span class="prog-leg-text">Picking Done</span><span class="prog-leg-val" id="piStorePickingVal" style="color:#16a34a">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Staged (DS)</span><span class="prog-leg-val" id="piStoreStagedVal" style="color:#f59e0b">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#ef4444"></span><span class="prog-leg-text">Sisa Picking</span><span class="prog-leg-val" id="piStoreSisaVal" style="color:#ef4444">—</span></div>
+            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#8b5cf6"></span><span class="prog-leg-text">% Kapasitas</span><span class="prog-leg-val" id="piStoreKapVal" style="color:#8b5cf6">—</span></div>
           </div>
         </div>
       </div>
