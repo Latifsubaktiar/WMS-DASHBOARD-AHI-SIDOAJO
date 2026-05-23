@@ -182,9 +182,9 @@
         <div class="stat-content"><div class="stat-label">Storing Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--green)">—</div><div class="stat-sub">Memuat data...</div></div>
       </div>
       <!-- OUTBOUND TODAY -->
-      <div class="stat-card orange-bar">
+      <div class="stat-card orange-bar" id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;" title="Klik untuk lihat detail">
         <div class="stat-icon" style="background:var(--orange-bg)">🚚</div>
-        <div class="stat-content"><div class="stat-label">Outbound Today</div><div class="stat-value" style="color:var(--orange)">—</div><div class="stat-sub">Memuat data...</div></div>
+        <div class="stat-content"><div class="stat-label">Outbound Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--orange)" id="outboundStatVal">—</div><div class="stat-sub" id="outboundStatSub">Memuat data...</div></div>
       </div>
       <div class="stat-card red-bar">
         <div class="stat-icon" style="background:var(--red-bg)">🔔</div>
@@ -277,6 +277,36 @@
           </table>
         </div>
         <div id="storingFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+      </div>
+    </div>
+    <!-- ═══ OUTBOUND DETAIL PANEL ═══ -->
+    <div id="outboundDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
+        <div class="card-header" style="background:linear-gradient(135deg,rgba(217,119,6,0.08),transparent);">
+          <div>
+            <span class="card-title"><span class="live-dot"></span>🚚 Outbound Dashboard — Data Hari Ini</span>
+            <div id="outboundPanelSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div>
+          </div>
+          <button onclick="toggleOutboundPanel()" style="border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+        </div>
+        <!-- SUMMARY BADGES -->
+        <div id="outboundPanelSummary" style="display:flex;gap:10px;padding:12px 20px;border-bottom:1px solid rgba(200,215,240,0.2);flex-wrap:wrap;"></div>
+        <!-- TABLE -->
+        <div style="overflow-x:auto;flex:1;overflow-y:auto;">
+          <table>
+            <thead><tr>
+              <th>No</th><th>Penyelesaian</th><th>Trans No</th>
+              <th style="text-align:center;background:rgba(22,163,74,0.1);color:#16a34a">%PC</th>
+              <th style="text-align:center;background:rgba(37,99,235,0.1);color:#3b82f6">%STG</th>
+              <th style="text-align:center;background:rgba(245,158,11,0.1);color:#f59e0b">%LD</th>
+              <th>Shipping Line</th><th>BU</th><th>Carrier ID</th>
+              <th>Stuffing Time</th><th>Jenis Armada</th><th>No Pol</th>
+              <th style="text-align:center">Status</th>
+            </tr></thead>
+            <tbody id="outboundPanelBody"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="outboundPanelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
       </div>
     </div>
     <div id="inboundDetailPanel" style="display:none;margin-bottom:18px;">
