@@ -962,3 +962,9 @@ body.dark.slideshow-mode #outboundDetailPanel .card-header {
   border-bottom-color: rgba(79,142,247,0.15);
   box-shadow: 0 2px 16px rgba(0,0,0,0.5);
 }
+
+/* ── WT Row Colors - vivid ── */
+tr.wt2-row { background: rgba(59,130,246,0.20) !important; border-left: 4px solid rgba(59,130,246,1) !important; }
+tr.wt3-row { background: rgba(139,92,246,0.20) !important; border-left: 4px solid rgba(139,92,246,1) !important; }
+body.dark tr.wt2-row { background: rgba(59,130,246,0.22) !important; }
+body.dark tr.wt3-row { background: rgba(139,92,246,0.22) !important; }
