@@ -487,353 +487,147 @@ function renderOutboundPanelTable(rows) {
 }
 
 // ══════════════════════════════════════
+// ══════════════════════════════════════
 //  SLIDESHOW MODE
 // ══════════════════════════════════════
-let slideshowActive  = false;
-let slideshowIndex   = 0;
-let slideshowRAF     = null;
-let slideshowTimer   = null;
-
-const SLIDES = [
-  { name: '🏠 Dashboard'    },
-  { name: '📦 Inbound Data' },
-  { name: '📋 Putaway'      },
-  { name: '🏗️ Storing'      },
-  { name: '🚚 Outbound'     },
-  { name: '📊 Line OB'      },
-];
-
-function toggleSlideshow() {
-  if (slideshowActive) stopSlideshow();
-  else startSlideshow();
-}
-
-function startSlideshow() {
-  slideshowActive = true;
-  slideshowIndex  = 0;
-
-  // Fullscreen
-  const el = document.documentElement;
-  if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-
-  // Sembunyikan header & sidebar
-  const header  = document.querySelector('.header');
-  const sidebar = document.querySelector('.sidebar');
-  if (header)  header.style.display = 'none';
-  if (sidebar) sidebar.style.display = 'none';
-
-  // Shell jadi 1 kolom, mode slideshow
-  const shell = document.querySelector('.shell');
-  if (shell) { shell.style.gridTemplateColumns='1fr'; shell.style.gridTemplateRows='1fr'; }
+let slideshowActive = false;
+let slideshowIndex  = 0;
+let slideshowRAF    = null;
+let slideshowTimer  = null;
+const SLIDES=[{name:'🏠 Dashboard'},{name:'📦 Inbound Data'},{name:'📋 Putaway'},{name:'🏗️ Storing'},{name:'🚚 Outbound'},{name:'📊 Line OB'}];
+function toggleSlideshow(){if(slideshowActive)stopSlideshow();else startSlideshow();}
+function startSlideshow(){
+  slideshowActive=true;slideshowIndex=0;
+  const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});
+  const h=document.querySelector('.header'),s=document.querySelector('.sidebar');
+  if(h)h.style.display='none';if(s)s.style.display='none';
+  const sh=document.querySelector('.shell');if(sh){sh.style.gridTemplateColumns='1fr';sh.style.gridTemplateRows='1fr';}
   document.body.classList.add('slideshow-mode');
-
-  // Update button
-  const btn = document.getElementById('slideshowBtn');
-  if (btn) btn.innerHTML = '<span style="font-size:14px">⏹</span> Stop';
-
-  showSlideshowIndicator();
-  document.addEventListener('keydown', onSlideshowKey);
-  document.addEventListener('fullscreenchange', onFullscreenChange);
-
+  const btn=document.getElementById('slideshowBtn');if(btn)btn.innerHTML='<span style="font-size:14px">⏹</span> Stop';
+  createFadeOverlay();showSlideshowIndicator();
+  document.addEventListener('keydown',onSlideshowKey);
+  document.addEventListener('fullscreenchange',onFullscreenChange);
   runSlide(0);
 }
-
-function stopSlideshow() {
-  slideshowActive = false;
-  if (slideshowRAF)   { cancelAnimationFrame(slideshowRAF); slideshowRAF = null; }
-  if (slideshowTimer) { clearTimeout(slideshowTimer); slideshowTimer = null; }
-
-  // Exit fullscreen
-  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-
-  // Restore header & sidebar
-  const header  = document.querySelector('.header');
-  const sidebar = document.querySelector('.sidebar');
-  if (header)  header.style.display = '';
-  if (sidebar) sidebar.style.display = '';
-
-  const shell = document.querySelector('.shell');
-  if (shell) { shell.style.gridTemplateColumns=''; shell.style.gridTemplateRows=''; }
-
+function stopSlideshow(){
+  slideshowActive=false;
+  if(slideshowRAF){cancelAnimationFrame(slideshowRAF);slideshowRAF=null;}
+  if(slideshowTimer){clearTimeout(slideshowTimer);slideshowTimer=null;}
+  if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+  const h=document.querySelector('.header'),s=document.querySelector('.sidebar');
+  if(h)h.style.display='';if(s)s.style.display='';
+  const sh=document.querySelector('.shell');if(sh){sh.style.gridTemplateColumns='';sh.style.gridTemplateRows='';}
   document.body.classList.remove('slideshow-mode');
-
-  // Remove indicator
-  const ind = document.getElementById('slideshowIndicator');
-  if (ind) ind.remove();
-
-  // Update button
-  const btn = document.getElementById('slideshowBtn');
-  if (btn) btn.innerHTML = '<span style="font-size:14px">▶</span> Slide Show';
-
-  // Tutup semua panel, restore dashboard
-  if (inboundPanelOpen)  { inboundPanelOpen=false;  const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
-  if (storingPanelOpen)  { storingPanelOpen=false;   const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
-  if (outboundPanelOpen) { outboundPanelOpen=false;  const p=document.getElementById('outboundDetailPanel'); if(p) p.style.display='none'; }
-  restoreGrids();
-
-  document.removeEventListener('keydown', onSlideshowKey);
-  document.removeEventListener('fullscreenchange', onFullscreenChange);
+  document.getElementById('slideshowOverlay')?.remove();
+  document.getElementById('slideshowIndicator')?.remove();
+  const btn=document.getElementById('slideshowBtn');if(btn)btn.innerHTML='<span style="font-size:14px">▶</span> Slide Show';
+  if(inboundPanelOpen){inboundPanelOpen=false;document.getElementById('inboundDetailPanel').style.display='none';}
+  if(storingPanelOpen){storingPanelOpen=false;document.getElementById('storingDetailPanel').style.display='none';}
+  if(outboundPanelOpen){outboundPanelOpen=false;document.getElementById('outboundDetailPanel').style.display='none';}
+  ['mid-grid','progress-row','bottom-grid'].forEach(cls=>{const e=document.querySelector('.'+cls);if(e)e.style.display='';});
+  document.removeEventListener('keydown',onSlideshowKey);
+  document.removeEventListener('fullscreenchange',onFullscreenChange);
 }
-
-function onSlideshowKey(e) { if (e.key === 'Escape') stopSlideshow(); }
-function onFullscreenChange() { if (!document.fullscreenElement && slideshowActive) stopSlideshow(); }
-
-function ssleep(ms) {
-  return new Promise(res => { if (!slideshowActive) { res(); return; } slideshowTimer = setTimeout(res, ms); });
+function onSlideshowKey(e){if(e.key==='Escape')stopSlideshow();}
+function onFullscreenChange(){if(!document.fullscreenElement&&slideshowActive)stopSlideshow();}
+function createFadeOverlay(){
+  document.getElementById('slideshowOverlay')?.remove();
+  const div=document.createElement('div');
+  div.id='slideshowOverlay';
+  div.style.cssText='position:fixed;inset:0;z-index:9998;background:#000;opacity:0;pointer-events:none;transition:opacity 0.45s ease;';
+  document.body.appendChild(div);
 }
-
-async function runSlide(idx) {
-  if (!slideshowActive) return;
-  slideshowIndex = idx % SLIDES.length;
+function fadeOut(){return new Promise(res=>{const ov=document.getElementById('slideshowOverlay');if(!ov){res();return;}ov.style.opacity='0.65';setTimeout(res,480);});}
+function fadeIn(){return new Promise(res=>{const ov=document.getElementById('slideshowOverlay');if(!ov){res();return;}ov.style.opacity='0';setTimeout(res,480);});}
+function ssleep(ms){return new Promise(res=>{if(!slideshowActive){res();return;}slideshowTimer=setTimeout(res,ms);});}
+async function runSlide(idx){
+  if(!slideshowActive)return;
+  slideshowIndex=idx%SLIDES.length;
   updateSlideshowIndicator(slideshowIndex);
-
-  const page = document.getElementById('page-dashboard');
-
-  // Tab switch (slide 1→2 atau 4→5) = tidak full fade, cukup quick
-  const isTabSwitch = (slideshowIndex === 2 || slideshowIndex === 5);
-
-  if (!isTabSwitch && page) {
-    page.classList.remove('ss-fade-enter');
-    page.classList.add('ss-fade-exit');
-    await ssleep(400);
-    page.classList.remove('ss-fade-exit');
-  }
-
+  await fadeOut();
   await prepareSlide(slideshowIndex);
-  await ssleep(300);
-
-  // Reset semua scroll
-  const mainEl = document.querySelector('.main');
-  if (mainEl) mainEl.scrollTop = 0;
-  const tableEl = getSlideTableEl(slideshowIndex);
-  if (tableEl && tableEl !== mainEl) tableEl.scrollTop = 0;
-
-  // Fade in
-  if (page) {
-    page.classList.remove('ss-fade-enter');
-    // Force reflow
-    void page.offsetWidth;
-    page.classList.add('ss-fade-enter');
-  }
-  await ssleep(600);
-
-  // Scroll lambat (dengan race timeout 45 detik)
-  await Promise.race([
-    slowScrollTable(slideshowIndex),
-    new Promise(r => { slideshowTimer = setTimeout(r, 20000); })
-  ]);
-
-  // Pause di akhir slide 3 detik
-  await ssleep(3000);
-
-  if (slideshowActive) runSlide(slideshowIndex + 1);
+  const tbl=getSlideTableEl(slideshowIndex);
+  if(tbl)tbl.scrollTop=0;
+  if(slideshowIndex===0){const m=document.querySelector('.main');if(m)m.scrollTop=0;}
+  await fadeIn();
+  await ssleep(1000);
+  await scrollTableSlowly(tbl);
+  await ssleep(3500);
+  if(slideshowActive)runSlide(slideshowIndex+1);
 }
-
-function getSlideTableEl(idx) {
-  const main = document.querySelector('.main');
-  switch(idx) {
-    case 0: return main;
-    case 1: {
-      // Coba table wrap dulu, fallback ke main
-      const el = document.getElementById('panelInboundTable');
-      return (el && el.scrollHeight > el.clientHeight + 10) ? el : main;
-    }
-    case 2: {
-      const el = document.getElementById('panelInlineTable');
-      return (el && el.scrollHeight > el.clientHeight + 10) ? el : main;
-    }
-    case 3: {
-      // Storing - cari div overflow-y:auto terakhir di panel
-      const panel = document.getElementById('storingDetailPanel');
-      if (panel) {
-        const divs = panel.querySelectorAll('div');
-        for (let i = divs.length-1; i>=0; i--) {
-          const d = divs[i];
-          if (d.scrollHeight > d.clientHeight + 20) return d;
-        }
-      }
-      return main;
-    }
-    case 4: {
-      const el = document.getElementById('outWrapData');
-      return (el && el.scrollHeight > el.clientHeight + 10) ? el : main;
-    }
-    case 5: {
-      const el = document.getElementById('outWrapLine');
-      return (el && el.scrollHeight > el.clientHeight + 10) ? el : main;
-    }
-    default: return main;
+function getSlideTableEl(idx){
+  switch(idx){
+    case 0:return document.querySelector('.main');
+    case 1:return document.getElementById('panelInboundTable');
+    case 2:return document.getElementById('panelInlineTable');
+    case 3:{const p=document.getElementById('storingDetailPanel');if(!p)return null;const arr=Array.from(p.querySelectorAll('div')).reverse();return arr.find(d=>d.style.overflowY==='auto'&&d.scrollHeight>d.clientHeight+30)||null;}
+    case 4:return document.getElementById('outWrapData');
+    case 5:return document.getElementById('outWrapLine');
+    default:return document.querySelector('.main');
   }
 }
-
-async function slowScrollTable(idx) {
-  const el   = getSlideTableEl(idx);
-  const main = document.querySelector('.main');
-  const targets = [...new Set([el, main].filter(Boolean))];
-  const pxPerFrame = 0.5;
-  const maxMs = 20000; // max 40 detik per scroll
-  const startTime = Date.now();
-
-  return new Promise(resolve => {
-    if (!slideshowActive) { resolve(); return; }
-
-    function canScroll(t) {
-      return t && t.scrollHeight > t.clientHeight + 5 && t.scrollTop < t.scrollHeight - t.clientHeight - 2;
+async function scrollTableSlowly(el){
+  if(!el||!slideshowActive)return;
+  return new Promise(resolve=>{
+    const maxMs=20000,start=Date.now(),px=0.55;
+    function step(){
+      if(!slideshowActive||Date.now()-start>maxMs){resolve();return;}
+      const max=el.scrollHeight-el.clientHeight;
+      if(max<5||el.scrollTop>=max-2){resolve();return;}
+      el.scrollTop+=px;
+      slideshowRAF=requestAnimationFrame(step);
     }
-    function anyCanScroll() {
-      return targets.some(canScroll);
-    }
-
-    // Kalau tidak ada yang bisa di-scroll, langsung resolve
-    if (!anyCanScroll()) { resolve(); return; }
-
-    function step() {
-      if (!slideshowActive) { resolve(); return; }
-      // Safety: max time
-      if (Date.now() - startTime > maxMs) { resolve(); return; }
-      if (!anyCanScroll()) { resolve(); return; }
-      targets.forEach(t => { if (canScroll(t)) t.scrollTop += pxPerFrame; });
-      slideshowRAF = requestAnimationFrame(step);
-    }
-    slideshowRAF = requestAnimationFrame(step);
+    if(el.scrollHeight-el.clientHeight<5){resolve();return;}
+    slideshowRAF=requestAnimationFrame(step);
   });
 }
-
-async function prepareSlide(idx) {
-  switch(idx) {
-    case 0: // Dashboard utama
-      if (inboundPanelOpen)  { inboundPanelOpen=false;  document.getElementById('inboundDetailPanel').style.display='none'; }
-      if (storingPanelOpen)  { storingPanelOpen=false;   document.getElementById('storingDetailPanel').style.display='none'; }
-      if (outboundPanelOpen) { outboundPanelOpen=false;  document.getElementById('outboundDetailPanel').style.display='none'; }
-      restoreGrids();
+async function prepareSlide(idx){
+  const hideG=()=>['mid-grid','progress-row','bottom-grid'].forEach(cls=>{const e=document.querySelector('.'+cls);if(e)e.style.display='none';});
+  const closeAll=(keep)=>{
+    if(keep!=='inbound'&&inboundPanelOpen){inboundPanelOpen=false;document.getElementById('inboundDetailPanel').style.display='none';}
+    if(keep!=='storing'&&storingPanelOpen){storingPanelOpen=false;document.getElementById('storingDetailPanel').style.display='none';}
+    if(keep!=='outbound'&&outboundPanelOpen){outboundPanelOpen=false;document.getElementById('outboundDetailPanel').style.display='none';}
+  };
+  switch(idx){
+    case 0:
+      if(inboundPanelOpen){inboundPanelOpen=false;document.getElementById('inboundDetailPanel').style.display='none';}
+      if(storingPanelOpen){storingPanelOpen=false;document.getElementById('storingDetailPanel').style.display='none';}
+      if(outboundPanelOpen){outboundPanelOpen=false;document.getElementById('outboundDetailPanel').style.display='none';}
+      ['mid-grid','progress-row','bottom-grid'].forEach(cls=>{const e=document.querySelector('.'+cls);if(e)e.style.display='';});
       break;
-
-    case 1: // Inbound - Data Inbound
-      closeOtherPanels('inbound');
-      if (!inboundPanelOpen) {
-        inboundPanelOpen = true;
-        const p = document.getElementById('inboundDetailPanel');
-        if (p) p.style.display = 'block';
-        hideGrids();
-        renderPanelInboundTable(window._inboundRows || []);
-        fetchInlineProses();
-      }
-      switchPanelTab('inbound');
+    case 1:
+      closeAll('inbound');
+      if(!inboundPanelOpen){inboundPanelOpen=true;const p=document.getElementById('inboundDetailPanel');if(p)p.style.display='block';hideG();renderPanelInboundTable(window._inboundRows||[]);fetchInlineProses();}
+      switchPanelTab('inbound');break;
+    case 2:switchPanelTab('inline');break;
+    case 3:
+      closeAll('storing');
+      if(!storingPanelOpen){storingPanelOpen=true;const p=document.getElementById('storingDetailPanel');if(p)p.style.display='block';hideG();if(window._storingData)renderStoringPanel(window._storingData);else await fetchStoringToday();}
       break;
-
-    case 2: // Inbound - Monitoring Putaway
-      switchPanelTab('inline');
-      break;
-
-    case 3: // Storing
-      closeOtherPanels('storing');
-      if (!storingPanelOpen) {
-        storingPanelOpen = true;
-        const p = document.getElementById('storingDetailPanel');
-        if (p) p.style.display = 'block';
-        hideGrids();
-        if (window._storingData) renderStoringPanel(window._storingData);
-        else await fetchStoringToday();
-      }
-      break;
-
-    case 4: // Outbound - Data
-      closeOtherPanels('outbound');
-      if (!outboundPanelOpen) {
-        outboundPanelOpen = true;
-        const p = document.getElementById('outboundDetailPanel');
-        if (p) p.style.display = 'block';
-        hideGrids();
-        await fetchOutboundPanel();
-      }
-      switchOutboundTab('data');
-      break;
-
-    case 5: // Outbound - Line
-      switchOutboundTab('line');
-      await fetchLineOutbound();
-      break;
+    case 4:
+      closeAll('outbound');
+      if(!outboundPanelOpen){outboundPanelOpen=true;const p=document.getElementById('outboundDetailPanel');if(p)p.style.display='block';hideG();await fetchOutboundPanel();}
+      switchOutboundTab('data');break;
+    case 5:switchOutboundTab('line');await fetchLineOutbound();break;
   }
 }
-
-function closeOtherPanels(keep) {
-  if (keep!=='inbound'  && inboundPanelOpen)  { inboundPanelOpen=false;  const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
-  if (keep!=='storing'  && storingPanelOpen)  { storingPanelOpen=false;   const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
-  if (keep!=='outbound' && outboundPanelOpen) { outboundPanelOpen=false;  const p=document.getElementById('outboundDetailPanel'); if(p) p.style.display='none'; }
-}
-
-function hideGrids() {
-  const mid=document.querySelector('.mid-grid'), prog=document.querySelector('.progress-row'), bot=document.querySelector('.bottom-grid');
-  if(mid)  mid.style.display='none';
-  if(prog) prog.style.display='none';
-  if(bot)  bot.style.display='none';
-}
-
-function restoreGrids() {
-  const mid=document.querySelector('.mid-grid'), prog=document.querySelector('.progress-row'), bot=document.querySelector('.bottom-grid');
-  if(mid)  mid.style.display='';
-  if(prog) prog.style.display='';
-  if(bot)  bot.style.display='';
-}
-
-function slowScroll(el) {
-  return new Promise(resolve => {
-    if (!el || !slideshowActive) { resolve(); return; }
-    const pxPerFrame = 0.6; // lambat ~36px/detik
-    function step() {
-      if (!slideshowActive) { resolve(); return; }
-      const max = el.scrollHeight - el.clientHeight;
-      if (el.scrollTop >= max - 1) { el.scrollTop = max; resolve(); return; }
-      el.scrollTop += pxPerFrame;
-      slideshowRAF = requestAnimationFrame(step);
-    }
-    slideshowRAF = requestAnimationFrame(step);
-  });
-}
-
-function showSlideshowIndicator() {
-  const old = document.getElementById('slideshowIndicator');
-  if (old) old.remove();
-
-  const div = document.createElement('div');
-  div.id = 'slideshowIndicator';
-  div.style.cssText = `
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    z-index:99999;display:flex;align-items:center;gap:12px;
-    background:rgba(4,6,14,0.85);backdrop-filter:blur(16px);
-    border:1px solid rgba(79,142,247,0.2);border-radius:40px;
-    padding:10px 22px;box-shadow:0 8px 32px rgba(0,0,0,0.5);
-  `;
-  div.innerHTML = SLIDES.map((s,i)=>`
-    <div onclick="jumpSlide(${i})" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:2px 4px;">
-      <div id="sdot${i}" style="width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,0.25);transition:all 0.3s;"></div>
-      <span id="slbl${i}" style="font-size:9px;color:rgba(255,255,255,0.35);font-weight:600;white-space:nowrap;transition:all 0.3s;">${s.name}</span>
-    </div>
-  `).join('') + `
-    <div style="width:1px;height:28px;background:rgba(255,255,255,0.12);margin:0 4px;"></div>
-    <button onclick="stopSlideshow()" style="background:rgba(239,68,68,0.85);border:none;border-radius:20px;padding:5px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">✕ Stop</button>
-  `;
+function jumpSlide(idx){if(slideshowRAF)cancelAnimationFrame(slideshowRAF);if(slideshowTimer)clearTimeout(slideshowTimer);runSlide(idx);}
+function showSlideshowIndicator(){
+  document.getElementById('slideshowIndicator')?.remove();
+  const div=document.createElement('div');
+  div.id='slideshowIndicator';
+  div.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;align-items:center;gap:12px;background:rgba(4,6,14,0.88);backdrop-filter:blur(16px);border:1px solid rgba(79,142,247,0.2);border-radius:40px;padding:10px 22px;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
+  div.innerHTML=SLIDES.map((s,i)=>`<div onclick="jumpSlide(${i})" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:2px 4px;"><div id="sdot${i}" style="width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s;"></div><span id="slbl${i}" style="font-size:9px;color:rgba(255,255,255,0.3);font-weight:600;white-space:nowrap;transition:all 0.3s;">${s.name}</span></div>`).join('')+'<div style="width:1px;height:28px;background:rgba(255,255,255,0.1);margin:0 4px;"></div><button onclick="stopSlideshow()" style="background:rgba(239,68,68,0.85);border:none;border-radius:20px;padding:5px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">✕ Stop</button>';
   document.body.appendChild(div);
   updateSlideshowIndicator(0);
 }
-
-function updateSlideshowIndicator(idx) {
+function updateSlideshowIndicator(idx){
   SLIDES.forEach((_,i)=>{
-    const dot = document.getElementById('sdot'+i);
-    const lbl = document.getElementById('slbl'+i);
-    const active = i===idx;
-    if(dot) { dot.style.background = active?'#4f8ef7':'rgba(255,255,255,0.25)'; dot.style.transform = active?'scale(1.5)':'scale(1)'; dot.style.boxShadow = active?'0 0 10px rgba(79,142,247,0.9)':'none'; }
-    if(lbl) { lbl.style.color = active?'#93c5fd':'rgba(255,255,255,0.35)'; lbl.style.fontWeight = active?'800':'600'; }
+    const dot=document.getElementById('sdot'+i),lbl=document.getElementById('slbl'+i),on=i===idx;
+    if(dot){dot.style.background=on?'#4f8ef7':'rgba(255,255,255,0.2)';dot.style.transform=on?'scale(1.6)':'scale(1)';dot.style.boxShadow=on?'0 0 10px rgba(79,142,247,0.9)':'none';}
+    if(lbl){lbl.style.color=on?'#93c5fd':'rgba(255,255,255,0.3)';lbl.style.fontWeight=on?'800':'600';}
   });
 }
-
-function jumpSlide(idx) {
-  if(slideshowRAF)   cancelAnimationFrame(slideshowRAF);
-  if(slideshowTimer) clearTimeout(slideshowTimer);
-  runSlide(idx);
-}
-
-// ══════════════════════════════════════
 let storingPanelOpen = false;
 let storingLoaded    = false;
 
