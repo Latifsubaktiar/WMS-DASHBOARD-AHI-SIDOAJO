@@ -920,3 +920,25 @@ body.dark.slideshow-mode .panel-charts-sticky {
   box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   border-bottom-color: rgba(79,142,247,0.12);
 }
+
+/* ── SLIDESHOW: panel cards bisa scroll via .main ── */
+body.slideshow-mode #inboundDetailPanel .card,
+body.slideshow-mode #storingDetailPanel .card,
+body.slideshow-mode #outboundDetailPanel .card {
+  overflow: visible !important;
+  min-height: unset !important;
+}
+body.slideshow-mode #inboundDetailPanel,
+body.slideshow-mode #storingDetailPanel,
+body.slideshow-mode #outboundDetailPanel {
+  margin-bottom: 0;
+}
+/* Table wrap tidak perlu overflow sendiri saat slideshow */
+body.slideshow-mode #panelInboundTable,
+body.slideshow-mode #panelInlineTable,
+body.slideshow-mode #outWrapData,
+body.slideshow-mode #outWrapLine {
+  max-height: unset !important;
+  overflow-y: visible !important;
+  flex: unset !important;
+}
