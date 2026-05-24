@@ -556,15 +556,8 @@ async function runSlide(idx){
   if(slideshowActive)runSlide(slideshowIndex+1);
 }
 function getSlideTableEl(idx){
-  switch(idx){
-    case 0:return document.querySelector('.main');
-    case 1:return document.getElementById('panelInboundTable');
-    case 2:return document.getElementById('panelInlineTable');
-    case 3:{const p=document.getElementById('storingDetailPanel');if(!p)return null;const arr=Array.from(p.querySelectorAll('div')).reverse();return arr.find(d=>d.style.overflowY==='auto'&&d.scrollHeight>d.clientHeight+30)||null;}
-    case 4:return document.getElementById('outWrapData');
-    case 5:return document.getElementById('outWrapLine');
-    default:return document.querySelector('.main');
-  }
+  // Semua slide scroll via .main (panel cards sudah visible overflow di slideshow mode)
+  return document.querySelector('.main');
 }
 async function scrollTableSlowly(el){
   if(!el||!slideshowActive)return;
