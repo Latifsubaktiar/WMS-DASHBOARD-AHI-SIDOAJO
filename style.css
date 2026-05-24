@@ -1006,3 +1006,25 @@ body.dark .stat-card .stat-sub span { font-weight: 700 !important; }
 /* Page title dark mode */
 body.dark .page-title-wrap h1 { color: #f0f4ff !important; }
 body.dark .page-title-wrap p  { color: #8ab0e0 !important; }
+
+/* ── Dark mode: Storing header sub-row text ── */
+body.dark #storingDetailPanel table thead th,
+body.dark #storingTable thead th {
+  color: #f0f4ff !important;
+}
+/* ── Dark mode: Outbound status badge text ── */
+.badge-orange { background: rgba(245,158,11,0.15); color: #92400e; border: 1px solid rgba(245,158,11,0.35); }
+body.dark .badge-orange { background: rgba(245,158,11,0.2) !important; color: #fbbf24 !important; border-color: rgba(245,158,11,0.4) !important; }
+body.dark #outboundDetailPanel .badge-red    { color: #f87171 !important; background: rgba(239,68,68,0.2) !important; border-color: rgba(239,68,68,0.4) !important; }
+body.dark #outboundDetailPanel .badge-blue   { color: #93c5fd !important; background: rgba(59,130,246,0.2) !important; border-color: rgba(59,130,246,0.4) !important; }
+body.dark #outboundDetailPanel .badge-orange { color: #fbbf24 !important; background: rgba(245,158,11,0.2) !important; border-color: rgba(245,158,11,0.4) !important; }
+
+/* Storing Dashboard header di Dark Mode Panel */
+body.dark #storingDetailPanel table thead tr:first-child th {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+body.dark #storingDetailPanel table thead tr:last-child th {
+  color: #f0f4ff !important;
+  font-weight: 800 !important;
+}
