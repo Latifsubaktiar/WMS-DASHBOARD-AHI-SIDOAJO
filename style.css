@@ -943,18 +943,22 @@ body.slideshow-mode #outWrapLine {
   flex: unset !important;
 }
 
-/* ── SLIDESHOW: thead sticky di bawah chart ── */
-body.slideshow-mode table thead {
+
+/* ── SLIDESHOW: card-header + chart freeze di atas ── */
+body.slideshow-mode #inboundDetailPanel .card-header,
+body.slideshow-mode #storingDetailPanel .card-header,
+body.slideshow-mode #outboundDetailPanel .card-header {
   position: sticky;
-  top: var(--ss-thead-top, 0px);
-  z-index: 15;
+  top: 0;
+  z-index: 25;
   background: var(--bg, #fff);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-bottom: 2px solid rgba(200,215,240,0.4);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
-body.dark.slideshow-mode table thead {
+body.dark.slideshow-mode #inboundDetailPanel .card-header,
+body.dark.slideshow-mode #storingDetailPanel .card-header,
+body.dark.slideshow-mode #outboundDetailPanel .card-header {
   background: #060912;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
-}
-body.slideshow-mode table thead th {
-  background: inherit;
+  border-bottom-color: rgba(79,142,247,0.15);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.5);
 }
