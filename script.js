@@ -610,11 +610,14 @@ async function runSlide(idx) {
   if (page) page.classList.add('ss-fade-enter');
   await ssleep(800);
 
-  // Scroll lambat
-  await slowScrollTable(slideshowIndex);
+  // Scroll lambat (dengan race timeout 45 detik)
+  await Promise.race([
+    slowScrollTable(slideshowIndex),
+    new Promise(r => { slideshowTimer = setTimeout(r, 45000); })
+  ]);
 
-  // Pause di akhir slide minimal 4 detik
-  await ssleep(4000);
+  // Pause di akhir slide 3 detik
+  await ssleep(3000);
 
   if (slideshowActive) runSlide(slideshowIndex + 1);
 }
@@ -659,25 +662,32 @@ function getSlideTableEl(idx) {
 async function slowScrollTable(idx) {
   const el   = getSlideTableEl(idx);
   const main = document.querySelector('.main');
+  const targets = [...new Set([el, main].filter(Boolean))];
+  const pxPerFrame = 0.5;
+  const maxMs = 40000; // max 40 detik per scroll
+  const startTime = Date.now();
+
   return new Promise(resolve => {
     if (!slideshowActive) { resolve(); return; }
-    // Scroll keduanya sekaligus (main + inner table)
-    const targets = [...new Set([el, main].filter(Boolean))];
-    const pxPerFrame = 0.5; // super lambat ~30px/detik
 
-    function anyCanScroll() {
-      return targets.some(t => t.scrollTop < t.scrollHeight - t.clientHeight - 1);
+    function canScroll(t) {
+      return t && t.scrollHeight > t.clientHeight + 5 && t.scrollTop < t.scrollHeight - t.clientHeight - 2;
     }
+    function anyCanScroll() {
+      return targets.some(canScroll);
+    }
+
+    // Kalau tidak ada yang bisa di-scroll, langsung resolve
+    if (!anyCanScroll()) { resolve(); return; }
+
     function step() {
       if (!slideshowActive) { resolve(); return; }
+      // Safety: max time
+      if (Date.now() - startTime > maxMs) { resolve(); return; }
       if (!anyCanScroll()) { resolve(); return; }
-      targets.forEach(t => {
-        const max = t.scrollHeight - t.clientHeight;
-        if (t.scrollTop < max - 1) t.scrollTop += pxPerFrame;
-      });
+      targets.forEach(t => { if (canScroll(t)) t.scrollTop += pxPerFrame; });
       slideshowRAF = requestAnimationFrame(step);
     }
-    if (!anyCanScroll()) { resolve(); return; }
     slideshowRAF = requestAnimationFrame(step);
   });
 }
