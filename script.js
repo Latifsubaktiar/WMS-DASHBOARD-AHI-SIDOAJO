@@ -860,29 +860,29 @@ function renderPanelInboundTable(rows) {
   const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
   const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.20)';if(wt===3)return 'rgba(139,92,246,0.20)';return '';};
   const wtLeft=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:4px solid rgba(59,130,246,1)';if(wt===3)return 'border-left:4px solid rgba(139,92,246,1)';return '';};
-  const wtCol=(s)=>{const wt=getWt(s);if(wt===2)return 'var(--text)';if(wt===3)return 'var(--text)';return 'var(--text-2)';};
+  const tk = 'font-size:12px;font-weight:600;color:#0a0f1e;';
   const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
   tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtLeft(r.stuffing)}">
-    <td class="mono" style="font-size:12px">${i+1}</td>
-    <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
-    <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
-    <td style="font-size:12px">${escHtml(r.ekspedisi)}</td>
-    <td style="font-size:12px">${escHtml(r.type)}</td>
-    <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
-    <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
-    <td style="font-size:11px;font-weight:700;color:${wtCol(r.stuffing)}">${r.stuffing||'—'}</td>
-    <td style="font-size:12px;color:${r.updateUnload?'#2563eb':'var(--text-3)'};font-weight:${r.updateUnload?'700':'400'}">${
+    <td style="${tk}text-align:center">${i+1}</td>
+    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:#0a0f1e">${escHtml(r.noLc)}</td>
+    <td style="${tk}font-family:'JetBrains Mono',monospace">${escHtml(r.noPolisi)}</td>
+    <td style="${tk}">${escHtml(r.ekspedisi)}</td>
+    <td style="${tk}">${escHtml(r.type)}</td>
+    <td style="${tk}font-family:'JetBrains Mono',monospace;text-align:center">${escHtml(r.bu)}</td>
+    <td style="${tk}color:${r.checkIn?'#15803d':'#6b7280'};font-weight:${r.checkIn?'800':'500'}">${r.checkIn||'—'}</td>
+    <td style="${tk}font-weight:800">${r.stuffing||'—'}</td>
+    <td>${
       r.updateUnload
         ? String(r.updateUnload).toUpperCase()==='FINISH'
           ? '<span class="badge badge-green">✅ FINISH</span>'
           : String(r.updateUnload).toUpperCase()==='PROSES'
           ? '<span class="badge badge-blue">⏳ PROSES</span>'
           : String(r.updateUnload).toUpperCase()==='ANTRI'
-          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">🕐 ANTRI</span>'
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(234,179,8,0.2);color:#92400e;border:1px solid rgba(234,179,8,0.4)">🕐 ANTRI</span>'
           : escHtml(r.updateUnload)
-        : '—'
+        : '<span style="color:#9ca3af;font-size:12px">—</span>'
     }</td>
-    <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
+    <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:#9ca3af;font-size:12px">—</span>'}</td>
   </tr>`).join('');
 }
 
@@ -943,32 +943,33 @@ async function fetchInlineProses() {
 function renderPanelInlineTable(rows) {
   const tbody=document.getElementById('panelInlineBody'); if(!tbody) return;
   if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="36" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';return;}
-  const c='text-align:center;font-size:11px;', cn='text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;';
-  const pBar=(pct)=>{const n=parseInt(pct)||0;const col=n>=100?'#16a34a':n>=90?'#2563eb':n>=70?'#d97706':'#dc2626';return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:52px;height:5px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${pct||'—'}</span></div>`;};
-  const statusBadge=(s)=>{const col=s==='OUT'?'#16a34a':'#d97706',bg=s==='OUT'?'rgba(22,163,74,0.12)':'rgba(217,119,6,0.12)';return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${col};font-weight:800;font-size:10px;border:1px solid ${col}44">${escHtml(s)||'—'}</span>`;};
+  const c='text-align:center;font-size:11px;font-weight:600;color:#0a0f1e;';
+  const cn='text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:#0a0f1e;';
+  const pBar=(pct)=>{const n=parseInt(pct)||0;const col=n>=100?'#15803d':n>=90?'#1d4ed8':n>=70?'#b45309':'#b91c1c';return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:52px;height:5px;background:rgba(0,0,0,0.12);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:900;color:${col}">${pct||'—'}</span></div>`;};
+  const statusBadge=(s)=>{const col=s==='OUT'?'#15803d':'#b45309',bg=s==='OUT'?'rgba(21,128,61,0.15)':'rgba(180,83,9,0.15)';return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${col};font-weight:900;font-size:10px;border:1px solid ${col}66">${escHtml(s)||'—'}</span>`;};
   const num=(v)=>(v!==undefined&&v!==null&&v!=='')&&!isNaN(Number(v))?Number(v).toLocaleString():'—';
-  const sisa=(v)=>{const n=Number(v)||0;return `<span style="font-weight:800;color:${n>0?'#d97706':'#16a34a'}">${n}</span>`;};
+  const sisa=(v)=>{const n=Number(v)||0;return `<span style="font-weight:900;color:${n>0?'#b45309':'#15803d'}">${n}</span>`;};
   tbody.innerHTML=rows.map((r,i)=>`<tr>
     <td style="${c}">${i+1}</td>
-    <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center">${escHtml(r.noLc)}</td>
+    <td style="font-weight:900;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:#0a0f1e">${escHtml(r.noLc)}</td>
     <td style="${c}">${escHtml(r.type)}</td><td style="${cn}">${escHtml(r.nopol)}</td>
     <td style="${c}">${escHtml(r.batch)}</td>
     <td style="${cn}font-size:10px">${r.tglIn||'—'}</td><td style="${cn}font-size:10px">${r.tglOpen||'—'}</td><td style="${cn}font-size:10px">${r.tglClose||'—'}</td>
     <td style="${c}">${statusBadge(r.status)}</td>
-    <td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planQty)}</td><td style="${cn}background:rgba(8,145,178,0.04)">${r.planCbm||'—'}</td><td style="${cn}background:rgba(8,145,178,0.04)">${num(r.planEstLpn)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktQty)}</td><td style="${cn}background:rgba(22,163,74,0.04)">${num(r.aktLpn)}</td>
-    <td style="background:rgba(22,163,74,0.04);${c}" colspan="2">${pBar(r.pctAkt)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftQty)}</td><td style="${cn}background:rgba(139,92,246,0.04)">${num(r.ftLpn)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInQty)}</td><td style="${cn}background:rgba(37,99,235,0.04)">${num(r.putInLpn)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.04)">${sisa(r.sisaInLpn)}</td>
-    <td style="background:rgba(37,99,235,0.04);${c}" colspan="2">${pBar(r.putInPct2)}</td>
-    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InQty)}</td><td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1InLpn)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InQty)}</td><td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2InLpn)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrQty)}</td><td style="${cn}background:rgba(22,163,74,0.04)">${num(r.putStrLpn)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.04)">${sisa(r.sisaStrLpn)}</td>
-    <td style="background:rgba(22,163,74,0.04);${c}" colspan="2">${pBar(r.putStrPct1)}</td>
-    <td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrQty)}</td><td style="${cn}background:rgba(234,179,8,0.04)">${num(r.sh1StrLpn)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrQty)}</td><td style="${cn}background:rgba(59,130,246,0.04)">${num(r.sh2StrLpn)}</td>
+    <td style="${cn}background:rgba(8,145,178,0.10)">${num(r.planQty)}</td><td style="${cn}background:rgba(8,145,178,0.10)">${r.planCbm||'—'}</td><td style="${cn}background:rgba(8,145,178,0.10)">${num(r.planEstLpn)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.10)">${num(r.aktQty)}</td><td style="${cn}background:rgba(22,163,74,0.10)">${num(r.aktLpn)}</td>
+    <td style="background:rgba(22,163,74,0.10);${c}" colspan="2">${pBar(r.pctAkt)}</td>
+    <td style="${cn}background:rgba(139,92,246,0.10)">${num(r.ftQty)}</td><td style="${cn}background:rgba(139,92,246,0.10)">${num(r.ftLpn)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.10)">${num(r.putInQty)}</td><td style="${cn}background:rgba(37,99,235,0.10)">${num(r.putInLpn)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.10)">${sisa(r.sisaInLpn)}</td>
+    <td style="background:rgba(37,99,235,0.10);${c}" colspan="2">${pBar(r.putInPct2)}</td>
+    <td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1InQty)}</td><td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1InLpn)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2InQty)}</td><td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2InLpn)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.10)">${num(r.putStrQty)}</td><td style="${cn}background:rgba(22,163,74,0.10)">${num(r.putStrLpn)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.10)">${sisa(r.sisaStrLpn)}</td>
+    <td style="background:rgba(22,163,74,0.10);${c}" colspan="2">${pBar(r.putStrPct1)}</td>
+    <td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1StrQty)}</td><td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1StrLpn)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2StrQty)}</td><td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2StrLpn)}</td>
   </tr>`).join('');
 }
 
