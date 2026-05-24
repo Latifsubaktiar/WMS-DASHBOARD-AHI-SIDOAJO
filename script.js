@@ -550,6 +550,8 @@ async function runSlide(idx){
   if(tbl)tbl.scrollTop=0;
   if(slideshowIndex===0){const m=document.querySelector('.main');if(m)m.scrollTop=0;}
   await fadeIn();
+  // Set thead sticky top = tinggi chart section
+  setTimeout(setStickyTheadTop, 100);
   await ssleep(1000);
   await scrollTableSlowly(tbl);
   await ssleep(3500);
@@ -605,6 +607,21 @@ async function prepareSlide(idx){
   }
 }
 function jumpSlide(idx){if(slideshowRAF)cancelAnimationFrame(slideshowRAF);if(slideshowTimer)clearTimeout(slideshowTimer);runSlide(idx);}
+
+function setStickyTheadTop() {
+  // Cari chart section yang aktif dan sticky
+  const charts = document.querySelector(
+    '#inboundDetailPanel .panel-charts-sticky:not([style*="display:none"]),' +
+    '#storingDetailPanel .panel-charts-sticky:not([style*="display:none"]),' +
+    '#outboundDetailPanel .panel-charts-sticky:not([style*="display:none"])'
+  );
+  let top = 0;
+  if (charts) {
+    const rect = charts.getBoundingClientRect();
+    top = Math.round(rect.height);
+  }
+  document.documentElement.style.setProperty('--ss-thead-top', top + 'px');
+}
 function showSlideshowIndicator(){
   document.getElementById('slideshowIndicator')?.remove();
   const div=document.createElement('div');
