@@ -487,7 +487,249 @@ function renderOutboundPanelTable(rows) {
 }
 
 // ══════════════════════════════════════
-//  STORING DETAIL PANEL
+//  SLIDESHOW MODE
+// ══════════════════════════════════════
+let slideshowActive  = false;
+let slideshowIndex   = 0;
+let slideshowRAF     = null;
+let slideshowTimer   = null;
+
+const SLIDES = [
+  { name: '🏠 Dashboard'    },
+  { name: '📦 Inbound Data' },
+  { name: '📋 Putaway'      },
+  { name: '🏗️ Storing'      },
+  { name: '🚚 Outbound'     },
+  { name: '📊 Line OB'      },
+];
+
+function toggleSlideshow() {
+  if (slideshowActive) stopSlideshow();
+  else startSlideshow();
+}
+
+function startSlideshow() {
+  slideshowActive = true;
+  slideshowIndex  = 0;
+
+  // Fullscreen
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+
+  // Sembunyikan header & sidebar
+  const header  = document.querySelector('.header');
+  const sidebar = document.querySelector('.sidebar');
+  if (header)  header.style.display = 'none';
+  if (sidebar) sidebar.style.display = 'none';
+
+  // Shell jadi 1 kolom
+  const shell = document.querySelector('.shell');
+  if (shell) { shell.style.gridTemplateColumns='1fr'; shell.style.gridTemplateRows='1fr'; }
+
+  // Update button
+  const btn = document.getElementById('slideshowBtn');
+  if (btn) btn.innerHTML = '<span style="font-size:14px">⏹</span> Stop';
+
+  showSlideshowIndicator();
+  document.addEventListener('keydown', onSlideshowKey);
+  document.addEventListener('fullscreenchange', onFullscreenChange);
+
+  runSlide(0);
+}
+
+function stopSlideshow() {
+  slideshowActive = false;
+  if (slideshowRAF)   { cancelAnimationFrame(slideshowRAF); slideshowRAF = null; }
+  if (slideshowTimer) { clearTimeout(slideshowTimer); slideshowTimer = null; }
+
+  // Exit fullscreen
+  if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+
+  // Restore header & sidebar
+  const header  = document.querySelector('.header');
+  const sidebar = document.querySelector('.sidebar');
+  if (header)  header.style.display = '';
+  if (sidebar) sidebar.style.display = '';
+
+  const shell = document.querySelector('.shell');
+  if (shell) { shell.style.gridTemplateColumns=''; shell.style.gridTemplateRows=''; }
+
+  // Remove indicator
+  const ind = document.getElementById('slideshowIndicator');
+  if (ind) ind.remove();
+
+  // Update button
+  const btn = document.getElementById('slideshowBtn');
+  if (btn) btn.innerHTML = '<span style="font-size:14px">▶</span> Slide Show';
+
+  // Tutup semua panel, restore dashboard
+  if (inboundPanelOpen)  { inboundPanelOpen=false;  const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
+  if (storingPanelOpen)  { storingPanelOpen=false;   const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
+  if (outboundPanelOpen) { outboundPanelOpen=false;  const p=document.getElementById('outboundDetailPanel'); if(p) p.style.display='none'; }
+  restoreGrids();
+
+  document.removeEventListener('keydown', onSlideshowKey);
+  document.removeEventListener('fullscreenchange', onFullscreenChange);
+}
+
+function onSlideshowKey(e) { if (e.key === 'Escape') stopSlideshow(); }
+function onFullscreenChange() { if (!document.fullscreenElement && slideshowActive) stopSlideshow(); }
+
+function ssleep(ms) {
+  return new Promise(res => { if (!slideshowActive) { res(); return; } slideshowTimer = setTimeout(res, ms); });
+}
+
+async function runSlide(idx) {
+  if (!slideshowActive) return;
+  slideshowIndex = idx % SLIDES.length;
+  updateSlideshowIndicator(slideshowIndex);
+
+  const mainEl = document.querySelector('.main');
+
+  await prepareSlide(slideshowIndex);
+  await ssleep(600);
+  if (mainEl) mainEl.scrollTop = 0;
+  await ssleep(1200);
+  await slowScroll(mainEl);
+  await ssleep(2000);
+
+  if (slideshowActive) runSlide(slideshowIndex + 1);
+}
+
+async function prepareSlide(idx) {
+  switch(idx) {
+    case 0: // Dashboard utama
+      if (inboundPanelOpen)  { inboundPanelOpen=false;  document.getElementById('inboundDetailPanel').style.display='none'; }
+      if (storingPanelOpen)  { storingPanelOpen=false;   document.getElementById('storingDetailPanel').style.display='none'; }
+      if (outboundPanelOpen) { outboundPanelOpen=false;  document.getElementById('outboundDetailPanel').style.display='none'; }
+      restoreGrids();
+      break;
+
+    case 1: // Inbound - Data Inbound
+      closeOtherPanels('inbound');
+      if (!inboundPanelOpen) {
+        inboundPanelOpen = true;
+        const p = document.getElementById('inboundDetailPanel');
+        if (p) p.style.display = 'block';
+        hideGrids();
+        renderPanelInboundTable(window._inboundRows || []);
+        fetchInlineProses();
+      }
+      switchPanelTab('inbound');
+      break;
+
+    case 2: // Inbound - Monitoring Putaway
+      switchPanelTab('inline');
+      break;
+
+    case 3: // Storing
+      closeOtherPanels('storing');
+      if (!storingPanelOpen) {
+        storingPanelOpen = true;
+        const p = document.getElementById('storingDetailPanel');
+        if (p) p.style.display = 'block';
+        hideGrids();
+        if (window._storingData) renderStoringPanel(window._storingData);
+        else await fetchStoringToday();
+      }
+      break;
+
+    case 4: // Outbound - Data
+      closeOtherPanels('outbound');
+      if (!outboundPanelOpen) {
+        outboundPanelOpen = true;
+        const p = document.getElementById('outboundDetailPanel');
+        if (p) p.style.display = 'block';
+        hideGrids();
+        await fetchOutboundPanel();
+      }
+      switchOutboundTab('data');
+      break;
+
+    case 5: // Outbound - Line
+      switchOutboundTab('line');
+      await fetchLineOutbound();
+      break;
+  }
+}
+
+function closeOtherPanels(keep) {
+  if (keep!=='inbound'  && inboundPanelOpen)  { inboundPanelOpen=false;  const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
+  if (keep!=='storing'  && storingPanelOpen)  { storingPanelOpen=false;   const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
+  if (keep!=='outbound' && outboundPanelOpen) { outboundPanelOpen=false;  const p=document.getElementById('outboundDetailPanel'); if(p) p.style.display='none'; }
+}
+
+function hideGrids() {
+  const mid=document.querySelector('.mid-grid'), prog=document.querySelector('.progress-row'), bot=document.querySelector('.bottom-grid');
+  if(mid)  mid.style.display='none';
+  if(prog) prog.style.display='none';
+  if(bot)  bot.style.display='none';
+}
+
+function restoreGrids() {
+  const mid=document.querySelector('.mid-grid'), prog=document.querySelector('.progress-row'), bot=document.querySelector('.bottom-grid');
+  if(mid)  mid.style.display='';
+  if(prog) prog.style.display='';
+  if(bot)  bot.style.display='';
+}
+
+function slowScroll(el) {
+  return new Promise(resolve => {
+    if (!el || !slideshowActive) { resolve(); return; }
+    const pxPerFrame = 0.6; // lambat ~36px/detik
+    function step() {
+      if (!slideshowActive) { resolve(); return; }
+      const max = el.scrollHeight - el.clientHeight;
+      if (el.scrollTop >= max - 1) { el.scrollTop = max; resolve(); return; }
+      el.scrollTop += pxPerFrame;
+      slideshowRAF = requestAnimationFrame(step);
+    }
+    slideshowRAF = requestAnimationFrame(step);
+  });
+}
+
+function showSlideshowIndicator() {
+  const old = document.getElementById('slideshowIndicator');
+  if (old) old.remove();
+
+  const div = document.createElement('div');
+  div.id = 'slideshowIndicator';
+  div.style.cssText = `
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    z-index:99999;display:flex;align-items:center;gap:12px;
+    background:rgba(4,6,14,0.85);backdrop-filter:blur(16px);
+    border:1px solid rgba(79,142,247,0.2);border-radius:40px;
+    padding:10px 22px;box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  `;
+  div.innerHTML = SLIDES.map((s,i)=>`
+    <div onclick="jumpSlide(${i})" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:2px 4px;">
+      <div id="sdot${i}" style="width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,0.25);transition:all 0.3s;"></div>
+      <span id="slbl${i}" style="font-size:9px;color:rgba(255,255,255,0.35);font-weight:600;white-space:nowrap;transition:all 0.3s;">${s.name}</span>
+    </div>
+  `).join('') + `
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.12);margin:0 4px;"></div>
+    <button onclick="stopSlideshow()" style="background:rgba(239,68,68,0.85);border:none;border-radius:20px;padding:5px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">✕ Stop</button>
+  `;
+  document.body.appendChild(div);
+  updateSlideshowIndicator(0);
+}
+
+function updateSlideshowIndicator(idx) {
+  SLIDES.forEach((_,i)=>{
+    const dot = document.getElementById('sdot'+i);
+    const lbl = document.getElementById('slbl'+i);
+    const active = i===idx;
+    if(dot) { dot.style.background = active?'#4f8ef7':'rgba(255,255,255,0.25)'; dot.style.transform = active?'scale(1.5)':'scale(1)'; dot.style.boxShadow = active?'0 0 10px rgba(79,142,247,0.9)':'none'; }
+    if(lbl) { lbl.style.color = active?'#93c5fd':'rgba(255,255,255,0.35)'; lbl.style.fontWeight = active?'800':'600'; }
+  });
+}
+
+function jumpSlide(idx) {
+  if(slideshowRAF)   cancelAnimationFrame(slideshowRAF);
+  if(slideshowTimer) clearTimeout(slideshowTimer);
+  runSlide(idx);
+}
+
 // ══════════════════════════════════════
 let storingPanelOpen = false;
 let storingLoaded    = false;
