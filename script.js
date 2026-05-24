@@ -483,9 +483,9 @@ function renderOutboundPanelTable(rows) {
     if(u.includes('SELESAI'))  return `<span class="badge badge-green">✅ ${s}</span>`;
     if(u.includes('TERLAMBAT'))return `<span class="badge badge-red">⚠️ ${s}</span>`;
     if(u.includes('PROSES')||u.includes('LOADING')) return `<span class="badge badge-blue">⏳ ${s}</span>`;
-    if(u.includes('ANTRI'))    return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(234,179,8,0.15);color:#92400e;border:1px solid rgba(234,179,8,0.4)">🕐 ${s}</span>`;
-    if(u.includes('BELUM'))    return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(239,68,68,0.12);color:#991b1b;border:1px solid rgba(239,68,68,0.3)">🔴 ${s}</span>`;
-    return `<span style="color:#374151;font-size:12px">${s||'—'}</span>`;
+    if(u.includes('ANTRI'))    return `<span class="badge badge-orange" style="display:inline-flex;align-items:center;gap:4px;">🕐 ${s}</span>`;
+    if(u.includes('BELUM'))    return `<span class="badge badge-red">🔴 ${s}</span>`;
+    return `<span style="color:var(--text-3);font-size:12px">${s||'—'}</span>`;
   };
 
   tbody.innerHTML = rows.map((r,i) => {
