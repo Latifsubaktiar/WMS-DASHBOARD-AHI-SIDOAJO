@@ -589,16 +589,18 @@ async function runSlide(idx) {
 
   const page = document.getElementById('page-dashboard');
 
-  // Fade out
-  if (page) {
+  // Tab switch (slide 1→2 atau 4→5) = tidak full fade, cukup quick
+  const isTabSwitch = (slideshowIndex === 2 || slideshowIndex === 5);
+
+  if (!isTabSwitch && page) {
     page.classList.remove('ss-fade-enter');
     page.classList.add('ss-fade-exit');
-    await ssleep(450);
+    await ssleep(400);
     page.classList.remove('ss-fade-exit');
   }
 
   await prepareSlide(slideshowIndex);
-  await ssleep(400);
+  await ssleep(300);
 
   // Reset semua scroll
   const mainEl = document.querySelector('.main');
@@ -607,13 +609,18 @@ async function runSlide(idx) {
   if (tableEl && tableEl !== mainEl) tableEl.scrollTop = 0;
 
   // Fade in
-  if (page) page.classList.add('ss-fade-enter');
-  await ssleep(800);
+  if (page) {
+    page.classList.remove('ss-fade-enter');
+    // Force reflow
+    void page.offsetWidth;
+    page.classList.add('ss-fade-enter');
+  }
+  await ssleep(600);
 
   // Scroll lambat (dengan race timeout 45 detik)
   await Promise.race([
     slowScrollTable(slideshowIndex),
-    new Promise(r => { slideshowTimer = setTimeout(r, 45000); })
+    new Promise(r => { slideshowTimer = setTimeout(r, 20000); })
   ]);
 
   // Pause di akhir slide 3 detik
@@ -664,7 +671,7 @@ async function slowScrollTable(idx) {
   const main = document.querySelector('.main');
   const targets = [...new Set([el, main].filter(Boolean))];
   const pxPerFrame = 0.5;
-  const maxMs = 40000; // max 40 detik per scroll
+  const maxMs = 20000; // max 40 detik per scroll
   const startTime = Date.now();
 
   return new Promise(resolve => {
