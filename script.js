@@ -587,60 +587,97 @@ async function runSlide(idx) {
   slideshowIndex = idx % SLIDES.length;
   updateSlideshowIndicator(slideshowIndex);
 
-  const mainEl = document.querySelector('.main');
-  const page   = document.getElementById('page-dashboard');
+  const page = document.getElementById('page-dashboard');
 
   // Fade out
   if (page) {
     page.classList.remove('ss-fade-enter');
     page.classList.add('ss-fade-exit');
-    await ssleep(380);
+    await ssleep(450);
     page.classList.remove('ss-fade-exit');
   }
 
   await prepareSlide(slideshowIndex);
+  await ssleep(400);
 
-  // Reset scroll posisi
+  // Reset semua scroll
+  const mainEl = document.querySelector('.main');
+  if (mainEl) mainEl.scrollTop = 0;
   const tableEl = getSlideTableEl(slideshowIndex);
-  if (tableEl) tableEl.scrollTop = 0;
-  if (mainEl)  mainEl.scrollTop  = 0;
+  if (tableEl && tableEl !== mainEl) tableEl.scrollTop = 0;
 
   // Fade in
-  if (page) { page.classList.add('ss-fade-enter'); }
-  await ssleep(700);
+  if (page) page.classList.add('ss-fade-enter');
+  await ssleep(800);
+
+  // Scroll lambat
   await slowScrollTable(slideshowIndex);
-  await ssleep(1500);
+
+  // Pause di akhir slide minimal 4 detik
+  await ssleep(4000);
 
   if (slideshowActive) runSlide(slideshowIndex + 1);
 }
 
 function getSlideTableEl(idx) {
+  const main = document.querySelector('.main');
   switch(idx) {
-    case 0: return document.querySelector('.main');
-    case 1: return document.getElementById('panelInboundTable');
-    case 2: return document.getElementById('panelInlineTable');
-    case 3: {
-      const p = document.getElementById('storingDetailPanel');
-      return p ? p.querySelector('[style*="overflow-y:auto"]') || p : null;
+    case 0: return main;
+    case 1: {
+      // Coba table wrap dulu, fallback ke main
+      const el = document.getElementById('panelInboundTable');
+      return (el && el.scrollHeight > el.clientHeight + 10) ? el : main;
     }
-    case 4: return document.getElementById('outWrapData');
-    case 5: return document.getElementById('outWrapLine');
-    default: return document.querySelector('.main');
+    case 2: {
+      const el = document.getElementById('panelInlineTable');
+      return (el && el.scrollHeight > el.clientHeight + 10) ? el : main;
+    }
+    case 3: {
+      // Storing - cari div overflow-y:auto terakhir di panel
+      const panel = document.getElementById('storingDetailPanel');
+      if (panel) {
+        const divs = panel.querySelectorAll('div');
+        for (let i = divs.length-1; i>=0; i--) {
+          const d = divs[i];
+          if (d.scrollHeight > d.clientHeight + 20) return d;
+        }
+      }
+      return main;
+    }
+    case 4: {
+      const el = document.getElementById('outWrapData');
+      return (el && el.scrollHeight > el.clientHeight + 10) ? el : main;
+    }
+    case 5: {
+      const el = document.getElementById('outWrapLine');
+      return (el && el.scrollHeight > el.clientHeight + 10) ? el : main;
+    }
+    default: return main;
   }
 }
 
 async function slowScrollTable(idx) {
-  const el = getSlideTableEl(idx);
+  const el   = getSlideTableEl(idx);
+  const main = document.querySelector('.main');
   return new Promise(resolve => {
-    if (!el || !slideshowActive) { resolve(); return; }
-    const pxPerFrame = 0.7;
+    if (!slideshowActive) { resolve(); return; }
+    // Scroll keduanya sekaligus (main + inner table)
+    const targets = [...new Set([el, main].filter(Boolean))];
+    const pxPerFrame = 0.5; // super lambat ~30px/detik
+
+    function anyCanScroll() {
+      return targets.some(t => t.scrollTop < t.scrollHeight - t.clientHeight - 1);
+    }
     function step() {
       if (!slideshowActive) { resolve(); return; }
-      const max = el.scrollHeight - el.clientHeight;
-      if (max <= 0 || el.scrollTop >= max - 1) { el.scrollTop = Math.max(0, max); resolve(); return; }
-      el.scrollTop += pxPerFrame;
+      if (!anyCanScroll()) { resolve(); return; }
+      targets.forEach(t => {
+        const max = t.scrollHeight - t.clientHeight;
+        if (t.scrollTop < max - 1) t.scrollTop += pxPerFrame;
+      });
       slideshowRAF = requestAnimationFrame(step);
     }
+    if (!anyCanScroll()) { resolve(); return; }
     slideshowRAF = requestAnimationFrame(step);
   });
 }
