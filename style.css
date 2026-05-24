@@ -968,3 +968,41 @@ tr.wt2-row { background: rgba(59,130,246,0.20) !important; border-left: 4px soli
 tr.wt3-row { background: rgba(139,92,246,0.20) !important; border-left: 4px solid rgba(139,92,246,1) !important; }
 body.dark tr.wt2-row { background: rgba(59,130,246,0.22) !important; }
 body.dark tr.wt3-row { background: rgba(139,92,246,0.22) !important; }
+
+/* ══════════════════════════════════════
+   DARK MODE — TABLE TEXT FIX
+══════════════════════════════════════ */
+/* Semua td di panel dark mode → putih */
+body.dark #inboundDetailPanel td,
+body.dark #storingDetailPanel td,
+body.dark #outboundDetailPanel td {
+  color: #f0f4ff !important;
+}
+/* Stat card text dark mode */
+body.dark .stat-label { color: #8ab0e0 !important; }
+body.dark .stat-sub   { color: #6080b0 !important; }
+body.dark .stat-sub .up { color: #4ade80 !important; }
+body.dark .stat-sub .dn { color: #f87171 !important; }
+/* KPI card value */
+body.dark .stat-value { color: #f0f4ff; }
+/* Stat card klik detail text */
+body.dark .stat-label span { color: #93c5fd !important; opacity: 1 !important; }
+
+/* ── Dark mode stat card text perjelas ── */
+body.dark .stat-card .stat-label {
+  color: #c8d8ff !important;
+  font-weight: 800 !important;
+}
+body.dark .stat-card .stat-label span {
+  color: #93c5fd !important;
+  opacity: 1 !important;
+}
+body.dark .stat-card .stat-sub {
+  color: #8ab0e0 !important;
+}
+body.dark .stat-card .stat-sub .up { color: #4ade80 !important; font-weight: 900 !important; }
+body.dark .stat-card .stat-sub .dn { color: #f87171 !important; font-weight: 900 !important; }
+body.dark .stat-card .stat-sub span { font-weight: 700 !important; }
+/* Page title dark mode */
+body.dark .page-title-wrap h1 { color: #f0f4ff !important; }
+body.dark .page-title-wrap p  { color: #8ab0e0 !important; }
