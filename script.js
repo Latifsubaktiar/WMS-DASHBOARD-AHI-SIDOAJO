@@ -466,8 +466,10 @@ function renderOutboundPanelTable(rows) {
     }
   };
 
-  const cn = 'text-align:center;font-size:12px;font-family:"JetBrains Mono",monospace;font-weight:600;color:#0a0f1e;';
-  const c  = 'font-size:12px;font-weight:600;color:#0a0f1e;';
+  const isDarkO=document.body.classList.contains('dark');
+  const txO=isDarkO?'#f0f4ff':'#0a0f1e';
+  const cn = `text-align:center;font-size:12px;font-family:"JetBrains Mono",monospace;font-weight:600;color:${txO};`;
+  const c  = `font-size:12px;font-weight:600;color:${txO};`;
 
   const pBar = (v) => {
     const pct=parseFloat(String(v||'0').replace('%',''))||0;
@@ -492,7 +494,7 @@ function renderOutboundPanelTable(rows) {
     return `<tr style="${trStyle}">
     <td style="${cn}">${i+1}</td>
     <td style="${c}font-weight:800">${r.penyelesaian||'—'}</td>
-    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:#0a0f1e">${escHtml(r.transno||'—')}</td>
+    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:"+txO+"">${escHtml(r.transno||'—')}</td>
     <td style="background:rgba(21,128,61,0.12)">${pBar(r.ppc)}</td>
     <td style="background:rgba(29,78,216,0.12)">${pBar(r.pstg)}</td>
     <td style="background:rgba(180,83,9,0.12)">${pBar(r.pld)}</td>
@@ -762,8 +764,10 @@ function renderStoringTable(rows) {
     }
   };
 
-  const ct = 'text-align:center;font-size:11px;font-weight:600;color:#0a0f1e;';
-  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:#0a0f1e;';
+  const isDarkS=document.body.classList.contains('dark');
+  const txS=isDarkS?'#f0f4ff':'#0a0f1e';
+  const ct = `text-align:center;font-size:11px;font-weight:600;color:${txS};`;
+  const cn = `text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:${txS};`;
   const num = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toLocaleString() : '—';
   const dec = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toFixed(2) : '—';
 
@@ -783,9 +787,9 @@ function renderStoringTable(rows) {
     const trStyle = `background:${bs.bg};${bs.border?'border-left:'+bs.border:''}`;
     return `<tr style="${trStyle}">
     <td style="${ct}">${i+1}</td>
-    <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:#0a0f1e">${escHtml(r.noLc)}</td>
+    <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:"+txS+"">${escHtml(r.noLc)}</td>
     <td style="${ct}font-weight:900;font-size:12px">${escHtml(r.batch)}</td>
-    <td style="font-size:11px;font-weight:600;color:#0a0f1e;max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
+    <td style="font-size:11px;font-weight:600;color:"+txS+";max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
     <td style="${ct}">${escHtml(r.tipeArmada)}</td>
     <td style="${cn}">${num(r.kapasitas)}</td>
     <td style="${cn}background:rgba(37,99,235,0.10)">${num(r.releaseCase)}</td>
@@ -860,11 +864,13 @@ function renderPanelInboundTable(rows) {
   const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
   const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.20)';if(wt===3)return 'rgba(139,92,246,0.20)';return '';};
   const wtLeft=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:4px solid rgba(59,130,246,1)';if(wt===3)return 'border-left:4px solid rgba(139,92,246,1)';return '';};
-  const tk = 'font-size:12px;font-weight:600;color:#0a0f1e;';
+  const isDark=document.body.classList.contains('dark');
+  const tx=isDark?'#f0f4ff':'#0a0f1e';
+  const tk = `font-size:12px;font-weight:600;color:${tx};`;
   const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
   tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtLeft(r.stuffing)}">
     <td style="${tk}text-align:center">${i+1}</td>
-    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:#0a0f1e">${escHtml(r.noLc)}</td>
+    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:"+tx+"">${escHtml(r.noLc)}</td>
     <td style="${tk}font-family:'JetBrains Mono',monospace">${escHtml(r.noPolisi)}</td>
     <td style="${tk}">${escHtml(r.ekspedisi)}</td>
     <td style="${tk}">${escHtml(r.type)}</td>
@@ -943,15 +949,17 @@ async function fetchInlineProses() {
 function renderPanelInlineTable(rows) {
   const tbody=document.getElementById('panelInlineBody'); if(!tbody) return;
   if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="36" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';return;}
-  const c='text-align:center;font-size:11px;font-weight:600;color:#0a0f1e;';
-  const cn='text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:#0a0f1e;';
+  const isDarkI=document.body.classList.contains('dark');
+  const txI=isDarkI?'#f0f4ff':'#0a0f1e';
+  const c=`text-align:center;font-size:11px;font-weight:600;color:${txI};`;
+  const cn=`text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:${txI};`;
   const pBar=(pct)=>{const n=parseInt(pct)||0;const col=n>=100?'#15803d':n>=90?'#1d4ed8':n>=70?'#b45309':'#b91c1c';return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:52px;height:5px;background:rgba(0,0,0,0.12);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:900;color:${col}">${pct||'—'}</span></div>`;};
   const statusBadge=(s)=>{const col=s==='OUT'?'#15803d':'#b45309',bg=s==='OUT'?'rgba(21,128,61,0.15)':'rgba(180,83,9,0.15)';return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${col};font-weight:900;font-size:10px;border:1px solid ${col}66">${escHtml(s)||'—'}</span>`;};
   const num=(v)=>(v!==undefined&&v!==null&&v!=='')&&!isNaN(Number(v))?Number(v).toLocaleString():'—';
   const sisa=(v)=>{const n=Number(v)||0;return `<span style="font-weight:900;color:${n>0?'#b45309':'#15803d'}">${n}</span>`;};
   tbody.innerHTML=rows.map((r,i)=>`<tr>
     <td style="${c}">${i+1}</td>
-    <td style="font-weight:900;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:#0a0f1e">${escHtml(r.noLc)}</td>
+    <td style="font-weight:900;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:"+txI+"">${escHtml(r.noLc)}</td>
     <td style="${c}">${escHtml(r.type)}</td><td style="${cn}">${escHtml(r.nopol)}</td>
     <td style="${c}">${escHtml(r.batch)}</td>
     <td style="${cn}font-size:10px">${r.tglIn||'—'}</td><td style="${cn}font-size:10px">${r.tglOpen||'—'}</td><td style="${cn}font-size:10px">${r.tglClose||'—'}</td>
