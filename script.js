@@ -821,9 +821,9 @@ function renderPanelInboundTable(rows) {
   const tbody=document.getElementById('panelInboundBody'); if(!tbody) return;
   if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>'; return; }
   const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
-  const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.1)';if(wt===3)return 'rgba(139,92,246,0.1)';return '';};
-  const wtLeft=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:3px solid rgba(59,130,246,0.6)';if(wt===3)return 'border-left:3px solid rgba(139,92,246,0.6)';return '';};
-  const wtCol=(s)=>{const wt=getWt(s);if(wt===2)return '#93c5fd';if(wt===3)return '#c4b5fd';return 'var(--text-2)';};
+  const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.20)';if(wt===3)return 'rgba(139,92,246,0.20)';return '';};
+  const wtLeft=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:4px solid rgba(59,130,246,1)';if(wt===3)return 'border-left:4px solid rgba(139,92,246,1)';return '';};
+  const wtCol=(s)=>{const wt=getWt(s);if(wt===2)return 'var(--text)';if(wt===3)return 'var(--text)';return 'var(--text-2)';};
   const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
   tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtLeft(r.stuffing)}">
     <td class="mono" style="font-size:12px">${i+1}</td>
@@ -1096,9 +1096,9 @@ function renderDashInboundTable(rows) {
   if(!tbody) return;
   if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';if(count&&currentDashTab==='inbound')count.textContent='0 data inbound hari ini';return;}
   const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
-  const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.12)';if(wt===3)return 'rgba(139,92,246,0.12)';return '';};
-  const wtBL=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:3px solid rgba(59,130,246,0.7)';if(wt===3)return 'border-left:3px solid rgba(139,92,246,0.7)';return '';};
-  const wtCol=(s)=>{const wt=getWt(s);if(wt===2)return '#93c5fd';if(wt===3)return '#c4b5fd';return 'var(--text-2)';};
+  const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.20)';if(wt===3)return 'rgba(139,92,246,0.20)';return '';};
+  const wtBL=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:4px solid rgba(59,130,246,1)';if(wt===3)return 'border-left:4px solid rgba(139,92,246,1)';return '';};
+  const wtCol=(s)=>{const wt=getWt(s);if(wt===2)return 'var(--text)';if(wt===3)return 'var(--text)';return 'var(--text-2)';};
   const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
   tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtBL(r.stuffing)}">
     <td class="mono" style="font-size:12px">${i+1}</td>
