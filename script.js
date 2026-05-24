@@ -729,44 +729,60 @@ function renderStoringTable(rows) {
     tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
     return;
   }
-  const c  = 'text-align:center;font-size:11px;color:var(--text-2);';
-  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;color:var(--text-2);';
+
+  // Batch color mapping
+  const batchStyle = (batch) => {
+    const b = parseInt(batch) || 0;
+    switch(b) {
+      case 2: return { bg:'rgba(234,179,8,0.22)',  border:'4px solid rgba(234,179,8,1)' };
+      case 3: return { bg:'rgba(34,197,94,0.20)',  border:'4px solid rgba(34,197,94,1)' };
+      case 4: return { bg:'rgba(59,130,246,0.20)', border:'4px solid rgba(59,130,246,1)' };
+      default:return { bg:'',                       border:'' };
+    }
+  };
+
+  const ct = 'text-align:center;font-size:11px;font-weight:600;color:#0a0f1e;';
+  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:#0a0f1e;';
   const num = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toLocaleString() : '—';
   const dec = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toFixed(2) : '—';
 
   const pBar = (pct) => {
     const n = parseInt(pct) || 0;
-    const col = n>=80?'#16a34a':n>=50?'#f59e0b':'#ef4444';
+    const col = n>=80?'#15803d':n>=50?'#b45309':'#b91c1c';
     return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-      <div style="width:52px;height:5px;background:rgba(148,163,184,0.2);border-radius:3px;">
+      <div style="width:52px;height:6px;background:rgba(0,0,0,0.12);border-radius:3px;">
         <div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div>
       </div>
-      <span style="font-size:10px;font-weight:800;color:${col}">${pct||'0%'}</span>
+      <span style="font-size:10px;font-weight:900;color:${col}">${pct||'0%'}</span>
     </div>`;
   };
 
-  tbody.innerHTML = rows.map((r,i) => `<tr>
-    <td style="${c}">${i+1}</td>
-    <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:var(--text)">${escHtml(r.noLc)}</td>
-    <td style="${c}">${escHtml(r.batch)}</td>
-    <td style="font-size:11px;color:var(--text-2);max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
-    <td style="${c}">${escHtml(r.tipeArmada)}</td>
+  tbody.innerHTML = rows.map((r,i) => {
+    const bs = batchStyle(r.batch);
+    const trStyle = `background:${bs.bg};${bs.border?'border-left:'+bs.border:''}`;
+    return `<tr style="${trStyle}">
+    <td style="${ct}">${i+1}</td>
+    <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:#0a0f1e">${escHtml(r.noLc)}</td>
+    <td style="${ct}font-weight:900;font-size:12px">${escHtml(r.batch)}</td>
+    <td style="font-size:11px;font-weight:600;color:#0a0f1e;max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
+    <td style="${ct}">${escHtml(r.tipeArmada)}</td>
     <td style="${cn}">${num(r.kapasitas)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.06)">${num(r.releaseCase)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.06)">${dec(r.releaseCbm)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.06)">${dec(r.astorCbm)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.06)">${num(r.pickedCase)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.06)">${dec(r.pickedCbm)}</td>
-    <td style="${cn}background:rgba(239,68,68,0.06);color:${r.sisaCase>0?'#ef4444':'#16a34a'};font-weight:800">${num(r.sisaCase)}</td>
-    <td style="background:rgba(16,185,129,0.06);${c}">${pBar(r.pctPicking)}</td>
-    <td style="${cn}background:rgba(16,185,129,0.06)">${dec(r.pencPickCbm)}</td>
-    <td style="${cn}background:rgba(245,158,11,0.06);color:${r.sisaPick99>0?'#f59e0b':'#16a34a'};font-weight:800">${num(r.sisaPick99)}</td>
-    <td style="${cn}background:rgba(99,102,241,0.06)">${num(r.stagedCase)}</td>
-    <td style="${cn}background:rgba(99,102,241,0.06)">${dec(r.stagedCbm)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.06)">${num(r.pencDsCase)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.06)">${dec(r.pencDsCbm)}</td>
-    <td style="background:rgba(234,179,8,0.06);${c}">${pBar(r.pctKapasitas)}</td>
-  </tr>`).join('');
+    <td style="${cn}background:rgba(37,99,235,0.10)">${num(r.releaseCase)}</td>
+    <td style="${cn}background:rgba(37,99,235,0.10)">${dec(r.releaseCbm)}</td>
+    <td style="${cn}background:rgba(139,92,246,0.10)">${dec(r.astorCbm)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.10)">${num(r.pickedCase)}</td>
+    <td style="${cn}background:rgba(22,163,74,0.10)">${dec(r.pickedCbm)}</td>
+    <td style="${cn}background:rgba(239,68,68,0.10);color:${r.sisaCase>0?'#b91c1c':'#15803d'};font-weight:900">${num(r.sisaCase)}</td>
+    <td style="background:rgba(16,185,129,0.10);${ct}">${pBar(r.pctPicking)}</td>
+    <td style="${cn}background:rgba(16,185,129,0.10)">${dec(r.pencPickCbm)}</td>
+    <td style="${cn}background:rgba(245,158,11,0.10);color:${r.sisaPick99>0?'#b45309':'#15803d'};font-weight:900">${num(r.sisaPick99)}</td>
+    <td style="${cn}background:rgba(99,102,241,0.10)">${num(r.stagedCase)}</td>
+    <td style="${cn}background:rgba(99,102,241,0.10)">${dec(r.stagedCbm)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.pencDsCase)}</td>
+    <td style="${cn}background:rgba(59,130,246,0.10)">${dec(r.pencDsCbm)}</td>
+    <td style="background:rgba(234,179,8,0.10);${ct}">${pBar(r.pctKapasitas)}</td>
+  </tr>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════
