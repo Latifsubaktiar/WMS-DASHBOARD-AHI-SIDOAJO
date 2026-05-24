@@ -942,3 +942,19 @@ body.slideshow-mode #outWrapLine {
   overflow-y: visible !important;
   flex: unset !important;
 }
+
+/* ── SLIDESHOW: thead sticky di bawah chart ── */
+body.slideshow-mode table thead {
+  position: sticky;
+  top: var(--ss-thead-top, 0px);
+  z-index: 15;
+  background: var(--bg, #fff);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+body.dark.slideshow-mode table thead {
+  background: #060912;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+body.slideshow-mode table thead th {
+  background: inherit;
+}
