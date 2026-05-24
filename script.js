@@ -522,9 +522,10 @@ function startSlideshow() {
   if (header)  header.style.display = 'none';
   if (sidebar) sidebar.style.display = 'none';
 
-  // Shell jadi 1 kolom
+  // Shell jadi 1 kolom, mode slideshow
   const shell = document.querySelector('.shell');
   if (shell) { shell.style.gridTemplateColumns='1fr'; shell.style.gridTemplateRows='1fr'; }
+  document.body.classList.add('slideshow-mode');
 
   // Update button
   const btn = document.getElementById('slideshowBtn');
@@ -553,6 +554,8 @@ function stopSlideshow() {
 
   const shell = document.querySelector('.shell');
   if (shell) { shell.style.gridTemplateColumns=''; shell.style.gridTemplateRows=''; }
+
+  document.body.classList.remove('slideshow-mode');
 
   // Remove indicator
   const ind = document.getElementById('slideshowIndicator');
@@ -585,15 +588,61 @@ async function runSlide(idx) {
   updateSlideshowIndicator(slideshowIndex);
 
   const mainEl = document.querySelector('.main');
+  const page   = document.getElementById('page-dashboard');
+
+  // Fade out
+  if (page) {
+    page.classList.remove('ss-fade-enter');
+    page.classList.add('ss-fade-exit');
+    await ssleep(380);
+    page.classList.remove('ss-fade-exit');
+  }
 
   await prepareSlide(slideshowIndex);
-  await ssleep(600);
-  if (mainEl) mainEl.scrollTop = 0;
-  await ssleep(1200);
-  await slowScroll(mainEl);
-  await ssleep(2000);
+
+  // Reset scroll posisi
+  const tableEl = getSlideTableEl(slideshowIndex);
+  if (tableEl) tableEl.scrollTop = 0;
+  if (mainEl)  mainEl.scrollTop  = 0;
+
+  // Fade in
+  if (page) { page.classList.add('ss-fade-enter'); }
+  await ssleep(700);
+  await slowScrollTable(slideshowIndex);
+  await ssleep(1500);
 
   if (slideshowActive) runSlide(slideshowIndex + 1);
+}
+
+function getSlideTableEl(idx) {
+  switch(idx) {
+    case 0: return document.querySelector('.main');
+    case 1: return document.getElementById('panelInboundTable');
+    case 2: return document.getElementById('panelInlineTable');
+    case 3: {
+      const p = document.getElementById('storingDetailPanel');
+      return p ? p.querySelector('[style*="overflow-y:auto"]') || p : null;
+    }
+    case 4: return document.getElementById('outWrapData');
+    case 5: return document.getElementById('outWrapLine');
+    default: return document.querySelector('.main');
+  }
+}
+
+async function slowScrollTable(idx) {
+  const el = getSlideTableEl(idx);
+  return new Promise(resolve => {
+    if (!el || !slideshowActive) { resolve(); return; }
+    const pxPerFrame = 0.7;
+    function step() {
+      if (!slideshowActive) { resolve(); return; }
+      const max = el.scrollHeight - el.clientHeight;
+      if (max <= 0 || el.scrollTop >= max - 1) { el.scrollTop = Math.max(0, max); resolve(); return; }
+      el.scrollTop += pxPerFrame;
+      slideshowRAF = requestAnimationFrame(step);
+    }
+    slideshowRAF = requestAnimationFrame(step);
+  });
 }
 
 async function prepareSlide(idx) {
