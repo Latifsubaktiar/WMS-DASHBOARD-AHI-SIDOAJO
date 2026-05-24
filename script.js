@@ -1259,9 +1259,10 @@ function renderDashStoringChart() {
     data: {
       datasets: [{
         data: [pickPct, stagePct, sisaPct],
-        backgroundColor: ['#16a34a','#f59e0b', isDark?'#1e293b':'#fecaca'],
-        borderColor: isDark?'#060912':'#ffffff',
+        backgroundColor: ['#16a34a','#f59e0b', isDark?'#dc2626':'#ef4444'],
+        borderColor: isDark?'#161b22':'#ffffff',
         borderWidth: 3,
+        hoverOffset: 6,
       }]
     },
     options: {
