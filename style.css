@@ -506,8 +506,8 @@ body.dark .live-dot { background: #34d470; box-shadow: 0 0 0 3px rgba(52,212,112
 
 /* ── Tables ── */
 body.dark th { color: #4060a0; font-weight: 800; letter-spacing: 1.2px; }
-body.dark td { color: #8aacdc; border-bottom-color: rgba(79,142,247,0.08); }
-body.dark td strong { color: #d0e4ff; }
+body.dark td { color: #c8d8ff; border-bottom-color: rgba(79,142,247,0.08); }
+body.dark td strong { color: #eef2ff; }
 body.dark tbody tr:hover { background: rgba(79,142,247,0.08) !important; }
 body.dark thead tr { background: linear-gradient(180deg, rgba(79,142,247,0.10), transparent); border-bottom-color: rgba(79,142,247,0.18); }
 
@@ -887,4 +887,36 @@ body.dark ::-webkit-scrollbar-track { background: rgba(59,130,246,0.04); }
   .page-title-wrap h1 { font-size: 20px; }
   .iframe-bar { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
   .iframe-sub { display: none; }
+}
+
+/* ── SLIDESHOW ── */
+.ss-fade-enter {
+  animation: ssFadeIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes ssFadeIn {
+  0%   { opacity:0; transform:translateY(16px) scale(0.99); filter:blur(3px); }
+  100% { opacity:1; transform:translateY(0)    scale(1);    filter:blur(0); }
+}
+.ss-fade-exit {
+  animation: ssFadeOut 0.4s ease forwards;
+}
+@keyframes ssFadeOut {
+  0%   { opacity:1; transform:translateY(0) scale(1); }
+  100% { opacity:0; transform:translateY(-8px) scale(0.99); }
+}
+
+/* Charts sticky saat slideshow */
+body.slideshow-mode .panel-charts-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--surface, rgba(255,255,255,0.95));
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-bottom: 1px solid rgba(200,215,240,0.3);
+}
+body.dark.slideshow-mode .panel-charts-sticky {
+  background: rgba(6,9,18,0.97);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  border-bottom-color: rgba(79,142,247,0.12);
 }
