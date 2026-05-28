@@ -1226,34 +1226,60 @@ async function fetchInventoryDetail() {
 }
 
 function renderInventoryPanel(data) {
-  const s        = data.summary;
-  const rows     = data.rows || [];
+  const s    = data.summary;
+  const rows = data.rows || [];
+
   const subtitle = document.getElementById('invPanelSubtitle');
   const footer   = document.getElementById('invPanelFooter');
-  const isDark   = document.body.classList.contains('dark');
-  const border   = isDark ? '#060912' : '#ffffff';
 
-  // Subtitle & footer
-  if (subtitle) subtitle.textContent = `${data.bulan || ''} · Total ${Number(s.totalLokasi).toLocaleString()} Lokasi · ${Number(s.totalCc).toLocaleString()} CC`;
-  if (footer)   footer.textContent   = `${rows.filter(r=>!r.isAreaRow).length} lorong terdaftar · Akurasi keseluruhan: ${s.akurasiTotal}`;
+  const totalLok = Number(s.totalLokasi).toLocaleString('id-ID');
+  const totalCcN = Number(s.totalCc).toLocaleString('id-ID');
+  if (subtitle) subtitle.textContent = `${data.bulan || ''} · Total ${totalLok} Lokasi · ${totalCcN} CC`;
+  if (footer)   footer.textContent   = `${rows.filter(r=>!r.isAreaRow).length} lorong terdaftar · Akurasi keseluruhan: ${s.akurasiTotal} · Diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
 
-  // ── KPI CARDS ──
-  const kpiRow = document.getElementById('invKpiRow');
+  // ── KPI CARDS (top-border accent, like image 2) ──
+  const kpiRow  = document.getElementById('invKpiRow');
+  const MISS    = Number(s.totalMiss);
+  const akuNum  = parseFloat(s.akurasiTotal) || 0;
+  const belumN  = Math.max(0, Number(s.totalLokasi) - Number(s.totalCc));
+
   const kpis = [
-    { icon:'📊', label:'Progress CC',     val: s.pctCcTotal,                     sub:`${Number(s.totalCc).toLocaleString()} dari ${Number(s.totalLokasi).toLocaleString()}`, col:'#2563eb', bg:'rgba(37,99,235,0.08)',  border2:'rgba(37,99,235,0.18)' },
-    { icon:'📍', label:'Total Lokasi',     val: Number(s.totalLokasi).toLocaleString(), sub:'jumlah lokasi terdaftar',           col:'#7c3aed', bg:'rgba(124,58,237,0.08)', border2:'rgba(124,58,237,0.18)' },
-    { icon:'🔢', label:'Total CC (Scan)',  val: Number(s.totalCc).toLocaleString(),     sub:'total item dicycle count',          col:'#0891b2', bg:'rgba(8,145,178,0.08)',  border2:'rgba(8,145,178,0.18)' },
-    { icon:'✅', label:'Total HIT',        val: Number(s.totalHit).toLocaleString(),    sub:'sesuai fisik & sistem',             col:'#16a34a', bg:'rgba(22,163,74,0.08)',  border2:'rgba(22,163,74,0.18)' },
-    { icon:'❌', label:'Total MISS',       val: Number(s.totalMiss).toLocaleString(),   sub:'tidak sesuai / discrepancy',        col: s.totalMiss>0?'#dc2626':'#16a34a', bg:s.totalMiss>0?'rgba(220,38,38,0.08)':'rgba(22,163,74,0.08)', border2:s.totalMiss>0?'rgba(220,38,38,0.18)':'rgba(22,163,74,0.18)' },
-    { icon:'🎯', label:'Akurasi Total',    val: s.akurasiTotal,                          sub:'HIT / Total CC Scan',               col: parseFloat(s.akurasiTotal)>=99.5?'#16a34a':parseFloat(s.akurasiTotal)>=98?'#d97706':'#dc2626', bg:parseFloat(s.akurasiTotal)>=99.5?'rgba(22,163,74,0.08)':'rgba(220,38,38,0.08)', border2:parseFloat(s.akurasiTotal)>=99.5?'rgba(22,163,74,0.18)':'rgba(220,38,38,0.18)' },
+    { label:'PROGRESS CC',   val: s.pctCcTotal,
+      sub1l:'SUDAH CC', sub1v: totalCcN, sub2l:'TOTAL LOKASI', sub2v: totalLok,
+      color:'#2563eb', icon:'📊' },
+    { label:'TOTAL LOKASI',  val: totalLok,
+      sub1l:'JML TERDAFTAR', sub1v: totalLok, sub2l:'SUDAH CC', sub2v: totalCcN,
+      color:'#7c3aed', icon:'📍' },
+    { label:'TOTAL CC SCAN', val: totalCcN,
+      sub1l:'SUDAH SCAN', sub1v: totalCcN, sub2l:'BELUM CC', sub2v: belumN.toLocaleString('id-ID'),
+      color:'#0891b2', icon:'🔢' },
+    { label:'TOTAL HIT',     val: Number(s.totalHit).toLocaleString('id-ID'),
+      sub1l:'SESUAI FISIK', sub1v: Number(s.totalHit).toLocaleString('id-ID'), sub2l:'DARI CC', sub2v: totalCcN,
+      color:'#16a34a', icon:'✅' },
+    { label:'TOTAL MISS',    val: Number(s.totalMiss).toLocaleString('id-ID'),
+      sub1l:'DISCREPANCY', sub1v: Number(s.totalMiss).toLocaleString('id-ID'), sub2l:'DARI CC', sub2v: totalCcN,
+      color: MISS > 0 ? '#dc2626' : '#16a34a', icon: MISS > 0 ? '❌' : '✅' },
+    { label:'AKURASI TOTAL', val: s.akurasiTotal,
+      sub1l:'HIT / CC SCAN', sub1v:`${Number(s.totalHit).toLocaleString('id-ID')} / ${totalCcN}`, sub2l:'TARGET', sub2v:'≥ 99.5%',
+      color: akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626', icon:'🎯' },
   ];
+
   if (kpiRow) {
-    kpiRow.innerHTML = kpis.map(k => `
-      <div style="background:${k.bg};border:1px solid ${k.border2};border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;">
-        <div style="font-size:18px">${k.icon}</div>
-        <div style="font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:0.3px">${k.label}</div>
-        <div style="font-size:22px;font-weight:900;color:${k.col};letter-spacing:-0.5px;line-height:1">${k.val}</div>
-        <div style="font-size:10px;color:var(--text-3)">${k.sub}</div>
+    kpiRow.innerHTML = kpis.map((k, i) => `
+      <div style="padding:16px 16px 14px;border-right:${i<5?'1px solid rgba(200,215,240,0.2)':'none'};border-top:3px solid ${k.color};">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div style="font-size:9.5px;font-weight:700;color:var(--text-3);letter-spacing:0.09em;text-transform:uppercase;">${k.label}</div>
+          <div style="font-size:15px;line-height:1;">${k.icon}</div>
+        </div>
+        <div style="font-size:${k.val.length > 8 ? '18px' : '23px'};font-weight:900;color:${k.color};line-height:1.1;letter-spacing:-0.5px;margin-bottom:5px;">${k.val}</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:9px;">
+          <div style="width:8px;height:2px;background:${k.color};border-radius:2px;flex-shrink:0;"></div>
+          <div style="font-size:9px;font-weight:600;color:${k.color};text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${k.label}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;border-top:1px solid rgba(200,215,240,0.2);padding-top:7px;gap:4px;">
+          <div style="min-width:0;"><div style="color:var(--text-3);margin-bottom:1px;white-space:nowrap;">${k.sub1l}</div><div style="font-weight:700;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${k.sub1v}</div></div>
+          <div style="text-align:right;min-width:0;flex-shrink:0;"><div style="color:var(--text-3);margin-bottom:1px;white-space:nowrap;">${k.sub2l}</div><div style="font-weight:700;color:var(--text-2);white-space:nowrap;">${k.sub2v}</div></div>
+        </div>
       </div>`).join('');
   }
 
@@ -1261,131 +1287,111 @@ function renderInventoryPanel(data) {
   const pct = parseFloat(s.pctCcTotal) || 0;
   const pb  = document.getElementById('invProgressBar');
   const pl  = document.getElementById('invProgressLabel');
-  if (pb) setTimeout(() => { pb.style.width = Math.min(pct, 100) + '%'; }, 100);
+  if (pb) setTimeout(() => pb.style.width = Math.min(pct,100)+'%', 200);
   if (pl) pl.textContent = s.pctCcTotal;
 
-  // ── DONUT HIT/MISS ──
-  const hitVal  = Number(s.totalHit)  || 0;
-  const missVal = Number(s.totalMiss) || 0;
-  const donutEl = document.getElementById('chartInvHitMiss');
-  if (donutEl) {
-    const ex = Chart.getChart(donutEl); if (ex) ex.destroy();
-    new Chart(donutEl.getContext('2d'), {
-      type: 'doughnut',
-      data: { datasets: [{ data: [hitVal, Math.max(missVal, 0.001)], backgroundColor: ['#16a34a', '#ef4444'], borderColor: border, borderWidth: 2 }] },
-      options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-    });
-  }
-  const pctAku = parseFloat(s.akurasiTotal) || 0;
-  const donutPct = document.getElementById('invDonutPct');
-  if (donutPct) { donutPct.textContent = pctAku.toFixed(1) + '%'; donutPct.style.color = pctAku >= 99.5 ? 'var(--green)' : pctAku >= 98 ? 'var(--orange)' : 'var(--red)'; }
-  const hv = document.getElementById('invHitVal');  if (hv)  hv.textContent  = hitVal.toLocaleString();
-  const mv = document.getElementById('invMissVal'); if (mv)  mv.textContent  = missVal.toLocaleString();
-
-  // ── AREA SUMMARY DONUTS ──
-  const areaCharts = document.getElementById('invAreaCharts');
-  const areaNames  = ['AREA 1', 'AREA 2', 'AREA 3'];
-  const areaColors = ['#2563eb', '#d97706', '#16a34a'];
-  if (areaCharts) {
-    const areaRows = rows.filter(r => r.isAreaRow);
-    areaCharts.innerHTML = areaNames.map((name, i) => {
-      const a = areaRows.find(r => r.spvArea.toUpperCase().includes(name.replace('AREA ', ''))) || {};
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;background:rgba(255,255,255,0.4);border:1px solid rgba(200,215,240,0.3);border-radius:12px;">
-        <div style="font-size:11.5px;font-weight:800;color:var(--text)">${name}</div>
-        <div style="position:relative;width:90px;height:90px;">
-          <canvas id="chartInvArea${i}"></canvas>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-            <div style="font-size:15px;font-weight:900;color:${areaColors[i]}">${a.akurasi || '—'}</div>
-            <div style="font-size:8px;color:var(--text-3)">Akurasi</div>
-          </div>
-        </div>
-        <div style="font-size:10px;color:var(--text-3);text-align:center">HIT: <b style="color:#16a34a">${(a.hit||0).toLocaleString()}</b> · MISS: <b style="color:#ef4444">${(a.miss||0).toLocaleString()}</b></div>
-      </div>`;
-    }).join('');
-    // Render donut per area
-    areaNames.forEach((name, i) => {
-      const a = areaRows.find(r => r.spvArea.toUpperCase().includes(name.replace('AREA ', ''))) || {};
-      const el = document.getElementById(`chartInvArea${i}`); if (!el) return;
-      const ex = Chart.getChart(el); if (ex) ex.destroy();
-      const hv2 = Number(a.hit)  || 0;
-      const mv2 = Number(a.miss) || 0;
-      new Chart(el.getContext('2d'), {
-        type: 'doughnut',
-        data: { datasets: [{ data: [hv2, Math.max(mv2, 0.001)], backgroundColor: ['#16a34a', '#ef4444'], borderColor: border, borderWidth: 2 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-      });
-    });
-  }
-
-  // ── TABLE ──
-  renderInventoryTable(rows);
+  // ── RENDER TABLES ──
+  renderInvLorongTable(rows, s);
+  renderInvAreaTable(rows, s);
 }
 
-function renderInventoryTable(rows) {
-  const tbody = document.getElementById('inventoryTableBody');
+// ── TABLE KIRI: DETAIL BY LORONG ──
+function renderInvLorongTable(rows, s) {
+  const tbody = document.getElementById('invLorongBody');
   if (!tbody) return;
-  if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
+
+  const lorong = rows.filter(r => !r.isAreaRow);
+  if (!lorong.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data</td></tr>';
     return;
   }
 
-  const isDark = document.body.classList.contains('dark');
-  const tx = isDark ? '#f0f4ff' : '#0a0f1e';
-  const c  = `text-align:center;font-size:12px;font-weight:600;color:${tx};padding:8px 10px;`;
-  const cn = `text-align:center;font-size:12px;font-family:"JetBrains Mono",monospace;font-weight:700;color:${tx};padding:8px 10px;`;
+  const AREA_COL  = { '1':'#2563eb', '2':'#d97706', '3':'#16a34a' };
+  const AREA_BG   = { '1':'rgba(37,99,235,0.04)', '2':'rgba(217,119,6,0.04)', '3':'rgba(22,163,74,0.04)' };
+  let   curArea   = '1';
 
-  const AREA_STYLES = {
-    '1': { rowBg: 'rgba(37,99,235,0.08)',  sumBg: 'rgba(37,99,235,0.22)',  sumBorder: 'border-left:4px solid #2563eb', col: '#1d4ed8' },
-    '2': { rowBg: 'rgba(217,119,6,0.08)',  sumBg: 'rgba(217,119,6,0.22)',  sumBorder: 'border-left:4px solid #d97706', col: '#b45309' },
-    '3': { rowBg: 'rgba(22,163,74,0.08)',  sumBg: 'rgba(22,163,74,0.22)',  sumBorder: 'border-left:4px solid #16a34a', col: '#15803d' },
-  };
-
-  let currentAreaNum = '';
-  tbody.innerHTML = rows.map(r => {
-    // Detect area number from spvArea
-    const aMatch = r.spvArea.match(/(\d+)/);
-    if (aMatch && !r.isAreaRow) currentAreaNum = aMatch[1];
-    const aStyle = AREA_STYLES[currentAreaNum] || { rowBg: '', sumBg: '', sumBorder: '', col: 'var(--text)' };
-
-    if (r.isAreaRow) {
-      // Area summary row
-      const akuNum = parseFloat(r.akurasi) || 0;
-      const akuColor = akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626';
-      const aNum = r.spvArea.match(/(\d+)/);
-      const aS = AREA_STYLES[aNum ? aNum[1] : '1'] || AREA_STYLES['1'];
-      return `<tr style="background:${aS.sumBg};${aS.sumBorder};font-weight:900;">
-        <td colspan="3" style="font-size:13px;font-weight:900;color:${aS.col};padding:10px 14px;letter-spacing:0.5px">📦 ${r.spvArea}</td>
-        <td style="${cn}font-size:13px;color:${aS.col}">${r.jumlahLokasi.toLocaleString()}</td>
-        <td style="${cn}font-size:13px;color:${aS.col}">${r.cc.toLocaleString()}</td>
-        <td style="${cn}font-size:13px;color:#16a34a">${r.hit.toLocaleString()}</td>
-        <td style="${cn}font-size:13px;color:${r.miss>0?'#dc2626':'#16a34a'}">${r.miss.toLocaleString()}</td>
-        <td style="${cn}font-size:13px;color:${aS.col}">${r.pctCc}</td>
-        <td style="${cn}font-size:13px;color:${akuColor}">${r.akurasi}</td>
-      </tr>`;
-    }
-
-    // Normal lorong row
+  tbody.innerHTML = lorong.map(r => {
+    const m = (r.spvArea || r.area || '').match(/(\d+)/);
+    if (m) curArea = m[1];
+    const col    = AREA_COL[curArea] || '#64748b';
+    const rowBg  = AREA_BG[curArea]  || '';
     const akuNum = parseFloat(r.akurasi) || 0;
     const akuColor = akuNum >= 100 ? '#16a34a' : akuNum >= 99 ? '#2563eb' : akuNum >= 98 ? '#d97706' : '#dc2626';
-    const akuBadge = akuNum >= 100
-      ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:rgba(22,163,74,0.12);color:#16a34a;border:1px solid rgba(22,163,74,0.25)">✅ ${r.akurasi}</span>`
-      : akuNum >= 98
-      ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:rgba(37,99,235,0.12);color:#2563eb;border:1px solid rgba(37,99,235,0.25)">🔵 ${r.akurasi}</span>`
-      : `<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:rgba(220,38,38,0.12);color:#dc2626;border:1px solid rgba(220,38,38,0.25)">⚠️ ${r.akurasi}</span>`;
+    const akuBg    = akuNum >= 100 ? 'rgba(22,163,74,0.12)' : akuNum >= 99 ? 'rgba(37,99,235,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
+    const belum    = Math.max(0, r.jumlahLokasi - r.cc);
 
-    return `<tr style="background:${aStyle.rowBg}">
-      <td style="font-size:11px;font-weight:700;color:${aStyle.col};padding:8px 12px;text-align:center">${r.spvArea || ''}</td>
-      <td style="font-size:12px;font-weight:600;color:${tx};padding:8px 10px">${escHtml(r.pic)}</td>
-      <td style="${cn}font-size:13px;font-weight:900;color:${aStyle.col}">${escHtml(String(r.lorong))}</td>
-      <td style="${cn}background:rgba(37,99,235,0.06)">${r.jumlahLokasi.toLocaleString()}</td>
-      <td style="${cn}background:rgba(8,145,178,0.06)">${r.cc.toLocaleString()}</td>
-      <td style="${cn}background:rgba(22,163,74,0.06);color:#16a34a">${r.hit.toLocaleString()}</td>
-      <td style="${cn}background:rgba(239,68,68,0.06);color:${r.miss>0?'#dc2626':'#16a34a'};font-weight:${r.miss>0?900:700}">${r.miss.toLocaleString()}</td>
-      <td style="${cn}background:rgba(245,158,11,0.06)">${r.pctCc}</td>
-      <td style="text-align:center;padding:6px 10px">${akuBadge}</td>
+    return `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.1);">
+      <td style="padding:7px 10px;text-align:center;font-weight:900;color:${col};font-size:13px;">${escHtml(String(r.lorong))}</td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--text-2);">${escHtml(r.pic)}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:600;color:var(--text-2);font-size:11.5px;">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:700;color:#0891b2;">${r.cc.toLocaleString('id-ID')}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:700;color:${belum>0?'#dc2626':'#94a3b8'};">${belum.toLocaleString('id-ID')}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:700;color:#16a34a;">${r.hit.toLocaleString('id-ID')}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:${r.miss>0?800:600};color:${r.miss>0?'#dc2626':'#94a3b8'};">${r.miss.toLocaleString('id-ID')}</td>
+      <td style="padding:5px 10px;text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:11px;font-weight:800;white-space:nowrap;">${r.akurasi}</span></td>
     </tr>`;
   }).join('');
+
+  // TOTAL row
+  const ak     = parseFloat(s.akurasiTotal) || 0;
+  const belumT = Math.max(0, Number(s.totalLokasi) - Number(s.totalCc));
+  tbody.innerHTML += `
+    <tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
+      <td colspan="2" style="padding:9px 10px;color:#fff;font-weight:900;font-size:11.5px;letter-spacing:0.04em;">TOTAL</td>
+      <td style="padding:9px 10px;text-align:right;color:#fff;font-weight:800;">${Number(s.totalLokasi).toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:right;color:#22d3ee;font-weight:800;">${Number(s.totalCc).toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:right;color:${belumT>0?'#f87171':'#94a3b8'};font-weight:800;">${belumT.toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:right;color:#4ade80;font-weight:800;">${Number(s.totalHit).toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:right;color:${Number(s.totalMiss)>0?'#f87171':'#94a3b8'};font-weight:800;">${Number(s.totalMiss).toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:center;color:${ak>=99.5?'#4ade80':'#f87171'};font-weight:900;font-size:12px;">${s.akurasiTotal}</td>
+    </tr>`;
 }
+
+// ── TABLE KANAN: RINGKASAN BY AREA ──
+function renderInvAreaTable(rows, s) {
+  const tbody = document.getElementById('invAreaBody');
+  if (!tbody) return;
+
+  const areaRows = rows.filter(r => r.isAreaRow);
+  const AREAS = [
+    { key:'1', label:'AREA 1', col:'#2563eb', bg:'rgba(37,99,235,0.05)', brd:'#2563eb' },
+    { key:'2', label:'AREA 2', col:'#d97706', bg:'rgba(217,119,6,0.05)',  brd:'#d97706' },
+    { key:'3', label:'AREA 3', col:'#16a34a', bg:'rgba(22,163,74,0.05)', brd:'#16a34a' },
+  ];
+
+  if (!areaRows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data area</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = AREAS.map(def => {
+    const a = areaRows.find(r => (r.spvArea||'').match(/\d+/)?.[0] === def.key) || {};
+    const akuNum   = parseFloat(a.akurasi) || 0;
+    const akuColor = akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626';
+    const akuBg    = akuNum >= 99.5 ? 'rgba(22,163,74,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
+    return `<tr style="background:${def.bg};border-bottom:1px solid rgba(200,215,240,0.15);border-left:3px solid ${def.brd};">
+      <td style="padding:10px 12px;font-weight:900;color:${def.col};font-size:13px;white-space:nowrap;">${def.label}</td>
+      <td style="padding:10px 10px;text-align:right;font-weight:600;color:var(--text-2);">${(a.jumlahLokasi||0).toLocaleString('id-ID')}</td>
+      <td style="padding:10px 10px;text-align:right;font-weight:700;color:#0891b2;">${(a.cc||0).toLocaleString('id-ID')}</td>
+      <td style="padding:10px 10px;text-align:right;font-weight:700;color:#16a34a;">${(a.hit||0).toLocaleString('id-ID')}</td>
+      <td style="padding:10px 10px;text-align:right;font-weight:${(a.miss||0)>0?800:600};color:${(a.miss||0)>0?'#dc2626':'#94a3b8'};">${(a.miss||0).toLocaleString('id-ID')}</td>
+      <td style="padding:8px 10px;text-align:center;"><span style="display:inline-block;padding:3px 10px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:11px;font-weight:800;white-space:nowrap;">${a.akurasi||'—'}</span></td>
+    </tr>`;
+  }).join('');
+
+  // TOTAL row
+  const ak = parseFloat(s.akurasiTotal) || 0;
+  tbody.innerHTML += `
+    <tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
+      <td style="padding:9px 12px;color:#fff;font-weight:900;font-size:11.5px;letter-spacing:0.04em;">TOTAL</td>
+      <td style="padding:9px 10px;text-align:right;color:#fff;font-weight:800;">${Number(s.totalLokasi).toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:right;color:#22d3ee;font-weight:800;">${Number(s.totalCc).toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:right;color:#4ade80;font-weight:800;">${Number(s.totalHit).toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:right;color:${Number(s.totalMiss)>0?'#f87171':'#94a3b8'};font-weight:800;">${Number(s.totalMiss).toLocaleString('id-ID')}</td>
+      <td style="padding:9px 10px;text-align:center;color:${ak>=99.5?'#4ade80':'#f87171'};font-weight:900;font-size:12px;">${s.akurasiTotal}</td>
+    </tr>`;
+}
+
 
 async function fetchInventoryAccuracy() {
   try {
