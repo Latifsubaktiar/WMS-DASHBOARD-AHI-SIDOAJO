@@ -20,11 +20,11 @@ const URLS = {
   inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbznK9XTBd5Zz07tyb-1bvjQEa00pXEMPFOXhCtYaBqthThQUliRjcXUYYr27VaXV-888w/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
   analyst:   'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzbsvn8Tiu3N3WGjBRbN_6-CsqAI9vTl2IxW1bsYi92Gk15Alzzk1JBvL4iyyvnL8nj/exec',
-  inbound:   null, storing: null,
+  inbound:   null, storing: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyBTR01ZrItlvxh1C83yxFs5B8lwK5t-a4kuKHir8s8a1SprmUA_6TsRkzDZpWOaBL9Ew/exec',
   ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
   hr:        null,
 };
-const IFRAME_PAGES   = ['inventory','outbound','planner','ga','analyst'];
+const IFRAME_PAGES   = ['inventory','outbound','planner','ga','analyst','storing'];
 const GAS_AI_URL     = 'https://script.google.com/macros/s/AKfycbzphhWpNaHVnvJzRl2dO2g-JsUnLByOPvkYZWIKoN_XrfD42uF_m7sqPgNkhUCIQlEu/exec';
 
 const AVATAR_COLORS = [
