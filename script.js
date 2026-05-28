@@ -1269,20 +1269,21 @@ function renderInventoryPanel(data) {
   ];
 
   if (kpiRow) {
-    kpiRow.innerHTML = kpis.map((k, i) => `
-      <div style="padding:16px 16px 14px;border-right:${i<5?'1px solid rgba(200,215,240,0.2)':'none'};border-top:3px solid ${k.color};">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-          <div style="font-size:9.5px;font-weight:700;color:var(--text-3);letter-spacing:0.09em;text-transform:uppercase;">${k.label}</div>
-          <div style="font-size:15px;line-height:1;">${k.icon}</div>
+    kpiRow.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.25);';
+    kpiRow.innerHTML = kpis.map(k => `
+      <div style="background:var(--bg);border:1px solid rgba(200,215,240,0.25);border-top:3px solid ${k.color};border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="font-size:9px;font-weight:700;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;">${k.label}</div>
+          <div style="font-size:14px;line-height:1;">${k.icon}</div>
         </div>
-        <div style="font-size:${k.val.length > 8 ? '18px' : '23px'};font-weight:900;color:${k.color};line-height:1.1;letter-spacing:-0.5px;margin-bottom:5px;">${k.val}</div>
-        <div style="display:flex;align-items:center;gap:4px;margin-bottom:9px;">
-          <div style="width:8px;height:2px;background:${k.color};border-radius:2px;flex-shrink:0;"></div>
-          <div style="font-size:9px;font-weight:600;color:${k.color};text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${k.label}</div>
+        <div style="font-size:${k.val.length>8?'17px':'21px'};font-weight:900;color:${k.color};line-height:1.1;letter-spacing:-0.5px;margin:3px 0 1px;">${k.val}</div>
+        <div style="display:flex;align-items:center;gap:3px;margin-bottom:7px;">
+          <div style="width:16px;height:2px;background:${k.color};border-radius:2px;"></div>
+          <div style="font-size:8.5px;color:${k.color};font-weight:700;text-transform:uppercase;letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${k.label}</div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;border-top:1px solid rgba(200,215,240,0.2);padding-top:7px;gap:4px;">
-          <div style="min-width:0;"><div style="color:var(--text-3);margin-bottom:1px;white-space:nowrap;">${k.sub1l}</div><div style="font-weight:700;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${k.sub1v}</div></div>
-          <div style="text-align:right;min-width:0;flex-shrink:0;"><div style="color:var(--text-3);margin-bottom:1px;white-space:nowrap;">${k.sub2l}</div><div style="font-weight:700;color:var(--text-2);white-space:nowrap;">${k.sub2v}</div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9.5px;border-top:1px solid rgba(200,215,240,0.2);padding-top:6px;gap:4px;">
+          <div><div style="color:var(--text-3);margin-bottom:1px;">${k.sub1l}</div><div style="font-weight:700;color:var(--text-2);white-space:nowrap;">${k.sub1v}</div></div>
+          <div style="text-align:right;flex-shrink:0;"><div style="color:var(--text-3);margin-bottom:1px;">${k.sub2l}</div><div style="font-weight:700;color:var(--text-2);white-space:nowrap;">${k.sub2v}</div></div>
         </div>
       </div>`).join('');
   }
@@ -1338,14 +1339,15 @@ function renderInvLorongTable(rows, s) {
       const bg     = AREA_SUM[curArea] || 'rgba(100,116,139,0.18)';
       const akuNum = parseFloat(r.akurasi) || 0;
       const akuCol = akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626';
-      html += `<tr style="background:${bg};border-top:1px solid ${col}50;border-bottom:1px solid ${col}50;">
-        <td colspan="3" style="padding:8px 10px;font-weight:900;color:${col};font-size:12px;">${escHtml(r.spvArea)}</td>
-        <td style="padding:8px 10px;text-align:right;font-weight:800;color:${col};">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
-        <td style="padding:8px 10px;text-align:right;font-weight:800;color:${col};">${r.cc.toLocaleString('id-ID')}</td>
-        <td style="padding:8px 10px;text-align:right;font-weight:800;color:#16a34a;">${r.hit.toLocaleString('id-ID')}</td>
-        <td style="padding:8px 10px;text-align:right;font-weight:800;color:${r.miss>0?'#dc2626':'#94a3b8'};">${r.miss.toLocaleString('id-ID')}</td>
-        <td style="padding:8px 10px;text-align:center;font-weight:800;color:${col};">${r.pctCc}</td>
-        <td style="padding:8px 10px;text-align:center;font-weight:900;color:${akuCol};">${r.akurasi}</td>
+      html += `<tr style="background:${bg};border-top:2px solid ${col}60;border-bottom:2px solid ${col}60;">
+        <td style="padding:9px 10px;font-weight:900;color:${col};font-size:12px;text-align:center;border-right:1px solid ${col}30;">${escHtml(r.spvArea)}</td>
+        <td colspan="2" style="padding:9px 10px;text-align:center;font-size:11px;color:${col};font-weight:700;letter-spacing:0.05em;">— SUBTOTAL —</td>
+        <td style="padding:9px 10px;text-align:right;font-weight:800;color:${col};">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
+        <td style="padding:9px 10px;text-align:right;font-weight:800;color:${col};">${r.cc.toLocaleString('id-ID')}</td>
+        <td style="padding:9px 10px;text-align:right;font-weight:800;color:#16a34a;">${r.hit.toLocaleString('id-ID')}</td>
+        <td style="padding:9px 10px;text-align:right;font-weight:800;color:${r.miss>0?'#dc2626':'#94a3b8'};">${r.miss.toLocaleString('id-ID')}</td>
+        <td style="padding:9px 10px;text-align:center;font-weight:800;color:${col};">${r.pctCc}</td>
+        <td style="padding:9px 10px;text-align:center;font-weight:900;color:${akuCol};">${r.akurasi}</td>
       </tr>`;
       return;
     }
@@ -1356,11 +1358,11 @@ function renderInvLorongTable(rows, s) {
     const akuColor = akuNum >= 100 ? '#16a34a' : akuNum >= 99 ? '#2563eb' : akuNum >= 98 ? '#d97706' : '#dc2626';
     const akuBg    = akuNum >= 100 ? 'rgba(22,163,74,0.12)' : akuNum >= 99 ? 'rgba(37,99,235,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
 
-    // SPV AREA cell dengan rowspan
+    // SPV AREA cell dengan rowspan + vertical center
     let spvCell = '';
     if (r.spvArea && rowspanMap.has(dataIdx)) {
       const span = rowspanMap.get(dataIdx);
-      spvCell = `<td rowspan="${span}" style="padding:8px 10px;text-align:center;vertical-align:middle;font-size:11px;font-weight:700;color:${col};background:${rowBg};border-right:1px solid ${col}30;">${escHtml(r.spvArea)}</td>`;
+      spvCell = `<td rowspan="${span}" style="text-align:center;vertical-align:middle;font-size:11px;font-weight:800;color:${col};background:${rowBg};border-right:2px solid ${col}40;padding:4px 8px;line-height:1.4;">${escHtml(r.spvArea).replace(/\n/g,'<br>')}</td>`;
     }
     // kalau spvArea kosong = sudah di-merge, skip cell ini
 
