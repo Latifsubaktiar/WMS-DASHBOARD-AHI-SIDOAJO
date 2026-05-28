@@ -1410,9 +1410,12 @@ function renderInvAreaTable(rows, s) {
   dataRows.forEach(r => {
     const m = (r.spvArea || r.area || '').match(/(\d+)/);
     if (m) curArea = m[1];
-    const col   = AREA_COL[curArea] || '#64748b';
-    const rowBg = AREA_BG[curArea]  || '';
-    const lv    = r.levelData || [];
+    const col    = AREA_COL[curArea] || '#64748b';
+    const rowBg  = AREA_BG[curArea]  || '';
+    const lv     = r.levelData || [];
+    const akuNum   = parseFloat(r.akurasi) || 0;
+    const akuColor = akuNum >= 100 ? '#16a34a' : akuNum >= 99 ? '#2563eb' : akuNum >= 98 ? '#d97706' : '#dc2626';
+    const akuBg    = akuNum >= 100 ? 'rgba(22,163,74,0.12)' : akuNum >= 99 ? 'rgba(37,99,235,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
 
     html += `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.08);">
       <td style="padding:6px 10px;text-align:center;font-weight:900;color:${col};font-size:13px;">${escHtml(String(r.lorong))}</td>
