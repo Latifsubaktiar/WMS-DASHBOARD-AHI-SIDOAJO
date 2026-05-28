@@ -1208,11 +1208,10 @@ async function fetchDashboardStats() {
 // ══════════════════════════════════════
 
 async function fetchInventoryDetail() {
-  const tbody   = document.getElementById('inventoryTableBody');
-  const subtitle = document.getElementById('invPanelSubtitle');
-  const footer  = document.getElementById('invPanelFooter');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data cycle count...</td></tr>';
+  const lorongBody = document.getElementById('invLorongBody');
+  const areaBody   = document.getElementById('invAreaBody');
+  if (lorongBody) lorongBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr>';
+  if (areaBody)   areaBody.innerHTML   = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr>';
   try {
     const res  = await fetch(GAS_DASHBOARD_URL + '?action=getInventoryDetail');
     const data = await res.json();
@@ -1300,96 +1299,148 @@ function renderInvLorongTable(rows, s) {
   const tbody = document.getElementById('invLorongBody');
   if (!tbody) return;
 
-  const lorong = rows.filter(r => !r.isAreaRow);
-  if (!lorong.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data</td></tr>';
+  const all = rows; // include area rows for grouping
+  if (!all.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data</td></tr>';
     return;
   }
 
   const AREA_COL  = { '1':'#2563eb', '2':'#d97706', '3':'#16a34a' };
   const AREA_BG   = { '1':'rgba(37,99,235,0.04)', '2':'rgba(217,119,6,0.04)', '3':'rgba(22,163,74,0.04)' };
+  const AREA_SUM  = { '1':'rgba(37,99,235,0.18)', '2':'rgba(217,119,6,0.18)', '3':'rgba(22,163,74,0.18)' };
   let   curArea   = '1';
 
-  tbody.innerHTML = lorong.map(r => {
-    const m = (r.spvArea || r.area || '').match(/(\d+)/);
+  let html = all.map(r => {
+    const m = (r.spvArea || '').match(/(\d+)/);
     if (m) curArea = m[1];
-    const col    = AREA_COL[curArea] || '#64748b';
-    const rowBg  = AREA_BG[curArea]  || '';
+    const col = AREA_COL[curArea] || '#64748b';
+
+    if (r.isAreaRow) {
+      // AREA summary row (persis kayak di spreadsheet - baris berwarna)
+      const bg     = AREA_SUM[curArea] || 'rgba(100,116,139,0.18)';
+      const akuNum = parseFloat(r.akurasi) || 0;
+      const akuCol = akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626';
+      return `<tr style="background:${bg};border-top:1px solid ${col}40;border-bottom:1px solid ${col}40;">
+        <td colspan="3" style="padding:8px 10px;font-weight:900;color:${col};font-size:12px;letter-spacing:0.03em;">${escHtml(r.spvArea)}</td>
+        <td style="padding:8px 10px;text-align:right;font-weight:800;color:${col};">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
+        <td style="padding:8px 10px;text-align:right;font-weight:800;color:${col};">${r.cc.toLocaleString('id-ID')}</td>
+        <td style="padding:8px 10px;text-align:right;font-weight:800;color:#16a34a;">${r.hit.toLocaleString('id-ID')}</td>
+        <td style="padding:8px 10px;text-align:right;font-weight:800;color:${r.miss>0?'#dc2626':'#94a3b8'};">${r.miss.toLocaleString('id-ID')}</td>
+        <td style="padding:8px 10px;text-align:center;font-weight:800;color:${col};">${r.pctCc}</td>
+        <td style="padding:8px 10px;text-align:center;font-weight:900;color:${akuCol};">${r.akurasi}</td>
+      </tr>`;
+    }
+
+    // Normal lorong row
+    const rowBg  = AREA_BG[curArea] || '';
     const akuNum = parseFloat(r.akurasi) || 0;
     const akuColor = akuNum >= 100 ? '#16a34a' : akuNum >= 99 ? '#2563eb' : akuNum >= 98 ? '#d97706' : '#dc2626';
     const akuBg    = akuNum >= 100 ? 'rgba(22,163,74,0.12)' : akuNum >= 99 ? 'rgba(37,99,235,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
-    const belum    = Math.max(0, r.jumlahLokasi - r.cc);
 
-    return `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.1);">
+    return `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.08);">
+      <td style="padding:7px 10px;text-align:center;font-size:11px;color:${col};font-weight:600;">${escHtml(r.spvArea)}</td>
+      <td style="padding:7px 10px;font-size:11.5px;color:var(--text-2);">${escHtml(r.pic)}</td>
       <td style="padding:7px 10px;text-align:center;font-weight:900;color:${col};font-size:13px;">${escHtml(String(r.lorong))}</td>
-      <td style="padding:7px 10px;font-size:11px;color:var(--text-2);">${escHtml(r.pic)}</td>
-      <td style="padding:7px 10px;text-align:right;font-weight:600;color:var(--text-2);font-size:11.5px;">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:600;color:var(--text-2);">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
       <td style="padding:7px 10px;text-align:right;font-weight:700;color:#0891b2;">${r.cc.toLocaleString('id-ID')}</td>
-      <td style="padding:7px 10px;text-align:right;font-weight:700;color:${belum>0?'#dc2626':'#94a3b8'};">${belum.toLocaleString('id-ID')}</td>
       <td style="padding:7px 10px;text-align:right;font-weight:700;color:#16a34a;">${r.hit.toLocaleString('id-ID')}</td>
       <td style="padding:7px 10px;text-align:right;font-weight:${r.miss>0?800:600};color:${r.miss>0?'#dc2626':'#94a3b8'};">${r.miss.toLocaleString('id-ID')}</td>
-      <td style="padding:5px 10px;text-align:center;"><span style="display:inline-block;padding:2px 8px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:11px;font-weight:800;white-space:nowrap;">${r.akurasi}</span></td>
+      <td style="padding:7px 10px;text-align:center;color:var(--text-2);">${r.pctCc}</td>
+      <td style="padding:5px 10px;text-align:center;"><span style="display:inline-block;padding:2px 9px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:11px;font-weight:800;white-space:nowrap;">${r.akurasi}</span></td>
     </tr>`;
   }).join('');
 
   // TOTAL row
   const ak     = parseFloat(s.akurasiTotal) || 0;
-  const belumT = Math.max(0, Number(s.totalLokasi) - Number(s.totalCc));
-  tbody.innerHTML += `
-    <tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
-      <td colspan="2" style="padding:9px 10px;color:#fff;font-weight:900;font-size:11.5px;letter-spacing:0.04em;">TOTAL</td>
-      <td style="padding:9px 10px;text-align:right;color:#fff;font-weight:800;">${Number(s.totalLokasi).toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:right;color:#22d3ee;font-weight:800;">${Number(s.totalCc).toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:right;color:${belumT>0?'#f87171':'#94a3b8'};font-weight:800;">${belumT.toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:right;color:#4ade80;font-weight:800;">${Number(s.totalHit).toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:right;color:${Number(s.totalMiss)>0?'#f87171':'#94a3b8'};font-weight:800;">${Number(s.totalMiss).toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:center;color:${ak>=99.5?'#4ade80':'#f87171'};font-weight:900;font-size:12px;">${s.akurasiTotal}</td>
-    </tr>`;
+  const akCol  = ak >= 99.5 ? '#4ade80' : '#f87171';
+  html += `<tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
+    <td colspan="3" style="padding:9px 10px;color:#fff;font-weight:900;font-size:11.5px;letter-spacing:0.04em;">TOTAL</td>
+    <td style="padding:9px 10px;text-align:right;color:#fff;font-weight:800;">${Number(s.totalLokasi).toLocaleString('id-ID')}</td>
+    <td style="padding:9px 10px;text-align:right;color:#22d3ee;font-weight:800;">${Number(s.totalCc).toLocaleString('id-ID')}</td>
+    <td style="padding:9px 10px;text-align:right;color:#4ade80;font-weight:800;">${Number(s.totalHit).toLocaleString('id-ID')}</td>
+    <td style="padding:9px 10px;text-align:right;color:${Number(s.totalMiss)>0?'#f87171':'#94a3b8'};font-weight:800;">${Number(s.totalMiss).toLocaleString('id-ID')}</td>
+    <td style="padding:9px 10px;text-align:center;color:#a78bfa;font-weight:800;">${s.pctCcTotal}</td>
+    <td style="padding:9px 10px;text-align:center;color:${akCol};font-weight:900;font-size:12px;">${s.akurasiTotal}</td>
+  </tr>`;
+
+  tbody.innerHTML = html;
 }
 
-// ── TABLE KANAN: RINGKASAN BY AREA ──
+// ── TABLE KANAN: SEBARAN AKURASI BY LEVEL RAK ──
 function renderInvAreaTable(rows, s) {
   const tbody = document.getElementById('invAreaBody');
   if (!tbody) return;
 
-  const areaRows = rows.filter(r => r.isAreaRow);
-  const AREAS = [
-    { key:'1', label:'AREA 1', col:'#2563eb', bg:'rgba(37,99,235,0.05)', brd:'#2563eb' },
-    { key:'2', label:'AREA 2', col:'#d97706', bg:'rgba(217,119,6,0.05)',  brd:'#d97706' },
-    { key:'3', label:'AREA 3', col:'#16a34a', bg:'rgba(22,163,74,0.05)', brd:'#16a34a' },
-  ];
+  const AREA_COL = { '1':'#2563eb', '2':'#d97706', '3':'#16a34a' };
+  const AREA_BG  = { '1':'rgba(37,99,235,0.04)', '2':'rgba(217,119,6,0.04)', '3':'rgba(22,163,74,0.04)' };
 
-  if (!areaRows.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data area</td></tr>';
+  // Helper: warna akurasi level
+  const lvColor = (v) => {
+    if (!v || v === '0%' || v === '—') return '#94a3b8';
+    const n = parseFloat(v);
+    if (n >= 100) return '#16a34a';
+    if (n >= 99)  return '#2563eb';
+    if (n >= 98)  return '#d97706';
+    return '#dc2626';
+  };
+  const lvCell = (v) => {
+    if (!v || v === '0%' || v === '—') return `<td style="padding:6px 7px;text-align:center;color:#94a3b8;font-size:10px;">—</td>`;
+    const col = lvColor(v);
+    const n   = parseFloat(v);
+    const fw  = n < 100 ? 800 : 700;
+    return `<td style="padding:6px 7px;text-align:center;color:${col};font-weight:${fw};font-size:10.5px;">${v}</td>`;
+  };
+
+  const dataRows  = rows.filter(r => !r.isAreaRow);
+  const areaRows  = rows.filter(r =>  r.isAreaRow);
+
+  if (!dataRows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data</td></tr>';
     return;
   }
 
-  tbody.innerHTML = AREAS.map(def => {
-    const a = areaRows.find(r => (r.spvArea||'').match(/\d+/)?.[0] === def.key) || {};
-    const akuNum   = parseFloat(a.akurasi) || 0;
-    const akuColor = akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626';
-    const akuBg    = akuNum >= 99.5 ? 'rgba(22,163,74,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
-    return `<tr style="background:${def.bg};border-bottom:1px solid rgba(200,215,240,0.15);border-left:3px solid ${def.brd};">
-      <td style="padding:10px 12px;font-weight:900;color:${def.col};font-size:13px;white-space:nowrap;">${def.label}</td>
-      <td style="padding:10px 10px;text-align:right;font-weight:600;color:var(--text-2);">${(a.jumlahLokasi||0).toLocaleString('id-ID')}</td>
-      <td style="padding:10px 10px;text-align:right;font-weight:700;color:#0891b2;">${(a.cc||0).toLocaleString('id-ID')}</td>
-      <td style="padding:10px 10px;text-align:right;font-weight:700;color:#16a34a;">${(a.hit||0).toLocaleString('id-ID')}</td>
-      <td style="padding:10px 10px;text-align:right;font-weight:${(a.miss||0)>0?800:600};color:${(a.miss||0)>0?'#dc2626':'#94a3b8'};">${(a.miss||0).toLocaleString('id-ID')}</td>
-      <td style="padding:8px 10px;text-align:center;"><span style="display:inline-block;padding:3px 10px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:11px;font-weight:800;white-space:nowrap;">${a.akurasi||'—'}</span></td>
+  let curArea = '1';
+  let html = '';
+
+  dataRows.forEach(r => {
+    const m = (r.spvArea || r.area || '').match(/(\d+)/);
+    if (m) curArea = m[1];
+    const col   = AREA_COL[curArea] || '#64748b';
+    const rowBg = AREA_BG[curArea]  || '';
+    const lv    = r.levelData || [];
+
+    html += `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.08);">
+      <td style="padding:6px 10px;text-align:center;font-weight:900;color:${col};font-size:13px;">${escHtml(String(r.lorong))}</td>
+      <td style="padding:6px 8px;text-align:center;"><span style="display:inline-block;padding:2px 7px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:10.5px;font-weight:800;">${r.akurasi||'—'}</span></td>
+      ${lvCell(lv[0])}${lvCell(lv[1])}${lvCell(lv[2])}${lvCell(lv[3])}
+      ${lvCell(lv[4])}${lvCell(lv[5])}${lvCell(lv[6])}${lvCell(lv[7])}
     </tr>`;
-  }).join('');
+  });
+
+  // Area summary rows
+  areaRows.forEach(a => {
+    const m   = (a.spvArea || '').match(/(\d+)/);
+    const key = m ? m[1] : '1';
+    const col = AREA_COL[key] || '#64748b';
+    const lv  = a.levelData || [];
+    const akuNum = parseFloat(a.akurasi) || 0;
+    const akuCol = akuNum >= 99.5 ? '#4ade80' : akuNum >= 98 ? '#fb923c' : '#f87171';
+    html += `<tr style="background:#2d3748;border-top:1px solid rgba(100,116,139,0.3);">
+      <td style="padding:7px 10px;text-align:center;font-weight:900;color:${col};font-size:11px;letter-spacing:0.03em;">${a.spvArea}</td>
+      <td style="padding:7px 8px;text-align:center;font-weight:900;color:${akuCol};font-size:11px;">${a.akurasi||'—'}</td>
+      ${lvCell(lv[0])}${lvCell(lv[1])}${lvCell(lv[2])}${lvCell(lv[3])}
+      ${lvCell(lv[4])}${lvCell(lv[5])}${lvCell(lv[6])}${lvCell(lv[7])}
+    </tr>`;
+  });
 
   // TOTAL row
-  const ak = parseFloat(s.akurasiTotal) || 0;
-  tbody.innerHTML += `
-    <tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
-      <td style="padding:9px 12px;color:#fff;font-weight:900;font-size:11.5px;letter-spacing:0.04em;">TOTAL</td>
-      <td style="padding:9px 10px;text-align:right;color:#fff;font-weight:800;">${Number(s.totalLokasi).toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:right;color:#22d3ee;font-weight:800;">${Number(s.totalCc).toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:right;color:#4ade80;font-weight:800;">${Number(s.totalHit).toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:right;color:${Number(s.totalMiss)>0?'#f87171':'#94a3b8'};font-weight:800;">${Number(s.totalMiss).toLocaleString('id-ID')}</td>
-      <td style="padding:9px 10px;text-align:center;color:${ak>=99.5?'#4ade80':'#f87171'};font-weight:900;font-size:12px;">${s.akurasiTotal}</td>
-    </tr>`;
+  html += `<tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
+    <td style="padding:9px 10px;text-align:center;color:#fff;font-weight:900;font-size:11px;">TOTAL</td>
+    <td style="padding:9px 8px;text-align:center;color:#4ade80;font-weight:900;font-size:11px;">${s.akurasiTotal}</td>
+    <td colspan="8" style="padding:9px 10px;text-align:center;color:#94a3b8;font-size:10px;">—</td>
+  </tr>`;
+
+  tbody.innerHTML = html;
 }
 
 
