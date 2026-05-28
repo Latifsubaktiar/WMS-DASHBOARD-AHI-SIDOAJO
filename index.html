@@ -518,76 +518,98 @@
 
     <!-- ═══ INVENTORY CONTROL DETAIL PANEL ═══ -->
     <div id="inventoryDetailPanel" style="display:none;margin-bottom:18px;">
-      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
-        <div class="card-header" style="background:linear-gradient(135deg,rgba(22,163,74,0.08),transparent);">
-          <div>
-            <span class="card-title"><span class="live-dot"></span>📋 Inventory Control — Cycle Count Detail</span>
-            <div id="invPanelSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px">Memuat data...</div>
+      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;padding:0;">
+
+        <!-- ── HEADER ── -->
+        <div style="padding:20px 28px 16px;border-bottom:1px solid rgba(200,215,240,0.25);background:linear-gradient(135deg,rgba(22,163,74,0.05),transparent);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2px;">Inventory Control — AHI Sidoarjo</div>
+              <div style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:-0.4px;">Cycle Count Detail</div>
+              <div id="invPanelSubtitle" style="font-size:11.5px;color:var(--text-3);font-weight:500;margin-top:4px;">Memuat data...</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;margin-top:4px;">
+              <div style="display:flex;align-items:center;gap:5px;background:rgba(22,163,74,0.1);color:#16a34a;border:1px solid rgba(22,163,74,0.25);border-radius:20px;padding:5px 13px;font-size:11px;font-weight:700;"><span class="live-dot"></span>LIVE</div>
+              <button onclick="toggleInventoryPanel()" style="border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:6px 16px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+            </div>
           </div>
-          <button onclick="toggleInventoryPanel()" style="border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
         </div>
 
-        <!-- KPI CARDS -->
-        <div id="invKpiRow" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+        <!-- ── KPI CARDS (top-border style, like image 2) ── -->
+        <div id="invKpiRow" style="display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid rgba(200,215,240,0.25);">
           <!-- diisi JS -->
         </div>
 
-        <!-- PROGRESS BAR -->
-        <div style="padding:0 20px 14px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-            <span style="font-size:11.5px;font-weight:700;color:var(--text)">📊 Progress Cycle Count</span>
-            <span id="invProgressLabel" style="font-size:12px;font-weight:800;color:var(--accent)">0%</span>
+        <!-- ── PROGRESS BAR ── -->
+        <div style="padding:11px 28px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;align-items:center;gap:14px;">
+          <span style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;">📊 Progress Cycle Count</span>
+          <div style="flex:1;height:8px;background:rgba(148,163,184,0.15);border-radius:8px;overflow:hidden;">
+            <div id="invProgressBar" style="height:100%;background:linear-gradient(90deg,#2563eb,#10b981);border-radius:8px;width:0%;transition:width 1.2s cubic-bezier(0.22,0.61,0.36,1);"></div>
           </div>
-          <div style="height:10px;background:rgba(148,163,184,0.15);border-radius:10px;overflow:hidden;">
-            <div id="invProgressBar" style="height:100%;background:linear-gradient(90deg,var(--accent),#10b981);border-radius:10px;width:0%;transition:width 0.8s ease;"></div>
-          </div>
+          <span id="invProgressLabel" style="font-size:13px;font-weight:900;color:var(--accent);white-space:nowrap;min-width:48px;text-align:right;">0%</span>
         </div>
 
-        <!-- CHARTS ROW -->
-        <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;padding:0 20px 16px;border-bottom:1px solid rgba(200,215,240,0.2);">
-          <!-- Donut HIT/MISS -->
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-            <div style="font-size:11.5px;font-weight:800;color:var(--text)">🎯 HIT vs MISS</div>
-            <div style="position:relative;width:130px;height:130px;">
-              <canvas id="chartInvHitMiss"></canvas>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                <div id="invDonutPct" style="font-size:22px;font-weight:900;color:var(--text)">—</div>
-                <div style="font-size:9px;color:var(--text-3)">Akurasi</div>
+        <!-- ── LAPORAN TERPADU ── -->
+        <div style="padding:18px 28px 0;flex:1;overflow-y:auto;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2px;">LAPORAN TERPADU</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div style="font-size:16px;font-weight:800;color:var(--text);">Summary Cycle Count &amp; Akurasi</div>
+            <button onclick="window.print()" style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:5px 14px;font-size:11px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">🖨️ Print Summary</button>
+          </div>
+
+          <!-- TWO TABLES -->
+          <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:16px;padding-bottom:20px;">
+
+            <!-- LEFT TABLE: DETAIL BY LORONG -->
+            <div style="min-width:0;border-radius:0 0 8px 8px;overflow:hidden;border:1px solid rgba(200,215,240,0.3);">
+              <div style="background:#1e293b;color:#fff;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.07em;">DETAIL CYCLE COUNT BY LORONG</div>
+              <div style="overflow-x:auto;">
+                <table id="invLorongTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <thead>
+                    <tr style="background:#2d3748;">
+                      <th style="padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.05em;">LORONG</th>
+                      <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.05em;">PIC</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">JML LOK</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#22d3ee;">CC</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#f87171;white-space:nowrap;">BELUM CC</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#4ade80;">HIT</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#fb923c;">MISS</th>
+                      <th style="padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">AKURASI</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invLorongBody">
+                    <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">Memuat...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;"><div style="width:10px;height:10px;border-radius:50%;background:#16a34a;flex-shrink:0"></div><span style="color:var(--text-2)">HIT</span><span id="invHitVal" style="margin-left:auto;font-weight:800;color:#16a34a">—</span></div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;"><div style="width:10px;height:10px;border-radius:50%;background:#ef4444;flex-shrink:0"></div><span style="color:var(--text-2)">MISS</span><span id="invMissVal" style="margin-left:auto;font-weight:800;color:#ef4444">—</span></div>
+
+            <!-- RIGHT TABLE: AREA SUMMARY -->
+            <div style="min-width:0;border-radius:0 0 8px 8px;overflow:hidden;border:1px solid rgba(200,215,240,0.3);">
+              <div style="background:#1e293b;color:#fff;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.07em;">RINGKASAN AKURASI BY AREA</div>
+              <div style="overflow-x:auto;">
+                <table id="invAreaTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <thead>
+                    <tr style="background:#2d3748;">
+                      <th style="padding:7px 12px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">AREA</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">JML LOK</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#22d3ee;">CC</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#4ade80;">HIT</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#fb923c;">MISS</th>
+                      <th style="padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">AKURASI</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invAreaBody">
+                    <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-3)">Memuat...</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-          <!-- Area Summary Charts -->
-          <div id="invAreaCharts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
-            <!-- diisi JS: 3 donut area -->
+
           </div>
         </div>
 
-        <!-- TABLE -->
-        <div style="overflow-x:auto;flex:1;overflow-y:auto;">
-          <table id="inventoryTable">
-            <thead>
-              <tr>
-                <th style="text-align:center;min-width:90px;background:#1e293b;color:#fff">SPV AREA</th>
-                <th style="background:#1e293b;color:#fff">PIC</th>
-                <th style="text-align:center;background:#1e293b;color:#fff">LORONG</th>
-                <th style="text-align:center;background:rgba(37,99,235,0.3);color:#1e3a8a">JUMLAH LOKASI</th>
-                <th style="text-align:center;background:rgba(8,145,178,0.3);color:#0e4f5c">CC</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.3);color:#14532d">HIT</th>
-                <th style="text-align:center;background:rgba(239,68,68,0.3);color:#7f1d1d">MISS</th>
-                <th style="text-align:center;background:rgba(245,158,11,0.3);color:#78350f">% CC</th>
-                <th style="text-align:center;background:rgba(139,92,246,0.3);color:#4c1d95">AKURASI LORONG</th>
-              </tr>
-            </thead>
-            <tbody id="inventoryTableBody">
-              <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div id="invPanelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+        <div id="invPanelFooter" style="padding:8px 28px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);flex-shrink:0;"></div>
       </div>
     </div>
 
