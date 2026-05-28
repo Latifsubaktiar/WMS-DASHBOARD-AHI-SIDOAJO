@@ -24,6 +24,7 @@
 .login-loading.show { display:flex; }
 .login-spinner { width:18px; height:18px; border:2px solid var(--accent-mid); border-top-color:var(--accent); border-radius:50%; animation:nipSpin 0.7s linear infinite; }
 @keyframes nipSpin { to{transform:rotate(360deg)} }
+@keyframes invBeam { 0%{left:-60%} 100%{left:120%} }
 .login-found-box { display:none; flex-direction:column; align-items:center; gap:5px; padding:14px; background:var(--green-bg); border:1px solid rgba(22,163,74,0.25); border-radius:var(--r-sm); margin-top:14px; }
 .login-found-box.show { display:flex; }
 .login-found-box .lf-tag { font-size:11px; color:var(--green); font-weight:800; text-transform:uppercase; letter-spacing:1px; }
@@ -543,8 +544,11 @@
         <!-- ── PROGRESS BAR ── -->
         <div style="padding:11px 28px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;align-items:center;gap:14px;">
           <span style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;">📊 Progress Cycle Count</span>
-          <div style="flex:1;height:8px;background:rgba(148,163,184,0.15);border-radius:8px;overflow:hidden;">
-            <div id="invProgressBar" style="height:100%;background:linear-gradient(90deg,#2563eb,#10b981);border-radius:8px;width:0%;transition:width 1.2s cubic-bezier(0.22,0.61,0.36,1);"></div>
+          <div style="flex:1;height:10px;background:rgba(148,163,184,0.15);border-radius:10px;overflow:hidden;position:relative;">
+            <div id="invProgressBar" style="height:100%;background:linear-gradient(90deg,#2563eb,#06b6d4,#10b981);border-radius:10px;width:0%;transition:width 1.2s cubic-bezier(0.22,0.61,0.36,1);position:relative;overflow:hidden;">
+              <!-- Lampu bergerak -->
+              <div style="position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent);animation:invBeam 2s ease-in-out infinite;border-radius:10px;"></div>
+            </div>
           </div>
           <span id="invProgressLabel" style="font-size:13px;font-weight:900;color:var(--accent);white-space:nowrap;min-width:48px;text-align:right;">0%</span>
         </div>
