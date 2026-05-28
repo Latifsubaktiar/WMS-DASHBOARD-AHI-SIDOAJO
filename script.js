@@ -1304,8 +1304,7 @@ function renderInvLorongTable(rows, s) {
   const tbody = document.getElementById('invLorongBody');
   if (!tbody) return;
 
-  const all = rows; // include area rows for grouping
-  if (!all.length) {
+  if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data</td></tr>';
     return;
   }
@@ -1313,20 +1312,34 @@ function renderInvLorongTable(rows, s) {
   const AREA_COL  = { '1':'#2563eb', '2':'#d97706', '3':'#16a34a' };
   const AREA_BG   = { '1':'rgba(37,99,235,0.04)', '2':'rgba(217,119,6,0.04)', '3':'rgba(22,163,74,0.04)' };
   const AREA_SUM  = { '1':'rgba(37,99,235,0.18)', '2':'rgba(217,119,6,0.18)', '3':'rgba(22,163,74,0.18)' };
-  let   curArea   = '1';
 
-  let html = all.map(r => {
+  // Pre-hitung rowspan untuk SPV AREA (hanya data rows, bukan area summary)
+  const dataOnly = rows.filter(r => !r.isAreaRow);
+  const rowspanMap = new Map(); // index → rowspan count
+  for (let i = 0; i < dataOnly.length; i++) {
+    if (dataOnly[i].spvArea) {
+      let span = 1;
+      while (i + span < dataOnly.length && !dataOnly[i + span].spvArea && !dataOnly[i + span].isAreaRow) span++;
+      rowspanMap.set(i, span);
+    }
+  }
+
+  let curArea = '1';
+  let dataIdx = 0;
+  let html = '';
+
+  rows.forEach(r => {
     const m = (r.spvArea || '').match(/(\d+)/);
     if (m) curArea = m[1];
     const col = AREA_COL[curArea] || '#64748b';
 
     if (r.isAreaRow) {
-      // AREA summary row (persis kayak di spreadsheet - baris berwarna)
+      // AREA summary row
       const bg     = AREA_SUM[curArea] || 'rgba(100,116,139,0.18)';
       const akuNum = parseFloat(r.akurasi) || 0;
       const akuCol = akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626';
-      return `<tr style="background:${bg};border-top:1px solid ${col}40;border-bottom:1px solid ${col}40;">
-        <td colspan="3" style="padding:8px 10px;font-weight:900;color:${col};font-size:12px;letter-spacing:0.03em;">${escHtml(r.spvArea)}</td>
+      html += `<tr style="background:${bg};border-top:1px solid ${col}50;border-bottom:1px solid ${col}50;">
+        <td colspan="3" style="padding:8px 10px;font-weight:900;color:${col};font-size:12px;">${escHtml(r.spvArea)}</td>
         <td style="padding:8px 10px;text-align:right;font-weight:800;color:${col};">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
         <td style="padding:8px 10px;text-align:right;font-weight:800;color:${col};">${r.cc.toLocaleString('id-ID')}</td>
         <td style="padding:8px 10px;text-align:right;font-weight:800;color:#16a34a;">${r.hit.toLocaleString('id-ID')}</td>
@@ -1334,6 +1347,7 @@ function renderInvLorongTable(rows, s) {
         <td style="padding:8px 10px;text-align:center;font-weight:800;color:${col};">${r.pctCc}</td>
         <td style="padding:8px 10px;text-align:center;font-weight:900;color:${akuCol};">${r.akurasi}</td>
       </tr>`;
+      return;
     }
 
     // Normal lorong row
@@ -1342,8 +1356,16 @@ function renderInvLorongTable(rows, s) {
     const akuColor = akuNum >= 100 ? '#16a34a' : akuNum >= 99 ? '#2563eb' : akuNum >= 98 ? '#d97706' : '#dc2626';
     const akuBg    = akuNum >= 100 ? 'rgba(22,163,74,0.12)' : akuNum >= 99 ? 'rgba(37,99,235,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
 
-    return `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.08);">
-      <td style="padding:7px 10px;text-align:center;font-size:11px;color:${col};font-weight:600;">${escHtml(r.spvArea)}</td>
+    // SPV AREA cell dengan rowspan
+    let spvCell = '';
+    if (r.spvArea && rowspanMap.has(dataIdx)) {
+      const span = rowspanMap.get(dataIdx);
+      spvCell = `<td rowspan="${span}" style="padding:8px 10px;text-align:center;vertical-align:middle;font-size:11px;font-weight:700;color:${col};background:${rowBg};border-right:1px solid ${col}30;">${escHtml(r.spvArea)}</td>`;
+    }
+    // kalau spvArea kosong = sudah di-merge, skip cell ini
+
+    html += `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.1);">
+      ${spvCell}
       <td style="padding:7px 10px;font-size:11.5px;color:var(--text-2);">${escHtml(r.pic)}</td>
       <td style="padding:7px 10px;text-align:center;font-weight:900;color:${col};font-size:13px;">${escHtml(String(r.lorong))}</td>
       <td style="padding:7px 10px;text-align:right;font-weight:600;color:var(--text-2);">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
@@ -1353,11 +1375,12 @@ function renderInvLorongTable(rows, s) {
       <td style="padding:7px 10px;text-align:center;color:var(--text-2);">${r.pctCc}</td>
       <td style="padding:5px 10px;text-align:center;"><span style="display:inline-block;padding:2px 9px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:11px;font-weight:800;white-space:nowrap;">${r.akurasi}</span></td>
     </tr>`;
-  }).join('');
+    dataIdx++;
+  });
 
   // TOTAL row
-  const ak     = parseFloat(s.akurasiTotal) || 0;
-  const akCol  = ak >= 99.5 ? '#4ade80' : '#f87171';
+  const ak    = parseFloat(s.akurasiTotal) || 0;
+  const akCol = ak >= 99.5 ? '#4ade80' : '#f87171';
   html += `<tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
     <td colspan="3" style="padding:9px 10px;color:#fff;font-weight:900;font-size:11.5px;letter-spacing:0.04em;">TOTAL</td>
     <td style="padding:9px 10px;text-align:right;color:#fff;font-weight:800;">${Number(s.totalLokasi).toLocaleString('id-ID')}</td>
