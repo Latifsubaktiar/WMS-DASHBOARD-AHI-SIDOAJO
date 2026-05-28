@@ -257,7 +257,9 @@ document.getElementById('todayDate2').textContent=dateStr;
 // ══════════════════════════════════════
 //  OUTBOUND DETAIL PANEL
 // ══════════════════════════════════════
-let outboundPanelOpen = false;
+let outboundPanelOpen   = false;
+let inventoryPanelOpen  = false;  // ✅ di sini bersama panel lainnya
+let inventoryDetailLoaded = false;
 
 function toggleOutboundPanel() {
   outboundPanelOpen = !outboundPanelOpen;
@@ -284,6 +286,37 @@ function toggleOutboundPanel() {
     if (bottomGrid)  bottomGrid.style.display  = '';
     lineOutboundLoaded = false;
     switchOutboundTab('data');
+  }
+}
+
+// ══════════════════════════════════════
+//  INVENTORY CONTROL DETAIL PANEL
+// ══════════════════════════════════════
+function toggleInventoryPanel() {
+  inventoryPanelOpen = !inventoryPanelOpen;
+  const panel       = document.getElementById('inventoryDetailPanel');
+  const midGrid     = document.querySelector('.mid-grid');
+  const progressRow = document.querySelector('.progress-row');
+  const bottomGrid  = document.querySelector('.bottom-grid');
+  if (!panel) return;
+
+  // Tutup semua panel lain
+  if (inboundPanelOpen)  { inboundPanelOpen  = false; const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
+  if (storingPanelOpen)  { storingPanelOpen  = false; const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
+  if (outboundPanelOpen) { outboundPanelOpen = false; const p=document.getElementById('outboundDetailPanel'); if(p) p.style.display='none'; }
+
+  if (inventoryPanelOpen) {
+    panel.style.display = 'block';
+    if (midGrid)     midGrid.style.display     = 'none';
+    if (progressRow) progressRow.style.display = 'none';
+    if (bottomGrid)  bottomGrid.style.display  = 'none';
+    if (!inventoryDetailLoaded) fetchInventoryDetail();
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  } else {
+    panel.style.display = 'none';
+    if (midGrid)     midGrid.style.display     = '';
+    if (progressRow) progressRow.style.display = '';
+    if (bottomGrid)  bottomGrid.style.display  = '';
   }
 }
 
@@ -1173,39 +1206,6 @@ async function fetchDashboardStats() {
 // ══════════════════════════════════════
 //  ✅ INVENTORY CONTROL ACCURACY
 // ══════════════════════════════════════
-// ══════════════════════════════════════
-//  INVENTORY CONTROL DETAIL PANEL
-// ══════════════════════════════════════
-let inventoryPanelOpen = false;
-let inventoryDetailLoaded = false;
-
-function toggleInventoryPanel() {
-  inventoryPanelOpen = !inventoryPanelOpen;
-  const panel       = document.getElementById('inventoryDetailPanel');
-  const midGrid     = document.querySelector('.mid-grid');
-  const progressRow = document.querySelector('.progress-row');
-  const bottomGrid  = document.querySelector('.bottom-grid');
-  if (!panel) return;
-
-  // Tutup panel lain
-  if (inboundPanelOpen)  { inboundPanelOpen  = false; const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
-  if (storingPanelOpen)  { storingPanelOpen  = false; const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
-  if (outboundPanelOpen) { outboundPanelOpen = false; const p=document.getElementById('outboundDetailPanel'); if(p) p.style.display='none'; }
-
-  if (inventoryPanelOpen) {
-    panel.style.display = 'block';
-    if (midGrid)     midGrid.style.display     = 'none';
-    if (progressRow) progressRow.style.display = 'none';
-    if (bottomGrid)  bottomGrid.style.display  = 'none';
-    if (!inventoryDetailLoaded) fetchInventoryDetail();
-    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  } else {
-    panel.style.display = 'none';
-    if (midGrid)     midGrid.style.display     = '';
-    if (progressRow) progressRow.style.display = '';
-    if (bottomGrid)  bottomGrid.style.display  = '';
-  }
-}
 
 async function fetchInventoryDetail() {
   const tbody   = document.getElementById('inventoryTableBody');
