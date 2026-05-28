@@ -269,8 +269,9 @@ function toggleOutboundPanel() {
   const bottomGrid  = document.querySelector('.bottom-grid');
   if (!panel) return;
 
-  if (inboundPanelOpen)  { inboundPanelOpen  = false; const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
-  if (storingPanelOpen)  { storingPanelOpen  = false; const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
+  if (inboundPanelOpen)   { inboundPanelOpen   = false; const p=document.getElementById('inboundDetailPanel');   if(p) p.style.display='none'; }
+  if (storingPanelOpen)   { storingPanelOpen   = false; const p=document.getElementById('storingDetailPanel');   if(p) p.style.display='none'; }
+  if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
 
   if (outboundPanelOpen) {
     panel.style.display = 'block';
@@ -676,7 +677,9 @@ function toggleStoringPanel() {
   if (!panel) return;
 
   if (storingPanelOpen) {
-    if (inboundPanelOpen) { inboundPanelOpen = false; if(inboundPanel) inboundPanel.style.display='none'; }
+    if (inboundPanelOpen)   { inboundPanelOpen   = false; if(inboundPanel) inboundPanel.style.display='none'; }
+    if (outboundPanelOpen)  { outboundPanelOpen  = false; const p=document.getElementById('outboundDetailPanel');  if(p) p.style.display='none'; }
+    if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
     panel.style.display = 'block';
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
@@ -838,8 +841,9 @@ function toggleInboundPanel() {
   if (!panel) return;
 
   if (inboundPanelOpen) {
-    if (storingPanelOpen) { storingPanelOpen = false; const sp=document.getElementById('storingDetailPanel'); if(sp) sp.style.display='none'; }
-    if (outboundPanelOpen) { outboundPanelOpen = false; const op=document.getElementById('outboundDetailPanel'); if(op) op.style.display='none'; }
+    if (storingPanelOpen)   { storingPanelOpen   = false; const sp=document.getElementById('storingDetailPanel');   if(sp) sp.style.display='none'; }
+    if (outboundPanelOpen)  { outboundPanelOpen  = false; const op=document.getElementById('outboundDetailPanel');  if(op) op.style.display='none'; }
+    if (inventoryPanelOpen) { inventoryPanelOpen = false; const ip=document.getElementById('inventoryDetailPanel'); if(ip) ip.style.display='none'; }
     panel.style.display = 'block';
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
