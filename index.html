@@ -191,11 +191,11 @@
         <div class="stat-icon" style="background:var(--orange-bg)">🚚</div>
         <div class="stat-content"><div class="stat-label">Outbound Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--orange)" id="outboundStatVal">—</div><div class="stat-sub" id="outboundStatSub">Memuat data...</div></div>
       </div>
-      <!-- ✅ INVENTORY CONTROL — dynamic accuracy dari sheet -->
-      <div class="stat-card red-bar" id="invControlCard">
+      <!-- ✅ INVENTORY CONTROL — dynamic accuracy dari sheet, klik untuk detail -->
+      <div class="stat-card red-bar" id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;" title="Klik untuk lihat detail">
         <div class="stat-icon" id="invControlIcon" style="background:var(--red-bg)">📋</div>
         <div class="stat-content">
-          <div class="stat-label">Inventory Control</div>
+          <div class="stat-label">Inventory Control <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div>
           <div class="stat-value" id="invAccuracyVal" style="color:var(--red)">—</div>
           <div class="stat-sub" id="invAccuracySub"><span class="dn">Memuat data...</span></div>
         </div>
@@ -513,6 +513,81 @@
           </table>
         </div>
         <div id="panelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+      </div>
+    </div>
+
+    <!-- ═══ INVENTORY CONTROL DETAIL PANEL ═══ -->
+    <div id="inventoryDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
+        <div class="card-header" style="background:linear-gradient(135deg,rgba(22,163,74,0.08),transparent);">
+          <div>
+            <span class="card-title"><span class="live-dot"></span>📋 Inventory Control — Cycle Count Detail</span>
+            <div id="invPanelSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px">Memuat data...</div>
+          </div>
+          <button onclick="toggleInventoryPanel()" style="border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div id="invKpiRow" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+          <!-- diisi JS -->
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div style="padding:0 20px 14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:11.5px;font-weight:700;color:var(--text)">📊 Progress Cycle Count</span>
+            <span id="invProgressLabel" style="font-size:12px;font-weight:800;color:var(--accent)">0%</span>
+          </div>
+          <div style="height:10px;background:rgba(148,163,184,0.15);border-radius:10px;overflow:hidden;">
+            <div id="invProgressBar" style="height:100%;background:linear-gradient(90deg,var(--accent),#10b981);border-radius:10px;width:0%;transition:width 0.8s ease;"></div>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW -->
+        <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;padding:0 20px 16px;border-bottom:1px solid rgba(200,215,240,0.2);">
+          <!-- Donut HIT/MISS -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <div style="font-size:11.5px;font-weight:800;color:var(--text)">🎯 HIT vs MISS</div>
+            <div style="position:relative;width:130px;height:130px;">
+              <canvas id="chartInvHitMiss"></canvas>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div id="invDonutPct" style="font-size:22px;font-weight:900;color:var(--text)">—</div>
+                <div style="font-size:9px;color:var(--text-3)">Akurasi</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;"><div style="width:10px;height:10px;border-radius:50%;background:#16a34a;flex-shrink:0"></div><span style="color:var(--text-2)">HIT</span><span id="invHitVal" style="margin-left:auto;font-weight:800;color:#16a34a">—</span></div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;"><div style="width:10px;height:10px;border-radius:50%;background:#ef4444;flex-shrink:0"></div><span style="color:var(--text-2)">MISS</span><span id="invMissVal" style="margin-left:auto;font-weight:800;color:#ef4444">—</span></div>
+            </div>
+          </div>
+          <!-- Area Summary Charts -->
+          <div id="invAreaCharts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <!-- diisi JS: 3 donut area -->
+          </div>
+        </div>
+
+        <!-- TABLE -->
+        <div style="overflow-x:auto;flex:1;overflow-y:auto;">
+          <table id="inventoryTable">
+            <thead>
+              <tr>
+                <th style="text-align:center;min-width:90px;background:#1e293b;color:#fff">SPV AREA</th>
+                <th style="background:#1e293b;color:#fff">PIC</th>
+                <th style="text-align:center;background:#1e293b;color:#fff">LORONG</th>
+                <th style="text-align:center;background:rgba(37,99,235,0.3);color:#1e3a8a">JUMLAH LOKASI</th>
+                <th style="text-align:center;background:rgba(8,145,178,0.3);color:#0e4f5c">CC</th>
+                <th style="text-align:center;background:rgba(22,163,74,0.3);color:#14532d">HIT</th>
+                <th style="text-align:center;background:rgba(239,68,68,0.3);color:#7f1d1d">MISS</th>
+                <th style="text-align:center;background:rgba(245,158,11,0.3);color:#78350f">% CC</th>
+                <th style="text-align:center;background:rgba(139,92,246,0.3);color:#4c1d95">AKURASI LORONG</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody">
+              <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="invPanelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
       </div>
     </div>
 
