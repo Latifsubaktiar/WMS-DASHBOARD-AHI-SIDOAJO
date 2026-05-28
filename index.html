@@ -452,62 +452,83 @@
           <button id="panelTabInline" onclick="switchPanelTab('inline')" style="padding:10px 18px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);">🏬 Monitoring Putaway</button>
         </div>
         <!-- TABLE Inbound -->
+        <!-- TABLE Data Inbound -->
         <div id="panelInboundTable" style="overflow-x:auto;flex:1;overflow-y:auto;">
-          <table><thead><tr><th>No</th><th>No LC</th><th>No Polisi</th><th>Ekspedisi</th><th>Type</th><th>BU</th><th>Check In</th><th>Stuffing</th><th>Unloading</th><th>Hit/Miss</th></tr></thead>
-          <tbody id="panelInboundBody"><tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Memuat...</td></tr></tbody></table>
+          <div style="background:#1e293b;color:#fff;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.07em;">DATA INBOUND HARI INI</div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="background:#2d3748;">
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO LC</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO POLISI</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">EKSPEDISI</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TYPE</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;white-space:nowrap;">CHECK IN</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;white-space:nowrap;">STUFFING</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#fb923c;white-space:nowrap;">UNLOADING</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;white-space:nowrap;">HIT/MISS</th>
+              </tr>
+            </thead>
+            <tbody id="panelInboundBody">
+              <tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-3)">Memuat...</td></tr>
+            </tbody>
+          </table>
         </div>
+
         <!-- TABLE Putaway -->
         <div id="panelInlineTable" style="overflow-x:auto;flex:1;overflow-y:auto;display:none;">
-          <table id="inlineTable" style="font-size:11px;min-width:1800px;">
+          <div style="background:#1e293b;color:#fff;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.07em;">MONITORING PUTAWAY</div>
+          <table id="inlineTable" style="font-size:11px;min-width:1800px;border-collapse:collapse;">
             <thead>
-              <tr style="background:rgba(15,23,42,0.05);">
-                <th rowspan="2" style="text-align:center;min-width:30px">No</th>
-                <th rowspan="2" style="text-align:center;min-width:120px">NO LC/PO</th>
-                <th rowspan="2" style="text-align:center">TYPE</th>
-                <th rowspan="2" style="text-align:center">NOPOL</th>
-                <th rowspan="2" style="text-align:center">BATCH</th>
-                <th rowspan="2" style="text-align:center">IN</th>
-                <th rowspan="2" style="text-align:center">OPEN</th>
-                <th rowspan="2" style="text-align:center">CLOSE</th>
-                <th rowspan="2" style="text-align:center">STATUS</th>
-                <th colspan="3" style="text-align:center;background:rgba(8,145,178,0.15);color:#0891b2">PLAN</th>
-                <th colspan="4" style="text-align:center;background:rgba(22,163,74,0.15);color:#16a34a">AKTUAL RECEIVE</th>
-                <th colspan="2" style="text-align:center;background:rgba(139,92,246,0.15);color:#8b5cf6">FLOWTHRU</th>
-                <th colspan="5" style="text-align:center;background:rgba(37,99,235,0.15);color:#2563eb">PUTAWAY INBOUND</th>
-                <th colspan="2" style="text-align:center;background:rgba(234,179,8,0.15);color:#ca8a04">SHIFT 1</th>
-                <th colspan="2" style="text-align:center;background:rgba(59,130,246,0.15);color:#3b82f6">SHIFT 2</th>
-                <th colspan="5" style="text-align:center;background:rgba(22,163,74,0.15);color:#16a34a">PUTAWAY STORING</th>
-                <th colspan="2" style="text-align:center;background:rgba(234,179,8,0.15);color:#ca8a04">SHIFT 1</th>
-                <th colspan="2" style="text-align:center;background:rgba(59,130,246,0.15);color:#3b82f6">SHIFT 2</th>
+              <tr style="background:#2d3748;">
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;min-width:30px;vertical-align:middle;">NO</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;min-width:120px;vertical-align:middle;">NO LC/PO</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">TYPE</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">NOPOL</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">BATCH</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">IN</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">OPEN</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">CLOSE</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">STATUS</th>
+                <th colspan="3" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;border-bottom:1px solid rgba(8,145,178,0.4);">PLAN</th>
+                <th colspan="4" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;border-bottom:1px solid rgba(22,163,74,0.4);">AKTUAL RECEIVE</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;border-bottom:1px solid rgba(139,92,246,0.4);">FLOWTHRU</th>
+                <th colspan="5" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;border-bottom:1px solid rgba(37,99,235,0.4);">PUTAWAY INBOUND</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;border-bottom:1px solid rgba(234,179,8,0.4);">SHIFT 1</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;border-bottom:1px solid rgba(59,130,246,0.4);">SHIFT 2</th>
+                <th colspan="5" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;border-bottom:1px solid rgba(22,163,74,0.4);">PUTAWAY STORING</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;border-bottom:1px solid rgba(234,179,8,0.4);">SHIFT 1</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;border-bottom:1px solid rgba(59,130,246,0.4);">SHIFT 2</th>
               </tr>
-              <tr style="background:rgba(15,23,42,0.03);">
-                <th style="text-align:center;background:rgba(8,145,178,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(8,145,178,0.08)">CBM</th>
-                <th style="text-align:center;background:rgba(8,145,178,0.08)">EST/LPN</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">LPN</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">%RCV</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">%</th>
-                <th style="text-align:center;background:rgba(139,92,246,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(139,92,246,0.08)">LPN</th>
-                <th style="text-align:center;background:rgba(37,99,235,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(37,99,235,0.08)">LPN</th>
-                <th style="text-align:center;background:rgba(37,99,235,0.08)">SISA</th>
-                <th style="text-align:center;background:rgba(37,99,235,0.08)">%</th>
-                <th style="text-align:center;background:rgba(37,99,235,0.08)">%</th>
-                <th style="text-align:center;background:rgba(234,179,8,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(234,179,8,0.08)">LPN</th>
-                <th style="text-align:center;background:rgba(59,130,246,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(59,130,246,0.08)">LPN</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">LPN</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">SISA</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">%</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.08)">%</th>
-                <th style="text-align:center;background:rgba(234,179,8,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(234,179,8,0.08)">LPN</th>
-                <th style="text-align:center;background:rgba(59,130,246,0.08)">QTY</th>
-                <th style="text-align:center;background:rgba(59,130,246,0.08)">LPN</th>
+              <tr style="background:#374151;">
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#22d3ee;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#22d3ee;">CBM</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#22d3ee;">EST/LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">%RCV</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#a78bfa;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#a78bfa;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">SISA</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">SISA</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">LPN</th>
               </tr>
             </thead>
             <tbody id="panelInlineBody"><tr><td colspan="36" style="text-align:center;padding:20px;color:var(--text-3)">Klik tab Monitoring Putaway untuk memuat...</td></tr></tbody>
