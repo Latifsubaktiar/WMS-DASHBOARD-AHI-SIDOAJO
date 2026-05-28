@@ -60,7 +60,7 @@ function applyTheme(hexColor) {
 let me = { nip: '', name: '', jabatan: '', color: AVATAR_COLORS[0], initials: '' };
 let fbReady = false;
 let db = null, chatRef = null, onlineRef = null;
-let settingsOpen = false;          // ← deklarasi di sini, bukan di bawah!
+let settingsOpen = false;
 let notifList = [], notifOpen = false, lastSeenTs = 0;
 const CHAT_PATH   = 'wms_ahi_chat/messages';
 const ONLINE_PATH = 'wms_ahi_chat/online';
@@ -267,7 +267,6 @@ function toggleOutboundPanel() {
   const bottomGrid  = document.querySelector('.bottom-grid');
   if (!panel) return;
 
-  // Tutup panel lain
   if (inboundPanelOpen)  { inboundPanelOpen  = false; const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
   if (storingPanelOpen)  { storingPanelOpen  = false; const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
 
@@ -300,7 +299,6 @@ async function fetchOutboundPanel() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Gagal');
 
-    // Summary badges
     const rows = data.data || [];
     const selesai = rows.filter(r=>String(r.status).toUpperCase().includes('SELESAI')||String(r.status).toUpperCase().includes('KELUAR')).length;
     const proses  = rows.filter(r=>String(r.status).toUpperCase().includes('PROSES')||String(r.status).toUpperCase().includes('LOADING')).length;
@@ -323,7 +321,6 @@ async function fetchOutboundPanel() {
       <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">🔴 ${belum} Belum</span>
     `;
 
-    // Render charts
     const isDark = document.body.classList.contains('dark');
     const border = isDark ? '#060912' : '#ffffff';
     const bg2    = isDark ? '#0e1525' : '#e2e8f0';
@@ -338,20 +335,16 @@ async function fetchOutboundPanel() {
       });
     };
 
-    // Chart 1: Status
     document.getElementById('pctOutSelesai').textContent = pctSel + '%';
     document.getElementById('infoOutStatus').textContent = `Selesai:${selesai} Proses:${proses} Antri:${antri} Belum:${belum}`;
     makeDonut('chartOutStatus', [selesai,proses,antri,Math.max(belum,0)], ['#16a34a','#3b82f6','#f59e0b','#ef4444']);
 
-    // Chart 2: %PC
     document.getElementById('pctOutPc').textContent  = avgPc + '%';
     makeDonut('chartOutPc',  [avgPc, Math.max(0,100-avgPc)],  ['#16a34a', bg2]);
 
-    // Chart 3: %STG
     document.getElementById('pctOutStg').textContent = avgStg + '%';
     makeDonut('chartOutStg', [avgStg, Math.max(0,100-avgStg)], ['#3b82f6', bg2]);
 
-    // Chart 4: %LD
     document.getElementById('pctOutLd').textContent  = avgLd + '%';
     makeDonut('chartOutLd',  [avgLd, Math.max(0,100-avgLd)],  ['#f59e0b', bg2]);
 
@@ -401,7 +394,6 @@ function renderLineOutboundTable(rows, summary) {
   if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>'; return; }
 
   const isDark = document.body.classList.contains('dark');
-  // Header row style: hitam solid
   const hdrBg    = isDark ? '#0a0f1e' : '#1e293b';
   const hdrText  = '#ffffff';
   const hdrStyle = `background:${hdrBg};color:${hdrText};font-weight:800;font-size:11px;text-align:center;padding:8px 10px;letter-spacing:0.5px;`;
@@ -427,9 +419,7 @@ function renderLineOutboundTable(rows, summary) {
 
   tbody.innerHTML = rows.map(r => {
     if (r.isHeader) {
-      return `<tr style="background:${hdrBg}">
-        ${r.cols.map(c => `<td style="${hdrStyle}">${c||'—'}</td>`).join('')}
-      </tr>`;
+      return `<tr style="background:${hdrBg}">${r.cols.map(c => `<td style="${hdrStyle}">${c||'—'}</td>`).join('')}</tr>`;
     }
     return `<tr>
       <td style="${c}">${r.no||'—'}</td>
@@ -454,7 +444,6 @@ function renderOutboundPanelTable(rows) {
   const tbody = document.getElementById('outboundPanelBody'); if(!tbody) return;
   if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>'; return; }
 
-  // Shift color berdasarkan Penyelesaian (SHIFT 1/2/3/4)
   const shiftStyle = (penyelesaian) => {
     const m = String(penyelesaian||'').match(/SHIFT\s*(\d+)/i);
     const n = m ? parseInt(m[1]) : 1;
@@ -494,7 +483,7 @@ function renderOutboundPanelTable(rows) {
     return `<tr style="${trStyle}">
     <td style="${cn}">${i+1}</td>
     <td style="${c}font-weight:800">${r.penyelesaian||'—'}</td>
-    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:"+txO+"">${escHtml(r.transno||'—')}</td>
+    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:${txO}">${escHtml(r.transno||'—')}</td>
     <td style="background:rgba(21,128,61,0.12)">${pBar(r.ppc)}</td>
     <td style="background:rgba(29,78,216,0.12)">${pBar(r.pstg)}</td>
     <td style="background:rgba(180,83,9,0.12)">${pBar(r.pld)}</td>
@@ -509,7 +498,6 @@ function renderOutboundPanelTable(rows) {
   }).join('');
 }
 
-// ══════════════════════════════════════
 // ══════════════════════════════════════
 //  SLIDESHOW MODE
 // ══════════════════════════════════════
@@ -578,10 +566,7 @@ async function runSlide(idx){
   await ssleep(3500);
   if(slideshowActive)runSlide(slideshowIndex+1);
 }
-function getSlideTableEl(idx){
-  // Semua slide scroll via .main (panel cards sudah visible overflow di slideshow mode)
-  return document.querySelector('.main');
-}
+function getSlideTableEl(idx){ return document.querySelector('.main'); }
 async function scrollTableSlowly(el){
   if(!el||!slideshowActive)return;
   return new Promise(resolve=>{
@@ -658,7 +643,6 @@ function toggleStoringPanel() {
   if (!panel) return;
 
   if (storingPanelOpen) {
-    // Tutup inbound panel kalau terbuka
     if (inboundPanelOpen) { inboundPanelOpen = false; if(inboundPanel) inboundPanel.style.display='none'; }
     panel.style.display = 'block';
     if (midGrid)     midGrid.style.display     = 'none';
@@ -684,16 +668,13 @@ async function fetchStoringStatCard() {
     const sb = document.querySelector('.stat-card.green-bar .stat-sub');
     if (el) { el.textContent = s.total; el.style.color = 'var(--green)'; }
     if (sb) sb.innerHTML = `<span style="color:var(--green);font-weight:700">📦 ${s.sumPicked.toLocaleString()} Picked</span> &nbsp;<span class="dn">📋 ${s.sumSisa.toLocaleString()} Sisa</span>`;
-    // Simpan data untuk panel
     window._storingData = data;
     renderDashStoringChart();
-    // Update donut juga kalau sudah ada data inbound/outbound
     if (window._lastInTotal !== undefined) updateInventoryStatusDonut(window._lastInTotal, window._lastInSelesai, window._lastOutTotal, window._lastOutSelesai);
   } catch(e) { console.warn('Storing stat card error:', e); }
 }
 
 async function fetchStoringToday() {
-  // Pakai cache kalau sudah ada
   if (window._storingData && window._storingData.ok) {
     renderStoringPanel(window._storingData);
     return;
@@ -753,7 +734,6 @@ function renderStoringTable(rows) {
     return;
   }
 
-  // Batch color mapping
   const batchStyle = (batch) => {
     const b = parseInt(batch) || 0;
     switch(b) {
@@ -787,9 +767,9 @@ function renderStoringTable(rows) {
     const trStyle = `background:${bs.bg};${bs.border?'border-left:'+bs.border:''}`;
     return `<tr style="${trStyle}">
     <td style="${ct}">${i+1}</td>
-    <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:"+txS+"">${escHtml(r.noLc)}</td>
+    <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:${txS}">${escHtml(r.noLc)}</td>
     <td style="${ct}font-weight:900;font-size:12px">${escHtml(r.batch)}</td>
-    <td style="font-size:11px;font-weight:600;color:"+txS+";max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
+    <td style="font-size:11px;font-weight:600;color:${txS};max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
     <td style="${ct}">${escHtml(r.tipeArmada)}</td>
     <td style="${cn}">${num(r.kapasitas)}</td>
     <td style="${cn}background:rgba(37,99,235,0.10)">${num(r.releaseCase)}</td>
@@ -825,7 +805,6 @@ function toggleInboundPanel() {
   if (!panel) return;
 
   if (inboundPanelOpen) {
-    // Tutup storing panel kalau terbuka
     if (storingPanelOpen) { storingPanelOpen = false; const sp=document.getElementById('storingDetailPanel'); if(sp) sp.style.display='none'; }
     if (outboundPanelOpen) { outboundPanelOpen = false; const op=document.getElementById('outboundDetailPanel'); if(op) op.style.display='none'; }
     panel.style.display = 'block';
@@ -870,7 +849,7 @@ function renderPanelInboundTable(rows) {
   const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
   tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtLeft(r.stuffing)}">
     <td style="${tk}text-align:center">${i+1}</td>
-    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:"+tx+"">${escHtml(r.noLc)}</td>
+    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:${tx}">${escHtml(r.noLc)}</td>
     <td style="${tk}font-family:'JetBrains Mono',monospace">${escHtml(r.noPolisi)}</td>
     <td style="${tk}">${escHtml(r.ekspedisi)}</td>
     <td style="${tk}">${escHtml(r.type)}</td>
@@ -908,7 +887,6 @@ async function fetchInlineProses() {
       new Chart(el.getContext('2d'),{type:'doughnut',data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#1e293b':'#e2e8f0'],borderColor:border,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
     };
 
-    // Chart 1: Unloading — 4 kategori dari data inbound
     const inboundRows=window._inboundRows||[];
     const finishArmada=inboundRows.filter(r=>r&&r.updateUnload&&r.updateUnload!=='').length;
     const prosesArmada=inboundRows.filter(r=>r&&r.checkIn&&r.checkIn!==''&&r.open&&r.open!==''&&(!r.updateUnload||r.updateUnload==='')).length;
@@ -920,19 +898,16 @@ async function fetchInlineProses() {
     document.getElementById('infoUnloading').textContent=`✅ ${finishArmada} Finish · ⏳ ${prosesArmada} Proses · 🕐 ${antriArmada} Antri · 🔴 ${belumArmada} Belum`;
     makeDonut('chartUnloading',pctUnload,'#16a34a');
 
-    // Chart 2: Aktual Receive (kolom Q)
     const pctAkt=(s&&s.avgPctAkt)||0;
     document.getElementById('pctAktualRcv').textContent=pctAkt+'%';
     document.getElementById('infoAktualRcv').textContent='';
     makeDonut('chartAktualRcv',pctAkt,'#0891b2');
 
-    // Chart 3: Putaway Inbound (kolom X)
     const pctPutIn=(s&&s.avgPctPutIn2)||0;
     document.getElementById('pctPutawayIn').textContent=pctPutIn+'%';
     document.getElementById('infoPutawayIn').textContent=`Sisa: ${Number(s&&s.sumSisaIn||0).toLocaleString()} LPN`;
     makeDonut('chartPutawayIn',pctPutIn,'#2563eb');
 
-    // Chart 4: Putaway Storing (kolom AG)
     const pctPutStr=(s&&s.avgPctPutStr)||0;
     document.getElementById('pctPutawayStr').textContent=pctPutStr+'%';
     document.getElementById('infoPutawayStr').textContent=`Sisa: ${Number(s&&s.sumSisaStr||0).toLocaleString()} LPN`;
@@ -959,7 +934,7 @@ function renderPanelInlineTable(rows) {
   const sisa=(v)=>{const n=Number(v)||0;return `<span style="font-weight:900;color:${n>0?'#b45309':'#15803d'}">${n}</span>`;};
   tbody.innerHTML=rows.map((r,i)=>`<tr>
     <td style="${c}">${i+1}</td>
-    <td style="font-weight:900;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:"+txI+"">${escHtml(r.noLc)}</td>
+    <td style="font-weight:900;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:${txI}">${escHtml(r.noLc)}</td>
     <td style="${c}">${escHtml(r.type)}</td><td style="${cn}">${escHtml(r.nopol)}</td>
     <td style="${c}">${escHtml(r.batch)}</td>
     <td style="${cn}font-size:10px">${r.tglIn||'—'}</td><td style="${cn}font-size:10px">${r.tglOpen||'—'}</td><td style="${cn}font-size:10px">${r.tglClose||'—'}</td>
@@ -997,7 +972,6 @@ function switchDashTab(tab) {
   const btnOut  = document.getElementById('tabBtnOutbound');
   const cnt     = document.getElementById('dashTableCount');
 
-  // Reset semua
   [inWrap,stWrap,outWrap].forEach(w=>{ if(w) w.style.display='none'; });
   [btnIn,btnSt,btnOut].forEach(b=>{ if(b){ b.style.color='var(--text-3)'; b.style.borderBottom='2px solid transparent'; }});
 
@@ -1005,11 +979,9 @@ function switchDashTab(tab) {
     if(inWrap)  inWrap.style.display  = '';
     if(btnIn) { btnIn.style.color='var(--accent)'; btnIn.style.borderBottom='2px solid var(--accent)'; }
     if(cnt) cnt.textContent = (window._inboundRows||[]).length + ' data inbound hari ini';
-
   } else if (tab === 'storing') {
     if(stWrap)  stWrap.style.display  = '';
     if(btnSt) { btnSt.style.color='#8b5cf6'; btnSt.style.borderBottom='2px solid #8b5cf6'; }
-    // Render dari cache
     if (window._storingData && window._storingData.data) {
       renderDashStoringBody(window._storingData.data);
       if(cnt) cnt.textContent = window._storingData.total + ' data storing hari ini';
@@ -1018,7 +990,6 @@ function switchDashTab(tab) {
         if(window._storingData) { renderDashStoringBody(window._storingData.data); if(cnt) cnt.textContent=window._storingData.total+' data storing hari ini'; }
       });
     }
-
   } else {
     if(outWrap) outWrap.style.display = '';
     if(btnOut){ btnOut.style.color='var(--accent)'; btnOut.style.borderBottom='2px solid var(--accent)'; }
@@ -1193,33 +1164,87 @@ async function fetchDashboardStats() {
   window._lastInTotal=inboundTotal; window._lastInSelesai=inboundSelesai;
   window._lastOutTotal=outboundTotal; window._lastOutSelesai=outboundSelesai;
   fetchInventoryValue();
-
-  // Fetch storing stat card
   fetchStoringStatCard();
+
+  // ✅ INVENTORY CONTROL — fetch akurasi dari sheet INVENTORY J26
+  fetchInventoryAccuracy();
+}
+
+// ══════════════════════════════════════
+//  ✅ INVENTORY CONTROL ACCURACY
+// ══════════════════════════════════════
+async function fetchInventoryAccuracy() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getInventoryAccuracy');
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const pct    = parseFloat(data.accuracy);
+    const valEl  = document.getElementById('invAccuracyVal');
+    const subEl  = document.getElementById('invAccuracySub');
+    const card   = document.getElementById('invControlCard');
+    const icon   = document.getElementById('invControlIcon');
+
+    if (!valEl) return;
+
+    // Tentukan warna & status berdasarkan nilai
+    let color, barClass, label, labelClass, iconBg;
+    if (pct >= 99.5) {
+      color      = 'var(--green)';
+      barClass   = 'green-bar';
+      label      = '✅ Akurasi Sangat Baik';
+      labelClass = 'up';
+      iconBg     = 'var(--green-bg)';
+    } else if (pct >= 98) {
+      color      = 'var(--orange)';
+      barClass   = 'orange-bar';
+      label      = '⚠️ Perlu Perhatian';
+      labelClass = '';
+      iconBg     = 'var(--orange-bg)';
+    } else {
+      color      = 'var(--red)';
+      barClass   = 'red-bar';
+      label      = '❌ Di Bawah Target';
+      labelClass = 'dn';
+      iconBg     = 'var(--red-bg)';
+    }
+
+    // Update value
+    valEl.textContent  = pct.toFixed(2) + '%';
+    valEl.style.color  = color;
+
+    // Update sub label
+    if (subEl) {
+      subEl.innerHTML = labelClass
+        ? `<span class="${labelClass}">${label}</span>`
+        : `<span style="color:${color};font-weight:700">${label}</span>`;
+    }
+
+    // Update card bar color & icon bg
+    if (card) {
+      card.classList.remove('red-bar', 'orange-bar', 'green-bar');
+      card.classList.add(barClass);
+    }
+    if (icon) icon.style.background = iconBg;
+
+  } catch(e) {
+    console.warn('Inventory accuracy error:', e);
+  }
 }
 
 function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
   const inPct  = inTotal>0  ? Math.round((inSelesai/inTotal)*100)   : 0;
   const outPct = outTotal>0 ? Math.round((outSelesai/outTotal)*100) : 0;
-
-  // Storing % = avg(pickingOverall, stagedOverall)
   const s = window._storingData && window._storingData.summary;
   const storePct = s ? Math.round((s.pctPickingOverall + s.pctStagedOverall) / 2) : 0;
-
   const sisa   = Math.max(0, 100 - inPct - storePct - outPct);
   const overall = Math.round((inPct + storePct + outPct) / 3);
-
-  // Center
   const centerEl = document.getElementById('donutTotal');
   if (centerEl) centerEl.textContent = overall + '%';
-
-  // Legend
   const iv = document.getElementById('donutInboundVal');  if(iv)  iv.textContent  = inPct    + '%';
   const sv = document.getElementById('donutStoringVal');  if(sv)  sv.textContent  = storePct + '%';
   const ov = document.getElementById('donutOutboundVal'); if(ov)  ov.textContent  = outPct   + '%';
   const bv = document.getElementById('donutBelumVal');    if(bv)  bv.textContent  = sisa     + '%';
-
-  // Chart
   const ctx = document.getElementById('donutChart'); if(!ctx) return;
   const isDark = document.body.classList.contains('dark');
   const belumColor = isDark ? '#1e293b' : '#e2e8f0';
@@ -1234,41 +1259,25 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
 function renderDashStoringChart() {
   const s = window._storingData && window._storingData.summary;
   if (!s) return;
-
   const pickPct  = s.pctPickingOverall || 0;
   const stagePct = s.pctStagedOverall  || 0;
   const sisaPct  = Math.max(0, 100 - pickPct);
   const avgPct   = Math.round((pickPct + stagePct) / 2);
-
   const badge = document.getElementById('storingPctBadge');
   const pctEl = document.getElementById('dashStoringPct');
   if (badge) badge.textContent = avgPct + '% Progres';
   if (pctEl) pctEl.textContent = avgPct + '%';
-
-  // Legend values
   const pp = document.getElementById('piStorePickingVal'); if(pp) pp.textContent = pickPct  + '%';
   const ps = document.getElementById('piStoreStagedVal');  if(ps) ps.textContent = stagePct + '%';
   const pr = document.getElementById('piStoreSisaVal');    if(pr) pr.textContent = sisaPct  + '%';
   const pk = document.getElementById('piStoreKapVal');     if(pk) pk.textContent = (s.avgKapasitas||0) + '%';
-
   const canvas = document.getElementById('dashStoringChart'); if(!canvas) return;
   const ex = Chart.getChart(canvas); if(ex) ex.destroy();
   const isDark = document.body.classList.contains('dark');
   new Chart(canvas.getContext('2d'), {
     type: 'doughnut',
-    data: {
-      datasets: [{
-        data: [pickPct, stagePct, sisaPct],
-        backgroundColor: ['#16a34a','#f59e0b','#dc2626'],
-        borderColor: isDark?'#161b22':'#ffffff',
-        borderWidth: 3,
-        hoverOffset: 6,
-      }]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false, cutout:'72%',
-      plugins:{legend:{display:false},tooltip:{enabled:false}}
-    }
+    data: { datasets: [{ data: [pickPct, stagePct, sisaPct], backgroundColor: ['#16a34a','#f59e0b','#dc2626'], borderColor: isDark?'#161b22':'#ffffff', borderWidth: 3, hoverOffset: 6 }] },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} }
   });
 }
 
@@ -1288,7 +1297,7 @@ fetchDashboardStats();
 setInterval(fetchDashboardStats,5*60*1000);
 
 // ══════════════════════════════════════
-//  CHARTS — DAILY ACTIVITY (custom datalabels, no CDN)
+//  CHARTS — DAILY ACTIVITY
 // ══════════════════════════════════════
 Chart.defaults.color='#6b7280';
 Chart.defaults.font.family='Outfit';
