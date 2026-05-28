@@ -1219,8 +1219,13 @@ async function fetchInventoryDetail() {
     inventoryDetailLoaded = true;
     renderInventoryPanel(data);
   } catch(e) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
-    if (subtitle) subtitle.textContent = 'Gagal memuat data';
+    const lb = document.getElementById('invLorongBody');
+    const ab = document.getElementById('invAreaBody');
+    const sb = document.getElementById('invPanelSubtitle');
+    if (lb) lb.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--red)">Gagal memuat: ${e.message}</td></tr>`;
+    if (ab) ab.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--red)">Gagal</td></tr>`;
+    if (sb) sb.textContent = 'Gagal memuat data';
+    console.error('fetchInventoryDetail error:', e);
   }
 }
 
