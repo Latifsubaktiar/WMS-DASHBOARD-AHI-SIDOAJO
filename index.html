@@ -24,20 +24,36 @@
 .login-loading.show { display:flex; }
 .login-spinner { width:18px; height:18px; border:2px solid var(--accent-mid); border-top-color:var(--accent); border-radius:50%; animation:nipSpin 0.7s linear infinite; }
 @keyframes nipSpin { to{transform:rotate(360deg)} }
+/* ── SIDEBAR NAV RAISED EFFECT ── */
+.nav-item {
+  box-shadow: 0 2px 0 rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.7) !important;
+  border-bottom: 2px solid rgba(0,0,0,0.1) !important;
+  transition: all 0.15s ease !important;
+}
+.nav-item:hover {
+  box-shadow: 0 4px 0 rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1) !important;
+  transform: translateY(-1px) !important;
+  border-bottom: 3px solid rgba(0,0,0,0.12) !important;
+}
+.nav-item.active {
+  box-shadow: 0 3px 0 rgba(37,99,235,0.4), 0 2px 8px rgba(37,99,235,0.2) !important;
+  border: 1px solid rgba(37,99,235,0.3) !important;
+  border-bottom: 3px solid rgba(37,99,235,0.5) !important;
+  transform: translateY(0) !important;
+}
 @keyframes invBeam { 0%{left:-60%} 100%{left:120%} }
 @keyframes cardBeam { 0%{left:-80%} 100%{left:120%} }
-@keyframes donutGlow { 0%,100%{box-shadow:0 0 8px 2px rgba(255,255,255,0.15),0 0 20px 4px var(--glow-color,rgba(37,99,235,0.2));} 50%{box-shadow:0 0 16px 6px rgba(255,255,255,0.25),0 0 40px 10px var(--glow-color,rgba(37,99,235,0.35));} }
-@keyframes donutSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+@keyframes donutBeamSpin { to{ transform:rotate(360deg); } }
 .card-stripe {position:absolute;top:0;left:0;width:100%;height:4px;overflow:hidden;}
 .card-stripe::after {content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.5s ease-in-out infinite;}
 .donut-glow-wrap {position:relative;display:inline-flex;align-items:center;justify-content:center;}
-.donut-glow-wrap::before {content:'';position:absolute;inset:-6px;border-radius:50%;animation:donutGlow 2.5s ease-in-out infinite;pointer-events:none;z-index:0;}
-.donut-glow-wrap canvas {position:relative;z-index:1;}
-.donut-glow-blue::before  {--glow-color:rgba(37,99,235,0.3);}
-.donut-glow-green::before {--glow-color:rgba(22,163,74,0.3);}
-.donut-glow-amber::before {--glow-color:rgba(217,119,6,0.3);}
-.donut-glow-cyan::before  {--glow-color:rgba(6,182,212,0.3);}
-.donut-glow-purple::before{--glow-color:rgba(139,92,246,0.3);}
+.donut-glow-wrap::after {content:'';position:absolute;inset:-3px;border-radius:50%;animation:donutBeamSpin 3s linear infinite;pointer-events:none;z-index:2;}
+.donut-glow-blue::after   {background:conic-gradient(from 0deg,transparent 0%,rgba(96,165,250,0.9) 8%,transparent 16%); mask:radial-gradient(transparent 42%,black 47%); -webkit-mask:radial-gradient(transparent 42%,black 47%);}
+.donut-glow-green::after  {background:conic-gradient(from 0deg,transparent 0%,rgba(52,211,153,0.9) 8%,transparent 16%); mask:radial-gradient(transparent 42%,black 47%); -webkit-mask:radial-gradient(transparent 42%,black 47%);}
+.donut-glow-amber::after  {background:conic-gradient(from 0deg,transparent 0%,rgba(251,191,36,0.9) 8%,transparent 16%); mask:radial-gradient(transparent 42%,black 47%); -webkit-mask:radial-gradient(transparent 42%,black 47%);}
+.donut-glow-cyan::after   {background:conic-gradient(from 0deg,transparent 0%,rgba(34,211,238,0.9) 8%,transparent 16%); mask:radial-gradient(transparent 42%,black 47%); -webkit-mask:radial-gradient(transparent 42%,black 47%);}
+.donut-glow-purple::after {background:conic-gradient(from 0deg,transparent 0%,rgba(167,139,250,0.9) 8%,transparent 16%); mask:radial-gradient(transparent 42%,black 47%); -webkit-mask:radial-gradient(transparent 42%,black 47%);}
 .login-found-box { display:none; flex-direction:column; align-items:center; gap:5px; padding:14px; background:var(--green-bg); border:1px solid rgba(22,163,74,0.25); border-radius:var(--r-sm); margin-top:14px; }
 .login-found-box.show { display:flex; }
 .login-found-box .lf-tag { font-size:11px; color:var(--green); font-weight:800; text-transform:uppercase; letter-spacing:1px; }
@@ -846,9 +862,9 @@
           </div>
         </div>
         <!-- INBOUND TABLE -->
-        <div id="tableInboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;">
-          <div style="background:#1e293b;padding:0;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#1e293b;"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO LC</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO POLISI</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">EKSPEDISI</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TYPE</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;">CHECK IN</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">STUFFING</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">HIT/MISS</th></tr></thead>
-          <tbody id="dashInboundBody"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody></table></div>
+        <div id="tableInboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;background:#ffffff;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#1e293b;position:sticky;top:0;z-index:2;"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO LC</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO POLISI</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">EKSPEDISI</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TYPE</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;">CHECK IN</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">STUFFING</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">HIT/MISS</th></tr></thead>
+          <tbody id="dashInboundBody" style="background:#ffffff;"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody></table>
         </div>
         <!-- STORING TABLE -->
         <div id="tableStoringWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;display:none;">
@@ -892,14 +908,14 @@
                 <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fde68a;">%</th>
               </tr>
             </thead>
-            <tbody id="dashStoringBody"><tr><td colspan="20" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+            <tbody id="dashStoringBody" style="background:#ffffff;"><tr><td colspan="20" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
           </table>
         </div>
         <!-- OUTBOUND TABLE -->
         <div id="tableOutboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;display:none;">
           <table style="width:100%;border-collapse:collapse;font-size:12px;">
             <thead><tr style="background:#1e293b;"><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">No</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Penyelesaian</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Trans No</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">%PC</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fb923c;">%STG</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;">%LD</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Shipping Line</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Carrier ID</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;">Stuffing Time</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Jenis Armada</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">No Pol</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">Status</th></tr></thead>
-            <tbody id="dashOutboundBody"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+            <tbody id="dashOutboundBody" style="background:#ffffff;"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
           </table>
         </div>
       </div>
