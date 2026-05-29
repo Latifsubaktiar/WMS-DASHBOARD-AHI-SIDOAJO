@@ -924,14 +924,14 @@ async function fetchInlineProses() {
     const makeDonut=(canvasId,pct,color)=>{
       const el=document.getElementById(canvasId); if(!el) return;
       const ex=Chart.getChart(el); if(ex) ex.destroy();
-      new Chart(el.getContext('2d'),{type:'doughnut',data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#1e293b':'#e2e8f0'],borderColor:border,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+      new Chart(el,{type:'doughnut',data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#334155':'#e2e8f0'],borderWidth:0}]},options:{responsive:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
     };
 
     const inboundRows=window._inboundRows||[];
-    const finishArmada=inboundRows.filter(r=>r&&r.updateUnload&&r.updateUnload!=='').length;
-    const prosesArmada=inboundRows.filter(r=>r&&r.checkIn&&r.checkIn!==''&&r.open&&r.open!==''&&(!r.updateUnload||r.updateUnload==='')).length;
-    const antriArmada =inboundRows.filter(r=>r&&r.checkIn&&r.checkIn!==''&&(!r.open||r.open==='')&&(!r.updateUnload||r.updateUnload==='')).length;
-    const belumArmada =inboundRows.filter(r=>r&&(!r.checkIn||r.checkIn==='')).length;
+    const finishArmada=inboundRows.filter(r=>r&&r.status&&['DONE','FINISH'].includes(String(r.status).toUpperCase())).length;
+    const prosesArmada=inboundRows.filter(r=>r&&r.status&&String(r.status).toUpperCase()==='PROSES').length;
+    const antriArmada =inboundRows.filter(r=>r&&r.status&&String(r.status).toUpperCase()==='ANTRI').length;
+    const belumArmada =inboundRows.filter(r=>r&&(!r.status||r.status===''||String(r.status).trim()==='')).length;
     const totalArmada =inboundRows.length||0;
     const pctUnload=totalArmada>0?Math.round((finishArmada/totalArmada)*100):(s&&s.pctUnloading||0);
     document.getElementById('pctUnloading').textContent=pctUnload+'%';
