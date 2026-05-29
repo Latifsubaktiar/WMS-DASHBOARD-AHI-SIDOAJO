@@ -721,16 +721,23 @@
     <!-- PROGRESS CHARTS ROW -->
     <div class="progress-row" style="grid-template-columns:1fr 1fr 1fr;">
       <!-- Inbound Progress -->
-      <div class="card progress-card">
-        <div class="card-header">
-          <span class="card-title"><span class="live-dot"></span>📦 Inbound Progress Hari Ini</span>
-          <span id="inboundPctBadge" style="font-size:12px;font-weight:800;color:var(--green);background:var(--green-bg);border:1px solid rgba(22,163,74,0.2);padding:3px 10px;border-radius:20px;">—%</span>
+      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(37,99,235,0.08),0 1px 2px rgba(0,0,0,0.04);display:flex;flex-direction:column;">
+        <div style="height:4px;background:linear-gradient(90deg,#2563eb,#60a5fa);flex-shrink:0;"></div>
+        <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 3px 8px rgba(37,99,235,0.25);">📦</div>
+            <div>
+              <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Inbound Progress</div>
+              <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
+            </div>
+          </div>
+          <span id="inboundPctBadge" style="font-size:12px;font-weight:800;color:#2563eb;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.15);padding:3px 10px;border-radius:20px;">—%</span>
         </div>
-        <div class="progress-body">
+        <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
             <canvas id="dashInboundChart"></canvas>
             <div class="progress-center">
-              <div class="progress-pct" id="dashInboundPct">—</div>
+              <div class="progress-pct" id="dashInboundPct" style="color:#1e3a8a;">—</div>
               <div class="progress-label">Selesai</div>
             </div>
           </div>
@@ -743,17 +750,25 @@
           </div>
         </div>
       </div>
+
       <!-- Storing Progress -->
-      <div class="card progress-card">
-        <div class="card-header">
-          <span class="card-title"><span class="live-dot"></span>🏗️ Storing Progress Hari Ini</span>
-          <span id="storingPctBadge" style="font-size:12px;font-weight:800;color:#8b5cf6;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);padding:3px 10px;border-radius:20px;">—%</span>
+      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(5,150,105,0.08),0 1px 2px rgba(0,0,0,0.04);display:flex;flex-direction:column;">
+        <div style="height:4px;background:linear-gradient(90deg,#059669,#34d399);flex-shrink:0;"></div>
+        <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 3px 8px rgba(5,150,105,0.25);">🏗️</div>
+            <div>
+              <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Storing Progress</div>
+              <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
+            </div>
+          </div>
+          <span id="storingPctBadge" style="font-size:12px;font-weight:800;color:#059669;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.15);padding:3px 10px;border-radius:20px;">—%</span>
         </div>
-        <div class="progress-body">
+        <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
             <canvas id="dashStoringChart"></canvas>
             <div class="progress-center">
-              <div class="progress-pct" id="dashStoringPct">—</div>
+              <div class="progress-pct" id="dashStoringPct" style="color:#064e3b;">—</div>
               <div class="progress-label">Progres</div>
             </div>
           </div>
@@ -765,17 +780,25 @@
           </div>
         </div>
       </div>
+
       <!-- Outbound Progress -->
-      <div class="card progress-card">
-        <div class="card-header">
-          <span class="card-title"><span class="live-dot"></span>🚚 Outbound Progress Hari Ini</span>
-          <span id="outboundPctBadge" style="font-size:12px;font-weight:800;color:var(--orange);background:var(--orange-bg);border:1px solid rgba(217,119,6,0.2);padding:3px 10px;border-radius:20px;">—%</span>
+      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(217,119,6,0.08),0 1px 2px rgba(0,0,0,0.04);display:flex;flex-direction:column;">
+        <div style="height:4px;background:linear-gradient(90deg,#d97706,#fbbf24);flex-shrink:0;"></div>
+        <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 3px 8px rgba(217,119,6,0.25);">🚚</div>
+            <div>
+              <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Outbound Progress</div>
+              <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
+            </div>
+          </div>
+          <span id="outboundPctBadge" style="font-size:12px;font-weight:800;color:#d97706;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.15);padding:3px 10px;border-radius:20px;">—%</span>
         </div>
-        <div class="progress-body">
+        <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
             <canvas id="dashOutboundChart"></canvas>
             <div class="progress-center">
-              <div class="progress-pct" id="dashOutboundPct">—</div>
+              <div class="progress-pct" id="dashOutboundPct" style="color:#78350f;">—</div>
               <div class="progress-label">Selesai</div>
             </div>
           </div>
@@ -789,6 +812,7 @@
         </div>
       </div>
     </div>
+
 
     <div class="bottom-grid">
       <!-- TABEL INBOUND + OUTBOUND TAB -->
