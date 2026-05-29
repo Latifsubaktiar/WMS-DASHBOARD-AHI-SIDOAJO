@@ -198,13 +198,13 @@
     </div>
     <div class="stats-grid">
       <!-- INBOUND TODAY -->
-      <div id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#dbeafe 100%);border:1px solid #e2e8f0;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #3b82f6'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
+      <div id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#eff6ff 0%,#bfdbfe 100%);border:1px solid #bfdbfe;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #3b82f6'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
         <div class="kpi-beam" style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.75),transparent);transform:skewX(-15deg);pointer-events:none;opacity:0;" onmouseenter="this.style.animation='kpiBeam 0.65s ease forwards'"></div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
           <div style="width:34px;height:34px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:17px;">📦</div>
           <span style="font-size:10px;font-weight:800;padding:3px 10px;background:#dbeafe;color:#2563eb;">▼ Klik</span>
         </div>
-        <div class="stat-value" style="font-size:42px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
+        <div class="stat-value" style="font-size:52px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
         <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Inbound Today</div>
         <div class="stat-sub" style="font-size:10px;color:#94a3b8;flex:1;min-height:14px;">Memuat data...</div>
         <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:12px;"><div class="stat-bar-fill" style="height:100%;background:#3b82f6;width:0%;transition:width 1s;"></div></div>
@@ -215,12 +215,12 @@
       </div>
 
       <!-- STORING TODAY -->
-      <div id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#d1fae5 100%);border:1px solid #e2e8f0;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #059669'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
+      <div id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;background:linear-gradient(160deg,#ecfdf5 0%,#6ee7b7 100%);border:1px solid #6ee7b7;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #059669'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
           <div style="width:34px;height:34px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:17px;">🏗️</div>
           <span style="font-size:10px;font-weight:800;padding:3px 10px;background:#d1fae5;color:#059669;">▼ Klik</span>
         </div>
-        <div class="stat-value" style="font-size:42px;font-weight:900;color:#059669;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
+        <div class="stat-value" style="font-size:52px;font-weight:900;color:#059669;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
         <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Storing Today</div>
         <div class="stat-sub" style="font-size:10px;color:#94a3b8;flex:1;min-height:14px;">Memuat data...</div>
         <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:12px;"><div class="stat-bar-fill" style="height:100%;background:#10b981;width:0%;transition:width 1s;"></div></div>
@@ -231,12 +231,12 @@
       </div>
 
       <!-- OUTBOUND TODAY -->
-      <div id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#fef3c7 100%);border:1px solid #e2e8f0;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #d97706'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
+      <div id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fffbeb 0%,#fde68a 100%);border:1px solid #fde68a;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #d97706'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
           <div style="width:34px;height:34px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:17px;">🚚</div>
           <span style="font-size:10px;font-weight:800;padding:3px 10px;background:#fef3c7;color:#d97706;">▼ Klik</span>
         </div>
-        <div id="outboundStatVal" class="stat-value" style="font-size:42px;font-weight:900;color:#d97706;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
+        <div id="outboundStatVal" class="stat-value" style="font-size:52px;font-weight:900;color:#d97706;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
         <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Outbound Today</div>
         <div id="outboundStatSub" class="stat-sub" style="font-size:10px;color:#94a3b8;flex:1;min-height:14px;">Memuat data...</div>
         <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:12px;"><div class="stat-bar-fill" style="height:100%;background:#f59e0b;width:0%;transition:width 1s;"></div></div>
@@ -247,12 +247,12 @@
       </div>
 
       <!-- INVENTORY CONTROL -->
-      <div id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#d1fae5 100%);border:1px solid #e2e8f0;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #10b981'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
+      <div id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;background:linear-gradient(160deg,#ecfdf5 0%,#6ee7b7 100%);border:1px solid #6ee7b7;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #10b981'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
           <div id="invControlIcon" style="width:34px;height:34px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:17px;">📋</div>
           <span style="font-size:10px;font-weight:800;padding:3px 10px;background:#d1fae5;color:#059669;">▼ Klik</span>
         </div>
-        <div id="invAccuracyVal" class="stat-value" style="font-size:38px;font-weight:900;color:#059669;letter-spacing:-1px;line-height:1;margin-bottom:5px;">—</div>
+        <div id="invAccuracyVal" class="stat-value" style="font-size:46px;font-weight:900;color:#059669;letter-spacing:-1px;line-height:1;margin-bottom:5px;">—</div>
         <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Inventory Control</div>
         <div class="stat-sub" style="font-size:10px;color:#94a3b8;flex:1;min-height:14px;"><span id="invAccuracySub"><span class="dn">Memuat data...</span></span></div>
         <div id="invControlTopBar" style="height:3px;background:rgba(0,0,0,0.06);margin-top:12px;"><div style="height:100%;background:#10b981;width:99%;"></div></div>
