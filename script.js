@@ -700,8 +700,8 @@ async function fetchStoringStatCard() {
     const data = await res.json();
     if (!data.ok) return;
     const s = data.summary;
-    const el = document.querySelector('.stat-card.green-bar .stat-value');
-    const sb = document.querySelector('.stat-card.green-bar .stat-sub');
+    const el = document.querySelector('#storingStatCard .stat-value');
+    const sb = document.querySelector('#storingStatCard .stat-sub');
     if (el) { el.textContent = s.total; el.style.color = 'var(--green)'; }
     if (sb) sb.innerHTML = `<span style="color:var(--green);font-weight:700">📦 ${s.sumPicked.toLocaleString()} Picked</span> &nbsp;<span class="dn">📋 ${s.sumSisa.toLocaleString()} Sisa</span>`;
     window._storingData = data;
@@ -1177,8 +1177,8 @@ async function fetchDashboardStats() {
     if(dataIn.ok){
       const{total,checkedIn,selesai,proses,antri,belum,hit,miss}=dataIn.summary;
       inboundTotal=total; inboundSelesai=selesai; inboundCheckedIn=checkedIn; inboundHit=hit; inboundMiss=miss;
-      const el=document.querySelector('.stat-card.blue-bar .stat-value');
-      const sb=document.querySelector('.stat-card.blue-bar .stat-sub');
+      const el=document.querySelector('#inboundStatCard .stat-value');
+      const sb=document.querySelector('#inboundStatCard .stat-sub');
       if(el) el.textContent=total;
       if(sb) sb.innerHTML=`<span class="up">✅ ${selesai} Finish</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span style="color:#f59e0b;font-weight:700">🕐 ${antri} Antri</span> &nbsp;<span class="dn">🔴 ${belum} Belum</span>`;
       renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss);
@@ -1190,8 +1190,8 @@ async function fetchDashboardStats() {
     const dataOut=await resOut.json();
     if(dataOut.ok){
       outboundTotal=dataOut.total; outboundSelesai=dataOut.selesai;
-      const el=document.querySelector('.stat-card.orange-bar .stat-value');
-      const sb=document.querySelector('.stat-card.orange-bar .stat-sub');
+      const el=document.querySelector('#outboundStatCard .stat-value');
+      const sb=document.querySelector('#outboundStatCard .stat-sub');
       if(el) el.textContent=dataOut.total;
       if(sb) sb.innerHTML=`<span class="up">✅ ${dataOut.selesai} Selesai</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${dataOut.proses||0} Proses</span> &nbsp;<span class="dn">🕐 ${dataOut.belum||0} Belum</span>`;
       renderDashOutboundChart(dataOut.total,dataOut.selesai,dataOut.proses||0,dataOut.antri||0,dataOut.belum||0,dataOut.hit||0,dataOut.miss||0);
@@ -1581,8 +1581,8 @@ async function fetchInventoryValue(){
     const res=await fetch(GAS_DASHBOARD_URL+'?action=getDashboardData');
     const data=await res.json(); if(!data.ok) return;
     const inv=data.mtd&&data.mtd.inventory?data.mtd.inventory:0;
-    const el=document.querySelector('.stat-card.green-bar .stat-value');
-    const sb=document.querySelector('.stat-card.green-bar .stat-sub');
+    const el=document.querySelector('#storingStatCard .stat-value');
+    const sb=document.querySelector('#storingStatCard .stat-sub');
     if(el&&inv){const fmt=inv>=1000000?'Rp '+(inv/1000000).toFixed(1).replace('.0','')+' Jt':inv>=1000?'Rp '+(inv/1000).toFixed(0)+' Rb':inv;el.textContent=fmt;el.style.fontSize='16px';}
     if(sb&&data.mtd) sb.textContent='Data bulan '+(data.mtd.monthName||'');
   }catch(e){console.warn('Inventory value error:',e);}
@@ -1652,8 +1652,10 @@ new Chart(document.getElementById('donutChart').getContext('2d'),{
 });
 
 // ── 3D TILT ──
-document.querySelectorAll('.stat-card').forEach(card=>{
-  card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-0.5,y=(e.clientY-r.top)/r.height-0.5;card.style.transform=`perspective(500px) rotateY(${x*16}deg) rotateX(${-y*16}deg) translateY(-6px) scale(1.03)`;});
+['inboundStatCard','storingStatCard','outboundStatCard','invControlCard'].forEach(id=>{
+  const card = document.getElementById(id);
+  if (!card) return;
+  card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-0.5,y=(e.clientY-r.top)/r.height-0.5;card.style.transform=`perspective(600px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-4px) scale(1.02)`;});
   card.addEventListener('mouseleave',()=>{card.style.transform='';});
 });
 
