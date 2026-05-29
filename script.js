@@ -1671,10 +1671,12 @@ new Chart(document.getElementById('donutChart').getContext('2d'),{
 
 // ── BEAM on KPI cards ──
 const kpiBeams = {
-  inboundStatCard:  'rgba(59,130,246,0.35)',
-  storingStatCard:  'rgba(236,72,153,0.35)',
-  outboundStatCard: 'rgba(245,158,11,0.35)',
-  invControlCard:   'rgba(16,185,129,0.35)',
+  inboundStatCard:   'rgba(59,130,246,0.35)',
+  storingStatCard:   'rgba(236,72,153,0.35)',
+  outboundStatCard:  'rgba(245,158,11,0.35)',
+  invControlCard:    'rgba(16,185,129,0.35)',
+  dailyActivityCard: 'rgba(99,102,241,0.3)',
+  persentaseCard:    'rgba(236,72,153,0.3)',
 };
 Object.entries(kpiBeams).forEach(([id, color]) => {
   const card = document.getElementById(id);
@@ -1695,6 +1697,22 @@ Object.entries(kpiBeams).forEach(([id, color]) => {
     beam.style.left = '-100%';
   });
 });
+
+// ── BEAM on progress cards ──
+function addBeam(el, color) {
+  if (!el) return;
+  el.style.position = 'relative';
+  el.style.overflow = 'hidden';
+  const b = document.createElement('div');
+  b.style.cssText = `position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,${color},transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;`;
+  el.appendChild(b);
+  el.addEventListener('mouseenter',()=>{b.style.transition='none';b.style.left='-100%';void b.offsetWidth;b.style.transition='left 1.2s ease';b.style.left='160%';});
+  el.addEventListener('mouseleave',()=>{b.style.transition='none';b.style.left='-100%';});
+}
+const pr = document.querySelectorAll('.progress-row > div');
+if(pr[0]) addBeam(pr[0],'rgba(59,130,246,0.3)');
+if(pr[1]) addBeam(pr[1],'rgba(236,72,153,0.3)');
+if(pr[2]) addBeam(pr[2],'rgba(245,158,11,0.3)');
 
 // ── NAVIGATION ──
 document.querySelectorAll('.nav-item').forEach(btn=>{btn.addEventListener('click',()=>{const p=btn.dataset.page;if(p)go(p);});});
