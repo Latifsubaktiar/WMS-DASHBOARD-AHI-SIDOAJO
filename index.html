@@ -24,6 +24,7 @@
 .login-loading.show { display:flex; }
 .login-spinner { width:18px; height:18px; border:2px solid var(--accent-mid); border-top-color:var(--accent); border-radius:50%; animation:nipSpin 0.7s linear infinite; }
 @keyframes nipSpin { to{transform:rotate(360deg)} }
+@keyframes kpiBeam { 0%{left:-100%;opacity:1;} 100%{left:160%;opacity:1;} }
 /* ── SIDEBAR NAV RAISED EFFECT ── */
 .nav-item {
   box-shadow: 0 2px 0 rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08) !important;
@@ -197,78 +198,67 @@
     </div>
     <div class="stats-grid">
       <!-- INBOUND TODAY -->
-      <div id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:20px 22px 16px;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:all 0.25s;box-shadow:0 2px 8px rgba(37,99,235,0.08),0 1px 2px rgba(0,0,0,0.04);">
-        <div class="card-stripe" style="background:linear-gradient(90deg,#2563eb,#60a5fa);"></div>
-        <div style="position:absolute;top:-30px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(37,99,235,0.05);pointer-events:none;"></div>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-          <div>
-            <div style="font-size:10px;font-weight:800;color:#64748b;letter-spacing:0.12em;text-transform:uppercase;">Inbound Today</div>
-            <div style="font-size:9.5px;color:#94a3b8;margin-top:2px;">▼ Klik Detail</div>
-          </div>
-          <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 10px rgba(37,99,235,0.3);flex-shrink:0;">📦</div>
+      <div id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #3b82f6'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
+        <div class="kpi-beam" style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.75),transparent);transform:skewX(-15deg);pointer-events:none;opacity:0;" onmouseenter="this.style.animation='kpiBeam 0.65s ease forwards'"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+          <div style="width:34px;height:34px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:17px;">📦</div>
+          <span style="font-size:10px;font-weight:800;padding:3px 10px;background:#dbeafe;color:#2563eb;">▼ Klik</span>
         </div>
-        <div class="stat-value" style="font-size:42px;font-weight:900;color:#1e3a8a;letter-spacing:-2px;line-height:1;margin-bottom:8px;">—</div>
-        <div class="stat-sub" style="font-size:11px;color:#64748b;min-height:16px;">Memuat data...</div>
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
-          <div style="width:8px;height:8px;border-radius:50%;background:#2563eb;box-shadow:0 0 6px rgba(37,99,235,0.5);"></div>
-          <span style="font-size:10px;color:#2563eb;font-weight:700;letter-spacing:0.05em;">INBOUND</span>
+        <div class="stat-value" style="font-size:42px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Inbound Today</div>
+        <div class="stat-sub" style="font-size:10px;color:#94a3b8;flex:1;min-height:14px;">Memuat data...</div>
+        <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:12px;"><div class="stat-bar-fill" style="height:100%;background:#3b82f6;width:0%;transition:width 1s;"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:none;margin-top:0;">
+          <span style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">INBOUND</span>
+          <span class="stat-foot-val" style="font-size:12px;font-weight:900;color:#2563eb;">—</span>
         </div>
       </div>
 
       <!-- STORING TODAY -->
-      <div id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:20px 22px 16px;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:all 0.25s;box-shadow:0 2px 8px rgba(5,150,105,0.08),0 1px 2px rgba(0,0,0,0.04);">
-        <div class="card-stripe" style="background:linear-gradient(90deg,#059669,#34d399);"></div>
-        <div style="position:absolute;top:-30px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(5,150,105,0.05);pointer-events:none;"></div>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-          <div>
-            <div style="font-size:10px;font-weight:800;color:#64748b;letter-spacing:0.12em;text-transform:uppercase;">Storing Today</div>
-            <div style="font-size:9.5px;color:#94a3b8;margin-top:2px;">▼ Klik Detail</div>
-          </div>
-          <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 10px rgba(5,150,105,0.3);flex-shrink:0;">🏗️</div>
+      <div id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #059669'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+          <div style="width:34px;height:34px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:17px;">🏗️</div>
+          <span style="font-size:10px;font-weight:800;padding:3px 10px;background:#d1fae5;color:#059669;">▼ Klik</span>
         </div>
-        <div class="stat-value" style="font-size:42px;font-weight:900;color:#064e3b;letter-spacing:-2px;line-height:1;margin-bottom:8px;">—</div>
-        <div class="stat-sub" style="font-size:11px;color:#64748b;min-height:16px;">Memuat data...</div>
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
-          <div style="width:8px;height:8px;border-radius:50%;background:#059669;box-shadow:0 0 6px rgba(5,150,105,0.5);"></div>
-          <span style="font-size:10px;color:#059669;font-weight:700;letter-spacing:0.05em;">STORING</span>
+        <div class="stat-value" style="font-size:42px;font-weight:900;color:#059669;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Storing Today</div>
+        <div class="stat-sub" style="font-size:10px;color:#94a3b8;flex:1;min-height:14px;">Memuat data...</div>
+        <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:12px;"><div class="stat-bar-fill" style="height:100%;background:#10b981;width:0%;transition:width 1s;"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+          <span style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">STORING</span>
+          <span class="stat-foot-val" style="font-size:12px;font-weight:900;color:#059669;">—</span>
         </div>
       </div>
 
       <!-- OUTBOUND TODAY -->
-      <div id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:20px 22px 16px;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:all 0.25s;box-shadow:0 2px 8px rgba(217,119,6,0.08),0 1px 2px rgba(0,0,0,0.04);">
-        <div class="card-stripe" style="background:linear-gradient(90deg,#d97706,#fbbf24);"></div>
-        <div style="position:absolute;top:-30px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(217,119,6,0.05);pointer-events:none;"></div>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-          <div>
-            <div style="font-size:10px;font-weight:800;color:#64748b;letter-spacing:0.12em;text-transform:uppercase;">Outbound Today</div>
-            <div style="font-size:9.5px;color:#94a3b8;margin-top:2px;">▼ Klik Detail</div>
-          </div>
-          <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 10px rgba(217,119,6,0.3);flex-shrink:0;">🚚</div>
+      <div id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #d97706'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+          <div style="width:34px;height:34px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:17px;">🚚</div>
+          <span style="font-size:10px;font-weight:800;padding:3px 10px;background:#fef3c7;color:#d97706;">▼ Klik</span>
         </div>
-        <div id="outboundStatVal" class="stat-value" style="font-size:42px;font-weight:900;color:#78350f;letter-spacing:-2px;line-height:1;margin-bottom:8px;">—</div>
-        <div id="outboundStatSub" class="stat-sub" style="font-size:11px;color:#64748b;min-height:16px;">Memuat data...</div>
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
-          <div style="width:8px;height:8px;border-radius:50%;background:#d97706;box-shadow:0 0 6px rgba(217,119,6,0.5);"></div>
-          <span style="font-size:10px;color:#d97706;font-weight:700;letter-spacing:0.05em;">OUTBOUND</span>
+        <div id="outboundStatVal" class="stat-value" style="font-size:42px;font-weight:900;color:#d97706;letter-spacing:-2px;line-height:1;margin-bottom:5px;">—</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Outbound Today</div>
+        <div id="outboundStatSub" class="stat-sub" style="font-size:10px;color:#94a3b8;flex:1;min-height:14px;">Memuat data...</div>
+        <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:12px;"><div class="stat-bar-fill" style="height:100%;background:#f59e0b;width:0%;transition:width 1s;"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+          <span style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">OUTBOUND</span>
+          <span class="stat-foot-val" style="font-size:12px;font-weight:900;color:#d97706;">—</span>
         </div>
       </div>
 
       <!-- INVENTORY CONTROL -->
-      <div id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:20px 22px 16px;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:all 0.25s;box-shadow:0 2px 8px rgba(16,185,129,0.08),0 1px 2px rgba(0,0,0,0.04);">
-        <div id="invControlTopBar" class="card-stripe" style="background:linear-gradient(90deg,#10b981,#6ee7b7);"></div>
-        <div style="position:absolute;top:-30px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(16,185,129,0.05);pointer-events:none;"></div>
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-          <div>
-            <div style="font-size:10px;font-weight:800;color:#64748b;letter-spacing:0.12em;text-transform:uppercase;">Inventory Control</div>
-            <div style="font-size:9.5px;color:#94a3b8;margin-top:2px;">▼ Klik Detail</div>
-          </div>
-          <div id="invControlIcon" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 10px rgba(16,185,129,0.3);flex-shrink:0;">📋</div>
+      <div id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;padding:14px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.style.outline='2px solid #10b981'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.style.outline='none'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+          <div id="invControlIcon" style="width:34px;height:34px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:17px;">📋</div>
+          <span style="font-size:10px;font-weight:800;padding:3px 10px;background:#d1fae5;color:#059669;">▼ Klik</span>
         </div>
-        <div id="invAccuracyVal" class="stat-value" style="font-size:38px;font-weight:900;color:#064e3b;letter-spacing:-1px;line-height:1;margin-bottom:8px;">—</div>
-        <div class="stat-sub" style="font-size:11px;color:#64748b;min-height:16px;"><span id="invAccuracySub"><span class="dn">Memuat data...</span></span></div>
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;gap:6px;">
-          <div style="width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px rgba(16,185,129,0.5);"></div>
-          <span style="font-size:10px;color:#10b981;font-weight:700;letter-spacing:0.05em;">ACCURACY</span>
+        <div id="invAccuracyVal" class="stat-value" style="font-size:38px;font-weight:900;color:#059669;letter-spacing:-1px;line-height:1;margin-bottom:5px;">—</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Inventory Control</div>
+        <div class="stat-sub" style="font-size:10px;color:#94a3b8;flex:1;min-height:14px;"><span id="invAccuracySub"><span class="dn">Memuat data...</span></span></div>
+        <div id="invControlTopBar" style="height:3px;background:rgba(0,0,0,0.06);margin-top:12px;"><div style="height:100%;background:#10b981;width:99%;"></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+          <span style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">ACCURACY</span>
+          <span style="font-size:12px;font-weight:900;color:#10b981;">≥ 99.5%</span>
         </div>
       </div>
     </div>
@@ -739,17 +729,17 @@
     <!-- PROGRESS CHARTS ROW -->
     <div class="progress-row" style="grid-template-columns:1fr 1fr 1fr;">
       <!-- Inbound Progress -->
-      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(37,99,235,0.08),0 1px 2px rgba(0,0,0,0.04);display:flex;flex-direction:column;">
-        <div style="height:4px;background:linear-gradient(90deg,#2563eb,#60a5fa);flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.5s ease-in-out infinite;"></div></div>
+      <div style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;">
+        <div style="height:3px;background:#3b82f6;flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.5s ease-in-out infinite;"></div></div>
         <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 3px 8px rgba(37,99,235,0.25);">📦</div>
+            <div style="width:32px;height:32px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;">📦</div>
             <div>
               <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Inbound Progress</div>
               <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
             </div>
           </div>
-          <span id="inboundPctBadge" style="font-size:12px;font-weight:800;color:#2563eb;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.15);padding:3px 10px;border-radius:20px;">—%</span>
+          <span id="inboundPctBadge" style="font-size:12px;font-weight:800;color:#2563eb;background:rgba(37,99,235,0.08);padding:3px 10px;">—%</span>
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
@@ -770,17 +760,17 @@
       </div>
 
       <!-- Storing Progress -->
-      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(5,150,105,0.08),0 1px 2px rgba(0,0,0,0.04);display:flex;flex-direction:column;">
-        <div style="height:4px;background:linear-gradient(90deg,#059669,#34d399);flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.8s ease-in-out infinite;"></div></div>
+      <div style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;">
+        <div style="height:3px;background:#10b981;flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.8s ease-in-out infinite;"></div></div>
         <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 3px 8px rgba(5,150,105,0.25);">🏗️</div>
+            <div style="width:32px;height:32px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;">🏗️</div>
             <div>
               <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Storing Progress</div>
               <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
             </div>
           </div>
-          <span id="storingPctBadge" style="font-size:12px;font-weight:800;color:#059669;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.15);padding:3px 10px;border-radius:20px;">—%</span>
+          <span id="storingPctBadge" style="font-size:12px;font-weight:800;color:#059669;background:rgba(5,150,105,0.08);padding:3px 10px;">—%</span>
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
@@ -800,17 +790,17 @@
       </div>
 
       <!-- Outbound Progress -->
-      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(217,119,6,0.08),0 1px 2px rgba(0,0,0,0.04);display:flex;flex-direction:column;">
-        <div style="height:4px;background:linear-gradient(90deg,#d97706,#fbbf24);flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.1s ease-in-out infinite;"></div></div>
+      <div style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;">
+        <div style="height:3px;background:#f59e0b;flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.1s ease-in-out infinite;"></div></div>
         <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 3px 8px rgba(217,119,6,0.25);">🚚</div>
+            <div style="width:32px;height:32px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;">🚚</div>
             <div>
               <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Outbound Progress</div>
               <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
             </div>
           </div>
-          <span id="outboundPctBadge" style="font-size:12px;font-weight:800;color:#d97706;background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.15);padding:3px 10px;border-radius:20px;">—%</span>
+          <span id="outboundPctBadge" style="font-size:12px;font-weight:800;color:#d97706;background:rgba(217,119,6,0.08);padding:3px 10px;">—%</span>
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
