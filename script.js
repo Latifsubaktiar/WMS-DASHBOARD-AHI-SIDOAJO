@@ -704,6 +704,12 @@ async function fetchStoringStatCard() {
     const sb = document.querySelector('#storingStatCard .stat-sub');
     if (el) { el.textContent = s.total; el.style.color = 'var(--green)'; }
     if (sb) sb.innerHTML = `<span style="color:var(--green);font-weight:700">📦 ${s.sumPicked.toLocaleString()} Picked</span> &nbsp;<span class="dn">📋 ${s.sumSisa.toLocaleString()} Sisa</span>`;
+    // update bar + footer
+    const strPct = s.sumRelease>0 ? Math.round(s.sumPicked/s.sumRelease*100) : 0;
+    const strBar  = document.querySelector('#storingStatCard .stat-bar-fill');
+    const strFoot = document.querySelector('#storingStatCard .stat-foot-val');
+    if(strBar) setTimeout(()=>strBar.style.width=Math.min(strPct,100)+'%',300);
+    if(strFoot) strFoot.textContent=strPct+'%';
     window._storingData = data;
     renderDashStoringChart();
     if (window._lastInTotal !== undefined) updateInventoryStatusDonut(window._lastInTotal, window._lastInSelesai, window._lastOutTotal, window._lastOutSelesai);
@@ -1181,6 +1187,12 @@ async function fetchDashboardStats() {
       const sb=document.querySelector('#inboundStatCard .stat-sub');
       if(el) el.textContent=total;
       if(sb) sb.innerHTML=`<span class="up">✅ ${selesai} Finish</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span style="color:#f59e0b;font-weight:700">🕐 ${antri} Antri</span> &nbsp;<span class="dn">🔴 ${belum} Belum</span>`;
+      // update bar + footer
+      const inPct = total>0 ? Math.round(selesai/total*100) : 0;
+      const inBar = document.querySelector('#inboundStatCard .stat-bar-fill');
+      const inFoot = document.querySelector('#inboundStatCard .stat-foot-val');
+      if(inBar) setTimeout(()=>inBar.style.width=inPct+'%',300);
+      if(inFoot) inFoot.textContent=inPct+'%';
       renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss);
       renderDashInboundTable(dataIn.data);
     }
@@ -1194,6 +1206,12 @@ async function fetchDashboardStats() {
       const sb=document.querySelector('#outboundStatCard .stat-sub');
       if(el) el.textContent=dataOut.total;
       if(sb) sb.innerHTML=`<span class="up">✅ ${dataOut.selesai} Selesai</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${dataOut.proses||0} Proses</span> &nbsp;<span class="dn">🕐 ${dataOut.belum||0} Belum</span>`;
+      // update bar + footer
+      const outPct = dataOut.total>0 ? Math.round((dataOut.selesai/dataOut.total)*100) : 0;
+      const outBar = document.querySelector('#outboundStatCard .stat-bar-fill');
+      const outFoot = document.querySelector('#outboundStatCard .stat-foot-val');
+      if(outBar) setTimeout(()=>outBar.style.width=outPct+'%',300);
+      if(outFoot) outFoot.textContent=outPct+'%';
       renderDashOutboundChart(dataOut.total,dataOut.selesai,dataOut.proses||0,dataOut.antri||0,dataOut.belum||0,dataOut.hit||0,dataOut.miss||0);
     }
   } catch(e){console.warn('Outbound stats error:',e);}
