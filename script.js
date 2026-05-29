@@ -940,21 +940,29 @@ async function fetchInlineProses() {
     document.getElementById('pctUnloading').textContent=pctUnload+'%';
     document.getElementById('infoUnloading').textContent=`✅ ${finishArmada} Finish · ⏳ ${prosesArmada} Proses · 🕐 ${antriArmada} Antri · 🔴 ${belumArmada} Belum`;
     makeDonut('chartUnloading',pctUnload,'#16a34a');
+    const bu=document.getElementById('barUnloading'); if(bu) setTimeout(()=>bu.style.width=pctUnload+'%',300);
+    const fu=document.getElementById('pctUnloadingFoot'); if(fu) fu.textContent=pctUnload+'%';
 
     const pctAkt=(s&&s.avgPctAkt)||0;
     document.getElementById('pctAktualRcv').textContent=pctAkt+'%';
     document.getElementById('infoAktualRcv').textContent='';
     makeDonut('chartAktualRcv',pctAkt,'#0891b2');
+    const ba=document.getElementById('barAktualRcv'); if(ba) setTimeout(()=>ba.style.width=pctAkt+'%',300);
+    const fa=document.getElementById('pctAktualRcvFoot'); if(fa) fa.textContent=pctAkt+'%';
 
     const pctPutIn=(s&&s.avgPctPutIn2)||0;
     document.getElementById('pctPutawayIn').textContent=pctPutIn+'%';
     document.getElementById('infoPutawayIn').textContent=`Sisa: ${Number(s&&s.sumSisaIn||0).toLocaleString()} LPN`;
     makeDonut('chartPutawayIn',pctPutIn,'#2563eb');
+    const bpi=document.getElementById('barPutawayIn'); if(bpi) setTimeout(()=>bpi.style.width=Math.min(pctPutIn,100)+'%',300);
+    const fpi=document.getElementById('pctPutawayInFoot'); if(fpi) fpi.textContent=pctPutIn+'%';
 
     const pctPutStr=(s&&s.avgPctPutStr)||0;
     document.getElementById('pctPutawayStr').textContent=pctPutStr+'%';
     document.getElementById('infoPutawayStr').textContent=`Sisa: ${Number(s&&s.sumSisaStr||0).toLocaleString()} LPN`;
     makeDonut('chartPutawayStr',pctPutStr,'#d97706');
+    const bps=document.getElementById('barPutawayStr'); if(bps) setTimeout(()=>bps.style.width=Math.min(pctPutStr,100)+'%',300);
+    const fps=document.getElementById('pctPutawayStrFoot'); if(fps) fps.textContent=pctPutStr+'%';
 
     renderPanelInlineTable(data.data);
   } catch(e) {
