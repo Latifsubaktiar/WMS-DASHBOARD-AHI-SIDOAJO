@@ -1495,45 +1495,32 @@ async function fetchInventoryAccuracy() {
 
     if (!valEl) return;
 
-    // Tentukan warna & status berdasarkan nilai
-    let color, barClass, label, labelClass, iconBg;
-    if (pct >= 99.5) {
-      color      = 'var(--green)';
-      barClass   = 'green-bar';
-      label      = '✅ Akurasi Sangat Baik';
-      labelClass = 'up';
-      iconBg     = 'var(--green-bg)';
-    } else if (pct >= 98) {
-      color      = 'var(--orange)';
-      barClass   = 'orange-bar';
-      label      = '⚠️ Perlu Perhatian';
-      labelClass = '';
-      iconBg     = 'var(--orange-bg)';
-    } else {
-      color      = 'var(--red)';
-      barClass   = 'red-bar';
-      label      = '❌ Di Bawah Target';
-      labelClass = 'dn';
-      iconBg     = 'var(--red-bg)';
-    }
-
     // Update value
-    valEl.textContent  = pct.toFixed(2) + '%';
-    valEl.style.color  = color;
+    valEl.textContent = pct.toFixed(2) + '%';
 
-    // Update sub label
-    if (subEl) {
-      subEl.innerHTML = labelClass
-        ? `<span class="${labelClass}">${label}</span>`
-        : `<span style="color:${color};font-weight:700">${label}</span>`;
+    let color, gradColors, label, labelClass, iconBg, borderColor;
+    if (pct >= 99.5) {
+      color = '#10b981'; gradColors = '#10b981,#6ee7b7';
+      label = '✅ Akurasi Sangat Baik'; labelClass = 'up';
+      iconBg = 'rgba(16,185,129,0.08)'; borderColor = 'rgba(16,185,129,0.15)';
+    } else if (pct >= 98) {
+      color = '#d97706'; gradColors = '#d97706,#fbbf24';
+      label = '⚠️ Perlu Perhatian'; labelClass = '';
+      iconBg = 'rgba(217,119,6,0.08)'; borderColor = 'rgba(217,119,6,0.15)';
+    } else {
+      color = '#dc2626'; gradColors = '#dc2626,#f87171';
+      label = '❌ Di Bawah Target'; labelClass = 'dn';
+      iconBg = 'rgba(220,38,38,0.08)'; borderColor = 'rgba(220,38,38,0.15)';
     }
 
-    // Update card bar color & icon bg
-    if (card) {
-      card.classList.remove('red-bar', 'orange-bar', 'green-bar');
-      card.classList.add(barClass);
-    }
-    if (icon) icon.style.background = iconBg;
+    valEl.style.color = color;
+    if (subEl) subEl.innerHTML = `<span style="color:${color};font-weight:700">${label}</span>`;
+
+    const topBar = document.getElementById('invControlTopBar');
+    if (card)   card.style.borderColor = borderColor;
+    if (topBar) topBar.style.background = `linear-gradient(90deg,${gradColors})`;
+    if (icon)   icon.style.background   = iconBg;
+
 
   } catch(e) {
     console.warn('Inventory accuracy error:', e);
