@@ -470,18 +470,18 @@
 
           <!-- Unloading -->
           <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
-            <div style="height:3px;background:#3b82f6;"></div>
+            <div style="height:3px;background:#3b82f6;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                 <div style="width:30px;height:30px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;">📥</div>
                 <div style="position:relative;width:64px;height:64px;flex-shrink:0;"><canvas id="chartUnloading"></canvas>
                   <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pctUnloading" style="font-size:13px;font-weight:900;color:#2563eb;line-height:1;">—</div>
+                    <div id="pctUnloading" style="font-size:16px;font-weight:900;color:#2563eb;line-height:1;">—</div>
                     <div style="font-size:8px;color:#94a3b8;">Selesai</div>
                   </div>
                 </div>
               </div>
-              <div style="font-size:11px;font-weight:800;color:#1e293b;margin-bottom:2px;">Unloading</div>
+              <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:2px;">Unloading</div>
               <div id="infoUnloading" style="font-size:9.5px;color:#94a3b8;flex:1;">—</div>
               <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barUnloading" style="height:100%;background:#3b82f6;width:0%;transition:width 1s;"></div></div>
             </div>
@@ -493,18 +493,18 @@
 
           <!-- Aktual Receive -->
           <div style="background:linear-gradient(160deg,#fff 55%,#d1fae5 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
-            <div style="height:3px;background:#10b981;"></div>
+            <div style="height:3px;background:#10b981;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.4s ease-in-out infinite;"></div></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                 <div style="width:30px;height:30px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;">📊</div>
                 <div style="position:relative;width:64px;height:64px;flex-shrink:0;"><canvas id="chartAktualRcv"></canvas>
                   <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pctAktualRcv" style="font-size:13px;font-weight:900;color:#059669;line-height:1;">—</div>
+                    <div id="pctAktualRcv" style="font-size:16px;font-weight:900;color:#059669;line-height:1;">—</div>
                     <div style="font-size:8px;color:#94a3b8;">Selesai</div>
                   </div>
                 </div>
               </div>
-              <div style="font-size:11px;font-weight:800;color:#1e293b;margin-bottom:2px;">Aktual Receive</div>
+              <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:2px;">Aktual Receive</div>
               <div id="infoAktualRcv" style="font-size:9.5px;color:#94a3b8;flex:1;"></div>
               <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barAktualRcv" style="height:100%;background:#10b981;width:0%;transition:width 1s;"></div></div>
             </div>
@@ -516,18 +516,18 @@
 
           <!-- Putaway Inbound -->
           <div style="background:linear-gradient(160deg,#fff 55%,#f3e8ff 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
-            <div style="height:3px;background:#8b5cf6;"></div>
+            <div style="height:3px;background:#8b5cf6;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.8s ease-in-out infinite;"></div></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                 <div style="width:30px;height:30px;background:#f3e8ff;display:flex;align-items:center;justify-content:center;font-size:15px;">🏬</div>
                 <div style="position:relative;width:64px;height:64px;flex-shrink:0;"><canvas id="chartPutawayIn"></canvas>
                   <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pctPutawayIn" style="font-size:13px;font-weight:900;color:#7c3aed;line-height:1;">—</div>
+                    <div id="pctPutawayIn" style="font-size:16px;font-weight:900;color:#7c3aed;line-height:1;">—</div>
                     <div style="font-size:8px;color:#94a3b8;">Selesai</div>
                   </div>
                 </div>
               </div>
-              <div style="font-size:11px;font-weight:800;color:#1e293b;margin-bottom:2px;">Putaway Inbound</div>
+              <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:2px;">Putaway Inbound</div>
               <div id="infoPutawayIn" style="font-size:9.5px;color:#94a3b8;flex:1;">—</div>
               <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPutawayIn" style="height:100%;background:#8b5cf6;width:0%;transition:width 1s;"></div></div>
             </div>
@@ -539,18 +539,18 @@
 
           <!-- Putaway Storing -->
           <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
-            <div style="height:3px;background:#f59e0b;"></div>
+            <div style="height:3px;background:#f59e0b;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 4.2s ease-in-out infinite;"></div></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
                 <div style="width:30px;height:30px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;">📦</div>
                 <div style="position:relative;width:64px;height:64px;flex-shrink:0;"><canvas id="chartPutawayStr"></canvas>
                   <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pctPutawayStr" style="font-size:13px;font-weight:900;color:#d97706;line-height:1;">—</div>
+                    <div id="pctPutawayStr" style="font-size:16px;font-weight:900;color:#d97706;line-height:1;">—</div>
                     <div style="font-size:8px;color:#94a3b8;">Selesai</div>
                   </div>
                 </div>
               </div>
-              <div style="font-size:11px;font-weight:800;color:#1e293b;margin-bottom:2px;">Putaway Storing</div>
+              <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:2px;">Putaway Storing</div>
               <div id="infoPutawayStr" style="font-size:9.5px;color:#94a3b8;flex:1;">—</div>
               <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPutawayStr" style="height:100%;background:#f59e0b;width:0%;transition:width 1s;"></div></div>
             </div>
@@ -585,7 +585,7 @@
                 <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;white-space:nowrap;">HIT/MISS</th>
               </tr>
             </thead>
-            <tbody id="panelInboundBody">
+            <tbody id="panelInboundBody" style="background:#fff;">
               <tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-3)">Memuat...</td></tr>
             </tbody>
           </table>
