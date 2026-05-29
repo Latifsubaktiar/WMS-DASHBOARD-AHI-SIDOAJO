@@ -884,33 +884,30 @@ function renderPanelInboundTable(rows) {
   const tbody=document.getElementById('panelInboundBody'); if(!tbody) return;
   if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>'; return; }
   const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
-  const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.20)';if(wt===3)return 'rgba(139,92,246,0.20)';return '';};
-  const wtLeft=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:4px solid rgba(59,130,246,1)';if(wt===3)return 'border-left:4px solid rgba(139,92,246,1)';return '';};
-  const isDark=document.body.classList.contains('dark');
-  const tx=isDark?'#f0f4ff':'#0a0f1e';
-  const tk = `font-size:12px;font-weight:600;color:${tx};`;
+  const wtBg=(s,i)=>{const wt=getWt(s);if(wt===1)return i%2===0?'#f0f9ff':'#e0f2fe';if(wt===2)return i%2===0?'#f5f3ff':'#ede9fe';if(wt===3)return i%2===0?'#fdf4ff':'#fae8ff';return i%2===0?'#f8fafc':'#fff';};
+  const wtLeft=(s)=>{const wt=getWt(s);if(wt===1)return 'border-left:3px solid #2563eb';if(wt===2)return 'border-left:3px solid #8b5cf6';if(wt===3)return 'border-left:3px solid #ec4899';return 'border-left:3px solid #e2e8f0';};
   const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
-  tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtLeft(r.stuffing)}">
-    <td style="${tk}text-align:center">${i+1}</td>
-    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:${tx}">${escHtml(r.noLc)}</td>
-    <td style="${tk}font-family:'JetBrains Mono',monospace">${escHtml(r.noPolisi)}</td>
-    <td style="${tk}">${escHtml(r.ekspedisi)}</td>
-    <td style="${tk}">${escHtml(r.type)}</td>
-    <td style="${tk}font-family:'JetBrains Mono',monospace;text-align:center">${escHtml(r.bu)}</td>
-    <td style="${tk}color:${r.checkIn?'#15803d':'#6b7280'};font-weight:${r.checkIn?'800':'500'}">${r.checkIn||'—'}</td>
-    <td style="${tk}font-weight:800">${r.stuffing||'—'}</td>
-    <td>${
+  tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing,i)};${wtLeft(r.stuffing)};border-bottom:1px solid rgba(200,215,240,0.3);">
+    <td style="text-align:center;font-size:11px;color:#94a3b8;padding:9px 8px;">${i+1}</td>
+    <td style="font-weight:800;font-size:12px;color:#1e293b;padding:9px 10px;">${escHtml(r.noLc)}</td>
+    <td style="font-size:11.5px;color:#475569;padding:9px 10px;">${escHtml(r.noPolisi)}</td>
+    <td style="font-size:11.5px;color:#475569;padding:9px 10px;">${escHtml(r.ekspedisi)}</td>
+    <td style="font-size:11px;font-weight:600;color:#64748b;padding:9px 10px;text-align:center;">${escHtml(r.type)}</td>
+    <td style="font-size:11px;font-weight:700;color:#64748b;padding:9px 10px;text-align:center;">${escHtml(r.bu)}</td>
+    <td style="font-size:12px;font-weight:800;color:${r.checkIn?'#16a34a':'#94a3b8'};padding:9px 10px;text-align:center;">${r.checkIn||'—'}</td>
+    <td style="font-size:11.5px;font-weight:700;color:#1e293b;padding:9px 10px;text-align:center;">${r.stuffing||'—'}</td>
+    <td style="padding:7px 10px;text-align:center;">${
       r.updateUnload
         ? String(r.updateUnload).toUpperCase()==='FINISH'
           ? '<span class="badge badge-green">✅ FINISH</span>'
           : String(r.updateUnload).toUpperCase()==='PROSES'
           ? '<span class="badge badge-blue">⏳ PROSES</span>'
           : String(r.updateUnload).toUpperCase()==='ANTRI'
-          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(234,179,8,0.2);color:#92400e;border:1px solid rgba(234,179,8,0.4)">🕐 ANTRI</span>'
-          : escHtml(r.updateUnload)
-        : '<span style="color:#9ca3af;font-size:12px">—</span>'
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;background:rgba(234,179,8,0.15);color:#92400e;border:1px solid rgba(234,179,8,0.3)">🕐 ANTRI</span>'
+          : `<span style="font-size:11px;font-weight:700;padding:3px 10px;background:#f1f5f9;color:#475569;">${escHtml(r.updateUnload)}</span>`
+        : '<span style="color:#94a3b8;font-size:12px">—</span>'
     }</td>
-    <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:#9ca3af;font-size:12px">—</span>'}</td>
+    <td style="padding:7px 10px;text-align:center;">${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:#94a3b8;font-size:12px">—</span>'}</td>
   </tr>`).join('');
 }
 
