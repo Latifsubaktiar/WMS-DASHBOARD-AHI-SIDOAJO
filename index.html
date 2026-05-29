@@ -178,30 +178,75 @@
       </div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card blue-bar" id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;" title="Klik untuk lihat detail">
-        <div class="stat-icon" style="background:var(--accent-light)">📦</div>
-        <div class="stat-content"><div class="stat-label">Inbound Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--accent)">—</div><div class="stat-sub">Memuat data...</div></div>
-      </div>
-      <!-- STORING TODAY -->
-      <div class="stat-card green-bar" id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;" title="Klik untuk lihat detail">
-        <div class="stat-icon" style="background:var(--green-bg)">🏗️</div>
-        <div class="stat-content"><div class="stat-label">Storing Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--green)">—</div><div class="stat-sub">Memuat data...</div></div>
-      </div>
-      <!-- OUTBOUND TODAY -->
-      <div class="stat-card orange-bar" id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;" title="Klik untuk lihat detail">
-        <div class="stat-icon" style="background:var(--orange-bg)">🚚</div>
-        <div class="stat-content"><div class="stat-label">Outbound Today <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div><div class="stat-value" style="color:var(--orange)" id="outboundStatVal">—</div><div class="stat-sub" id="outboundStatSub">Memuat data...</div></div>
-      </div>
-      <!-- ✅ INVENTORY CONTROL — dynamic accuracy dari sheet, klik untuk detail -->
-      <div class="stat-card red-bar" id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;" title="Klik untuk lihat detail">
-        <div class="stat-icon" id="invControlIcon" style="background:var(--red-bg)">📋</div>
-        <div class="stat-content">
-          <div class="stat-label">Inventory Control <span style="font-size:9px;opacity:0.6">▼ klik detail</span></div>
-          <div class="stat-value" id="invAccuracyVal" style="color:var(--red)">—</div>
-          <div class="stat-sub" id="invAccuracySub"><span class="dn">Memuat data...</span></div>
+      <!-- INBOUND TODAY -->
+      <div id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;background:var(--card);border:1px solid rgba(37,99,235,0.15);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;gap:0;position:relative;overflow:hidden;transition:box-shadow 0.2s,transform 0.2s;box-shadow:0 1px 4px rgba(37,99,235,0.06);" onmouseover="this.style.boxShadow='0 8px 24px rgba(37,99,235,0.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(37,99,235,0.06)';this.style.transform='translateY(0)'">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:16px 16px 0 0;"></div>
+        <div style="position:absolute;bottom:-20px;right:-10px;width:80px;height:80px;border-radius:50%;background:rgba(37,99,235,0.06);pointer-events:none;"></div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1px;">Inbound Today</div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:500;">▼ Klik Detail</div>
+          </div>
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(37,99,235,0.08);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">📦</div>
         </div>
+        <div class="stat-value" style="font-size:36px;font-weight:900;color:#2563eb;letter-spacing:-1px;line-height:1;margin-bottom:10px;">—</div>
+        <div class="stat-sub" style="font-size:11px;color:#64748b;">Memuat data...</div>
+        <div style="margin-top:10px;height:1px;background:rgba(37,99,235,0.1);"></div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#2563eb;"></div><span style="font-size:10px;color:#2563eb;font-weight:600;">INBOUND</span></div>
+      </div>
+
+      <!-- STORING TODAY -->
+      <div id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;background:var(--card);border:1px solid rgba(5,150,105,0.15);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;gap:0;position:relative;overflow:hidden;transition:box-shadow 0.2s,transform 0.2s;box-shadow:0 1px 4px rgba(5,150,105,0.06);" onmouseover="this.style.boxShadow='0 8px 24px rgba(5,150,105,0.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(5,150,105,0.06)';this.style.transform='translateY(0)'">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#059669,#34d399);border-radius:16px 16px 0 0;"></div>
+        <div style="position:absolute;bottom:-20px;right:-10px;width:80px;height:80px;border-radius:50%;background:rgba(5,150,105,0.06);pointer-events:none;"></div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1px;">Storing Today</div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:500;">▼ Klik Detail</div>
+          </div>
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(5,150,105,0.08);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">🏗️</div>
+        </div>
+        <div class="stat-value" style="font-size:36px;font-weight:900;color:#059669;letter-spacing:-1px;line-height:1;margin-bottom:10px;">—</div>
+        <div class="stat-sub" style="font-size:11px;color:#64748b;">Memuat data...</div>
+        <div style="margin-top:10px;height:1px;background:rgba(5,150,105,0.1);"></div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#059669;"></div><span style="font-size:10px;color:#059669;font-weight:600;">STORING</span></div>
+      </div>
+
+      <!-- OUTBOUND TODAY -->
+      <div id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;background:var(--card);border:1px solid rgba(217,119,6,0.15);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;gap:0;position:relative;overflow:hidden;transition:box-shadow 0.2s,transform 0.2s;box-shadow:0 1px 4px rgba(217,119,6,0.06);" onmouseover="this.style.boxShadow='0 8px 24px rgba(217,119,6,0.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(217,119,6,0.06)';this.style.transform='translateY(0)'">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#d97706,#fbbf24);border-radius:16px 16px 0 0;"></div>
+        <div style="position:absolute;bottom:-20px;right:-10px;width:80px;height:80px;border-radius:50%;background:rgba(217,119,6,0.06);pointer-events:none;"></div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1px;">Outbound Today</div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:500;">▼ Klik Detail</div>
+          </div>
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(217,119,6,0.08);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">🚚</div>
+        </div>
+        <div id="outboundStatVal" class="stat-value" style="font-size:36px;font-weight:900;color:#d97706;letter-spacing:-1px;line-height:1;margin-bottom:10px;">—</div>
+        <div id="outboundStatSub" class="stat-sub" style="font-size:11px;color:#64748b;">Memuat data...</div>
+        <div style="margin-top:10px;height:1px;background:rgba(217,119,6,0.1);"></div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#d97706;"></div><span style="font-size:10px;color:#d97706;font-weight:600;">OUTBOUND</span></div>
+      </div>
+
+      <!-- INVENTORY CONTROL -->
+      <div id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;background:var(--card);border:1px solid rgba(16,185,129,0.15);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;gap:0;position:relative;overflow:hidden;transition:box-shadow 0.2s,transform 0.2s;box-shadow:0 1px 4px rgba(16,185,129,0.06);" onmouseover="this.style.boxShadow='0 8px 24px rgba(16,185,129,0.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(16,185,129,0.06)';this.style.transform='translateY(0)'">
+        <div id="invControlTopBar" style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#10b981,#6ee7b7);border-radius:16px 16px 0 0;"></div>
+        <div style="position:absolute;bottom:-20px;right:-10px;width:80px;height:80px;border-radius:50%;background:rgba(16,185,129,0.06);pointer-events:none;"></div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1px;">Inventory Control</div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:500;">▼ Klik Detail</div>
+          </div>
+          <div id="invControlIcon" style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,0.08);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">📋</div>
+        </div>
+        <div id="invAccuracyVal" class="stat-value" style="font-size:36px;font-weight:900;color:#10b981;letter-spacing:-1px;line-height:1;margin-bottom:10px;">—</div>
+        <div class="stat-sub" style="font-size:11px;color:#64748b;"><span id="invAccuracySub"><span class="dn">Memuat data...</span></span></div>
+        <div style="margin-top:10px;height:1px;background:rgba(16,185,129,0.1);"></div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#10b981;"></div><span style="font-size:10px;color:#10b981;font-weight:600;">ACCURACY</span></div>
       </div>
     </div>
+
 
     <!-- ═══ STORING DETAIL PANEL ═══ -->
     <div id="storingDetailPanel" style="display:none;margin-bottom:18px;">
