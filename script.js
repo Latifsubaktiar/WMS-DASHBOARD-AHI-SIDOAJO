@@ -702,7 +702,7 @@ async function fetchStoringStatCard() {
     const s = data.summary;
     const el = document.querySelector('#storingStatCard .stat-value');
     const sb = document.querySelector('#storingStatCard .stat-sub');
-    if (el) { el.textContent = s.total; el.style.color = 'var(--green)'; }
+    if (el) { el.textContent = s.total; el.style.color = '#db2777'; }
     if (sb) sb.innerHTML = `<span style="color:var(--green);font-weight:700">📦 ${s.sumPicked.toLocaleString()} Picked</span> &nbsp;<span class="dn">📋 ${s.sumSisa.toLocaleString()} Sisa</span>`;
     // update bar + footer
     const strPct = s.sumRelease>0 ? Math.round(s.sumPicked/s.sumRelease*100) : 0;
@@ -1669,20 +1669,25 @@ new Chart(document.getElementById('donutChart').getContext('2d'),{
   options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(17,24,39,0.9)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}%`},padding:10,cornerRadius:10}}}
 });
 
-// ── 3D TILT + BEAM on KPI cards ──
-['inboundStatCard','storingStatCard','outboundStatCard','invControlCard'].forEach(id=>{
+// ── BEAM on KPI cards ──
+const kpiBeams = {
+  inboundStatCard:  'rgba(59,130,246,0.35)',
+  storingStatCard:  'rgba(236,72,153,0.35)',
+  outboundStatCard: 'rgba(245,158,11,0.35)',
+  invControlCard:   'rgba(16,185,129,0.35)',
+};
+Object.entries(kpiBeams).forEach(([id, color]) => {
   const card = document.getElementById(id);
   if (!card) return;
-  // Create beam element
   const beam = document.createElement('div');
-  beam.style.cssText = 'position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.65),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:none;';
+  beam.style.cssText = `position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,${color},transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;`;
   card.appendChild(beam);
 
   card.addEventListener('mouseenter', () => {
     beam.style.transition = 'none';
     beam.style.left = '-100%';
-    void beam.offsetWidth; // force reflow
-    beam.style.transition = 'left 0.6s ease';
+    void beam.offsetWidth;
+    beam.style.transition = 'left 1.2s ease';
     beam.style.left = '160%';
   });
   card.addEventListener('mouseleave', () => {
