@@ -1669,12 +1669,26 @@ new Chart(document.getElementById('donutChart').getContext('2d'),{
   options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(17,24,39,0.9)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}%`},padding:10,cornerRadius:10}}}
 });
 
-// ── 3D TILT ──
+// ── 3D TILT + BEAM on KPI cards ──
 ['inboundStatCard','storingStatCard','outboundStatCard','invControlCard'].forEach(id=>{
   const card = document.getElementById(id);
   if (!card) return;
-  card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-0.5,y=(e.clientY-r.top)/r.height-0.5;card.style.transform=`perspective(600px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-4px) scale(1.02)`;});
-  card.addEventListener('mouseleave',()=>{card.style.transform='';});
+  // Create beam element
+  const beam = document.createElement('div');
+  beam.style.cssText = 'position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.65),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:none;';
+  card.appendChild(beam);
+
+  card.addEventListener('mouseenter', () => {
+    beam.style.transition = 'none';
+    beam.style.left = '-100%';
+    void beam.offsetWidth; // force reflow
+    beam.style.transition = 'left 0.6s ease';
+    beam.style.left = '160%';
+  });
+  card.addEventListener('mouseleave', () => {
+    beam.style.transition = 'none';
+    beam.style.left = '-100%';
+  });
 });
 
 // ── NAVIGATION ──
