@@ -47,15 +47,6 @@
 .progress-center { position:absolute !important; inset:0 !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; pointer-events:none; z-index:3; }
 .progress-pct { font-size:22px !important; font-weight:900 !important; line-height:1 !important; letter-spacing:-0.5px !important; }
 .progress-label { font-size:10px !important; color:#94a3b8 !important; margin-top:2px !important; }
-/* ── DONUT GLOW ── */
-@keyframes donutPulse { 0%,100%{opacity:0.4;filter:blur(4px);} 50%{opacity:0.85;filter:blur(2px);} }
-.donut-glow-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; }
-.donut-glow-wrap::after { content:''; position:absolute; inset:-4px; border-radius:50%; pointer-events:none; z-index:2; animation:donutPulse 2.5s ease-in-out infinite; }
-.donut-glow-blue::after   { box-shadow:0 0 0 2px rgba(96,165,250,0.5), 0 0 14px 3px rgba(37,99,235,0.25); }
-.donut-glow-green::after  { box-shadow:0 0 0 2px rgba(52,211,153,0.5), 0 0 14px 3px rgba(22,163,74,0.25); }
-.donut-glow-amber::after  { box-shadow:0 0 0 2px rgba(251,191,36,0.5), 0 0 14px 3px rgba(217,119,6,0.25); }
-.donut-glow-cyan::after   { box-shadow:0 0 0 2px rgba(34,211,238,0.5), 0 0 14px 3px rgba(6,182,212,0.25); }
-.donut-glow-purple::after { box-shadow:0 0 0 2px rgba(167,139,250,0.5), 0 0 14px 3px rgba(139,92,246,0.25); }
 @keyframes invBeam { 0%{left:-60%} 100%{left:120%} }
 @keyframes cardBeam { 0%{left:-80%} 100%{left:120%} }
 .card-stripe {position:absolute;top:0;left:0;width:100%;height:4px;overflow:hidden;}
@@ -495,7 +486,7 @@
         <div class="panel-charts-sticky" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.25);">
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:11.5px;font-weight:800;color:var(--text);text-align:center;">📥 Unloading</div>
-            <div class="donut-glow-wrap donut-glow-green" style="width:100px;height:100px;"><canvas id="chartUnloading"></canvas>
+            <div style="position:relative;width:100px;height:100px;"><canvas id="chartUnloading"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pctUnloading" style="font-size:18px;font-weight:900;color:var(--text)">—</div>
                 <div style="font-size:9px;color:var(--text-3)">Selesai</div>
@@ -505,7 +496,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:11.5px;font-weight:800;color:var(--text);text-align:center;">📊 Aktual Receive</div>
-            <div class="donut-glow-wrap donut-glow-cyan" style="width:100px;height:100px;"><canvas id="chartAktualRcv"></canvas>
+            <div style="position:relative;width:100px;height:100px;"><canvas id="chartAktualRcv"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pctAktualRcv" style="font-size:18px;font-weight:900;color:var(--text)">—</div>
                 <div style="font-size:9px;color:var(--text-3)">Selesai</div>
@@ -515,7 +506,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:11.5px;font-weight:800;color:var(--text);text-align:center;">🏬 Putaway Inbound</div>
-            <div class="donut-glow-wrap donut-glow-blue" style="width:100px;height:100px;"><canvas id="chartPutawayIn"></canvas>
+            <div style="position:relative;width:100px;height:100px;"><canvas id="chartPutawayIn"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pctPutawayIn" style="font-size:18px;font-weight:900;color:var(--text)">—</div>
                 <div style="font-size:9px;color:var(--text-3)">Selesai</div>
@@ -525,7 +516,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:11.5px;font-weight:800;color:var(--text);text-align:center;">📦 Putaway Storing</div>
-            <div class="donut-glow-wrap donut-glow-amber" style="width:100px;height:100px;"><canvas id="chartPutawayStr"></canvas>
+            <div style="position:relative;width:100px;height:100px;"><canvas id="chartPutawayStr"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pctPutawayStr" style="font-size:18px;font-weight:900;color:var(--text)">—</div>
                 <div style="font-size:9px;color:var(--text-3)">Selesai</div>
@@ -770,7 +761,7 @@
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
-            <div class="donut-glow-wrap donut-glow-blue" style="width:110px;height:110px;"><canvas id="dashInboundChart"></canvas></div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="dashInboundChart"></canvas></div>
             <div class="progress-center">
               <div class="progress-pct" id="dashInboundPct" style="color:#1e3a8a;">—</div>
               <div class="progress-label">Selesai</div>
@@ -801,7 +792,7 @@
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
-            <div class="donut-glow-wrap donut-glow-green" style="width:110px;height:110px;"><canvas id="dashStoringChart"></canvas></div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="dashStoringChart"></canvas></div>
             <div class="progress-center">
               <div class="progress-pct" id="dashStoringPct" style="color:#064e3b;">—</div>
               <div class="progress-label">Progres</div>
@@ -831,7 +822,7 @@
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
-            <div class="donut-glow-wrap donut-glow-amber" style="width:110px;height:110px;"><canvas id="dashOutboundChart"></canvas></div>
+            <div style="position:relative;width:110px;height:110px;"><canvas id="dashOutboundChart"></canvas></div>
             <div class="progress-center">
               <div class="progress-pct" id="dashOutboundPct" style="color:#78350f;">—</div>
               <div class="progress-label">Selesai</div>
