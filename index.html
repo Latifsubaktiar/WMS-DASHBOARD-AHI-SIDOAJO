@@ -26,8 +26,18 @@
 @keyframes nipSpin { to{transform:rotate(360deg)} }
 @keyframes invBeam { 0%{left:-60%} 100%{left:120%} }
 @keyframes cardBeam { 0%{left:-80%} 100%{left:120%} }
+@keyframes donutGlow { 0%,100%{box-shadow:0 0 8px 2px rgba(255,255,255,0.15),0 0 20px 4px var(--glow-color,rgba(37,99,235,0.2));} 50%{box-shadow:0 0 16px 6px rgba(255,255,255,0.25),0 0 40px 10px var(--glow-color,rgba(37,99,235,0.35));} }
+@keyframes donutSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
 .card-stripe {position:absolute;top:0;left:0;width:100%;height:4px;overflow:hidden;}
 .card-stripe::after {content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.5s ease-in-out infinite;}
+.donut-glow-wrap {position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.donut-glow-wrap::before {content:'';position:absolute;inset:-6px;border-radius:50%;animation:donutGlow 2.5s ease-in-out infinite;pointer-events:none;z-index:0;}
+.donut-glow-wrap canvas {position:relative;z-index:1;}
+.donut-glow-blue::before  {--glow-color:rgba(37,99,235,0.3);}
+.donut-glow-green::before {--glow-color:rgba(22,163,74,0.3);}
+.donut-glow-amber::before {--glow-color:rgba(217,119,6,0.3);}
+.donut-glow-cyan::before  {--glow-color:rgba(6,182,212,0.3);}
+.donut-glow-purple::before{--glow-color:rgba(139,92,246,0.3);}
 .login-found-box { display:none; flex-direction:column; align-items:center; gap:5px; padding:14px; background:var(--green-bg); border:1px solid rgba(22,163,74,0.25); border-radius:var(--r-sm); margin-top:14px; }
 .login-found-box.show { display:flex; }
 .login-found-box .lf-tag { font-size:11px; color:var(--green); font-weight:800; text-transform:uppercase; letter-spacing:1px; }
@@ -463,7 +473,7 @@
         <div class="panel-charts-sticky" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.25);">
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:11.5px;font-weight:800;color:var(--text);text-align:center;">📥 Unloading</div>
-            <div style="position:relative;width:100px;height:100px;"><canvas id="chartUnloading"></canvas>
+            <div class="donut-glow-wrap donut-glow-green" style="width:100px;height:100px;"><canvas id="chartUnloading"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pctUnloading" style="font-size:18px;font-weight:900;color:var(--text)">—</div>
                 <div style="font-size:9px;color:var(--text-3)">Selesai</div>
@@ -473,7 +483,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:11.5px;font-weight:800;color:var(--text);text-align:center;">📊 Aktual Receive</div>
-            <div style="position:relative;width:100px;height:100px;"><canvas id="chartAktualRcv"></canvas>
+            <div class="donut-glow-wrap donut-glow-cyan" style="width:100px;height:100px;"><canvas id="chartAktualRcv"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pctAktualRcv" style="font-size:18px;font-weight:900;color:var(--text)">—</div>
                 <div style="font-size:9px;color:var(--text-3)">Selesai</div>
@@ -483,7 +493,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:11.5px;font-weight:800;color:var(--text);text-align:center;">🏬 Putaway Inbound</div>
-            <div style="position:relative;width:100px;height:100px;"><canvas id="chartPutawayIn"></canvas>
+            <div class="donut-glow-wrap donut-glow-blue" style="width:100px;height:100px;"><canvas id="chartPutawayIn"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pctPutawayIn" style="font-size:18px;font-weight:900;color:var(--text)">—</div>
                 <div style="font-size:9px;color:var(--text-3)">Selesai</div>
@@ -493,7 +503,7 @@
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:11.5px;font-weight:800;color:var(--text);text-align:center;">📦 Putaway Storing</div>
-            <div style="position:relative;width:100px;height:100px;"><canvas id="chartPutawayStr"></canvas>
+            <div class="donut-glow-wrap donut-glow-amber" style="width:100px;height:100px;"><canvas id="chartPutawayStr"></canvas>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pctPutawayStr" style="font-size:18px;font-weight:900;color:var(--text)">—</div>
                 <div style="font-size:9px;color:var(--text-3)">Selesai</div>
@@ -738,7 +748,7 @@
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
-            <canvas id="dashInboundChart"></canvas>
+            <div class="donut-glow-wrap donut-glow-blue" style="width:110px;height:110px;"><canvas id="dashInboundChart"></canvas></div>
             <div class="progress-center">
               <div class="progress-pct" id="dashInboundPct" style="color:#1e3a8a;">—</div>
               <div class="progress-label">Selesai</div>
@@ -769,7 +779,7 @@
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
-            <canvas id="dashStoringChart"></canvas>
+            <div class="donut-glow-wrap donut-glow-green" style="width:110px;height:110px;"><canvas id="dashStoringChart"></canvas></div>
             <div class="progress-center">
               <div class="progress-pct" id="dashStoringPct" style="color:#064e3b;">—</div>
               <div class="progress-label">Progres</div>
@@ -799,7 +809,7 @@
         </div>
         <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
           <div class="progress-chart-wrap">
-            <canvas id="dashOutboundChart"></canvas>
+            <div class="donut-glow-wrap donut-glow-amber" style="width:110px;height:110px;"><canvas id="dashOutboundChart"></canvas></div>
             <div class="progress-center">
               <div class="progress-pct" id="dashOutboundPct" style="color:#78350f;">—</div>
               <div class="progress-label">Selesai</div>
@@ -819,61 +829,67 @@
 
     <div class="bottom-grid">
       <!-- TABEL INBOUND + OUTBOUND TAB -->
-      <div class="card" style="overflow:hidden;">
-        <div class="card-header" style="flex-direction:column;align-items:flex-start;gap:0;padding-bottom:0;">
-          <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding-bottom:10px;">
-            <span class="card-title"><span class="live-dot"></span>Data Hari Ini</span>
-            <span id="dashTableCount" style="font-size:11px;color:var(--text-3);font-weight:600">Memuat...</span>
+      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="height:4px;background:linear-gradient(90deg,#2563eb,#059669,#d97706);position:relative;overflow:hidden;flex-shrink:0;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+        <div style="padding:14px 20px 0;border-bottom:1px solid #f1f5f9;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="live-dot"></span>
+              <span style="font-size:13px;font-weight:800;color:#1e293b;">Data Hari Ini</span>
+            </div>
+            <span id="dashTableCount" style="font-size:11px;color:#94a3b8;font-weight:600;">Memuat...</span>
           </div>
-          <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,215,240,0.3);width:100%;">
-            <button id="tabBtnInbound" onclick="switchDashTab('inbound')" style="padding:8px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);transition:all 0.2s;">📦 Inbound</button>
-            <button id="tabBtnStoring" onclick="switchDashTab('storing')" style="padding:8px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">🏗️ Storing</button>
-            <button id="tabBtnOutbound" onclick="switchDashTab('outbound')" style="padding:8px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">🚚 Outbound</button>
+          <div style="display:flex;gap:0;">
+            <button id="tabBtnInbound" onclick="switchDashTab('inbound')" style="padding:8px 18px;font-size:12px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid #2563eb;background:none;cursor:pointer;color:#2563eb;transition:all 0.2s;">📦 Inbound</button>
+            <button id="tabBtnStoring" onclick="switchDashTab('storing')" style="padding:8px 18px;font-size:12px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:#94a3b8;transition:all 0.2s;">🏗️ Storing</button>
+            <button id="tabBtnOutbound" onclick="switchDashTab('outbound')" style="padding:8px 18px;font-size:12px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:#94a3b8;transition:all 0.2s;">🚚 Outbound</button>
           </div>
         </div>
         <!-- INBOUND TABLE -->
         <div id="tableInboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;">
-          <table>
-            <thead><tr><th>No</th><th>No LC</th><th>No Polisi</th><th>Ekspedisi</th><th>Type</th><th>BU</th><th>Check In</th><th>Stuffing</th><th>Hit/Miss</th></tr></thead>
-            <tbody id="dashInboundBody"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
-          </table>
+          <div style="background:#1e293b;padding:0;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#1e293b;"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO LC</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO POLISI</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">EKSPEDISI</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TYPE</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;">CHECK IN</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">STUFFING</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">HIT/MISS</th></tr></thead>
+          <tbody id="dashInboundBody"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody></table></div>
         </div>
         <!-- STORING TABLE -->
         <div id="tableStoringWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;display:none;">
-          <table>
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
             <thead>
-              <tr>
-                <th rowspan="2" style="text-align:center">No</th>
-                <th rowspan="2">No LC</th>
-                <th rowspan="2" style="text-align:center">Batch</th>
-                <th rowspan="2">Tujuan</th>
-                <th rowspan="2">Tipe Armada</th>
-                <th rowspan="2" style="text-align:center">Kap.</th>
-                <th colspan="2" style="text-align:center;background:rgba(37,99,235,0.1);color:#3b82f6">RELEASE</th>
-                <th colspan="1" style="text-align:center;background:rgba(139,92,246,0.1);color:#8b5cf6">ASTOR</th>
-                <th colspan="2" style="text-align:center;background:rgba(22,163,74,0.1);color:#16a34a">PICKED</th>
-                <th colspan="1" style="text-align:center;background:rgba(239,68,68,0.1);color:#ef4444">SISA</th>
-                <th colspan="2" style="text-align:center;background:rgba(16,185,129,0.1);color:#10b981">PENCAPAIAN PICKING</th>
+              <tr style="background:#1e293b;">
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">No</th>
+                <th rowspan="2" style="padding:7px 8px;font-size:10px;font-weight:700;color:#94a3b8;">No LC</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">Batch</th>
+                <th rowspan="2" style="padding:7px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Tujuan</th>
+                <th rowspan="2" style="padding:7px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Tipe Armada</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">Kap.</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;border-bottom:1px solid rgba(37,99,235,0.3);">RELEASE</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;border-bottom:1px solid rgba(139,92,246,0.3);">ASTOR</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;border-bottom:1px solid rgba(22,163,74,0.3);">PICKED</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#f87171;border-bottom:1px solid rgba(239,68,68,0.3);">SISA</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#34d399;border-bottom:1px solid rgba(16,185,129,0.3);">PENCAPAIAN PICKING</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;border-bottom:1px solid rgba(245,158,11,0.3);">SISA 99%</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#c4b5fd;border-bottom:1px solid rgba(99,102,241,0.3);">STAGED DS</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;border-bottom:1px solid rgba(59,130,246,0.3);">PENCAPAIAN DS</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fde68a;border-bottom:1px solid rgba(234,179,8,0.3);">% KAP</th>
                 <th colspan="1" style="text-align:center;background:rgba(245,158,11,0.1);color:#f59e0b">SISA 99%</th>
                 <th colspan="2" style="text-align:center;background:rgba(99,102,241,0.1);color:#6366f1">STAGED DS</th>
                 <th colspan="2" style="text-align:center;background:rgba(59,130,246,0.1);color:#3b82f6">PENCAPAIAN DS</th>
                 <th colspan="1" style="text-align:center;background:rgba(234,179,8,0.1);color:#ca8a04">% KAP</th>
               </tr>
-              <tr>
-                <th style="text-align:center;background:rgba(37,99,235,0.05)">Case</th>
-                <th style="text-align:center;background:rgba(37,99,235,0.05)">Cbm</th>
-                <th style="text-align:center;background:rgba(139,92,246,0.05)">Cbm</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.05)">Case</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.05)">Cbm</th>
-                <th style="text-align:center;background:rgba(239,68,68,0.05)">Case</th>
-                <th style="text-align:center;background:rgba(16,185,129,0.05)">Case</th>
-                <th style="text-align:center;background:rgba(16,185,129,0.05)">Cbm</th>
-                <th style="text-align:center;background:rgba(245,158,11,0.05)">Case</th>
-                <th style="text-align:center;background:rgba(99,102,241,0.05)">Case</th>
-                <th style="text-align:center;background:rgba(99,102,241,0.05)">Cbm</th>
-                <th style="text-align:center;background:rgba(59,130,246,0.05)">Case</th>
-                <th style="text-align:center;background:rgba(59,130,246,0.05)">Cbm</th>
-                <th style="text-align:center;background:rgba(234,179,8,0.05)">%</th>
+              <tr style="background:#2d3748;">
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#c4b5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#f87171;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#34d399;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#34d399;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#c4b5fd;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#c4b5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fde68a;">%</th>
               </tr>
             </thead>
             <tbody id="dashStoringBody"><tr><td colspan="20" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
@@ -881,8 +897,8 @@
         </div>
         <!-- OUTBOUND TABLE -->
         <div id="tableOutboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;display:none;">
-          <table>
-            <thead><tr><th>No</th><th>Penyelesaian</th><th>Trans No</th><th>%PC</th><th>%STG</th><th>%LD</th><th>Shipping Line</th><th>BU</th><th>Carrier ID</th><th>Stuffing Time</th><th>Jenis Armada</th><th>No Pol</th><th>Status</th></tr></thead>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#1e293b;"><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">No</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Penyelesaian</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Trans No</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">%PC</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fb923c;">%STG</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;">%LD</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Shipping Line</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Carrier ID</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;">Stuffing Time</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Jenis Armada</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">No Pol</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">Status</th></tr></thead>
             <tbody id="dashOutboundBody"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
           </table>
         </div>
