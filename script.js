@@ -998,17 +998,29 @@ async function fetchInlineProses() {
     const belumArmada =inboundRows.filter(r=>r&&(!r.updateUnload||String(r.updateUnload).trim()==='')).length;
     const totalArmada =inboundRows.length||0;
     const pctUnload=totalArmada>0?Math.round((finishArmada/totalArmada)*100):(s&&s.pctUnloading||0);
-    document.getElementById('pctUnloading').textContent=pctUnload+'%';
+    document.getElementById('pctUnloading').textContent='';
     document.getElementById('infoUnloading') && (document.getElementById('infoUnloading').textContent='');
     // Mini boxes
     const mf=document.getElementById('inbMiniFinish'); if(mf) mf.textContent=finishArmada;
     const mp=document.getElementById('inbMiniProses'); if(mp) mp.textContent=prosesArmada;
     const ma=document.getElementById('inbMiniAntri');  if(ma) ma.textContent=antriArmada;
     const mb=document.getElementById('inbMiniBelum');  if(mb) mb.textContent=belumArmada;
-    // Pie chart - hanya Finish (satu warna hijau)
-    makeSVGDonut('chartUnloading', pctUnload, '#16a34a');
-    const bu=document.getElementById('barUnloading'); if(bu) setTimeout(()=>bu.style.width=pctUnload+'%',300);
+    // Pie chart dengan % di dalam
+    const unEl=document.getElementById('chartUnloading');
+    if(unEl){
+      const r=26,cx=32,cy=32,circ=2*Math.PI*r;
+      const dash=Math.min(pctUnload,100)/100*circ;
+      unEl.innerHTML=`<svg width="72" height="72" viewBox="0 0 64 64">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="7"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#16a34a" stroke-width="7"
+          stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
+          stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+        <text x="${cx}" y="${cy-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="#16a34a">${pctUnload}%</text>
+        <text x="${cx}" y="${cy+9}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Selesai</text>
+      </svg>`;
+    }
     const fu=document.getElementById('pctUnloadingFoot'); if(fu) fu.textContent=pctUnload+'%';
+    const bu=document.getElementById('barUnloading'); if(bu) setTimeout(()=>bu.style.width=pctUnload+'%',300);
 
     // % Aktual Receive = avgPctAkt dari GAS
     const pctAkt=(s&&s.avgPctAkt)||0;
