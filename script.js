@@ -992,10 +992,10 @@ async function fetchInlineProses() {
     };
 
     const inboundRows=window._inboundRows||[];
-    const finishArmada=inboundRows.filter(r=>r&&r.status&&['DONE','FINISH'].includes(String(r.status).toUpperCase())).length;
-    const prosesArmada=inboundRows.filter(r=>r&&r.status&&String(r.status).toUpperCase()==='PROSES').length;
-    const antriArmada =inboundRows.filter(r=>r&&r.status&&String(r.status).toUpperCase()==='ANTRI').length;
-    const belumArmada =inboundRows.filter(r=>r&&(!r.status||r.status===''||String(r.status).trim()==='')).length;
+    const finishArmada=inboundRows.filter(r=>r&&r.updateUnload&&['DONE','FINISH'].includes(String(r.updateUnload).toUpperCase())).length;
+    const prosesArmada=inboundRows.filter(r=>r&&r.updateUnload&&String(r.updateUnload).toUpperCase()==='PROSES').length;
+    const antriArmada =inboundRows.filter(r=>r&&r.updateUnload&&String(r.updateUnload).toUpperCase()==='ANTRI').length;
+    const belumArmada =inboundRows.filter(r=>r&&(!r.updateUnload||String(r.updateUnload).trim()==='')).length;
     const totalArmada =inboundRows.length||0;
     const pctUnload=totalArmada>0?Math.round((finishArmada/totalArmada)*100):(s&&s.pctUnloading||0);
     document.getElementById('pctUnloading').textContent=pctUnload+'%';
