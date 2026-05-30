@@ -605,17 +605,26 @@
             <div style="height:3px;background:#10b981;"></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.18),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 3.5s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <div style="width:30px;height:30px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;">📊</div>
-                <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
-                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pctAktualRcv" style="font-size:16px;font-weight:900;color:#059669;line-height:1;">—</div>
-                    <div style="font-size:8px;color:#94a3b8;">Selesai</div>
-                  </div>
+                <div>
+                  <div style="width:30px;height:30px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:6px;">📊</div>
+                  <div style="font-size:13px;font-weight:900;color:#1e293b;">Aktual Receive</div>
+                  <div id="pctAktualRcv" style="display:none;"></div>
+                </div>
+                <div id="chartAktualRcv" style="width:72px;height:72px;flex-shrink:0;"></div>
+              </div>
+              <!-- Mini boxes QTY & LPN -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#059669;text-transform:uppercase;">📦 QTY</div>
+                  <div id="aktQtyBox" style="font-size:14px;font-weight:900;color:#059669;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">🔢 LPN</div>
+                  <div id="aktLpnBox" style="font-size:14px;font-weight:900;color:#2563eb;line-height:1.1;">—</div>
                 </div>
               </div>
-              <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:2px;">Aktual Receive</div>
-              <div id="infoAktualRcv" style="font-size:9.5px;color:#94a3b8;flex:1;"></div>
-              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barAktualRcv" style="height:100%;background:#10b981;width:0%;transition:width 1s;"></div></div>
+              <div id="infoAktualRcv" style="display:none;"></div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barAktualRcv" style="height:100%;background:#10b981;width:0%;transition:width 1s;"></div></div>
             </div>
             <div style="display:flex;justify-content:space-between;padding:7px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
               <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AKTUAL RCV</span>
@@ -628,17 +637,30 @@
             <div style="height:3px;background:#8b5cf6;"></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.18),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <div style="width:30px;height:30px;background:#f3e8ff;display:flex;align-items:center;justify-content:center;font-size:15px;">🏬</div>
-                <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
-                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pctPutawayIn" style="font-size:16px;font-weight:900;color:#7c3aed;line-height:1;">—</div>
-                    <div style="font-size:8px;color:#94a3b8;">Selesai</div>
-                  </div>
+                <div>
+                  <div style="width:30px;height:30px;background:#f3e8ff;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:6px;">🏬</div>
+                  <div style="font-size:13px;font-weight:900;color:#1e293b;">Putaway Inbound</div>
+                  <div id="pctPutawayIn" style="display:none;"></div>
+                </div>
+                <div id="chartPutawayIn" style="width:72px;height:72px;flex-shrink:0;"></div>
+              </div>
+              <!-- Mini boxes QTY, LPN, SISA -->
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#f5f3ff;border:1px solid #ddd6fe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#7c3aed;text-transform:uppercase;">📦 QTY</div>
+                  <div id="putInQtyBox" style="font-size:13px;font-weight:900;color:#7c3aed;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">🔢 LPN</div>
+                  <div id="putInLpnBox" style="font-size:13px;font-weight:900;color:#2563eb;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">📋 SISA</div>
+                  <div id="putInSisaBox" style="font-size:13px;font-weight:900;color:#dc2626;line-height:1.1;">—</div>
                 </div>
               </div>
-              <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:2px;">Putaway Inbound</div>
-              <div id="infoPutawayIn" style="font-size:9.5px;color:#94a3b8;flex:1;">—</div>
-              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPutawayIn" style="height:100%;background:#8b5cf6;width:0%;transition:width 1s;"></div></div>
+              <div id="infoPutawayIn" style="display:none;"></div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barPutawayIn" style="height:100%;background:#8b5cf6;width:0%;transition:width 1s;"></div></div>
             </div>
             <div style="display:flex;justify-content:space-between;padding:7px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
               <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">PUTAWAY IN</span>
@@ -651,17 +673,30 @@
             <div style="height:3px;background:#f59e0b;"></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.18),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4.5s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <div style="width:30px;height:30px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;">📦</div>
-                <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
-                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pctPutawayStr" style="font-size:16px;font-weight:900;color:#d97706;line-height:1;">—</div>
-                    <div style="font-size:8px;color:#94a3b8;">Selesai</div>
-                  </div>
+                <div>
+                  <div style="width:30px;height:30px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:6px;">📦</div>
+                  <div style="font-size:13px;font-weight:900;color:#1e293b;">Putaway Storing</div>
+                  <div id="pctPutawayStr" style="display:none;"></div>
+                </div>
+                <div id="chartPutawayStr" style="width:72px;height:72px;flex-shrink:0;"></div>
+              </div>
+              <!-- Mini boxes QTY, LPN, SISA -->
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#fffbeb;border:1px solid #fde68a;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#d97706;text-transform:uppercase;">📦 QTY</div>
+                  <div id="putStrQtyBox" style="font-size:13px;font-weight:900;color:#d97706;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">🔢 LPN</div>
+                  <div id="putStrLpnBox" style="font-size:13px;font-weight:900;color:#2563eb;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">📋 SISA</div>
+                  <div id="putStrSisaBox" style="font-size:13px;font-weight:900;color:#dc2626;line-height:1.1;">—</div>
                 </div>
               </div>
-              <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:2px;">Putaway Storing</div>
-              <div id="infoPutawayStr" style="font-size:9.5px;color:#94a3b8;flex:1;">—</div>
-              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPutawayStr" style="height:100%;background:#f59e0b;width:0%;transition:width 1s;"></div></div>
+              <div id="infoPutawayStr" style="display:none;"></div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barPutawayStr" style="height:100%;background:#f59e0b;width:0%;transition:width 1s;"></div></div>
             </div>
             <div style="display:flex;justify-content:space-between;padding:7px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
               <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">PUTAWAY STR</span>
