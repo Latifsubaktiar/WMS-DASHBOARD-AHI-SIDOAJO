@@ -1367,20 +1367,24 @@ function renderInventoryPanel(data) {
 
   if (kpiRow) {
     kpiRow.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.25);';
-    kpiRow.innerHTML = kpis.map(k => `
-      <div style="background:var(--bg);border:1px solid rgba(200,215,240,0.25);border-top:3px solid ${k.color};border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div style="font-size:9px;font-weight:700;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase;">${k.label}</div>
-          <div style="font-size:14px;line-height:1;">${k.icon}</div>
+    kpiRow.innerHTML = kpis.map((k,i) => `
+      <div style="background:linear-gradient(160deg,#fff 55%,${k.color}18 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+        <div style="height:3px;background:${k.color};position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:kpiBodyBeam ${3+i*0.4}s ease-in-out infinite;"></div>
         </div>
-        <div style="font-size:${k.val.length>8?'17px':'21px'};font-weight:900;color:${k.color};line-height:1.1;letter-spacing:-0.5px;margin:3px 0 1px;">${k.val}</div>
-        <div style="display:flex;align-items:center;gap:3px;margin-bottom:7px;">
-          <div style="width:16px;height:2px;background:${k.color};border-radius:2px;"></div>
-          <div style="font-size:8.5px;color:${k.color};font-weight:700;text-transform:uppercase;letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${k.label}</div>
+        <div style="padding:11px 12px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);transform:skewX(-15deg);animation:kpiBodyBeam ${3.5+i*0.4}s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+            <div style="font-size:9px;font-weight:700;color:#64748b;letter-spacing:0.1em;text-transform:uppercase;">${k.label}</div>
+            <div style="font-size:14px;line-height:1;">${k.icon}</div>
+          </div>
+          <div style="font-size:${k.val.length>8?'17px':'22px'};font-weight:900;color:${k.color};line-height:1;letter-spacing:-0.5px;margin-bottom:3px;">${k.val}</div>
+          <div style="font-size:8.5px;color:${k.color};font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">— ${k.label}</div>
+          <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:auto;"><div style="height:100%;background:${k.color};width:100%;"></div></div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:9.5px;border-top:1px solid rgba(200,215,240,0.2);padding-top:6px;gap:4px;">
-          <div><div style="color:var(--text-3);margin-bottom:1px;">${k.sub1l}</div><div style="font-weight:700;color:var(--text-2);white-space:nowrap;">${k.sub1v}</div></div>
-          <div style="text-align:right;flex-shrink:0;"><div style="color:var(--text-3);margin-bottom:1px;">${k.sub2l}</div><div style="font-weight:700;color:var(--text-2);white-space:nowrap;">${k.sub2v}</div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;padding:6px 12px;background:#f8fafc;border-top:1px solid #f1f5f9;">
+          <div><div style="color:#94a3b8;margin-bottom:1px;">${k.sub1l}</div><div style="font-weight:700;color:#475569;">${k.sub1v}</div></div>
+          <div style="text-align:right;"><div style="color:#94a3b8;margin-bottom:1px;">${k.sub2l}</div><div style="font-weight:700;color:#475569;">${k.sub2v}</div></div>
         </div>
       </div>`).join('');
   }
