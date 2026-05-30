@@ -778,17 +778,17 @@ function renderStoringPanel(data) {
 
   renderStoringTable(data.data);
 
-  // Beam kilat pink pada 3 KPI card storing
+  // Beam kilat pink otomatis loop seperti Inbound panel
   setTimeout(()=>{
+    const speeds = ['3s','3.5s','4s'];
     document.querySelectorAll('#storingDetailPanel [style*="overflow:hidden;box-shadow"]').forEach((card,i)=>{
       if(card.querySelector('.store-beam')) return;
       const b=document.createElement('div');
       b.className='store-beam';
-      b.style.cssText='position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;';
+      b.style.cssText=`position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.18),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam ${speeds[i]||'3.5s'} ease-in-out infinite;`;
       card.style.position='relative';
+      card.style.overflow='hidden';
       card.appendChild(b);
-      card.addEventListener('mouseenter',()=>{b.style.transition='none';b.style.left='-100%';void b.offsetWidth;b.style.transition='left 1.2s ease';b.style.left='160%';});
-      card.addEventListener('mouseleave',()=>{b.style.transition='none';b.style.left='-100%';});
     });
   },300);
 }
