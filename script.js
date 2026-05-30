@@ -1022,30 +1022,50 @@ async function fetchInlineProses() {
     const fu=document.getElementById('pctUnloadingFoot'); if(fu) fu.textContent=pctUnload+'%';
     const bu=document.getElementById('barUnloading'); if(bu) setTimeout(()=>bu.style.width=pctUnload+'%',300);
 
-    // % Aktual Receive = avgPctAkt dari GAS
+    // % Aktual Receive
     const pctAkt=(s&&s.avgPctAkt)||0;
-    document.getElementById('pctAktualRcv').textContent=pctAkt+'%';
-    document.getElementById('infoAktualRcv').textContent='';
-    makeSVGDonut('chartAktualRcv',pctAkt,'#059669');
+    document.getElementById('pctAktualRcv') && (document.getElementById('pctAktualRcv').textContent='');
+    // mini boxes aktual
+    const sumAktQty=inboundRows.reduce((a,r)=>a+(parseFloat(r.aktQty)||0),0);
+    const sumAktLpn=inboundRows.reduce((a,r)=>a+(parseFloat(r.aktLpn)||0),0);
+    const aqb=document.getElementById('aktQtyBox'); if(aqb) aqb.textContent=sumAktQty.toLocaleString('id-ID');
+    const alb=document.getElementById('aktLpnBox'); if(alb) alb.textContent=sumAktLpn.toLocaleString('id-ID');
+    // chart aktual
+    const aktEl=document.getElementById('chartAktualRcv');
+    if(aktEl){const r2=26,cx2=32,cy2=32,c2=2*Math.PI*r2,d2=Math.min(pctAkt,100)/100*c2;aktEl.innerHTML=`<svg width="72" height="72" viewBox="0 0 64 64"><circle cx="${cx2}" cy="${cy2}" r="${r2}" fill="none" stroke="#e2e8f0" stroke-width="7"/><circle cx="${cx2}" cy="${cy2}" r="${r2}" fill="none" stroke="#059669" stroke-width="7" stroke-dasharray="${d2.toFixed(2)} ${c2.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${cx2} ${cy2})"/><text x="${cx2}" y="${cy2-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="#059669">${pctAkt}%</text><text x="${cx2}" y="${cy2+9}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Selesai</text></svg>`;}
     const ba=document.getElementById('barAktualRcv'); if(ba) setTimeout(()=>ba.style.width=pctAkt+'%',300);
     const fa=document.getElementById('pctAktualRcvFoot'); if(fa) fa.textContent=pctAkt+'%';
 
     // % Putaway Inbound = LPN Putaway IN / LPN Aktual Receive
     const sumLpnAkt = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.aktLpn)||0),0);
     const sumLpnPutIn = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putInLpn)||0),0);
+    const sumQtyPutIn = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putInQty)||0),0);
+    const sumSisaPutIn = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.sisaInLpn)||0),0);
     const pctPutIn = sumLpnAkt>0 ? Math.round(sumLpnPutIn/sumLpnAkt*100) : (s&&s.avgPctPutIn2)||0;
-    document.getElementById('pctPutawayIn').textContent=pctPutIn+'%';
-    document.getElementById('infoPutawayIn').textContent=`Sisa: ${Number(s&&s.sumSisaIn||0).toLocaleString()} LPN`;
-    makeSVGDonut('chartPutawayIn',pctPutIn,'#7c3aed');
+    document.getElementById('pctPutawayIn') && (document.getElementById('pctPutawayIn').textContent='');
+    // mini boxes putIn
+    const piqb=document.getElementById('putInQtyBox'); if(piqb) piqb.textContent=sumQtyPutIn.toLocaleString('id-ID');
+    const pilb=document.getElementById('putInLpnBox'); if(pilb) pilb.textContent=sumLpnPutIn.toLocaleString('id-ID');
+    const pisb=document.getElementById('putInSisaBox'); if(pisb) pisb.textContent=sumSisaPutIn.toLocaleString('id-ID');
+    // chart putIn
+    const piEl=document.getElementById('chartPutawayIn');
+    if(piEl){const r3=26,cx3=32,cy3=32,c3=2*Math.PI*r3,d3=Math.min(pctPutIn,100)/100*c3;piEl.innerHTML=`<svg width="72" height="72" viewBox="0 0 64 64"><circle cx="${cx3}" cy="${cy3}" r="${r3}" fill="none" stroke="#e2e8f0" stroke-width="7"/><circle cx="${cx3}" cy="${cy3}" r="${r3}" fill="none" stroke="#7c3aed" stroke-width="7" stroke-dasharray="${d3.toFixed(2)} ${c3.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${cx3} ${cy3})"/><text x="${cx3}" y="${cy3-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="#7c3aed">${pctPutIn}%</text><text x="${cx3}" y="${cy3+9}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Selesai</text></svg>`;}
     const bpi=document.getElementById('barPutawayIn'); if(bpi) setTimeout(()=>bpi.style.width=Math.min(pctPutIn,100)+'%',300);
     const fpi=document.getElementById('pctPutawayInFoot'); if(fpi) fpi.textContent=pctPutIn+'%';
 
     // % Putaway Storing = LPN Putaway STR / LPN Putaway IN
     const sumLpnPutStr = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putStrLpn)||0),0);
+    const sumQtyPutStr = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putStrQty)||0),0);
+    const sumSisaPutStr = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.sisaStrLpn)||0),0);
     const pctPutStr = sumLpnPutIn>0 ? Math.round(sumLpnPutStr/sumLpnPutIn*100) : (s&&s.avgPctPutStr)||0;
-    document.getElementById('pctPutawayStr').textContent=pctPutStr+'%';
-    document.getElementById('infoPutawayStr').textContent=`Sisa: ${Number(s&&s.sumSisaStr||0).toLocaleString()} LPN`;
-    makeSVGDonut('chartPutawayStr',pctPutStr,'#d97706');
+    document.getElementById('pctPutawayStr') && (document.getElementById('pctPutawayStr').textContent='');
+    // mini boxes putStr
+    const psqb=document.getElementById('putStrQtyBox'); if(psqb) psqb.textContent=sumQtyPutStr.toLocaleString('id-ID');
+    const pslb=document.getElementById('putStrLpnBox'); if(pslb) pslb.textContent=sumLpnPutStr.toLocaleString('id-ID');
+    const pssb=document.getElementById('putStrSisaBox'); if(pssb) pssb.textContent=sumSisaPutStr.toLocaleString('id-ID');
+    // chart putStr
+    const psEl=document.getElementById('chartPutawayStr');
+    if(psEl){const r4=26,cx4=32,cy4=32,c4=2*Math.PI*r4,d4=Math.min(pctPutStr,100)/100*c4;psEl.innerHTML=`<svg width="72" height="72" viewBox="0 0 64 64"><circle cx="${cx4}" cy="${cy4}" r="${r4}" fill="none" stroke="#e2e8f0" stroke-width="7"/><circle cx="${cx4}" cy="${cy4}" r="${r4}" fill="none" stroke="#d97706" stroke-width="7" stroke-dasharray="${d4.toFixed(2)} ${c4.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${cx4} ${cy4})"/><text x="${cx4}" y="${cy4-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="#d97706">${pctPutStr}%</text><text x="${cx4}" y="${cy4+9}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Selesai</text></svg>`;}
     const bps=document.getElementById('barPutawayStr'); if(bps) setTimeout(()=>bps.style.width=Math.min(pctPutStr,100)+'%',300);
     const fps=document.getElementById('pctPutawayStrFoot'); if(fps) fps.textContent=pctPutStr+'%';
 
