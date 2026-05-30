@@ -738,32 +738,43 @@ function renderStoringPanel(data) {
   storingLoaded = true;
   const s = data.summary;
   const isDark = document.body.classList.contains('dark');
-  const border = isDark ? '#060912' : '#ffffff';
 
   document.getElementById('storingSubtitle').textContent = `Total: ${s.total} LC/PO | Release: ${s.sumRelease.toLocaleString()} Case`;
   document.getElementById('storingFooter').textContent = s.total + ' LC/PO terdaftar';
 
-  const makeDonut = (id, pct, color) => {
-    const el = document.getElementById(id); if(!el) return;
-    const ex = Chart.getChart(el); if(ex) ex.destroy();
-    new Chart(el.getContext('2d'), {
-      type:'doughnut',
-      data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#0e1525':'#e2e8f0'],borderColor:border,borderWidth:2}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
-    });
+  const makeSVG = (elId, pct, color) => {
+    const el = document.getElementById(elId); if(!el) return;
+    const r=26,cx=32,cy=32,circ=2*Math.PI*r;
+    const dash=Math.min(pct,100)/100*circ;
+    const bg=isDark?'#334155':'#e2e8f0';
+    el.innerHTML=`<svg width="64" height="64" viewBox="0 0 64 64">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+        stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
+        stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+    </svg>`;
   };
 
-  document.getElementById('pctStorePicking').textContent   = s.pctPickingOverall + '%';
-  document.getElementById('infoStorePicking').textContent  = `Picked: ${s.sumPicked.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
-  makeDonut('chartStorePicking', s.pctPickingOverall, '#16a34a');
+  const p1 = s.pctPickingOverall;
+  document.getElementById('pctStorePicking').textContent  = p1 + '%';
+  document.getElementById('infoStorePicking').textContent = `Picked: ${s.sumPicked.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
+  document.getElementById('footStorePicking').textContent = p1 + '%';
+  makeSVG('chartStorePicking', p1, '#16a34a');
+  const bp=document.getElementById('barStorePicking'); if(bp) setTimeout(()=>bp.style.width=Math.min(p1,100)+'%',300);
 
-  document.getElementById('pctStoreStaged').textContent    = s.pctStagedOverall + '%';
-  document.getElementById('infoStoreStaged').textContent   = `Staged: ${s.sumStaged.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
-  makeDonut('chartStoreStaged', s.pctStagedOverall, '#f59e0b');
+  const p2 = s.pctStagedOverall;
+  document.getElementById('pctStoreStaged').textContent   = p2 + '%';
+  document.getElementById('infoStoreStaged').textContent  = `Staged: ${s.sumStaged.toLocaleString()} / Release: ${s.sumRelease.toLocaleString()}`;
+  document.getElementById('footStoreStaged').textContent  = p2 + '%';
+  makeSVG('chartStoreStaged', p2, '#d97706');
+  const bs=document.getElementById('barStoreStaged'); if(bs) setTimeout(()=>bs.style.width=Math.min(p2,100)+'%',300);
 
-  document.getElementById('pctStoreKapasitas').textContent = s.avgKapasitas + '%';
+  const p3 = s.avgKapasitas;
+  document.getElementById('pctStoreKapasitas').textContent  = p3 + '%';
   document.getElementById('infoStoreKapasitas').textContent = `Avg % Kapasitas Armada`;
-  makeDonut('chartStoreKapasitas', s.avgKapasitas, '#6366f1');
+  document.getElementById('footStoreKapasitas').textContent = p3 + '%';
+  makeSVG('chartStoreKapasitas', p3, '#7c3aed');
+  const bk=document.getElementById('barStoreKapasitas'); if(bk) setTimeout(()=>bk.style.width=Math.min(p3,100)+'%',300);
 
   renderStoringTable(data.data);
 }
