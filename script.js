@@ -999,8 +999,38 @@ async function fetchInlineProses() {
     const totalArmada =inboundRows.length||0;
     const pctUnload=totalArmada>0?Math.round((finishArmada/totalArmada)*100):(s&&s.pctUnloading||0);
     document.getElementById('pctUnloading').textContent=pctUnload+'%';
-    document.getElementById('infoUnloading').textContent=`✅ ${finishArmada} Finish · ⏳ ${prosesArmada} Proses · 🕐 ${antriArmada} Antri · 🔴 ${belumArmada} Belum`;
-    makeSVGDonut('chartUnloading',pctUnload,'#16a34a');
+    document.getElementById('infoUnloading') && (document.getElementById('infoUnloading').textContent='');
+    // Mini boxes
+    const mf=document.getElementById('inbMiniFinish'); if(mf) mf.textContent=finishArmada;
+    const mp=document.getElementById('inbMiniProses'); if(mp) mp.textContent=prosesArmada;
+    const ma=document.getElementById('inbMiniAntri');  if(ma) ma.textContent=antriArmada;
+    const mb=document.getElementById('inbMiniBelum');  if(mb) mb.textContent=belumArmada;
+    // Pie chart SVG - 4 warna: hijau/biru/amber/merah
+    const unEl=document.getElementById('chartUnloading');
+    if(unEl && totalArmada>0){
+      const tot=totalArmada;
+      const segs=[
+        {v:finishArmada, c:'#16a34a'},
+        {v:prosesArmada, c:'#2563eb'},
+        {v:antriArmada,  c:'#d97706'},
+        {v:belumArmada,  c:'#dc2626'},
+      ];
+      const r=28,cx=32,cy=32,circ=2*Math.PI*r;
+      let offset=0;
+      const circles=segs.map(s=>{
+        const dash=(s.v/tot)*circ;
+        const el=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.c}" stroke-width="7" stroke-dasharray="${dash.toFixed(2)} ${(circ-dash).toFixed(2)}" stroke-dashoffset="${-offset.toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
+        offset+=dash;
+        return el;
+      }).join('');
+      unEl.innerHTML=`<svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="7"/>
+        ${circles}
+        <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="900" fill="#2563eb">${pctUnload}%</text>
+      </svg>`;
+    } else if(unEl) {
+      makeSVGDonut('chartUnloading',pctUnload,'#16a34a');
+    }
     const bu=document.getElementById('barUnloading'); if(bu) setTimeout(()=>bu.style.width=pctUnload+'%',300);
     const fu=document.getElementById('pctUnloadingFoot'); if(fu) fu.textContent=pctUnload+'%';
 
