@@ -848,10 +848,10 @@ function renderStoringBatchCards(rows) {
   grid.style.gridTemplateColumns = `repeat(${Math.min(count,4)},1fr)`;
 
   const colors = [
-    { bg:'rgba(99,102,241,0.08)', border:'rgba(99,102,241,0.3)', accent:'#4f46e5', light:'#ede9fe' },
-    { bg:'rgba(16,185,129,0.08)', border:'rgba(16,185,129,0.3)', accent:'#059669', light:'#d1fae5' },
-    { bg:'rgba(245,158,11,0.08)', border:'rgba(245,158,11,0.3)', accent:'#d97706', light:'#fef3c7' },
-    { bg:'rgba(139,92,246,0.08)', border:'rgba(139,92,246,0.3)', accent:'#7c3aed', light:'#f3e8ff' },
+    { tint:'#ede9fe', border:'rgba(99,102,241,0.25)', accent:'#4f46e5', stripe:'#6366f1' },
+    { tint:'#d1fae5', border:'rgba(16,185,129,0.25)', accent:'#059669', stripe:'#10b981' },
+    { tint:'#fef3c7', border:'rgba(245,158,11,0.25)', accent:'#d97706', stripe:'#f59e0b' },
+    { tint:'#f3e8ff', border:'rgba(139,92,246,0.25)', accent:'#7c3aed', stripe:'#8b5cf6' },
   ];
 
   grid.innerHTML = batchList.map(([batchNum, d], i) => {
@@ -861,46 +861,49 @@ function renderStoringBatchCards(rows) {
     const lcCount = d.noLc.size;
     const num = n => Math.round(n).toLocaleString('id-ID');
 
-    return `<div style="background:${col.bg};border:1.5px solid ${col.border};padding:12px 14px;position:relative;overflow:hidden;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="width:28px;height:28px;background:${col.accent};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;">${batchNum}</div>
-          <div>
-            <div style="font-size:12px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
-            <div style="font-size:9px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
+    return `<div style="background:linear-gradient(160deg,#fff 55%,${col.tint} 100%);border:1px solid #e2e8f0;box-shadow:0 1px 6px rgba(0,0,0,0.06);position:relative;overflow:hidden;">
+      <div style="height:3px;background:${col.stripe};position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam ${3+i*0.4}s ease-in-out infinite;"></div></div>
+      <div style="padding:12px 14px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;background:${col.accent};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;">${batchNum}</div>
+            <div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
+              <div style="font-size:9px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:800;color:${col.accent};">${pickPct}%</div>
+        </div>
+        <!-- Mini KPI boxes -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+          <div style="background:#fff;border:1px solid rgba(245,158,11,0.3);padding:4px 7px;">
+            <div style="font-size:7.5px;font-weight:700;color:#d97706;text-transform:uppercase;">RELEASE</div>
+            <div style="font-size:14px;font-weight:900;color:#d97706;line-height:1.2;">${num(d.releaseCase)}</div>
+          </div>
+          <div style="background:#fff;border:1px solid rgba(16,185,129,0.3);padding:4px 7px;">
+            <div style="font-size:7.5px;font-weight:700;color:#059669;text-transform:uppercase;">PICKED</div>
+            <div style="font-size:14px;font-weight:900;color:#059669;line-height:1.2;">${num(d.pickedCase)}</div>
+          </div>
+          <div style="background:#fff;border:1px solid rgba(236,72,153,0.3);padding:4px 7px;">
+            <div style="font-size:7.5px;font-weight:700;color:#db2777;text-transform:uppercase;">STAGED</div>
+            <div style="font-size:14px;font-weight:900;color:#db2777;line-height:1.2;">${num(d.stagedCase)}</div>
+          </div>
+          <div style="background:#fff;border:1px solid rgba(239,68,68,0.3);padding:4px 7px;">
+            <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">SISA</div>
+            <div style="font-size:14px;font-weight:900;color:#dc2626;line-height:1.2;">${num(d.sisaCase)}</div>
           </div>
         </div>
-        <div style="font-size:11px;font-weight:800;color:${col.accent};">${pickPct}%</div>
-      </div>
-      <!-- Mini KPI boxes -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
-        <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:4px 7px;">
-          <div style="font-size:7.5px;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:0.05em;">RELEASE</div>
-          <div style="font-size:14px;font-weight:900;color:#d97706;line-height:1.2;">${num(d.releaseCase)}</div>
+        <!-- Pick Rate bar -->
+        <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px;">
+          <span>Pick Rate</span><span style="color:${col.accent};">${pickPct}%</span>
         </div>
-        <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);padding:4px 7px;">
-          <div style="font-size:7.5px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:0.05em;">PICKED</div>
-          <div style="font-size:14px;font-weight:900;color:#059669;line-height:1.2;">${num(d.pickedCase)}</div>
+        <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:6px;"><div style="height:100%;background:${col.accent};width:${pickPct}%;transition:width 1s;"></div></div>
+        <!-- Stage Rate bar -->
+        <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px;">
+          <span>Stage Rate</span><span style="color:#ec4899;">${stagePct}%</span>
         </div>
-        <div style="background:rgba(236,72,153,0.10);border:1px solid rgba(236,72,153,0.3);padding:4px 7px;">
-          <div style="font-size:7.5px;font-weight:700;color:#db2777;text-transform:uppercase;letter-spacing:0.05em;">STAGED</div>
-          <div style="font-size:14px;font-weight:900;color:#db2777;line-height:1.2;">${num(d.stagedCase)}</div>
-        </div>
-        <div style="background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.3);padding:4px 7px;">
-          <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;">SISA</div>
-          <div style="font-size:14px;font-weight:900;color:#dc2626;line-height:1.2;">${num(d.sisaCase)}</div>
-        </div>
+        <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:12px;"><div style="height:100%;background:#ec4899;width:${stagePct}%;transition:width 1s;"></div></div>
       </div>
-      <!-- Pick Rate bar -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;font-size:9px;font-weight:700;color:#64748b;">
-        <span>Pick Rate</span><span style="color:${col.accent};">${pickPct}%</span>
-      </div>
-      <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:6px;"><div style="height:100%;background:${col.accent};width:${pickPct}%;transition:width 1s;"></div></div>
-      <!-- Stage Rate bar -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;font-size:9px;font-weight:700;color:#64748b;">
-        <span>Stage Rate</span><span style="color:#ec4899;">${stagePct}%</span>
-      </div>
-      <div style="height:4px;background:rgba(0,0,0,0.06);"><div style="height:100%;background:#ec4899;width:${stagePct}%;transition:width 1s;"></div></div>
     </div>`;
   }).join('');
 }
