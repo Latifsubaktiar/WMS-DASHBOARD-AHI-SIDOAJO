@@ -1007,12 +1007,12 @@ function renderPanelInlineTable(rows) {
     <td style="${cn}background:rgba(139,92,246,0.10)">${num(r.ftQty)}</td><td style="${cn}background:rgba(139,92,246,0.10)">${num(r.ftLpn)}</td>
     <td style="${cn}background:rgba(37,99,235,0.10)">${num(r.putInQty)}</td><td style="${cn}background:rgba(37,99,235,0.10)">${num(r.putInLpn)}</td>
     <td style="${cn}background:rgba(37,99,235,0.10)">${sisa(r.sisaInLpn)}</td>
-    <td style="background:rgba(37,99,235,0.10);${c}" colspan="2">${pBar(r.putInPct2)}</td>
+    <td style="background:rgba(37,99,235,0.10);${c}" colspan="2">${pBar(r.putInPct)}</td>
     <td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1InQty)}</td><td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1InLpn)}</td>
     <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2InQty)}</td><td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2InLpn)}</td>
     <td style="${cn}background:rgba(22,163,74,0.10)">${num(r.putStrQty)}</td><td style="${cn}background:rgba(22,163,74,0.10)">${num(r.putStrLpn)}</td>
     <td style="${cn}background:rgba(22,163,74,0.10)">${sisa(r.sisaStrLpn)}</td>
-    <td style="background:rgba(22,163,74,0.10);${c}" colspan="2">${pBar(r.putStrPct1)}</td>
+    <td style="background:rgba(22,163,74,0.10);${c}" colspan="2">${pBar(r.putStrPct)}</td>
     <td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1StrQty)}</td><td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1StrLpn)}</td>
     <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2StrQty)}</td><td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2StrLpn)}</td>
   </tr>`).join('');
