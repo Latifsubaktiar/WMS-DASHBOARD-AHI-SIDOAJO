@@ -773,7 +773,7 @@ function renderStoringPanel(data) {
   document.getElementById('pctStoreKapasitas').textContent  = p3 + '%';
   document.getElementById('infoStoreKapasitas').textContent = `Avg % Kapasitas Armada`;
   document.getElementById('footStoreKapasitas').textContent = p3 + '%';
-  makeSVG('chartStoreKapasitas', p3, '#7c3aed');
+  makeSVG('chartStoreKapasitas', p3, '#ec4899');
   const bk=document.getElementById('barStoreKapasitas'); if(bk) setTimeout(()=>bk.style.width=Math.min(p3,100)+'%',300);
 
   renderStoringTable(data.data);
