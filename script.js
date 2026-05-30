@@ -921,10 +921,18 @@ async function fetchInlineProses() {
     const footer=document.getElementById('panelFooter'); if(footer) footer.textContent=data.total+' LC/PO terdaftar hari ini';
     const s=data.summary, isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
 
-    const makeDonut=(canvasId,pct,color)=>{
-      const el=document.getElementById(canvasId); if(!el) return;
-      const ex=Chart.getChart(el); if(ex) ex.destroy();
-      new Chart(el,{type:'doughnut',data:{datasets:[{data:[pct,Math.max(0,100-pct)],backgroundColor:[color,isDark?'#334155':'#e2e8f0'],borderWidth:0}]},options:{responsive:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+    // SVG donut - lebih reliable dari Chart.js canvas
+    const makeSVGDonut=(elId,pct,color)=>{
+      const el=document.getElementById(elId); if(!el) return;
+      const r=26,cx=32,cy=32,circ=2*Math.PI*r;
+      const dash=Math.min(pct,100)/100*circ;
+      const bg=isDark?'#334155':'#e2e8f0';
+      el.innerHTML=`<svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+          stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
+          stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+      </svg>`;
     };
 
     const inboundRows=window._inboundRows||[];
@@ -936,28 +944,34 @@ async function fetchInlineProses() {
     const pctUnload=totalArmada>0?Math.round((finishArmada/totalArmada)*100):(s&&s.pctUnloading||0);
     document.getElementById('pctUnloading').textContent=pctUnload+'%';
     document.getElementById('infoUnloading').textContent=`✅ ${finishArmada} Finish · ⏳ ${prosesArmada} Proses · 🕐 ${antriArmada} Antri · 🔴 ${belumArmada} Belum`;
-    makeDonut('chartUnloading',pctUnload,'#16a34a');
+    makeSVGDonut('chartUnloading',pctUnload,'#16a34a');
     const bu=document.getElementById('barUnloading'); if(bu) setTimeout(()=>bu.style.width=pctUnload+'%',300);
     const fu=document.getElementById('pctUnloadingFoot'); if(fu) fu.textContent=pctUnload+'%';
 
+    // % Aktual Receive = avgPctAkt dari GAS
     const pctAkt=(s&&s.avgPctAkt)||0;
     document.getElementById('pctAktualRcv').textContent=pctAkt+'%';
     document.getElementById('infoAktualRcv').textContent='';
-    makeDonut('chartAktualRcv',pctAkt,'#0891b2');
+    makeSVGDonut('chartAktualRcv',pctAkt,'#059669');
     const ba=document.getElementById('barAktualRcv'); if(ba) setTimeout(()=>ba.style.width=pctAkt+'%',300);
     const fa=document.getElementById('pctAktualRcvFoot'); if(fa) fa.textContent=pctAkt+'%';
 
-    const pctPutIn=(s&&s.avgPctPutIn2)||0;
+    // % Putaway Inbound = LPN Putaway IN / LPN Aktual Receive
+    const sumLpnAkt = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.aktLpn)||0),0);
+    const sumLpnPutIn = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putInLpn)||0),0);
+    const pctPutIn = sumLpnAkt>0 ? Math.round(sumLpnPutIn/sumLpnAkt*100) : (s&&s.avgPctPutIn2)||0;
     document.getElementById('pctPutawayIn').textContent=pctPutIn+'%';
     document.getElementById('infoPutawayIn').textContent=`Sisa: ${Number(s&&s.sumSisaIn||0).toLocaleString()} LPN`;
-    makeDonut('chartPutawayIn',pctPutIn,'#2563eb');
+    makeSVGDonut('chartPutawayIn',pctPutIn,'#7c3aed');
     const bpi=document.getElementById('barPutawayIn'); if(bpi) setTimeout(()=>bpi.style.width=Math.min(pctPutIn,100)+'%',300);
     const fpi=document.getElementById('pctPutawayInFoot'); if(fpi) fpi.textContent=pctPutIn+'%';
 
-    const pctPutStr=(s&&s.avgPctPutStr)||0;
+    // % Putaway Storing = LPN Putaway STR / LPN Putaway IN
+    const sumLpnPutStr = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putStrLpn)||0),0);
+    const pctPutStr = sumLpnPutIn>0 ? Math.round(sumLpnPutStr/sumLpnPutIn*100) : (s&&s.avgPctPutStr)||0;
     document.getElementById('pctPutawayStr').textContent=pctPutStr+'%';
     document.getElementById('infoPutawayStr').textContent=`Sisa: ${Number(s&&s.sumSisaStr||0).toLocaleString()} LPN`;
-    makeDonut('chartPutawayStr',pctPutStr,'#d97706');
+    makeSVGDonut('chartPutawayStr',pctPutStr,'#d97706');
     const bps=document.getElementById('barPutawayStr'); if(bps) setTimeout(()=>bps.style.width=Math.min(pctPutStr,100)+'%',300);
     const fps=document.getElementById('pctPutawayStrFoot'); if(fps) fps.textContent=pctPutStr+'%';
 
