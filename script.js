@@ -356,31 +356,48 @@ async function fetchOutboundPanel() {
     `;
 
     const isDark = document.body.classList.contains('dark');
-    const border = isDark ? '#060912' : '#ffffff';
-    const bg2    = isDark ? '#0e1525' : '#e2e8f0';
 
-    const makeDonut = (id, val, colors, labels) => {
-      const el = document.getElementById(id); if(!el) return;
-      const ex = Chart.getChart(el); if(ex) ex.destroy();
-      new Chart(el.getContext('2d'), {
-        type: 'doughnut',
-        data: { datasets: [{ data: val, backgroundColor: colors, borderColor: border, borderWidth: 2 }] },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
-      });
+    const makeSVGOut = (elId, pct, color) => {
+      const el=document.getElementById(elId); if(!el) return;
+      const r=26,cx=32,cy=32,circ=2*Math.PI*r;
+      const dash=Math.min(pct,100)/100*circ;
+      const bg=isDark?'#334155':'#e2e8f0';
+      el.innerHTML=`<svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+          stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
+          stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+        <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="900" fill="${color}">${pct}%</text>
+      </svg>`;
     };
 
+    // Status Armada card
     document.getElementById('pctOutSelesai').textContent = pctSel + '%';
-    document.getElementById('infoOutStatus').textContent = `Selesai:${selesai} Proses:${proses} Antri:${antri} Belum:${belum}`;
-    makeDonut('chartOutStatus', [selesai,proses,antri,Math.max(belum,0)], ['#16a34a','#3b82f6','#f59e0b','#ef4444']);
+    document.getElementById('footOutStatus').textContent = pctSel + '%';
+    document.getElementById('outMiniSelesai').textContent = selesai;
+    document.getElementById('outMiniProses').textContent  = proses;
+    document.getElementById('outMiniAntri').textContent   = antri;
+    document.getElementById('outMiniBelum').textContent   = belum;
+    makeSVGOut('chartOutStatus', pctSel, '#d97706');
+    const bo=document.getElementById('barOutStatus'); if(bo) setTimeout(()=>bo.style.width=Math.min(pctSel,100)+'%',300);
 
+    // % PC
     document.getElementById('pctOutPc').textContent  = avgPc + '%';
-    makeDonut('chartOutPc',  [avgPc, Math.max(0,100-avgPc)],  ['#16a34a', bg2]);
+    document.getElementById('footOutPc').textContent = avgPc + '%';
+    makeSVGOut('chartOutPc', avgPc, '#16a34a');
+    const bp=document.getElementById('barOutPc'); if(bp) setTimeout(()=>bp.style.width=Math.min(avgPc,100)+'%',300);
 
+    // % STG
     document.getElementById('pctOutStg').textContent = avgStg + '%';
-    makeDonut('chartOutStg', [avgStg, Math.max(0,100-avgStg)], ['#3b82f6', bg2]);
+    document.getElementById('footOutStg').textContent= avgStg + '%';
+    makeSVGOut('chartOutStg', avgStg, '#2563eb');
+    const bs=document.getElementById('barOutStg'); if(bs) setTimeout(()=>bs.style.width=Math.min(avgStg,100)+'%',300);
 
+    // % LD
     document.getElementById('pctOutLd').textContent  = avgLd + '%';
-    makeDonut('chartOutLd',  [avgLd, Math.max(0,100-avgLd)],  ['#f59e0b', bg2]);
+    document.getElementById('footOutLd').textContent = avgLd + '%';
+    makeSVGOut('chartOutLd', avgLd, '#ec4899');
+    const bl=document.getElementById('barOutLd'); if(bl) setTimeout(()=>bl.style.width=Math.min(avgLd,100)+'%',300);
 
     renderOutboundPanelTable(rows);
   } catch(e) {
