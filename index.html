@@ -566,17 +566,33 @@
             <div style="height:3px;background:#3b82f6;"></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.18),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 3s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <div style="width:30px;height:30px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;">📥</div>
-                <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
-                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                    <div id="pctUnloading" style="font-size:16px;font-weight:900;color:#2563eb;line-height:1;">—</div>
-                    <div style="font-size:8px;color:#94a3b8;">Selesai</div>
-                  </div>
+                <div>
+                  <div style="width:30px;height:30px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:4px;">📥</div>
+                  <div style="font-size:13px;font-weight:900;color:#1e293b;">Unloading</div>
+                  <div id="pctUnloading" style="font-size:22px;font-weight:900;color:#2563eb;line-height:1.1;">—</div>
+                </div>
+                <div id="chartUnloading" style="width:64px;height:64px;flex-shrink:0;"></div>
+              </div>
+              <!-- Mini boxes -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#16a34a;text-transform:uppercase;">✅ Finish</div>
+                  <div id="inbMiniFinish" style="font-size:16px;font-weight:900;color:#16a34a;line-height:1.1;">0</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">⏳ Proses</div>
+                  <div id="inbMiniProses" style="font-size:16px;font-weight:900;color:#2563eb;line-height:1.1;">0</div>
+                </div>
+                <div style="background:#fffbeb;border:1px solid #fde68a;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#d97706;text-transform:uppercase;">🕐 Antri</div>
+                  <div id="inbMiniAntri" style="font-size:16px;font-weight:900;color:#d97706;line-height:1.1;">0</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">🔴 Belum</div>
+                  <div id="inbMiniBelum" style="font-size:16px;font-weight:900;color:#dc2626;line-height:1.1;">0</div>
                 </div>
               </div>
-              <div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:2px;">Unloading</div>
-              <div id="infoUnloading" style="font-size:9.5px;color:#94a3b8;flex:1;">—</div>
-              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barUnloading" style="height:100%;background:#3b82f6;width:0%;transition:width 1s;"></div></div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barUnloading" style="height:100%;background:#3b82f6;width:0%;transition:width 1s;"></div></div>
             </div>
             <div style="display:flex;justify-content:space-between;padding:7px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
               <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">UNLOADING</span>
