@@ -992,6 +992,7 @@ async function fetchInlineProses() {
     };
 
     const inboundRows=window._inboundRows||[];
+    const putawayRows=data.data||[]; // data dari GAS inline proses - punya aktQty, putInQty dll
     const finishArmada=inboundRows.filter(r=>r&&r.updateUnload&&['DONE','FINISH'].includes(String(r.updateUnload).toUpperCase())).length;
     const prosesArmada=inboundRows.filter(r=>r&&r.updateUnload&&String(r.updateUnload).toUpperCase()==='PROSES').length;
     const antriArmada =inboundRows.filter(r=>r&&r.updateUnload&&String(r.updateUnload).toUpperCase()==='ANTRI').length;
@@ -1026,8 +1027,8 @@ async function fetchInlineProses() {
     const pctAkt=(s&&s.avgPctAkt)||0;
     document.getElementById('pctAktualRcv') && (document.getElementById('pctAktualRcv').textContent='');
     // mini boxes aktual
-    const sumAktQty=inboundRows.reduce((a,r)=>a+(parseFloat(r.aktQty)||0),0);
-    const sumAktLpn=inboundRows.reduce((a,r)=>a+(parseFloat(r.aktLpn)||0),0);
+    const sumAktQty=putawayRows.reduce((a,r)=>a+(parseFloat(r.aktQty)||0),0);
+    const sumAktLpn=putawayRows.reduce((a,r)=>a+(parseFloat(r.aktLpn)||0),0);
     const aqb=document.getElementById('aktQtyBox'); if(aqb) aqb.textContent=sumAktQty.toLocaleString('id-ID');
     const alb=document.getElementById('aktLpnBox'); if(alb) alb.textContent=sumAktLpn.toLocaleString('id-ID');
     // chart aktual
@@ -1037,10 +1038,10 @@ async function fetchInlineProses() {
     const fa=document.getElementById('pctAktualRcvFoot'); if(fa) fa.textContent=pctAkt+'%';
 
     // % Putaway Inbound = LPN Putaway IN / LPN Aktual Receive
-    const sumLpnAkt = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.aktLpn)||0),0);
-    const sumLpnPutIn = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putInLpn)||0),0);
-    const sumQtyPutIn = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putInQty)||0),0);
-    const sumSisaPutIn = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.sisaInLpn)||0),0);
+    const sumLpnAkt = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.aktLpn)||0),0);
+    const sumLpnPutIn = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.putInLpn)||0),0);
+    const sumQtyPutIn = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.putInQty)||0),0);
+    const sumSisaPutIn = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.sisaInLpn)||0),0);
     const pctPutIn = sumLpnAkt>0 ? Math.round(sumLpnPutIn/sumLpnAkt*100) : (s&&s.avgPctPutIn2)||0;
     document.getElementById('pctPutawayIn') && (document.getElementById('pctPutawayIn').textContent='');
     // mini boxes putIn
@@ -1054,9 +1055,9 @@ async function fetchInlineProses() {
     const fpi=document.getElementById('pctPutawayInFoot'); if(fpi) fpi.textContent=pctPutIn+'%';
 
     // % Putaway Storing = LPN Putaway STR / LPN Putaway IN
-    const sumLpnPutStr = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putStrLpn)||0),0);
-    const sumQtyPutStr = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.putStrQty)||0),0);
-    const sumSisaPutStr = inboundRows.reduce((acc,r)=>acc+(parseFloat(r.sisaStrLpn)||0),0);
+    const sumLpnPutStr = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.putStrLpn)||0),0);
+    const sumQtyPutStr = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.putStrQty)||0),0);
+    const sumSisaPutStr = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.sisaStrLpn)||0),0);
     const pctPutStr = sumLpnPutIn>0 ? Math.round(sumLpnPutStr/sumLpnPutIn*100) : (s&&s.avgPctPutStr)||0;
     document.getElementById('pctPutawayStr') && (document.getElementById('pctPutawayStr').textContent='');
     // mini boxes putStr
