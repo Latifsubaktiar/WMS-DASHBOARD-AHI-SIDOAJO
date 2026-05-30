@@ -400,6 +400,20 @@ async function fetchOutboundPanel() {
     const bl=document.getElementById('barOutLd'); if(bl) setTimeout(()=>bl.style.width=Math.min(avgLd,100)+'%',300);
 
     renderOutboundPanelTable(rows);
+
+    // Full-body beam amber otomatis loop
+    setTimeout(()=>{
+      const speeds=['3s','3.5s','4s','4.5s'];
+      document.querySelectorAll('#outboundDetailPanel [style*="overflow:hidden;box-shadow"]').forEach((card,i)=>{
+        if(card.querySelector('.out-beam')) return;
+        const b=document.createElement('div');
+        b.className='out-beam';
+        b.style.cssText=`position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.18),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam ${speeds[i]||'3.5s'} ease-in-out infinite;`;
+        card.style.position='relative';
+        card.style.overflow='hidden';
+        card.appendChild(b);
+      });
+    },300);
   } catch(e) {
     if(tbody) tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
   }
