@@ -386,104 +386,164 @@
     <!-- ═══ OUTBOUND DETAIL PANEL ═══ -->
     <div id="outboundDetailPanel" style="display:none;margin-bottom:18px;">
       <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
-        <div class="card-header" style="background:linear-gradient(135deg,rgba(217,119,6,0.08),transparent);">
+        <div style="padding:14px 20px 12px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(217,119,6,0.06),transparent);">
           <div>
-            <span class="card-title"><span class="live-dot"></span>🚚 Outbound Dashboard — Data Hari Ini</span>
+            <span style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;"><span class="live-dot"></span>🚚 Outbound Dashboard — Data Hari Ini</span>
             <div id="outboundPanelSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div>
           </div>
-          <button onclick="toggleOutboundPanel()" style="border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+          <button onclick="toggleOutboundPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
         </div>
-        <!-- CHARTS -->
-        <div class="panel-charts-sticky" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.25);">
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-            <div style="font-size:11.5px;font-weight:800;color:var(--text)">📊 Status</div>
-            <div style="position:relative;width:110px;height:110px;"><canvas id="chartOutStatus"></canvas>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                <div id="pctOutSelesai" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
-                <div style="font-size:9px;color:var(--text-3)">Selesai</div>
+
+        <!-- KPI CARDS -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+
+          <!-- Status Armada -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#d97706;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div style="width:30px;height:30px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;">🚚</div>
+                <div id="chartOutStatus" style="width:64px;height:64px;flex-shrink:0;"></div>
               </div>
+              <div id="pctOutSelesai" style="font-size:28px;font-weight:900;color:#d97706;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:6px;">Status Armada</div>
+              <!-- Mini boxes -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#16a34a;text-transform:uppercase;">Selesai</div>
+                  <div id="outMiniSelesai" style="font-size:16px;font-weight:900;color:#16a34a;line-height:1;">0</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">Proses</div>
+                  <div id="outMiniProses" style="font-size:16px;font-weight:900;color:#2563eb;line-height:1;">0</div>
+                </div>
+                <div style="background:#fffbeb;border:1px solid #fde68a;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#d97706;text-transform:uppercase;">Antri</div>
+                  <div id="outMiniAntri" style="font-size:16px;font-weight:900;color:#d97706;line-height:1;">0</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">Belum</div>
+                  <div id="outMiniBelum" style="font-size:16px;font-weight:900;color:#dc2626;line-height:1;">0</div>
+                </div>
+              </div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barOutStatus" style="height:100%;background:#d97706;width:0%;transition:width 1s;"></div></div>
             </div>
-            <div id="infoOutStatus" style="font-size:10px;color:var(--text-3);text-align:center">—</div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">STATUS</span>
+              <span id="footOutStatus" style="font-weight:900;color:#d97706;">—</span>
+            </div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-            <div style="font-size:11.5px;font-weight:800;color:var(--text)">📦 % PC (Picking)</div>
-            <div style="position:relative;width:110px;height:110px;"><canvas id="chartOutPc"></canvas>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                <div id="pctOutPc" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
-                <div style="font-size:9px;color:var(--text-3)">Avg %PC</div>
+
+          <!-- % PC Picking -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#d1fae5 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 3.5s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div style="width:30px;height:30px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;">📦</div>
+                <div id="chartOutPc" style="width:64px;height:64px;flex-shrink:0;"></div>
               </div>
+              <div id="pctOutPc" style="font-size:28px;font-weight:900;color:#16a34a;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% PC (Picking)</div>
+              <div id="infoOutPc" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Picking</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutPc" style="height:100%;background:#16a34a;width:0%;transition:width 1s;"></div></div>
             </div>
-            <div id="infoOutPc" style="font-size:10px;color:var(--text-3);text-align:center">Rata-rata % Picking</div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %PC</span>
+              <span id="footOutPc" style="font-weight:900;color:#16a34a;">—</span>
+            </div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-            <div style="font-size:11.5px;font-weight:800;color:var(--text)">🚛 % STG (Staging)</div>
-            <div style="position:relative;width:110px;height:110px;"><canvas id="chartOutStg"></canvas>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                <div id="pctOutStg" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
-                <div style="font-size:9px;color:var(--text-3)">Avg %STG</div>
+
+          <!-- % STG Staging -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 4s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div style="width:30px;height:30px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;">🚛</div>
+                <div id="chartOutStg" style="width:64px;height:64px;flex-shrink:0;"></div>
               </div>
+              <div id="pctOutStg" style="font-size:28px;font-weight:900;color:#2563eb;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% STG (Staging)</div>
+              <div id="infoOutStg" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Staging</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutStg" style="height:100%;background:#2563eb;width:0%;transition:width 1s;"></div></div>
             </div>
-            <div id="infoOutStg" style="font-size:10px;color:var(--text-3);text-align:center">Rata-rata % Staging</div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %STG</span>
+              <span id="footOutStg" style="font-weight:900;color:#2563eb;">—</span>
+            </div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-            <div style="font-size:11.5px;font-weight:800;color:var(--text)">🚚 % LD (Loading)</div>
-            <div style="position:relative;width:110px;height:110px;"><canvas id="chartOutLd"></canvas>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                <div id="pctOutLd" style="font-size:20px;font-weight:900;color:var(--text)">—</div>
-                <div style="font-size:9px;color:var(--text-3)">Avg %LD</div>
+
+          <!-- % LD Loading -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fce7f3 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#ec4899;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 4.5s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div style="width:30px;height:30px;background:#fce7f3;display:flex;align-items:center;justify-content:center;font-size:15px;">🎯</div>
+                <div id="chartOutLd" style="width:64px;height:64px;flex-shrink:0;"></div>
               </div>
+              <div id="pctOutLd" style="font-size:28px;font-weight:900;color:#ec4899;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% LD (Loading)</div>
+              <div id="infoOutLd" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Loading</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutLd" style="height:100%;background:#ec4899;width:0%;transition:width 1s;"></div></div>
             </div>
-            <div id="infoOutLd" style="font-size:10px;color:var(--text-3);text-align:center">Rata-rata % Loading</div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %LD</span>
+              <span id="footOutLd" style="font-weight:900;color:#ec4899;">—</span>
+            </div>
           </div>
         </div>
+
         <!-- TABS -->
         <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,215,240,0.3);padding:0 20px;">
           <button id="outTabData" onclick="switchOutboundTab('data')" style="padding:10px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);transition:all 0.2s;">📋 Data Outbound</button>
           <button id="outTabLine" onclick="switchOutboundTab('line')" style="padding:10px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">📊 Line Outbound</button>
         </div>
+
         <!-- TABLE DATA OUTBOUND -->
-        <div id="outWrapData" style="overflow-x:auto;flex:1;overflow-y:auto;">
-          <table>
-            <thead><tr>
-              <th style="background:#1e293b;color:#fff;font-weight:900">No</th>
-              <th style="background:#1e293b;color:#fff;font-weight:900">Penyelesaian</th>
-              <th style="background:#1e293b;color:#fff;font-weight:900">Trans No</th>
-              <th style="text-align:center;background:#15803d;color:#fff;font-weight:900">%PC</th>
-              <th style="text-align:center;background:#1d4ed8;color:#fff;font-weight:900">%STG</th>
-              <th style="text-align:center;background:#b45309;color:#fff;font-weight:900">%LD</th>
-              <th style="background:#1e293b;color:#fff;font-weight:900">Shipping Line</th>
-              <th style="background:#1e293b;color:#fff;font-weight:900">BU</th>
-              <th style="background:#1e293b;color:#fff;font-weight:900">Carrier ID</th>
-              <th style="background:#1e293b;color:#fff;font-weight:900">Stuffing Time</th>
-              <th style="background:#1e293b;color:#fff;font-weight:900">Jenis Armada</th>
-              <th style="background:#1e293b;color:#fff;font-weight:900">No Pol</th>
-              <th style="text-align:center;background:#1e293b;color:#fff;font-weight:900">Status</th>
-            </tr></thead>
-            <tbody id="outboundPanelBody"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
-          </table>
-        </div>
-        <!-- TABLE LINE OUTBOUND -->
-        <div id="outWrapLine" style="overflow-x:auto;flex:1;overflow-y:auto;display:none;">
-          <table id="lineOutboundTable">
+        <div id="outWrapData" style="overflow-x:auto;flex:1;overflow-y:auto;background:#fff;">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
             <thead>
-              <tr>
-                <th style="text-align:center">No</th>
-                <th style="text-align:center">No LINE</th>
-                <th>No LC</th>
-                <th>Shipping Line</th>
-                <th style="text-align:center">Batch</th>
-                <th style="text-align:center">Stuffing</th>
-                <th>Armada</th>
-                <th style="text-align:center">CBM S2</th>
-                <th style="text-align:center;background:rgba(22,163,74,0.1);color:#16a34a">%PC</th>
-                <th style="text-align:center;background:rgba(37,99,235,0.1);color:#3b82f6">%STG</th>
-                <th style="text-align:center">Type</th>
-                <th style="text-align:center">No Pol</th>
-                <th style="text-align:center">Ket</th>
-                <th style="text-align:center">Loading</th>
+              <tr style="background:#1e293b;position:sticky;top:0;z-index:2;">
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">NO</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">PENYELESAIAN</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">TRANS NO</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">%PC</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;">%STG</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#f9a8d4;">%LD</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">SHIPPING LINE</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">CARRIER ID</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fcd34d;">STUFFING</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">JENIS ARMADA</th>
+                <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO POL</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">STATUS</th>
               </tr>
             </thead>
-            <tbody id="lineOutboundBody"><tr><td colspan="14" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+            <tbody id="outboundPanelBody" style="background:#fff;"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- TABLE LINE OUTBOUND -->
+        <div id="outWrapLine" style="overflow-x:auto;flex:1;overflow-y:auto;display:none;background:#fff;">
+          <table id="lineOutboundTable" style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead>
+              <tr style="background:#1e293b;position:sticky;top:0;z-index:2;">
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">NO</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">NO LINE</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO LC</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">SHIPPING LINE</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BATCH</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fcd34d;">STUFFING</th>
+                <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">ARMADA</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">CBM S2</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">%PC</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;">%STG</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TYPE</th>
+                <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO POL</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">KET</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fcd34d;">LOADING</th>
+              </tr>
+            </thead>
+            <tbody id="lineOutboundBody" style="background:#fff;"><tr><td colspan="14" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
           </table>
         </div>
         <div id="outboundPanelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
