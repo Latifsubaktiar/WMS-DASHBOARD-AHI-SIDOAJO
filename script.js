@@ -732,11 +732,15 @@ async function fetchStoringStatCard() {
     if (!data.ok) return;
     const s = data.summary;
     const el = document.querySelector('#storingStatCard .stat-value');
-    const sb = document.querySelector('#storingStatCard .stat-sub');
     if (el) { el.textContent = s.total; el.style.color = '#db2777'; }
-    if (sb) sb.innerHTML = `<span style="color:var(--green);font-weight:700">📦 ${s.sumPicked.toLocaleString()} Picked</span> &nbsp;<span class="dn">📋 ${s.sumSisa.toLocaleString()} Sisa</span>`;
-    // update bar + footer
+    // Mini boxes
+    const sr=document.getElementById('strStatRelease'); if(sr) sr.textContent=(s.sumRelease||0).toLocaleString('id-ID');
+    const sp=document.getElementById('strStatPicked');  if(sp) sp.textContent=(s.sumPicked||0).toLocaleString('id-ID');
+    const ss=document.getElementById('strStatStaged');  if(ss) ss.textContent=(s.sumStaged||0).toLocaleString('id-ID');
+    const si=document.getElementById('strStatSisa');    if(si) si.textContent=(s.sumSisa||0).toLocaleString('id-ID');
+    // Pie chart
     const strPct = s.sumRelease>0 ? Math.round(s.sumPicked/s.sumRelease*100) : 0;
+    _makeSVGStatChart('storingStatChart', strPct, '#ec4899');
     const strBar  = document.querySelector('#storingStatCard .stat-bar-fill');
     const strFoot = document.querySelector('#storingStatCard .stat-foot-val');
     if(strBar) setTimeout(()=>strBar.style.width=Math.min(strPct,100)+'%',300);
@@ -1365,11 +1369,15 @@ async function fetchDashboardStats() {
       const{total,checkedIn,selesai,proses,antri,belum,hit,miss}=dataIn.summary;
       inboundTotal=total; inboundSelesai=selesai; inboundCheckedIn=checkedIn; inboundHit=hit; inboundMiss=miss;
       const el=document.querySelector('#inboundStatCard .stat-value');
-      const sb=document.querySelector('#inboundStatCard .stat-sub');
       if(el) el.textContent=total;
-      if(sb) sb.innerHTML=`<span class="up">✅ ${selesai} Finish</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${proses} Proses</span> &nbsp;<span style="color:#f59e0b;font-weight:700">🕐 ${antri} Antri</span> &nbsp;<span class="dn">🔴 ${belum} Belum</span>`;
-      // update bar + footer
+      // Mini boxes
+      const sf=document.getElementById('inbStatFinish'); if(sf) sf.textContent=selesai;
+      const sp=document.getElementById('inbStatProses'); if(sp) sp.textContent=proses;
+      const sa=document.getElementById('inbStatAntri');  if(sa) sa.textContent=antri;
+      const sb2=document.getElementById('inbStatBelum'); if(sb2) sb2.textContent=belum;
+      // Pie chart
       const inPct = total>0 ? Math.round(selesai/total*100) : 0;
+      _makeSVGStatChart('inboundStatChart', inPct, '#16a34a');
       const inBar = document.querySelector('#inboundStatCard .stat-bar-fill');
       const inFoot = document.querySelector('#inboundStatCard .stat-foot-val');
       if(inBar) setTimeout(()=>inBar.style.width=inPct+'%',300);
@@ -1384,11 +1392,15 @@ async function fetchDashboardStats() {
     if(dataOut.ok){
       outboundTotal=dataOut.total; outboundSelesai=dataOut.selesai;
       const el=document.querySelector('#outboundStatCard .stat-value');
-      const sb=document.querySelector('#outboundStatCard .stat-sub');
       if(el) el.textContent=dataOut.total;
-      if(sb) sb.innerHTML=`<span class="up">✅ ${dataOut.selesai} Selesai</span> &nbsp;<span style="color:#2563eb;font-weight:700">⏳ ${dataOut.proses||0} Proses</span> &nbsp;<span class="dn">🕐 ${dataOut.belum||0} Belum</span>`;
-      // update bar + footer
+      // Mini boxes
+      const os=document.getElementById('outStatSelesai'); if(os) os.textContent=dataOut.selesai||0;
+      const op=document.getElementById('outStatProses');  if(op) op.textContent=dataOut.proses||0;
+      const oa=document.getElementById('outStatAntri');   if(oa) oa.textContent=dataOut.antri||0;
+      const ob=document.getElementById('outStatBelum');   if(ob) ob.textContent=dataOut.belum||0;
+      // Pie chart
       const outPct = dataOut.total>0 ? Math.round((dataOut.selesai/dataOut.total)*100) : 0;
+      _makeSVGStatChart('outboundStatChart', outPct, '#d97706');
       const outBar = document.querySelector('#outboundStatCard .stat-bar-fill');
       const outFoot = document.querySelector('#outboundStatCard .stat-foot-val');
       if(outBar) setTimeout(()=>outBar.style.width=outPct+'%',300);
@@ -1684,6 +1696,22 @@ function renderInvAreaTable(rows, s) {
 }
 
 
+// ── SVG stat chart helper ──
+function _makeSVGStatChart(elId, pct, color) {
+  const el = document.getElementById(elId); if(!el) return;
+  const r=28,cx=34,cy=34,circ=2*Math.PI*r;
+  const dash=Math.min(pct,100)/100*circ;
+  const bg='#e2e8f0';
+  el.innerHTML=`<svg width="68" height="68" viewBox="0 0 68 68">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+      stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
+      stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="${color}">${pct}%</text>
+    <text x="${cx}" y="${cy+10}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Progress</text>
+  </svg>`;
+}
+
 async function fetchInventoryAccuracy() {
   try {
     const res  = await fetch(GAS_DASHBOARD_URL + '?action=getInventoryAccuracy');
@@ -1721,8 +1749,18 @@ async function fetchInventoryAccuracy() {
 
     const topBar = document.getElementById('invControlTopBar');
     if (card)   card.style.borderColor = borderColor;
-    if (topBar) topBar.style.background = `linear-gradient(90deg,${gradColors})`;
-    if (icon)   icon.style.background   = iconBg;
+    if (topBar) topBar.innerHTML = `<div style="height:100%;background:linear-gradient(90deg,${gradColors});width:${pct>99?99:pct}%;transition:width 1s;"></div>`;
+    if (icon)   icon.style.background = iconBg;
+
+    // Pie chart Progress CC
+    const ccPct = data.pctCc ? Math.round(parseFloat(data.pctCc)) : Math.round(pct);
+    _makeSVGStatChart('invStatChart', ccPct, color);
+
+    // Mini boxes
+    const il=document.getElementById('invStatLokasi'); if(il&&data.totalLokasi) il.textContent=Number(data.totalLokasi).toLocaleString('id-ID');
+    const ic=document.getElementById('invStatCC');     if(ic&&data.totalCC)     ic.textContent=Number(data.totalCC).toLocaleString('id-ID');
+    const ih=document.getElementById('invStatHit');    if(ih&&data.totalHit)    ih.textContent=Number(data.totalHit).toLocaleString('id-ID');
+    const im=document.getElementById('invStatMiss');   if(im&&data.totalMiss)   im.textContent=Number(data.totalMiss).toLocaleString('id-ID');
 
 
   } catch(e) {
