@@ -1835,19 +1835,81 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
     chart.data.datasets[0].borderWidth = 2;
     chart.update('none');
   } else {
+    // Shadow 3D effect plugin
+    const shadow3d = {
+      id:'shadow3d',
+      beforeDraw(chart) {
+        const {ctx:c} = chart;
+        c.save();
+        c.shadowColor = 'rgba(0,0,0,0.25)';
+        c.shadowBlur = 12;
+        c.shadowOffsetX = 4;
+        c.shadowOffsetY = 8;
+      },
+      afterDraw(chart) {
+        chart.ctx.restore();
+      }
+    };
+
+    // Label plugin
+    const labelPlugin = {
+      id:'pieLabel',
+      afterDatasetsDraw(chart) {
+        const {ctx:c, data} = chart;
+        chart.data.datasets.forEach((dataset, di) => {
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((arc, i) => {
+            const val = dataset.data[i];
+            if (!val || val < 3) return;
+            const mid = (arc.startAngle + arc.endAngle) / 2;
+            const r   = (arc.innerRadius + arc.outerRadius) / 2;
+            const x   = arc.x + Math.cos(mid) * r * 0.75;
+            const y   = arc.y + Math.sin(mid) * r * 0.75;
+            c.save();
+            c.font = 'bold 11px Outfit,sans-serif';
+            c.fillStyle = '#fff';
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            c.shadowColor = 'rgba(0,0,0,0.5)';
+            c.shadowBlur = 3;
+            c.fillText(val + '%', x, y);
+            c.restore();
+          });
+        });
+      }
+    };
+
     new Chart(ctx.getContext('2d'), {
       type: 'pie',
+      plugins: [shadow3d, labelPlugin],
       data: { labels:['Inbound','Storing','Outbound','Belum Selesai'],
         datasets:[{data:[inPct,storePct,outPct,sisa],
           backgroundColor:['#16a34a','#8b5cf6','#d97706',belumColor],
-          borderColor:'#fff', borderWidth:2, hoverOffset:8}] },
+          borderColor:'#fff', borderWidth:2, hoverOffset:10,
+          offset: [4,4,4,2]}] },
       options: { responsive:true, maintainAspectRatio:false,
         plugins:{legend:{display:false},
           tooltip:{backgroundColor:'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',
-            callbacks:{label:ctx2=>` ${ctx2.label}: ${ctx2.raw}%`}}},
-        datalabels:{display:false}
+            callbacks:{label:ctx2=>` ${ctx2.label}: ${ctx2.raw}%`}},
+          datalabels:{display:false}
+        }
       }
     });
+
+    // Tambah total % di bawah chart
+    const totalPct = Math.round(inPct + storePct + outPct - sisa);
+    const avgPct = Math.round((inPct + storePct + outPct) / 3);
+    const wrap = ctx.closest('.donut-wrap');
+    if (wrap) {
+      let totalEl = wrap.querySelector('.pie-total-label');
+      if (!totalEl) {
+        totalEl = document.createElement('div');
+        totalEl.className = 'pie-total-label';
+        totalEl.style.cssText = 'text-align:center;padding:6px 0 4px;font-size:11px;font-weight:700;color:#475569;';
+        wrap.appendChild(totalEl);
+      }
+      totalEl.innerHTML = `<span style="font-size:22px;font-weight:900;color:#1e293b;">${avgPct}%</span> <span style="font-size:10px;color:#94a3b8;">Rata-rata Progres</span>`;
+    }
   }
 }
 
