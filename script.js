@@ -1952,7 +1952,7 @@ async function fetchDailyActivity(){
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <div style="background:#dc2626;padding:4px 10px;display:flex;align-items:center;gap:5px;">
             <div style="width:5px;height:5px;border-radius:50%;background:#fff;opacity:.8;flex-shrink:0;"></div>
-            <span style="font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#fff;">FORECAST ${data.boundaryLabel||''}</span>
+            <span style="font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#fff;">${(() => { const now = new Date(); const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; const m = months[now.getMonth()]; const day = now.getDate(); return 'FORECAST ' + m + ' 1 - ' + day; })()}</span>
           </div>
           <table style="border-collapse:collapse;font-size:10px;width:100%;">
             <thead>
@@ -1991,7 +1991,7 @@ async function fetchDailyActivity(){
             </tbody>
           </table>
         </div>`;
-      floatBox.style.cssText = 'position:absolute;top:-20px;left:160px;z-index:10;';
+      floatBox.style.cssText = 'position:absolute;top:-48px;left:160px;z-index:10;';
       wrap.appendChild(floatBox);
     }
 
