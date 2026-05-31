@@ -909,28 +909,81 @@
           <button onclick="togglePlannerPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
         </div>
 
-        <!-- KPI SUMMARY -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid rgba(200,215,240,0.2);">
-          <div style="padding:20px 24px;border-right:1px solid rgba(200,215,240,0.2);">
-            <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">VENDOR SUPPORTING</div>
-            <div id="plKpiVendor" style="font-size:32px;font-weight:900;color:#d97706;letter-spacing:-1px;line-height:1;">—</div>
-            <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Monthly On-Time Avg</div>
+        <!-- KPI SUMMARY - style selaras dengan panel lain -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+
+          <!-- Vendor Supporting -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#d97706;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">VENDOR SUPPORTING</div>
+                <div style="font-size:14px;">🚛</div>
+              </div>
+              <div id="plKpiVendor" style="font-size:30px;font-weight:900;color:#d97706;letter-spacing:-1px;line-height:1;margin-bottom:3px;">—</div>
+              <div style="font-size:10px;color:#94a3b8;flex:1;">Monthly On-Time Avg</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPlVendor" style="height:100%;background:#d97706;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">ON-TIME AVG</span>
+              <span id="footPlVendor" style="font-weight:900;color:#d97706;">—</span>
+            </div>
           </div>
-          <div style="padding:20px 24px;border-right:1px solid rgba(200,215,240,0.2);">
-            <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">TOTAL COMPLETED LC</div>
-            <div id="plKpiCompleted" style="font-size:32px;font-weight:900;color:#2563eb;letter-spacing:-1px;line-height:1;">—</div>
-            <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Total Load Containers</div>
+
+          <!-- Total Completed LC -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.5s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL COMPLETED LC</div>
+                <div style="font-size:14px;">📦</div>
+              </div>
+              <div id="plKpiCompleted" style="font-size:30px;font-weight:900;color:#2563eb;letter-spacing:-1px;line-height:1;margin-bottom:3px;">—</div>
+              <div style="font-size:10px;color:#94a3b8;flex:1;">Total Load Containers</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div style="height:100%;background:#2563eb;width:100%;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">COMPLETED</span>
+              <span id="footPlCompleted" style="font-weight:900;color:#2563eb;">—</span>
+            </div>
           </div>
-          <div style="padding:20px 24px;border-right:1px solid rgba(200,215,240,0.2);">
-            <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">TOTAL ON-TIME LC</div>
-            <div id="plKpiOnTime" style="font-size:32px;font-weight:900;color:#16a34a;letter-spacing:-1px;line-height:1;">—</div>
-            <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Delivered Within Schedule</div>
+
+          <!-- Total On-Time LC -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#dcfce7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 4s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL ON-TIME LC</div>
+                <div style="font-size:14px;">✅</div>
+              </div>
+              <div id="plKpiOnTime" style="font-size:30px;font-weight:900;color:#16a34a;letter-spacing:-1px;line-height:1;margin-bottom:3px;">—</div>
+              <div style="font-size:10px;color:#94a3b8;flex:1;">Delivered Within Schedule</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPlOnTime" style="height:100%;background:#16a34a;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">ON TIME</span>
+              <span id="footPlOnTime" style="font-weight:900;color:#16a34a;">—</span>
+            </div>
           </div>
-          <div style="padding:20px 24px;">
-            <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">TOTAL DELAYED LC</div>
-            <div id="plKpiDelayed" style="font-size:32px;font-weight:900;color:#dc2626;letter-spacing:-1px;line-height:1;">—</div>
-            <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Requires Dispatch Follow-up</div>
+
+          <!-- Total Delayed LC -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fee2e2 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#dc2626;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 4.5s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL DELAYED LC</div>
+                <div style="font-size:14px;">⚠️</div>
+              </div>
+              <div id="plKpiDelayed" style="font-size:30px;font-weight:900;color:#dc2626;letter-spacing:-1px;line-height:1;margin-bottom:3px;">—</div>
+              <div style="font-size:10px;color:#94a3b8;flex:1;">Requires Dispatch Follow-up</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPlDelayed" style="height:100%;background:#dc2626;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">DELAYED</span>
+              <span id="footPlDelayed" style="font-weight:900;color:#dc2626;">—</span>
+            </div>
           </div>
+
         </div>
 
         <!-- TREND CHART -->
