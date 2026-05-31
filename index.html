@@ -265,7 +265,7 @@
 
 
       <!-- INDEX PLANNER -->
-      <div id="plannerStatCard" onclick="go('page-planner')" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#ffe4e4 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+      <div id="plannerStatCard" onclick="togglePlannerPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#ffe4e4 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
             <div style="width:32px;height:32px;background:#ffe4e4;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">📋</div>
@@ -892,6 +892,80 @@
         </div>
 
         <div id="invPanelFooter" style="padding:8px 28px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);flex-shrink:0;"></div>
+      </div>
+    </div>
+
+    <!-- PLANNER DETAIL PANEL -->
+    <div id="plannerDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;">
+        <div style="padding:14px 20px 12px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(153,27,27,0.06),transparent);">
+          <div>
+            <span style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;"><span class="live-dot"></span>📋 Planner Dashboard — SLA Performance</span>
+            <div id="plannerDetailSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <a href="https://plannerazko.github.io/DashboardPlanning/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:6px 16px;background:linear-gradient(135deg,#991b1b,#b91c1c);border:none;border-radius:var(--r-xs);color:#fff;font-size:12px;font-weight:700;text-decoration:none;box-shadow:0 4px 12px rgba(153,27,27,0.35);">↗ Buka Dashboard Planner</a>
+            <button onclick="togglePlannerPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;border-radius:var(--r-xs);">✕ Tutup</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+          <div style="background:linear-gradient(160deg,#fff 55%,#ffe4e4 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#991b1b;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+            <div style="padding:16px 18px 0;flex:1;">
+              <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">SLA GRW</div>
+              <div id="plannerKpiGrw" style="font-size:36px;font-weight:900;color:#991b1b;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:11px;color:#94a3b8;">SLA Pengiriman ke GRW</div>
+              <div style="height:4px;background:rgba(0,0,0,0.06);margin-top:14px;"><div id="barPlannerGrw" style="height:100%;background:#991b1b;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 18px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">SLA GRW</span>
+              <span id="badgePlannerGrw" style="font-weight:700;">—</span>
+            </div>
+          </div>
+          <div style="background:linear-gradient(160deg,#fff 55%,#ffe4e4 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#dc2626;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.5s ease-in-out infinite;"></div></div>
+            <div style="padding:16px 18px 0;flex:1;">
+              <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">SLA CUSTOMER</div>
+              <div id="plannerKpiCust" style="font-size:36px;font-weight:900;color:#dc2626;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:11px;color:#94a3b8;">SLA Pengiriman ke Customer</div>
+              <div style="height:4px;background:rgba(0,0,0,0.06);margin-top:14px;"><div id="barPlannerCust" style="height:100%;background:#dc2626;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 18px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">SLA CUSTOMER</span>
+              <span id="badgePlannerCust" style="font-weight:700;">—</span>
+            </div>
+          </div>
+          <div style="background:linear-gradient(160deg,#fff 55%,#ffe4e4 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#b91c1c;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 4s ease-in-out infinite;"></div></div>
+            <div style="padding:16px 18px 0;flex:1;">
+              <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">RATA-RATA SLA</div>
+              <div id="plannerKpiAvg" style="font-size:36px;font-weight:900;color:#b91c1c;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:11px;color:#94a3b8;">Rata-rata SLA GRW + Customer</div>
+              <div style="height:4px;background:rgba(0,0,0,0.06);margin-top:14px;"><div id="barPlannerAvg" style="height:100%;background:#b91c1c;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 18px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">AVG SLA</span>
+              <span id="badgePlannerAvg" style="font-weight:700;">—</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px 20px 20px;">
+          <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">📊 Detail SLA Performance</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:#1e293b;">
+                <th style="padding:10px 16px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">INDIKATOR</th>
+                <th style="padding:10px 16px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">NILAI</th>
+                <th style="padding:10px 16px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">KETERANGAN</th>
+                <th style="padding:10px 16px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="plannerDetailBody">
+              <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-3)">Memuat...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="plannerDetailFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
       </div>
     </div>
 
