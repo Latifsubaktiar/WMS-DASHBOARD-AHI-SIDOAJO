@@ -1897,7 +1897,6 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
     });
 
     // Tambah total % di bawah chart
-    const totalPct = Math.round(inPct + storePct + outPct - sisa);
     const avgPct = Math.round((inPct + storePct + outPct) / 3);
     const wrap = ctx.closest('.donut-wrap');
     if (wrap) {
