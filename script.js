@@ -1915,11 +1915,11 @@ async function fetchDailyActivity(){
     const wrap = document.getElementById('dailyActivityChartWrap');
     if (!wrap) return;
 
-    // Warna persis seperti Analyst
+    // Warna PERSIS seperti referensi foto Analyst
     const C = {
-      inbound  : { bar: 'rgba(153,27,27,.88)',  label: '#b91c1c' },
-      outbound : { bar: 'rgba(234,88,12,.88)',   label: '#c2410c' },
-      inventory: { bar: 'rgba(51,65,85,.80)',    label: '#475569' },
+      inbound  : { bar: '#991b1b', label: '#7f1d1d' },
+      outbound : { bar: '#ea580c', label: '#c2410c' },
+      inventory: { bar: '#334155', label: '#1e293b' },
       occupancy: '#7c3aed',
       capacity : 'rgba(14,165,233,.6)',
       forecast : 'rgba(37,99,235,.75)',
@@ -1928,66 +1928,65 @@ async function fetchDailyActivity(){
     const d        = data.data;
     const labels   = data.labels;
     const boundary = data.actualBoundaryIdx;
-    const fmt      = v => v >= 1000 ? (v/1000).toFixed(1)+'K' : Math.round(v||0).toString();
+    const bl = v => (!v || v === 0) ? '' : v >= 10000 ? (v/1000).toFixed(1)+'K' : Math.round(v).toLocaleString('id-ID');
 
     wrap.innerHTML = '';
-    wrap.style.height = '300px';
+    wrap.style.height = '320px';
     wrap.style.position = 'relative';
     wrap.style.padding = '8px 12px 0';
 
-    // Forecast float box (persis Analyst)
+    // ── Forecast float box COMPACT ──
     if (data.accuracy) {
-      const a   = data.accuracy;
-      const fN  = v => Math.round(v||0).toLocaleString('id-ID');
+      const a  = data.accuracy;
+      const fN = v => Math.round(v||0).toLocaleString('id-ID');
       const akb = p => {
         const v = parseFloat(p||0);
-        const c = v >= 95 ? 'akb-g' : v >= 85 ? 'akb-y' : 'akb-r';
-        return `<span style="display:inline-block;padding:3px 14px;border-radius:6px;font-size:11px;font-weight:800;
-          ${v>=95?'background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.3);color:#4ade80':
-            v>=85?'background:rgba(217,119,6,.15);border:1px solid rgba(217,119,6,.3);color:#fbbf24':
-                  'background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#f87171'}">${v.toFixed(2)}%</span>`;
+        const bg = v>=95?'rgba(22,163,74,.18)':v>=80?'rgba(217,119,6,.18)':'rgba(220,38,38,.18)';
+        const bc = v>=95?'rgba(22,163,74,.4)':v>=80?'rgba(217,119,6,.4)':'rgba(220,38,38,.4)';
+        const fc = v>=95?'#16a34a':v>=80?'#d97706':'#dc2626';
+        return `<span style="display:inline-block;padding:2px 10px;border-radius:5px;font-size:11px;font-weight:900;background:${bg};border:1px solid ${bc};color:${fc};">${v.toFixed(2)}%</span>`;
       };
       const floatBox = document.createElement('div');
-      floatBox.style.cssText = 'position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:auto;';
+      floatBox.style.cssText = 'position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:10;';
       floatBox.innerHTML = `
-        <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:500px;">
-          <div style="background:#f8fafc;padding:7px 14px 6px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #e2e8f0;font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#334155;">
-            <div style="width:6px;height:6px;border-radius:50%;background:#dc2626;box-shadow:0 0 6px rgba(220,38,38,.5);flex-shrink:0;"></div>
-            ${a.title || ('FORECAST ' + (data.boundaryLabel||''))}
+        <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+          <div style="background:#dc2626;padding:5px 12px;display:flex;align-items:center;gap:5px;">
+            <div style="width:5px;height:5px;border-radius:50%;background:#fff;opacity:.8;"></div>
+            <span style="font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#fff;">FORECAST ${data.boundaryLabel||''}</span>
           </div>
-          <table style="width:100%;border-collapse:collapse;font-size:10px;">
+          <table style="border-collapse:collapse;font-size:10px;width:100%;">
             <thead>
               <tr>
-                <th style="padding:6px 12px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;" colspan="1"></th>
-                <th style="padding:6px 12px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);" colspan="2">INBOUND</th>
-                <th style="padding:6px 12px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);" colspan="2">DEMAND IN</th>
-                <th style="padding:6px 12px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);" colspan="2">OUTBOUND</th>
+                <th style="padding:4px 10px;background:#1e293b;color:#fff;font-size:8px;font-weight:700;text-align:center;min-width:70px;"></th>
+                <th colspan="2" style="padding:4px 10px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Inbound</th>
+                <th colspan="2" style="padding:4px 10px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Demand In</th>
+                <th colspan="2" style="padding:4px 10px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Outbound</th>
               </tr>
               <tr style="background:#f8fafc;">
-                <th style="padding:5px 10px;font-size:7.5px;font-weight:700;color:#64748b;text-align:left;border:1px solid #e2e8f0;">Parameter</th>
-                <th style="padding:5px 8px;font-size:7.5px;font-weight:700;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:5px 8px;font-size:7.5px;font-weight:700;color:#334155;text-align:center;border:1px solid #e2e8f0;font-weight:800;">Actual</th>
-                <th style="padding:5px 8px;font-size:7.5px;font-weight:700;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:5px 8px;font-size:7.5px;font-weight:700;color:#334155;text-align:center;border:1px solid #e2e8f0;font-weight:800;">Actual</th>
-                <th style="padding:5px 8px;font-size:7.5px;font-weight:700;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:5px 8px;font-size:7.5px;font-weight:700;color:#334155;text-align:center;border:1px solid #e2e8f0;font-weight:800;">Actual</th>
+                <th style="padding:3px 8px;font-size:7.5px;font-weight:700;color:#64748b;text-align:left;border:1px solid #e2e8f0;"></th>
+                <th style="padding:3px 7px;font-size:7.5px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
+                <th style="padding:3px 7px;font-size:7.5px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
+                <th style="padding:3px 7px;font-size:7.5px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
+                <th style="padding:3px 7px;font-size:7.5px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
+                <th style="padding:3px 7px;font-size:7.5px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
+                <th style="padding:3px 7px;font-size:7.5px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="padding:6px 10px;font-size:9px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">CBM</td>
-                <td style="padding:6px 8px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.inboundForecast)}</td>
-                <td style="padding:6px 8px;text-align:center;font-size:13px;font-weight:800;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.inboundActual)}</td>
-                <td style="padding:6px 8px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.demandForecast)}</td>
-                <td style="padding:6px 8px;text-align:center;font-size:13px;font-weight:800;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.demandActual)}</td>
-                <td style="padding:6px 8px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.outboundForecast)}</td>
-                <td style="padding:6px 8px;text-align:center;font-size:13px;font-weight:800;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.outboundActual)}</td>
+                <td style="padding:4px 8px;font-size:9px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">CBM</td>
+                <td style="padding:4px 7px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.inboundForecast)}</td>
+                <td style="padding:4px 7px;text-align:center;font-size:12px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.inboundActual)}</td>
+                <td style="padding:4px 7px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.demandForecast)}</td>
+                <td style="padding:4px 7px;text-align:center;font-size:12px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.demandActual)}</td>
+                <td style="padding:4px 7px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.outboundForecast)}</td>
+                <td style="padding:4px 7px;text-align:center;font-size:12px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.outboundActual)}</td>
               </tr>
               <tr style="background:#f8fafc;">
-                <td style="padding:6px 10px;font-size:9px;font-weight:800;color:#475569;border:1px solid #e2e8f0;">% Akurasi</td>
-                <td colspan="2" style="padding:6px 8px;text-align:center;border:1px solid #e2e8f0;">${akb(a.inboundPct)}</td>
-                <td colspan="2" style="padding:6px 8px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
-                <td colspan="2" style="padding:6px 8px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
+                <td style="padding:4px 8px;font-size:9px;font-weight:800;color:#475569;border:1px solid #e2e8f0;">% Akurasi</td>
+                <td colspan="2" style="padding:4px 7px;text-align:center;border:1px solid #e2e8f0;">${akb(a.inboundPct)}</td>
+                <td colspan="2" style="padding:4px 7px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
+                <td colspan="2" style="padding:4px 7px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
               </tr>
             </tbody>
           </table>
@@ -1998,19 +1997,15 @@ async function fetchDailyActivity(){
     // Canvas
     const canvas = document.createElement('canvas');
     canvas.id = 'troughputChart';
-    canvas.style.cssText = 'width:100%;height:290px;';
+    canvas.style.cssText = 'width:100%;height:100%;';
     wrap.appendChild(canvas);
     const ctx = canvas.getContext('2d');
     const existing = Chart.getChart(ctx.canvas); if (existing) existing.destroy();
-
-    // Custom plugin: label di bar + % occupancy + garis pemisah
-    const bl = v => (!v || v === 0) ? '' : v >= 10000 ? (v/1000).toFixed(1)+'K' : Math.round(v).toLocaleString('id-ID');
 
     const troughputPlugin = {
       id: 'troughputPlugin',
       afterDatasetsDraw(chart) {
         const { ctx: c, chartArea } = chart;
-        // Garis pemisah ACTUAL vs FORECAST
         if (boundary >= 0 && boundary < labels.length - 1) {
           const meta0 = chart.getDatasetMeta(0);
           if (meta0.data[boundary] && meta0.data[boundary+1]) {
@@ -2024,25 +2019,24 @@ async function fetchDailyActivity(){
             c.beginPath();
             c.setLineDash([6,4]);
             c.strokeStyle = '#dc2626';
-            c.lineWidth = 1.5;
-            c.moveTo(xPos, chartArea.top + 24);
+            c.lineWidth = 2;
+            c.moveTo(xPos, chartArea.top + 8);
             c.lineTo(xPos, chartArea.bottom);
             c.stroke();
             c.setLineDash([]);
-            c.font = 'bold 8px Outfit,sans-serif';
+            c.font = 'bold 8px sans-serif';
             c.fillStyle = '#dc2626';
             c.textAlign = 'right';
-            c.fillText('◀ ACTUAL', xPos - 4, chartArea.top + 36);
-            c.fillStyle = '#2563eb';
+            c.fillText('◀ ACTUAL', xPos - 4, chartArea.top + 20);
+            c.fillStyle = '#64748b';
             c.textAlign = 'left';
-            c.fillText('FORECAST ▶', xPos + 4, chartArea.top + 36);
+            c.fillText('FORECAST ▶', xPos + 4, chartArea.top + 20);
             c.restore();
           }
         }
       },
       afterDraw(chart) {
         const { ctx: c } = chart;
-        // Label % di atas titik occupancy
         chart.data.datasets.forEach((dataset, di) => {
           if (dataset.label !== 'Occupancy (%)') return;
           const meta = chart.getDatasetMeta(di);
@@ -2050,11 +2044,11 @@ async function fetchDailyActivity(){
             const val = dataset.data[i];
             if (!val) return;
             c.save();
-            c.font = 'bold 11px Outfit,sans-serif';
+            c.font = 'bold 11px sans-serif';
             c.fillStyle = C.occupancy;
             c.textAlign = 'center';
             c.textBaseline = 'bottom';
-            c.fillText(val + '%', point.x, point.y - 5);
+            c.fillText(val + '%', point.x, point.y - 4);
             c.restore();
           });
         });
@@ -2065,181 +2059,54 @@ async function fetchDailyActivity(){
       data: {
         labels,
         datasets: [
-          {
-            type: 'bar',
-            label: 'Inbound (CBM)',
-            data: d.map(r => r.inbound),
-            backgroundColor: C.inbound.bar,
-            borderRadius: 5,
-            borderSkipped: false,
-            yAxisID: 'yL',
-            order: 3,
-            datalabels: {
-              anchor: 'end', align: 'top', offset: 0,
-              color: C.inbound.label,
-              font: { weight: '700', size: 9 },
-              formatter: bl
-            }
-          },
-          {
-            type: 'bar',
-            label: 'Outbound (CBM)',
-            data: d.map(r => r.outbound),
-            backgroundColor: C.outbound.bar,
-            borderRadius: 5,
-            borderSkipped: false,
-            yAxisID: 'yL',
-            order: 3,
-            datalabels: {
-              anchor: 'end', align: 'top', offset: 0,
-              color: C.outbound.label,
-              font: { weight: '700', size: 9 },
-              formatter: bl
-            }
-          },
-          {
-            type: 'bar',
-            label: 'Inventory (CBM)',
-            data: d.map(r => r.inventory),
-            backgroundColor: C.inventory.bar,
-            borderRadius: 5,
-            borderSkipped: false,
-            yAxisID: 'yL',
-            order: 3,
-            datalabels: {
-              anchor: 'end', align: 'top', offset: 0,
-              color: C.inventory.label,
-              font: { weight: '700', size: 9 },
-              formatter: bl
-            }
-          },
-          {
-            type: 'line',
-            label: 'Occupancy (%)',
-            data: d.map(r => r.occupancy),
-            borderColor: C.occupancy,
-            backgroundColor: 'rgba(124,58,237,.06)',
-            borderWidth: 2.5,
-            tension: 0.3,
-            fill: false,
-            pointRadius: 5,
-            pointBackgroundColor: C.occupancy,
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            yAxisID: 'yR',
-            order: 1,
-            datalabels: { display: false }
-          },
-          {
-            type: 'line',
-            label: 'Capacity',
-            data: d.map(r => r.capacity),
-            borderColor: C.capacity,
-            backgroundColor: 'transparent',
-            borderWidth: 1.8,
-            borderDash: [8,5],
-            pointRadius: 0,
-            tension: 0,
-            yAxisID: 'yL',
-            order: 2,
-            datalabels: { display: false }
-          },
-          {
-            type: 'line',
-            label: 'Forecast Outbound',
-            data: d.map(r => r.forecastOB),
-            borderColor: C.forecast,
-            backgroundColor: 'transparent',
-            borderWidth: 1.8,
-            borderDash: [6,4],
-            pointRadius: 4,
-            pointBackgroundColor: C.forecast,
-            pointBorderColor: '#fff',
-            pointBorderWidth: 1.5,
-            tension: 0.2,
-            yAxisID: 'yL',
-            order: 2,
-            datalabels: { display: false }
-          }
+          { type:'bar', label:'Inbound (CBM)',   data:d.map(r=>r.inbound),   backgroundColor:C.inbound.bar,   borderRadius:4, borderSkipped:false, yAxisID:'yL', order:3, datalabels:{anchor:'end',align:'top',offset:0,color:C.inbound.label,  font:{weight:'700',size:9},formatter:bl} },
+          { type:'bar', label:'Outbound (CBM)',  data:d.map(r=>r.outbound),  backgroundColor:C.outbound.bar,  borderRadius:4, borderSkipped:false, yAxisID:'yL', order:3, datalabels:{anchor:'end',align:'top',offset:0,color:C.outbound.label, font:{weight:'700',size:9},formatter:bl} },
+          { type:'bar', label:'Inventory (CBM)', data:d.map(r=>r.inventory), backgroundColor:C.inventory.bar, borderRadius:4, borderSkipped:false, yAxisID:'yL', order:3, datalabels:{anchor:'end',align:'top',offset:0,color:C.inventory.label,font:{weight:'700',size:9},formatter:bl} },
+          { type:'line', label:'Occupancy (%)',   data:d.map(r=>r.occupancy), borderColor:C.occupancy, backgroundColor:'rgba(124,58,237,.06)', borderWidth:2.5, tension:0.3, fill:false, pointRadius:5, pointBackgroundColor:C.occupancy, pointBorderColor:'#111', pointBorderWidth:2, yAxisID:'yR', order:1, datalabels:{display:false} },
+          { type:'line', label:'Capacity',        data:d.map(r=>r.capacity),  borderColor:C.capacity, backgroundColor:'transparent', borderWidth:1.8, borderDash:[8,5], pointRadius:0, tension:0, yAxisID:'yL', order:2, datalabels:{display:false} },
+          { type:'line', label:'Forecast Outbound', data:d.map(r=>r.forecastOB), borderColor:C.forecast, backgroundColor:'transparent', borderWidth:1.8, borderDash:[6,4], pointRadius:4, pointBackgroundColor:C.forecast, pointBorderColor:'#111', pointBorderWidth:1.5, tension:0.2, yAxisID:'yL', order:2, datalabels:{display:false} }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        animation: { duration: 800, easing: 'easeOutQuart' },
-        layout: { padding: { top: 52, right: 8 } },
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        animation:{ duration:800, easing:'easeOutQuart' },
+        layout:{ padding:{ top:28, right:8 } },
         scales: {
-          x: {
-            grid: { color: 'rgba(0,0,0,0.04)' },
-            ticks: { maxRotation: 0, font: { size: 9, weight: '600' }, color: '#475569' },
-            border: { display: false }
-          },
-          yL: {
-            type: 'linear',
-            position: 'left',
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.04)' },
-            ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v, font: { size: 9 }, color: '#475569' },
-            border: { display: false }
-          },
-          yR: {
-            type: 'linear',
-            position: 'right',
-            min: 0, max: 100,
-            grid: { display: false },
-            ticks: { callback: v => v + '%', stepSize: 25, color: C.occupancy, font: { size: 10, weight: '700' } },
-            border: { display: false }
-          }
+          x:  { grid:{color:'rgba(0,0,0,0.04)'}, ticks:{maxRotation:0,font:{size:9,weight:'600'},color:'#475569'}, border:{display:false} },
+          yL: { type:'linear', position:'left',  beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v,font:{size:9},color:'#475569'}, border:{display:false} },
+          yR: { type:'linear', position:'right', min:0, max:100, grid:{display:false}, ticks:{callback:v=>v+'%',stepSize:25,color:C.occupancy,font:{size:10,weight:'700'}}, border:{display:false} }
         },
         plugins: {
-          legend: {
-            display: false
+          legend:{ display:false },
+          tooltip:{
+            backgroundColor:'rgba(10,10,10,.95)', borderColor:'rgba(212,160,23,.2)', borderWidth:1,
+            titleColor:'#e8c35a', titleFont:{weight:'700',size:12}, bodyColor:'#888', bodyFont:{size:11},
+            padding:{top:10,bottom:10,left:14,right:14}, cornerRadius:8,
+            callbacks:{ label: c2 => { const v=c2.parsed.y; if(!v&&v!==0)return''; if(c2.dataset.yAxisID==='yR')return' ● '+c2.dataset.label+': '+v.toFixed(0)+'%'; return' ● '+c2.dataset.label+': '+Math.round(v).toLocaleString('id-ID')+' CBM'; } }
           },
-          tooltip: {
-            backgroundColor: 'rgba(10,10,10,.95)',
-            borderColor: 'rgba(212,160,23,.2)',
-            borderWidth: 1,
-            titleColor: '#e8c35a',
-            titleFont: { weight: '700', size: 12 },
-            bodyColor: '#888',
-            bodyFont: { size: 11 },
-            padding: { top: 10, bottom: 10, left: 14, right: 14 },
-            cornerRadius: 8,
-            callbacks: {
-              label: ctx2 => {
-                const v = ctx2.parsed.y;
-                if (!v && v !== 0) return '';
-                if (ctx2.dataset.yAxisID === 'yR') return ' ● ' + ctx2.dataset.label + ': ' + v.toFixed(0) + '%';
-                return ' ● ' + ctx2.dataset.label + ': ' + Math.round(v).toLocaleString('id-ID') + ' CBM';
-              }
-            }
-          },
-          datalabels: {
-            display: ctx2 => ctx2.dataset.type === 'bar'
-          }
+          datalabels:{ display: c2 => c2.dataset.type==='bar' }
         }
       },
-      plugins: [troughputPlugin]
+      plugins:[troughputPlugin]
     });
 
-    // Legend manual seperti Analyst
+    // Legend manual
     const legendDiv = document.createElement('div');
-    legendDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:6px 0 0;font-size:10px;font-weight:600;color:#475569;';
+    legendDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:4px 0 0;font-size:10px;font-weight:600;color:#475569;';
     legendDiv.innerHTML = `
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.inbound.bar};border-radius:2px;display:inline-block;"></span>Inbound</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.outbound.bar};border-radius:2px;display:inline-block;"></span>Outbound</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.inventory.bar};border-radius:2px;display:inline-block;"></span>Inventory</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.occupancy};border-radius:50%;display:inline-block;"></span>Occupancy (%)</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:2px;background:${C.capacity};border-style:dashed;display:inline-block;"></span>Capacity</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:2px;background:${C.forecast};border-style:dashed;display:inline-block;"></span>Forecast Out</span>
-    `;
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.inbound.bar};border-radius:2px;display:inline-block;"></span>Inbound (CBM)</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.outbound.bar};border-radius:2px;display:inline-block;"></span>Outbound (CBM)</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.inventory.bar};border-radius:2px;display:inline-block;"></span>Inventory (CBM)</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:${C.occupancy};border-radius:50%;display:inline-block;"></span>Occupancy (%)</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;background:${C.capacity};display:inline-block;border-top:2px dashed ${C.capacity};"></span>Capacity</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;background:${C.forecast};display:inline-block;border-top:2px dashed ${C.forecast};"></span>Forecast Out</span>`;
     wrap.appendChild(legendDiv);
 
   } catch(e) {
     console.error('Troughput error:', e);
-    const wrap = document.getElementById('dailyActivityChartWrap');
-    if (wrap) wrap.innerHTML = `<div style="padding:20px;color:#dc2626;font-size:12px;">Error: ${e.message}</div>`;
+    const w = document.getElementById('dailyActivityChartWrap');
+    if (w) w.innerHTML = `<div style="padding:20px;color:#dc2626;font-size:12px;">Error: ${e.message}</div>`;
   }
 }
 function addBeam(el, color) {
