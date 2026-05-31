@@ -2105,6 +2105,14 @@ async function fetchPlannerDetail() {
     const kc = document.getElementById('plKpiCompleted'); if(kc) kc.textContent = s.totalCompleted + ' LC';
     const ko = document.getElementById('plKpiOnTime');    if(ko) ko.textContent = s.totalOnTime + ' LC';
     const kd = document.getElementById('plKpiDelayed');   if(kd) kd.textContent = s.totalDelayed + ' LC';
+    // Footer & bar KPI cards
+    const fv = document.getElementById('footPlVendor');    if(fv) fv.textContent = s.vendorSupporting + '%';
+    const fc = document.getElementById('footPlCompleted'); if(fc) fc.textContent = s.totalCompleted + ' LC';
+    const fo = document.getElementById('footPlOnTime');    if(fo) fo.textContent = s.totalOnTime + ' LC';
+    const fd = document.getElementById('footPlDelayed');   if(fd) fd.textContent = s.totalDelayed + ' LC';
+    const bv = document.getElementById('barPlVendor');  if(bv) setTimeout(()=>bv.style.width=Math.min(parseFloat(s.vendorSupporting),100)+'%',300);
+    const bo = document.getElementById('barPlOnTime');  if(bo) setTimeout(()=>bo.style.width=s.totalCompleted>0?Math.round(s.totalOnTime/s.totalCompleted*100)+'%':'0%',300);
+    const bd = document.getElementById('barPlDelayed'); if(bd) setTimeout(()=>bd.style.width=s.totalCompleted>0?Math.min(Math.round(s.totalDelayed/s.totalCompleted*100)*3,100)+'%':'0%',300);
 
     // ── TREND CHART ──
     const trendCtx = document.getElementById('plTrendChart');
