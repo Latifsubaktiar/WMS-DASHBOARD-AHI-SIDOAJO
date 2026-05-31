@@ -1918,7 +1918,7 @@ async function fetchDailyActivity(){
     // Warna PERSIS seperti referensi foto Analyst
     const C = {
       inbound  : { bar: '#991b1b', label: '#7f1d1d' },
-      outbound : { bar: '#ea580c', label: '#c2410c' },
+      outbound : { bar: '#f97316', label: '#ea580c' },
       inventory: { bar: '#334155', label: '#1e293b' },
       occupancy: '#7c3aed',
       capacity : 'rgba(14,165,233,.6)',
@@ -1944,10 +1944,10 @@ async function fetchDailyActivity(){
         const bg = v>=95?'rgba(22,163,74,.18)':v>=80?'rgba(217,119,6,.18)':'rgba(220,38,38,.18)';
         const bc = v>=95?'rgba(22,163,74,.4)':v>=80?'rgba(217,119,6,.4)':'rgba(220,38,38,.4)';
         const fc = v>=95?'#16a34a':v>=80?'#d97706':'#dc2626';
-        return `<span style="display:inline-block;padding:2px 10px;border-radius:5px;font-size:11px;font-weight:900;background:${bg};border:1px solid ${bc};color:${fc};">${v.toFixed(2)}%</span>`;
+        return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;background:${bg};border:1px solid ${bc};color:${fc};">${v.toFixed(2)}%</span>`;
       };
       const floatBox = document.createElement('div');
-      floatBox.style.cssText = 'position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:10;';
+      floatBox.style.cssText = 'position:absolute;top:2px;right:8px;z-index:10;';
       floatBox.innerHTML = `
         <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.12);">
           <div style="background:#dc2626;padding:5px 12px;display:flex;align-items:center;gap:5px;">
@@ -1957,36 +1957,36 @@ async function fetchDailyActivity(){
           <table style="border-collapse:collapse;font-size:10px;width:100%;">
             <thead>
               <tr>
-                <th style="padding:4px 10px;background:#1e293b;color:#fff;font-size:8px;font-weight:700;text-align:center;min-width:70px;"></th>
-                <th colspan="2" style="padding:4px 10px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Inbound</th>
-                <th colspan="2" style="padding:4px 10px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Demand In</th>
-                <th colspan="2" style="padding:4px 10px;background:#dc2626;color:#fff;font-size:8px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Outbound</th>
+                <th style="padding:3px 8px;background:#1e293b;color:#fff;font-size:7.5px;font-weight:700;text-align:center;min-width:55px;"></th>
+                <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Inbound</th>
+                <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Demand In</th>
+                <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Outbound</th>
               </tr>
               <tr style="background:#f8fafc;">
-                <th style="padding:3px 8px;font-size:7.5px;font-weight:700;color:#64748b;text-align:left;border:1px solid #e2e8f0;"></th>
-                <th style="padding:3px 7px;font-size:7.5px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:3px 7px;font-size:7.5px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
-                <th style="padding:3px 7px;font-size:7.5px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:3px 7px;font-size:7.5px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
-                <th style="padding:3px 7px;font-size:7.5px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:3px 7px;font-size:7.5px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
+                <th style="padding:2px 6px;font-size:7px;font-weight:700;color:#64748b;text-align:left;border:1px solid #e2e8f0;"></th>
+                <th style="padding:2px 6px;font-size:7px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
+                <th style="padding:2px 6px;font-size:7px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
+                <th style="padding:2px 6px;font-size:7px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
+                <th style="padding:2px 6px;font-size:7px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
+                <th style="padding:2px 6px;font-size:7px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
+                <th style="padding:2px 6px;font-size:7px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="padding:4px 8px;font-size:9px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">CBM</td>
-                <td style="padding:4px 7px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.inboundForecast)}</td>
-                <td style="padding:4px 7px;text-align:center;font-size:12px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.inboundActual)}</td>
-                <td style="padding:4px 7px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.demandForecast)}</td>
-                <td style="padding:4px 7px;text-align:center;font-size:12px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.demandActual)}</td>
-                <td style="padding:4px 7px;text-align:center;color:#94a3b8;font-size:10px;border:1px solid #e2e8f0;">${fN(a.outboundForecast)}</td>
-                <td style="padding:4px 7px;text-align:center;font-size:12px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.outboundActual)}</td>
+                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">CBM</td>
+                <td style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:9px;border:1px solid #e2e8f0;">${fN(a.inboundForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.inboundActual)}</td>
+                <td style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:9px;border:1px solid #e2e8f0;">${fN(a.demandForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.demandActual)}</td>
+                <td style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:9px;border:1px solid #e2e8f0;">${fN(a.outboundForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.outboundActual)}</td>
               </tr>
               <tr style="background:#f8fafc;">
-                <td style="padding:4px 8px;font-size:9px;font-weight:800;color:#475569;border:1px solid #e2e8f0;">% Akurasi</td>
-                <td colspan="2" style="padding:4px 7px;text-align:center;border:1px solid #e2e8f0;">${akb(a.inboundPct)}</td>
-                <td colspan="2" style="padding:4px 7px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
-                <td colspan="2" style="padding:4px 7px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
+                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;">% Akurasi</td>
+                <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.inboundPct)}</td>
+                <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
+                <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
               </tr>
             </tbody>
           </table>
@@ -2071,7 +2071,7 @@ async function fetchDailyActivity(){
         responsive:true, maintainAspectRatio:false,
         interaction:{ mode:'index', intersect:false },
         animation:{ duration:800, easing:'easeOutQuart' },
-        layout:{ padding:{ top:28, right:8 } },
+        layout:{ padding:{ top:12, right:8 } },
         scales: {
           x:  { grid:{color:'rgba(0,0,0,0.04)'}, ticks:{maxRotation:0,font:{size:9,weight:'600'},color:'#475569'}, border:{display:false} },
           yL: { type:'linear', position:'left',  beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v,font:{size:9},color:'#475569'}, border:{display:false} },
