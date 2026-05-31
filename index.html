@@ -201,148 +201,84 @@
     <div class="stats-grid">
 
       <!-- INBOUND TODAY -->
-      <div id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;padding:14px 14px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#dbeafe 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
-            <div style="width:30px;height:30px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:4px;">📦</div>
-            <div class="stat-value" style="font-size:38px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1;">—</div>
-            <div style="font-size:11px;font-weight:700;color:#1e293b;margin-top:2px;">Inbound Today</div>
-            <div class="stat-sub" style="font-size:9.5px;color:#94a3b8;margin-top:1px;">Armada masuk DC</div>
+            <div style="width:32px;height:32px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">📦</div>
+            <div class="stat-value" style="font-size:36px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Inbound Today</div>
+            <div class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;">Armada masuk DC</div>
           </div>
-          <div id="inboundStatChart" style="width:68px;height:68px;flex-shrink:0;"></div>
+          <div id="inboundStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
         </div>
-        <!-- Mini boxes -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:6px 0;">
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#16a34a;text-transform:uppercase;">✅ Finish</div>
-            <div id="inbStatFinish" style="font-size:15px;font-weight:900;color:#16a34a;line-height:1.2;">0</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#2563eb;text-transform:uppercase;">⏳ Proses</div>
-            <div id="inbStatProses" style="font-size:15px;font-weight:900;color:#2563eb;line-height:1.2;">0</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#d97706;text-transform:uppercase;">🕐 Antri</div>
-            <div id="inbStatAntri" style="font-size:15px;font-weight:900;color:#d97706;line-height:1.2;">0</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">🔴 Belum</div>
-            <div id="inbStatBelum" style="font-size:15px;font-weight:900;color:#dc2626;line-height:1.2;">0</div>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">✅ FINISH</div><div id="inbStatFinish" style="font-size:18px;font-weight:900;color:#16a34a;line-height:1.1;">—</div></div><div style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">⏳ PROSES</div><div id="inbStatProses" style="font-size:18px;font-weight:900;color:#2563eb;line-height:1.1;">—</div></div><div style="background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#d97706;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">🕐 ANTRI</div><div id="inbStatAntri" style="font-size:18px;font-weight:900;color:#d97706;line-height:1.1;">—</div></div><div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">🔴 BELUM</div><div id="inbStatBelum" style="font-size:18px;font-weight:900;color:#dc2626;line-height:1.1;">—</div></div>
         </div>
         <div style="height:3px;background:rgba(0,0,0,0.06);"><div class="stat-bar-fill" style="height:100%;background:#3b82f6;width:0%;transition:width 1s;"></div></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:9px;">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
           <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">INBOUND</span>
           <span class="stat-foot-val" style="font-weight:900;color:#2563eb;">—</span>
         </div>
       </div>
 
       <!-- STORING TODAY -->
-      <div id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 55%,#fce7f3 100%);border:1px solid #e2e8f0;padding:14px 14px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#fce7f3 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
-            <div style="width:30px;height:30px;background:#fce7f3;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:4px;">🏗️</div>
-            <div class="stat-value" style="font-size:38px;font-weight:900;color:#db2777;letter-spacing:-2px;line-height:1;">—</div>
-            <div style="font-size:11px;font-weight:700;color:#1e293b;margin-top:2px;">Storing Today</div>
-            <div class="stat-sub" style="font-size:9.5px;color:#94a3b8;margin-top:1px;">Picking progress</div>
+            <div style="width:32px;height:32px;background:#fce7f3;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">🏗️</div>
+            <div class="stat-value" style="font-size:36px;font-weight:900;color:#db2777;letter-spacing:-2px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Storing Today</div>
+            <div class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;">Picking progress</div>
           </div>
-          <div id="storingStatChart" style="width:68px;height:68px;flex-shrink:0;"></div>
+          <div id="storingStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
         </div>
-        <!-- Mini boxes -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:6px 0;">
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#d97706;text-transform:uppercase;">RELEASE</div>
-            <div id="strStatRelease" style="font-size:15px;font-weight:900;color:#d97706;line-height:1.2;">—</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#059669;text-transform:uppercase;">PICKED</div>
-            <div id="strStatPicked" style="font-size:15px;font-weight:900;color:#059669;line-height:1.2;">—</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#db2777;text-transform:uppercase;">STAGED</div>
-            <div id="strStatStaged" style="font-size:15px;font-weight:900;color:#db2777;line-height:1.2;">—</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">SISA</div>
-            <div id="strStatSisa" style="font-size:15px;font-weight:900;color:#dc2626;line-height:1.2;">—</div>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#d97706;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">RELEASE</div><div id="strStatRelease" style="font-size:18px;font-weight:900;color:#d97706;line-height:1.1;">—</div></div><div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">PICKED</div><div id="strStatPicked" style="font-size:18px;font-weight:900;color:#059669;line-height:1.1;">—</div></div><div style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#db2777;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">STAGED</div><div id="strStatStaged" style="font-size:18px;font-weight:900;color:#db2777;line-height:1.1;">—</div></div><div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">SISA</div><div id="strStatSisa" style="font-size:18px;font-weight:900;color:#dc2626;line-height:1.1;">—</div></div>
         </div>
         <div style="height:3px;background:rgba(0,0,0,0.06);"><div class="stat-bar-fill" style="height:100%;background:#ec4899;width:0%;transition:width 1s;"></div></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:9px;">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
           <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">STORING</span>
           <span class="stat-foot-val" style="font-weight:900;color:#db2777;">—</span>
         </div>
       </div>
 
       <!-- OUTBOUND TODAY -->
-      <div id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;padding:14px 14px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#fef3c7 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
-            <div style="width:30px;height:30px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:4px;">🚚</div>
-            <div id="outboundStatVal" class="stat-value" style="font-size:38px;font-weight:900;color:#d97706;letter-spacing:-2px;line-height:1;">—</div>
-            <div style="font-size:11px;font-weight:700;color:#1e293b;margin-top:2px;">Outbound Today</div>
-            <div id="outboundStatSub" class="stat-sub" style="font-size:9.5px;color:#94a3b8;margin-top:1px;">Armada keluar DC</div>
+            <div style="width:32px;height:32px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">🚚</div>
+            <div id="outboundStatVal" class="stat-value" style="font-size:36px;font-weight:900;color:#d97706;letter-spacing:-2px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Outbound Today</div>
+            <div id="outboundStatSub" class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;">Armada keluar DC</div>
           </div>
-          <div id="outboundStatChart" style="width:68px;height:68px;flex-shrink:0;"></div>
+          <div id="outboundStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
         </div>
-        <!-- Mini boxes -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:6px 0;">
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#16a34a;text-transform:uppercase;">✅ Selesai</div>
-            <div id="outStatSelesai" style="font-size:15px;font-weight:900;color:#16a34a;line-height:1.2;">0</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#2563eb;text-transform:uppercase;">⏳ Proses</div>
-            <div id="outStatProses" style="font-size:15px;font-weight:900;color:#2563eb;line-height:1.2;">0</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#d97706;text-transform:uppercase;">🕐 Antri</div>
-            <div id="outStatAntri" style="font-size:15px;font-weight:900;color:#d97706;line-height:1.2;">0</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">🔴 Belum</div>
-            <div id="outStatBelum" style="font-size:15px;font-weight:900;color:#dc2626;line-height:1.2;">0</div>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">✅ SELESAI</div><div id="outStatSelesai" style="font-size:18px;font-weight:900;color:#16a34a;line-height:1.1;">—</div></div><div style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">⏳ PROSES</div><div id="outStatProses" style="font-size:18px;font-weight:900;color:#2563eb;line-height:1.1;">—</div></div><div style="background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#d97706;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">🕐 ANTRI</div><div id="outStatAntri" style="font-size:18px;font-weight:900;color:#d97706;line-height:1.1;">—</div></div><div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">🔴 BELUM</div><div id="outStatBelum" style="font-size:18px;font-weight:900;color:#dc2626;line-height:1.1;">—</div></div>
         </div>
         <div style="height:3px;background:rgba(0,0,0,0.06);"><div class="stat-bar-fill" style="height:100%;background:#f59e0b;width:0%;transition:width 1s;"></div></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:9px;">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
           <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">OUTBOUND</span>
           <span class="stat-foot-val" style="font-weight:900;color:#d97706;">—</span>
         </div>
       </div>
 
       <!-- INVENTORY CONTROL -->
-      <div id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 55%,#d1fae5 100%);border:1px solid #e2e8f0;padding:14px 14px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#d1fae5 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
-            <div id="invControlIcon" style="width:30px;height:30px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:4px;">📋</div>
-            <div id="invAccuracyVal" class="stat-value" style="font-size:32px;font-weight:900;color:#059669;letter-spacing:-1px;line-height:1;">—</div>
-            <div style="font-size:11px;font-weight:700;color:#1e293b;margin-top:2px;">Inventory Control</div>
-            <div class="stat-sub" style="font-size:9.5px;color:#94a3b8;margin-top:1px;"><span id="invAccuracySub">Akurasi stok</span></div>
+            <div id="invControlIcon" style="width:32px;height:32px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">📋</div>
+            <div id="invAccuracyVal" class="stat-value" style="font-size:30px;font-weight:900;color:#059669;letter-spacing:-1px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Inventory Control</div>
+            <div class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;"><span id="invAccuracySub">Akurasi stok</span></div>
           </div>
-          <div id="invStatChart" style="width:68px;height:68px;flex-shrink:0;"></div>
+          <div id="invStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
         </div>
-        <!-- Mini boxes -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:6px 0;">
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#6366f1;text-transform:uppercase;">TOTAL LOKASI</div>
-            <div id="invStatLokasi" style="font-size:13px;font-weight:900;color:#6366f1;line-height:1.2;">—</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#0891b2;text-transform:uppercase;">TOTAL CC</div>
-            <div id="invStatCC" style="font-size:13px;font-weight:900;color:#0891b2;line-height:1.2;">—</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#059669;text-transform:uppercase;">TOTAL HIT</div>
-            <div id="invStatHit" style="font-size:13px;font-weight:900;color:#059669;line-height:1.2;">—</div>
-          </div>
-          <div style="background:#f1f5f9;padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">TOTAL MISS</div>
-            <div id="invStatMiss" style="font-size:13px;font-weight:900;color:#dc2626;line-height:1.2;">—</div>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">TOTAL LOKASI</div><div id="invStatLokasi" style="font-size:13px;font-weight:900;color:#4f46e5;line-height:1.1;">—</div></div><div style="background:rgba(8,145,178,0.08);border:1px solid rgba(8,145,178,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#0891b2;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">TOTAL CC</div><div id="invStatCC" style="font-size:13px;font-weight:900;color:#0891b2;line-height:1.1;">—</div></div><div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">TOTAL HIT</div><div id="invStatHit" style="font-size:13px;font-weight:900;color:#059669;line-height:1.1;">—</div></div><div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">TOTAL MISS</div><div id="invStatMiss" style="font-size:13px;font-weight:900;color:#dc2626;line-height:1.1;">—</div></div>
         </div>
         <div id="invControlTopBar" style="height:3px;background:rgba(0,0,0,0.06);"><div style="height:100%;background:#10b981;width:99%;transition:width 1s;"></div></div>
-        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:9px;">
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
           <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">ACCURACY</span>
           <span style="font-weight:900;color:#10b981;">≥ 99.5%</span>
         </div>
