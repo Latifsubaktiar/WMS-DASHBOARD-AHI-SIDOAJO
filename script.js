@@ -1991,7 +1991,7 @@ async function fetchDailyActivity(){
             </tbody>
           </table>
         </div>`;
-      floatBox.style.cssText = 'position:absolute;top:4px;left:160px;z-index:10;';
+      floatBox.style.cssText = 'position:absolute;top:-36px;left:160px;z-index:10;';
       wrap.appendChild(floatBox);
     }
 
