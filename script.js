@@ -1753,14 +1753,14 @@ async function fetchInventoryAccuracy() {
     if (icon)   icon.style.background = iconBg;
 
     // Pie chart Progress CC
-    const ccPct = data.pctCc ? Math.round(parseFloat(data.pctCc)) : Math.round(pct);
+    const ccPct = data.summary && data.summary.pctCcTotal ? Math.round(parseFloat(String(data.summary.pctCcTotal).replace('%',''))) : Math.round(pct);
     _makeSVGStatChart('invStatChart', ccPct, color);
 
     // Mini boxes
-    const il=document.getElementById('invStatLokasi'); if(il&&data.totalLokasi) il.textContent=Number(data.totalLokasi).toLocaleString('id-ID');
-    const ic=document.getElementById('invStatCC');     if(ic&&data.totalCC)     ic.textContent=Number(data.totalCC).toLocaleString('id-ID');
-    const ih=document.getElementById('invStatHit');    if(ih&&data.totalHit)    ih.textContent=Number(data.totalHit).toLocaleString('id-ID');
-    const im=document.getElementById('invStatMiss');   if(im&&data.totalMiss)   im.textContent=Number(data.totalMiss).toLocaleString('id-ID');
+    const il=document.getElementById('invStatLokasi'); if(il&&data.summary) il.textContent=Number(data.summary.totalLokasi||0).toLocaleString('id-ID');
+    const ic=document.getElementById('invStatCC');     if(ic&&data.summary) ic.textContent=Number(data.summary.totalCc||0).toLocaleString('id-ID');
+    const ih=document.getElementById('invStatHit');    if(ih&&data.summary) ih.textContent=Number(data.summary.totalHit||0).toLocaleString('id-ID');
+    const im=document.getElementById('invStatMiss');   if(im&&data.summary) im.textContent=Number(data.summary.totalMiss||0).toLocaleString('id-ID');
 
 
   } catch(e) {
