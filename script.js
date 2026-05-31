@@ -1834,6 +1834,20 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
     chart.data.datasets[0].borderColor = '#fff';
     chart.data.datasets[0].borderWidth = 2;
     chart.update('none');
+  } else {
+    new Chart(ctx.getContext('2d'), {
+      type: 'pie',
+      data: { labels:['Inbound','Storing','Outbound','Belum Selesai'],
+        datasets:[{data:[inPct,storePct,outPct,sisa],
+          backgroundColor:['#16a34a','#8b5cf6','#d97706',belumColor],
+          borderColor:'#fff', borderWidth:2, hoverOffset:8}] },
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false},
+          tooltip:{backgroundColor:'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',
+            callbacks:{label:ctx2=>` ${ctx2.label}: ${ctx2.raw}%`}}},
+        datalabels:{display:false}
+      }
+    });
   }
 }
 
