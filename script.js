@@ -2273,14 +2273,15 @@ async function fetchPlannerDetail() {
     if (vpBody && data.vendorPerf) {
       vpBody.innerHTML = data.vendorPerf.map((r,i) => {
         const pct = parseFloat(r.pct);
-        const col = pct >= 100 ? '#4ade80' : pct >= 95 ? '#fbbf24' : '#f87171';
-        return '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
-          '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
-          '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.carrier + '</td>' +
-          '<td style="padding:6px 8px;text-align:center;color:#4ade80;font-weight:700;font-size:11px;">' + r.onTime + '</td>' +
-          '<td style="padding:6px 8px;text-align:center;color:#f87171;font-weight:700;font-size:11px;">' + (r.delayed > 0 ? r.delayed : '-') + '</td>' +
-          '<td style="padding:6px 8px;text-align:center;color:#94a3b8;font-size:11px;">' + r.total + '</td>' +
-          '<td style="padding:6px 8px;text-align:center;"><span style="color:'+col+';font-weight:900;font-size:12px;">'+r.pct+'</span></td>' +
+        const col = pct >= 100 ? '#16a34a' : pct >= 95 ? '#d97706' : '#dc2626';
+        const bg = i%2===0 ? '' : 'background:rgba(241,245,249,0.7);';
+        return '<tr style="'+bg+'border-bottom:1px solid rgba(200,215,240,0.3);">' +
+          '<td style="padding:7px 10px;text-align:center;color:#94a3b8;font-size:11px;font-weight:600;">' + (i+1) + '</td>' +
+          '<td style="padding:7px 12px;font-weight:800;color:#0f172a;font-size:12px;">' + r.carrier + '</td>' +
+          '<td style="padding:7px 10px;text-align:center;color:#16a34a;font-weight:800;font-size:12px;">' + r.onTime + '</td>' +
+          '<td style="padding:7px 10px;text-align:center;color:#dc2626;font-weight:800;font-size:12px;">' + (r.delayed > 0 ? r.delayed : '<span style="color:#94a3b8;">-</span>') + '</td>' +
+          '<td style="padding:7px 10px;text-align:center;color:#475569;font-size:12px;font-weight:700;">' + r.total + '</td>' +
+          '<td style="padding:7px 10px;text-align:center;"><span style="color:'+col+';font-weight:900;font-size:13px;">'+r.pct+'</span></td>' +
           '</tr>';
       }).join('');
     }
