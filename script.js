@@ -2045,3 +2045,95 @@ document.addEventListener('click',e=>{if(searchDropdown&&!searchDropdown.contain
 function toggleSidebar(){const sidebar=document.querySelector('.sidebar'),overlay=document.getElementById('sidebarOverlay'),btn=document.getElementById('hamburgerBtn');sidebar.classList.toggle('open');overlay.classList.toggle('show');btn.classList.toggle('active');}
 function closeSidebar(){const sidebar=document.querySelector('.sidebar'),overlay=document.getElementById('sidebarOverlay'),btn=document.getElementById('hamburgerBtn');sidebar.classList.remove('open');overlay.classList.remove('show');btn.classList.remove('active');}
 document.querySelectorAll('.nav-item').forEach(btn=>{btn.addEventListener('click',()=>{if(window.innerWidth<=768)closeSidebar();});});
+
+// ══════════════════════════════════════
+//  PLANNER DETAIL PANEL
+// ══════════════════════════════════════
+let plannerPanelOpen = false;
+
+function togglePlannerPanel() {
+  plannerPanelOpen = !plannerPanelOpen;
+  const panel       = document.getElementById('plannerDetailPanel');
+  const midGrid     = document.querySelector('.mid-grid');
+  const progressRow = document.querySelector('.progress-row');
+  const bottomGrid  = document.querySelector('.bottom-grid');
+  if (!panel) return;
+
+  if (inboundPanelOpen)   { inboundPanelOpen   = false; const p=document.getElementById('inboundDetailPanel');   if(p) p.style.display='none'; }
+  if (storingPanelOpen)   { storingPanelOpen   = false; const p=document.getElementById('storingDetailPanel');   if(p) p.style.display='none'; }
+  if (outboundPanelOpen)  { outboundPanelOpen  = false; const p=document.getElementById('outboundDetailPanel');  if(p) p.style.display='none'; }
+  if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
+
+  if (plannerPanelOpen) {
+    panel.style.display = 'block';
+    if (midGrid)     midGrid.style.display     = 'none';
+    if (progressRow) progressRow.style.display = 'none';
+    if (bottomGrid)  bottomGrid.style.display  = 'none';
+    fetchPlannerDetail();
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  } else {
+    panel.style.display = 'none';
+    if (midGrid)     midGrid.style.display     = '';
+    if (progressRow) progressRow.style.display = '';
+    if (bottomGrid)  bottomGrid.style.display  = '';
+  }
+}
+
+async function fetchPlannerDetail() {
+  const body     = document.getElementById('plannerDetailBody');
+  const footer   = document.getElementById('plannerDetailFooter');
+  const subtitle = document.getElementById('plannerDetailSubtitle');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data SLA Planner...</td></tr>';
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getSLAPlanner');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal');
+    if (subtitle) subtitle.textContent = 'Periode: ' + data.bulan;
+    if (footer)   footer.textContent   = 'Data SLA Planner — ' + data.bulan;
+
+    const grwPct  = parseFloat(String(data.slaGrw).replace('%',''))  || 0;
+    const custPct = parseFloat(String(data.slaCust).replace('%','')) || 0;
+    const avgPct  = ((grwPct + custPct) / 2).toFixed(2);
+
+    const valColor = (pct) => pct >= 99 ? '#16a34a' : pct >= 95 ? '#d97706' : '#dc2626';
+    const statusBadge = (pct) => pct >= 99
+      ? '<span style="background:rgba(22,163,74,0.12);color:#16a34a;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid rgba(22,163,74,0.25);">✅ ON TARGET</span>'
+      : pct >= 95
+      ? '<span style="background:rgba(217,119,6,0.12);color:#d97706;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid rgba(217,119,6,0.25);">⚠️ NEAR TARGET</span>'
+      : '<span style="background:rgba(220,38,38,0.12);color:#dc2626;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid rgba(220,38,38,0.25);">❌ BELOW TARGET</span>';
+
+    // Update KPI cards
+    const kg = document.getElementById('plannerKpiGrw');  if(kg) { kg.textContent=data.slaGrw; kg.style.color=valColor(grwPct); }
+    const kc = document.getElementById('plannerKpiCust'); if(kc) { kc.textContent=data.slaCust; kc.style.color=valColor(custPct); }
+    const ka = document.getElementById('plannerKpiAvg');  if(ka) { ka.textContent=avgPct+'%'; ka.style.color=valColor(parseFloat(avgPct)); }
+    const bg = document.getElementById('barPlannerGrw');  if(bg) setTimeout(()=>bg.style.width=Math.min(grwPct,100)+'%',300);
+    const bc = document.getElementById('barPlannerCust'); if(bc) setTimeout(()=>bc.style.width=Math.min(custPct,100)+'%',300);
+    const ba = document.getElementById('barPlannerAvg');  if(ba) setTimeout(()=>ba.style.width=Math.min(parseFloat(avgPct),100)+'%',300);
+    const bdg = document.getElementById('badgePlannerGrw');  if(bdg) { bdg.textContent=grwPct>=99?'✅ ON TARGET':grwPct>=95?'⚠️ NEAR':'❌ BELOW'; bdg.style.color=valColor(grwPct); }
+    const bdc = document.getElementById('badgePlannerCust'); if(bdc) { bdc.textContent=custPct>=99?'✅ ON TARGET':custPct>=95?'⚠️ NEAR':'❌ BELOW'; bdc.style.color=valColor(custPct); }
+    const bda = document.getElementById('badgePlannerAvg');  if(bda) { const ap=parseFloat(avgPct); bda.textContent=ap>=99?'✅ ON TARGET':ap>=95?'⚠️ NEAR':'❌ BELOW'; bda.style.color=valColor(ap); }
+
+    body.innerHTML =
+      '<tr style="border-bottom:1px solid rgba(200,215,240,0.2);">' +
+        '<td style="padding:16px 18px;font-size:13px;font-weight:700;color:var(--text);">SLA GRW</td>' +
+        '<td style="padding:16px 18px;text-align:center;"><span style="font-size:28px;font-weight:900;color:'+valColor(grwPct)+';letter-spacing:-1px;">'+data.slaGrw+'</span></td>' +
+        '<td style="padding:16px 18px;font-size:12px;color:var(--text-3);">SLA Pengiriman ke GRW / Gudang</td>' +
+        '<td style="padding:16px 18px;text-align:center;">'+statusBadge(grwPct)+'</td>' +
+      '</tr>' +
+      '<tr style="background:rgba(0,0,0,0.02);border-bottom:1px solid rgba(200,215,240,0.2);">' +
+        '<td style="padding:16px 18px;font-size:13px;font-weight:700;color:var(--text);">SLA CUSTOMER</td>' +
+        '<td style="padding:16px 18px;text-align:center;"><span style="font-size:28px;font-weight:900;color:'+valColor(custPct)+';letter-spacing:-1px;">'+data.slaCust+'</span></td>' +
+        '<td style="padding:16px 18px;font-size:12px;color:var(--text-3);">SLA Pengiriman ke Customer</td>' +
+        '<td style="padding:16px 18px;text-align:center;">'+statusBadge(custPct)+'</td>' +
+      '</tr>' +
+      '<tr>' +
+        '<td style="padding:16px 18px;font-size:13px;font-weight:700;color:var(--text);">RATA-RATA SLA</td>' +
+        '<td style="padding:16px 18px;text-align:center;"><span style="font-size:28px;font-weight:900;color:'+valColor(parseFloat(avgPct))+';letter-spacing:-1px;">'+avgPct+'%</span></td>' +
+        '<td style="padding:16px 18px;font-size:12px;color:var(--text-3);">Rata-rata SLA GRW + SLA Customer</td>' +
+        '<td style="padding:16px 18px;text-align:center;">'+statusBadge(parseFloat(avgPct))+'</td>' +
+      '</tr>';
+  } catch(e) {
+    if (body) body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--red)">Gagal: '+e.message+'</td></tr>';
+  }
+}
