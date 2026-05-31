@@ -1752,8 +1752,9 @@ async function fetchInventoryAccuracy() {
     if (topBar) topBar.innerHTML = `<div style="height:100%;background:linear-gradient(90deg,${gradColors});width:${pct>99?99:pct}%;transition:width 1s;"></div>`;
     if (icon)   icon.style.background = iconBg;
 
-    // Pie chart Progress CC
-    const ccPct = data.summary && data.summary.pctCcTotal ? Math.round(parseFloat(String(data.summary.pctCcTotal).replace('%',''))) : Math.round(pct);
+    // Pie chart Progress CC - ambil dari summary.pctCcTotal
+    const rawCcPct = data.summary ? String(data.summary.pctCcTotal||'0').replace('%','').trim() : '0';
+    const ccPct = Math.round(parseFloat(rawCcPct)||0);
     _makeSVGStatChart('invStatChart', ccPct, color);
 
     // Mini boxes
