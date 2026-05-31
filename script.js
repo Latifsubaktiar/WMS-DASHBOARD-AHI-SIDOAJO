@@ -2050,7 +2050,7 @@ async function fetchDailyActivity(){
             pointBorderWidth: 2,
             pointRadius: 5,
             borderWidth: 2.5,
-            borderDash: d.map((r,i) => i > boundary ? [4,3] : []),
+            segment: { borderDash: ctx2 => ctx2.p1DataIndex > boundary ? [5,3] : [] },
             yAxisID: 'y2',
             order: 1
           }
@@ -2062,13 +2062,11 @@ async function fetchDailyActivity(){
         layout: { padding: { top: 24, right: 10 } },
         scales: {
           x: {
-            stacked: true,
             ticks: { color: '#475569', font: { size: 9, weight: '600' } },
             grid: { display: false },
             border: { display: false }
           },
           y: {
-            stacked: true,
             beginAtZero: true,
             ticks: { color: '#475569', font: { size: 9 }, callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v },
             grid: { color: 'rgba(0,0,0,0.04)' },
