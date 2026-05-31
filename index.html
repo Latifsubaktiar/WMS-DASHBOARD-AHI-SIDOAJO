@@ -269,7 +269,7 @@
 
 
       <!-- INDEX PLANNER -->
-      <div id="plannerStatCard" onclick="togglePlannerPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#ffe4e4 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.querySelector('.planner-beam').style.left='160%'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.querySelector('.planner-beam').style.left='-100%'">
+      <div id="plannerStatCard" onclick="togglePlannerPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#ffe4e4 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';var b=this.querySelector('.planner-beam');b.style.transition='left 1.2s ease';b.style.left='160%'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';var b=this.querySelector('.planner-beam');b.style.transition='none';b.style.left='-100%'">
         <div class="planner-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.25),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
@@ -917,7 +917,7 @@
 
         <!-- KPI SUMMARY - style selaras dengan panel lain -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);position:relative;overflow:hidden;">
-          <div style="position:absolute;top:0;left:-30%;width:25%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.25),transparent);transform:skewX(-15deg);pointer-events:none;z-index:100;animation:plKpiScan 3s ease-in-out infinite;"></div>
+          <div style="position:absolute;top:0;left:-30%;width:25%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.25),transparent);transform:skewX(-15deg);pointer-events:none;z-index:100;animation:plKpiScan 5s ease-in-out infinite;"></div>
 
           <!-- Vendor Supporting -->
           <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
@@ -939,7 +939,7 @@
 
           <!-- Total Completed LC -->
           <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
-            <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.5s ease-in-out infinite;"></div></div>
+            <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
                 <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL COMPLETED LC</div>
@@ -957,7 +957,7 @@
 
           <!-- Total On-Time LC -->
           <div style="background:linear-gradient(160deg,#fff 55%,#dcfce7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
-            <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 4s ease-in-out infinite;"></div></div>
+            <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
                 <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL ON-TIME LC</div>
@@ -975,7 +975,7 @@
 
           <!-- Total Delayed LC -->
           <div style="background:linear-gradient(160deg,#fff 55%,#fee2e2 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
-            <div style="height:3px;background:#dc2626;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 4.5s ease-in-out infinite;"></div></div>
+            <div style="height:3px;background:#dc2626;position:relative;overflow:hidden;"></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
                 <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL DELAYED LC</div>
