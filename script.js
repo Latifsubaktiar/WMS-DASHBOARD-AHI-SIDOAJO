@@ -2101,15 +2101,15 @@ async function fetchPlannerDetail() {
     const s = data.summary;
 
     // ── KPI ──
-    const kv = document.getElementById('plKpiVendor');    if(kv) kv.textContent = s.vendorSupporting + '%';
-    const kc = document.getElementById('plKpiCompleted'); if(kc) kc.textContent = s.totalCompleted + ' LC';
-    const ko = document.getElementById('plKpiOnTime');    if(ko) ko.textContent = s.totalOnTime + ' LC';
-    const kd = document.getElementById('plKpiDelayed');   if(kd) kd.textContent = s.totalDelayed + ' LC';
+    const kv = document.getElementById('plKpiVendor');    if(kv) { kv.textContent = s.vendorSupporting + '%'; kv.style.color = parseFloat(s.vendorSupporting) >= 95 ? '#d97706' : '#dc2626'; }
+    const kc = document.getElementById('plKpiCompleted'); if(kc) { kc.textContent = s.totalCompleted.toLocaleString('id-ID') + ' LC'; }
+    const ko = document.getElementById('plKpiOnTime');    if(ko) { ko.textContent = s.totalOnTime.toLocaleString('id-ID') + ' LC'; }
+    const kd = document.getElementById('plKpiDelayed');   if(kd) { kd.textContent = s.totalDelayed.toLocaleString('id-ID') + ' LC'; kd.style.color = s.totalDelayed > 0 ? '#dc2626' : '#16a34a'; }
     // Footer & bar KPI cards
-    const fv = document.getElementById('footPlVendor');    if(fv) fv.textContent = s.vendorSupporting + '%';
-    const fc = document.getElementById('footPlCompleted'); if(fc) fc.textContent = s.totalCompleted + ' LC';
-    const fo = document.getElementById('footPlOnTime');    if(fo) fo.textContent = s.totalOnTime + ' LC';
-    const fd = document.getElementById('footPlDelayed');   if(fd) fd.textContent = s.totalDelayed + ' LC';
+    const fv = document.getElementById('footPlVendor');    if(fv) { fv.textContent = s.vendorSupporting + '%'; fv.style.color = parseFloat(s.vendorSupporting) >= 95 ? '#d97706' : '#dc2626'; }
+    const fc = document.getElementById('footPlCompleted'); if(fc) fc.textContent = s.totalCompleted.toLocaleString('id-ID') + ' LC';
+    const fo = document.getElementById('footPlOnTime');    if(fo) fo.textContent = s.totalOnTime.toLocaleString('id-ID') + ' LC';
+    const fd = document.getElementById('footPlDelayed');   if(fd) { fd.textContent = s.totalDelayed.toLocaleString('id-ID') + ' LC'; fd.style.color = s.totalDelayed > 0 ? '#dc2626' : '#16a34a'; }
     const bv = document.getElementById('barPlVendor');  if(bv) setTimeout(()=>bv.style.width=Math.min(parseFloat(s.vendorSupporting),100)+'%',300);
     const bo = document.getElementById('barPlOnTime');  if(bo) setTimeout(()=>bo.style.width=s.totalCompleted>0?Math.round(s.totalOnTime/s.totalCompleted*100)+'%':'0%',300);
     const bd = document.getElementById('barPlDelayed'); if(bd) setTimeout(()=>bd.style.width=s.totalCompleted>0?Math.min(Math.round(s.totalDelayed/s.totalCompleted*100)*3,100)+'%':'0%',300);
@@ -2123,20 +2123,33 @@ async function fetchPlannerDetail() {
         data: {
           labels: data.trendData.map(d => d.date.slice(5)),
           datasets: [
-            { label: 'ON TIME (LC)', data: data.trendData.map(d => d.onTime), backgroundColor: 'rgba(59,130,246,0.8)', order: 2 },
-            { label: 'DELAYED (LC)', data: data.trendData.map(d => d.delayed), backgroundColor: 'rgba(239,68,68,0.8)', order: 2 },
-            { label: 'ACHIEVEMENT %', data: data.trendData.map(d => d.pct), type: 'line', borderColor: '#fbbf24', backgroundColor: 'transparent', pointBackgroundColor: '#fbbf24', pointRadius: 4, borderWidth: 2, yAxisID: 'y2', order: 1 }
+            { label: 'ON TIME (LC)', data: data.trendData.map(d => d.onTime), backgroundColor: '#2563eb', order: 2 },
+            { label: 'DELAYED (LC)', data: data.trendData.map(d => d.delayed), backgroundColor: '#ef4444', order: 2 },
+            { label: 'ACHIEVEMENT %', data: data.trendData.map(d => d.pct), type: 'line',
+              borderColor: '#f59e0b', backgroundColor: 'transparent',
+              pointBackgroundColor: '#f59e0b', pointBorderColor: '#fff', pointBorderWidth: 2,
+              pointRadius: 5, borderWidth: 2.5, yAxisID: 'y2', order: 1,
+              datalabels: { display: true, color: '#f59e0b', font: { size: 9, weight: '800' },
+                formatter: v => v + '%', anchor: 'end', align: 'top', offset: 2 }
+            }
           ]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
           scales: {
-            x: { stacked: true, ticks: { color: '#6a7a9a', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { stacked: true, ticks: { color: '#6a7a9a', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y2: { position: 'right', min: 0, max: 100, ticks: { color: '#fbbf24', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
+            x: { stacked: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+            y: { stacked: true, ticks: { color: '#475569', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
+            y2: { position: 'right', min: 0, max: 110, ticks: { color: '#d97706', font: { size: 10, weight: '700' }, callback: v => v <= 100 ? v + '%' : '' }, grid: { display: false } }
           },
-          plugins: { legend: { labels: { color: '#6a7a9a', font: { size: 10 }, boxWidth: 12 } }, tooltip: { backgroundColor: 'rgba(13,17,23,0.95)', titleColor: '#f0f4ff', bodyColor: '#9ab8e8' } }
-        }
+          plugins: {
+            legend: { labels: { color: '#475569', font: { size: 10, weight: '600' }, boxWidth: 12 } },
+            tooltip: { backgroundColor: 'rgba(15,23,42,0.92)', titleColor: '#f0f4ff', bodyColor: '#cbd5e1',
+              callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw + (ctx.dataset.yAxisID === 'y2' ? '%' : ' LC') } },
+            datalabels: { display: ctx => ctx.dataset.yAxisID === 'y2', color: '#d97706',
+              font: { size: 9, weight: '900' }, formatter: v => v + '%', anchor: 'end', align: 'top', offset: 1 }
+          }
+        },
+        plugins: [ChartDataLabels]
       });
     }
 
@@ -2146,8 +2159,8 @@ async function fetchPlannerDetail() {
       const fmt = v => v > 0 ? v.toLocaleString('id-ID') : '-';
       const fmtCbm = v => v > 0 ? v.toFixed(2) : '-';
       kotaBody.innerHTML = data.kotaData.map(r =>
-        '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
-        '<td style="padding:6px 10px;font-size:11px;font-weight:700;color:#fbbf24;">' + r.kota + '</td>' +
+        '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
+        '<td style="padding:6px 10px;font-size:11px;font-weight:800;color:#1e293b;">' + r.kota + '</td>' +
         '<td style="padding:6px 8px;text-align:right;color:#4ade80;font-size:11px;">' + fmtCbm(r.onTimeCbm) + '</td>' +
         '<td style="padding:6px 8px;text-align:right;color:#4ade80;font-size:11px;">' + fmt(r.onTimeJml) + '</td>' +
         '<td style="padding:6px 8px;text-align:right;color:#f87171;font-size:11px;">' + fmtCbm(r.terlambatCbm) + '</td>' +
@@ -2156,8 +2169,8 @@ async function fetchPlannerDetail() {
         '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + fmt(r.belumJml) + '</td>' +
         '</tr>'
       ).join('') +
-      '<tr style="background:#f8fafc;border-top:2px solid rgba(200,215,240,0.5);">' +
-      '<td style="padding:7px 10px;font-size:11px;font-weight:900;color:#1e293b;">Total</td>' +
+      '<tr style="background:rgba(37,99,235,0.06);border-top:2px solid rgba(37,99,235,0.2);">' +
+      '<td style="padding:7px 10px;font-size:11px;font-weight:900;color:#1e293b;">TOTAL</td>' +
       '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.onTimeCbm.toFixed(2) + '</td>' +
       '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.onTimeJml + '</td>' +
       '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.terlambatCbm.toFixed(2) + '</td>' +
@@ -2174,9 +2187,9 @@ async function fetchPlannerDetail() {
         vnaBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6a7a9a;">Tidak ada data</td></tr>';
       } else {
         vnaBody.innerHTML = data.vendorNotAvail.slice(0,20).map((r,i) =>
-          '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
+          '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
           '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
-          '<td style="padding:6px 10px;font-weight:700;color:#1e293b;font-family:JetBrains Mono,monospace;font-size:11px;">' + r.lc + '</td>' +
+          '<td style="padding:6px 10px;font-weight:800;color:#2563eb;font-family:JetBrains Mono,monospace;font-size:11px;">' + r.lc + '</td>' +
           '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.carrier + '</td>' +
           '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.jalur + '</td>' +
           '<td style="padding:6px 8px;color:#2563eb;font-size:11px;font-weight:600;">' + r.loadDate + '</td>' +
@@ -2194,9 +2207,9 @@ async function fetchPlannerDetail() {
         delBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6a7a9a;">Tidak ada data</td></tr>';
       } else {
         delBody.innerHTML = data.vendorDelayed.slice(0,20).map((r,i) =>
-          '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
+          '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
           '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
-          '<td style="padding:6px 10px;font-weight:700;color:#1e293b;font-family:JetBrains Mono,monospace;font-size:11px;">' + r.lc + '</td>' +
+          '<td style="padding:6px 10px;font-weight:800;color:#2563eb;font-family:JetBrains Mono,monospace;font-size:11px;">' + r.lc + '</td>' +
           '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.carrier + '</td>' +
           '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.jalur + '</td>' +
           '<td style="padding:6px 8px;color:#2563eb;font-size:11px;font-weight:600;">' + r.loadDate + '</td>' +
@@ -2212,7 +2225,7 @@ async function fetchPlannerDetail() {
     if (agBody && data.agingData) {
       const dc = v => v > 0 ? '<span style="color:#60a5fa;font-weight:700;">'+v+'</span>' : '<span style="color:#3a4a6a;">-</span>';
       agBody.innerHTML = data.agingData.map((r,i) =>
-        '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
+        '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
         '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
         '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.carrier + '</td>' +
         '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a1) + '</td>' +
@@ -2224,7 +2237,7 @@ async function fetchPlannerDetail() {
         '<td style="padding:6px 8px;text-align:center;font-size:11px;"><span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-weight:800;">' + r.total + '</span></td>' +
         '</tr>'
       ).join('') +
-      '<tr style="background:#f8fafc;border-top:2px solid rgba(200,215,240,0.5);">' +
+      '<tr style="background:rgba(37,99,235,0.06);border-top:2px solid rgba(37,99,235,0.2);">' +
       '<td colspan="2" style="padding:7px 10px;font-size:11px;font-weight:900;color:#1e293b;">TOTAL</td>' +
       '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a1||'-') + '</td>' +
       '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a2||'-') + '</td>' +
@@ -2242,7 +2255,7 @@ async function fetchPlannerDetail() {
       vpBody.innerHTML = data.vendorPerf.map((r,i) => {
         const pct = parseFloat(r.pct);
         const col = pct >= 100 ? '#4ade80' : pct >= 95 ? '#fbbf24' : '#f87171';
-        return '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
+        return '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
           '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
           '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.carrier + '</td>' +
           '<td style="padding:6px 8px;text-align:center;color:#4ade80;font-weight:700;font-size:11px;">' + r.onTime + '</td>' +
