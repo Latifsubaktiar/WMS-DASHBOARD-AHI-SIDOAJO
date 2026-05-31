@@ -1454,6 +1454,14 @@ function renderInventoryPanel(data) {
   const totalLok = Number(s.totalLokasi).toLocaleString('id-ID');
   const totalCcN = Number(s.totalCc).toLocaleString('id-ID');
   if (subtitle) subtitle.textContent = `${data.bulan || ''} · Total ${totalLok} Lokasi · ${totalCcN} CC`;
+
+  // Update stat card mini boxes dengan data lengkap
+  const il2=document.getElementById('invStatLokasi'); if(il2) il2.textContent=totalLok;
+  const ic2=document.getElementById('invStatCC');     if(ic2) ic2.textContent=totalCcN;
+  const ih2=document.getElementById('invStatHit');    if(ih2) ih2.textContent=Number(s.totalHit||0).toLocaleString('id-ID');
+  const im2=document.getElementById('invStatMiss');   if(im2) im2.textContent=Number(s.totalMiss||0).toLocaleString('id-ID');
+  const ccPct2 = Math.round(parseFloat(String(s.pctCcTotal||'0').replace('%',''))||0);
+  _makeSVGStatChart('invStatChart', ccPct2, '#10b981');
   if (footer)   footer.textContent   = `${rows.filter(r=>!r.isAreaRow).length} lorong terdaftar · Akurasi keseluruhan: ${s.akurasiTotal} · Diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
 
   // ── KPI CARDS (top-border accent, like image 2) ──
@@ -1752,16 +1760,17 @@ async function fetchInventoryAccuracy() {
     if (topBar) topBar.innerHTML = `<div style="height:100%;background:linear-gradient(90deg,${gradColors});width:${pct>99?99:pct}%;transition:width 1s;"></div>`;
     if (icon)   icon.style.background = iconBg;
 
-    // Pie chart Progress CC - ambil dari summary.pctCcTotal
-    const rawCcPct = data.summary ? String(data.summary.pctCcTotal||'0').replace('%','').trim() : '0';
+    // Pie chart Progress CC - ambil dari window._invData jika sudah ada, fallback ke data.summary
+    const invS = (window._invData && window._invData.summary) ? window._invData.summary : data.summary;
+    const rawCcPct = String(invS.pctCcTotal||'0').replace('%','').trim();
     const ccPct = Math.round(parseFloat(rawCcPct)||0);
     _makeSVGStatChart('invStatChart', ccPct, color);
 
-    // Mini boxes
-    const il=document.getElementById('invStatLokasi'); if(il&&data.summary) il.textContent=Number(data.summary.totalLokasi||0).toLocaleString('id-ID');
-    const ic=document.getElementById('invStatCC');     if(ic&&data.summary) ic.textContent=Number(data.summary.totalCc||0).toLocaleString('id-ID');
-    const ih=document.getElementById('invStatHit');    if(ih&&data.summary) ih.textContent=Number(data.summary.totalHit||0).toLocaleString('id-ID');
-    const im=document.getElementById('invStatMiss');   if(im&&data.summary) im.textContent=Number(data.summary.totalMiss||0).toLocaleString('id-ID');
+    // Mini boxes - dari invS
+    const il=document.getElementById('invStatLokasi'); if(il) il.textContent=Number(invS.totalLokasi||0).toLocaleString('id-ID');
+    const ic=document.getElementById('invStatCC');     if(ic) ic.textContent=Number(invS.totalCc||0).toLocaleString('id-ID');
+    const ih=document.getElementById('invStatHit');    if(ih) ih.textContent=Number(invS.totalHit||0).toLocaleString('id-ID');
+    const im=document.getElementById('invStatMiss');   if(im) im.textContent=Number(invS.totalMiss||0).toLocaleString('id-ID');
 
 
   } catch(e) {
