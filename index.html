@@ -265,7 +265,8 @@
 
 
       <!-- INDEX PLANNER -->
-      <div id="plannerStatCard" onclick="togglePlannerPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#ffe4e4 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+      <div id="plannerStatCard" onclick="togglePlannerPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#ffe4e4 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)';this.querySelector('.planner-beam').style.left='160%'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';this.querySelector('.planner-beam').style.left='-100%'">
+        <div class="planner-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.25),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div>
             <div style="width:32px;height:32px;background:#ffe4e4;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">📋</div>
@@ -902,8 +903,9 @@
 
         <!-- HEADER -->
         <div style="padding:14px 20px 12px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(153,27,27,0.06),transparent);position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(220,38,38,0.25),transparent);transform:skewX(-15deg);pointer-events:none;z-index:0;animation:kpiBodyBeam 3s ease-in-out infinite;"></div>
           <div>
-            <span style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;"><span class="live-dot"></span>📋 Planner Dashboard — Vendor Performance</span>
+            <span style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;position:relative;z-index:1;"><span class="live-dot"></span>📋 Planner Dashboard — Vendor Performance</span>
             <div id="plannerDetailSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div>
           </div>
           <button onclick="togglePlannerPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
