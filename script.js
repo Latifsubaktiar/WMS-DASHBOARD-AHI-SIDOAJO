@@ -2138,7 +2138,7 @@ async function fetchPlannerDetail() {
       const fmt = v => v > 0 ? v.toLocaleString('id-ID') : '-';
       const fmtCbm = v => v > 0 ? v.toFixed(2) : '-';
       kotaBody.innerHTML = data.kotaData.map(r =>
-        '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">' +
+        '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
         '<td style="padding:6px 10px;font-size:11px;font-weight:700;color:#fbbf24;">' + r.kota + '</td>' +
         '<td style="padding:6px 8px;text-align:right;color:#4ade80;font-size:11px;">' + fmtCbm(r.onTimeCbm) + '</td>' +
         '<td style="padding:6px 8px;text-align:right;color:#4ade80;font-size:11px;">' + fmt(r.onTimeJml) + '</td>' +
@@ -2148,8 +2148,8 @@ async function fetchPlannerDetail() {
         '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + fmt(r.belumJml) + '</td>' +
         '</tr>'
       ).join('') +
-      '<tr style="background:rgba(251,191,36,0.1);border-top:1px solid rgba(251,191,36,0.3);">' +
-      '<td style="padding:7px 10px;font-size:11px;font-weight:900;color:#fbbf24;">Total</td>' +
+      '<tr style="background:#f8fafc;border-top:2px solid rgba(200,215,240,0.5);">' +
+      '<td style="padding:7px 10px;font-size:11px;font-weight:900;color:#1e293b;">Total</td>' +
       '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.onTimeCbm.toFixed(2) + '</td>' +
       '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.onTimeJml + '</td>' +
       '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.terlambatCbm.toFixed(2) + '</td>' +
@@ -2166,12 +2166,12 @@ async function fetchPlannerDetail() {
         vnaBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6a7a9a;">Tidak ada data</td></tr>';
       } else {
         vnaBody.innerHTML = data.vendorNotAvail.slice(0,20).map((r,i) =>
-          '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+          '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
           '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
-          '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.lc + '</td>' +
-          '<td style="padding:6px 8px;color:#c8d8f8;font-size:11px;">' + r.carrier + '</td>' +
-          '<td style="padding:6px 8px;color:#c8d8f8;font-size:11px;">' + r.jalur + '</td>' +
-          '<td style="padding:6px 8px;color:#60a5fa;font-size:11px;">' + r.loadDate + '</td>' +
+          '<td style="padding:6px 10px;font-weight:700;color:#1e293b;font-family:JetBrains Mono,monospace;font-size:11px;">' + r.lc + '</td>' +
+          '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.carrier + '</td>' +
+          '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.jalur + '</td>' +
+          '<td style="padding:6px 8px;color:#2563eb;font-size:11px;font-weight:600;">' + r.loadDate + '</td>' +
           '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + r.cbm.toFixed(2) + '</td>' +
           '<td style="padding:6px 8px;text-align:center;color:#f87171;font-weight:700;font-size:11px;">' + (r.aging > 0 ? Math.round(r.aging) + ' HARI' : '-') + '</td>' +
           '</tr>'
@@ -2186,12 +2186,12 @@ async function fetchPlannerDetail() {
         delBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6a7a9a;">Tidak ada data</td></tr>';
       } else {
         delBody.innerHTML = data.vendorDelayed.slice(0,20).map((r,i) =>
-          '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+          '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
           '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
-          '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.lc + '</td>' +
-          '<td style="padding:6px 8px;color:#c8d8f8;font-size:11px;">' + r.carrier + '</td>' +
-          '<td style="padding:6px 8px;color:#c8d8f8;font-size:11px;">' + r.jalur + '</td>' +
-          '<td style="padding:6px 8px;color:#60a5fa;font-size:11px;">' + r.loadDate + '</td>' +
+          '<td style="padding:6px 10px;font-weight:700;color:#1e293b;font-family:JetBrains Mono,monospace;font-size:11px;">' + r.lc + '</td>' +
+          '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.carrier + '</td>' +
+          '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.jalur + '</td>' +
+          '<td style="padding:6px 8px;color:#2563eb;font-size:11px;font-weight:600;">' + r.loadDate + '</td>' +
           '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + r.cbm.toFixed(2) + '</td>' +
           '<td style="padding:6px 8px;text-align:center;color:#f87171;font-weight:700;font-size:11px;">' + r.agingLabel + '</td>' +
           '</tr>'
@@ -2204,7 +2204,7 @@ async function fetchPlannerDetail() {
     if (agBody && data.agingData) {
       const dc = v => v > 0 ? '<span style="color:#60a5fa;font-weight:700;">'+v+'</span>' : '<span style="color:#3a4a6a;">-</span>';
       agBody.innerHTML = data.agingData.map((r,i) =>
-        '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+        '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
         '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
         '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.carrier + '</td>' +
         '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a1) + '</td>' +
@@ -2216,14 +2216,14 @@ async function fetchPlannerDetail() {
         '<td style="padding:6px 8px;text-align:center;font-size:11px;"><span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-weight:800;">' + r.total + '</span></td>' +
         '</tr>'
       ).join('') +
-      '<tr style="background:rgba(251,191,36,0.1);border-top:1px solid rgba(251,191,36,0.3);">' +
-      '<td colspan="2" style="padding:7px 10px;font-size:11px;font-weight:900;color:#fbbf24;">TOTAL</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a1||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a2||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a3||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a4||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a5||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a5up||'-') + '</td>' +
+      '<tr style="background:#f8fafc;border-top:2px solid rgba(200,215,240,0.5);">' +
+      '<td colspan="2" style="padding:7px 10px;font-size:11px;font-weight:900;color:#1e293b;">TOTAL</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a1||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a2||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a3||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a4||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a5||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a5up||'-') + '</td>' +
       '<td style="padding:7px 8px;text-align:center;"><span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-weight:900;">' + data.agingTotals.total + '</span></td>' +
       '</tr>';
     }
@@ -2234,7 +2234,7 @@ async function fetchPlannerDetail() {
       vpBody.innerHTML = data.vendorPerf.map((r,i) => {
         const pct = parseFloat(r.pct);
         const col = pct >= 100 ? '#4ade80' : pct >= 95 ? '#fbbf24' : '#f87171';
-        return '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+        return '<tr style="border-bottom:1px solid rgba(200,215,240,0.3);">' +
           '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
           '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.carrier + '</td>' +
           '<td style="padding:6px 8px;text-align:center;color:#4ade80;font-weight:700;font-size:11px;">' + r.onTime + '</td>' +
@@ -2253,18 +2253,18 @@ async function fetchPlannerDetail() {
       bbEl.innerHTML =
         '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">' +
           '<div style="font-size:12px;font-weight:900;color:#f87171;">' + data.pctDelayed + '%</div>' +
-          '<div style="width:100%;background:rgba(239,68,68,0.8);height:' + barH(data.pctDelayed) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
-          '<div style="font-size:10px;color:#6a7a9a;text-align:center;">TERLAMBAT</div>' +
+          '<div style="width:100%;background:#ef4444;height:' + barH(data.pctDelayed) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
+          '<div style="font-size:10px;color:var(--text-3);text-align:center;">TERLAMBAT</div>' +
         '</div>' +
         '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:2;">' +
           '<div style="font-size:12px;font-weight:900;color:#60a5fa;">' + data.pctOnTime + '%</div>' +
-          '<div style="width:100%;background:rgba(59,130,246,0.8);height:' + barH(data.pctOnTime) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
-          '<div style="font-size:10px;color:#6a7a9a;text-align:center;">ON TIME</div>' +
+          '<div style="width:100%;background:#3b82f6;height:' + barH(data.pctOnTime) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
+          '<div style="font-size:10px;color:var(--text-3);text-align:center;">ON TIME</div>' +
         '</div>' +
         '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">' +
           '<div style="font-size:12px;font-weight:900;color:#94a3b8;">' + data.pctBelum + '%</div>' +
-          '<div style="width:100%;background:rgba(148,163,184,0.5);height:' + barH(data.pctBelum) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
-          '<div style="font-size:10px;color:#6a7a9a;text-align:center;">BELUM SUPPORT</div>' +
+          '<div style="width:100%;background:#94a3b8;height:' + barH(data.pctBelum) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
+          '<div style="font-size:10px;color:var(--text-3);text-align:center;">BELUM SUPPORT</div>' +
         '</div>';
     }
 
@@ -2283,11 +2283,11 @@ async function fetchPlannerDetail() {
       abEl.innerHTML = items.map(it => {
         const pct = Math.round((it.val/tot)*100);
         return '<div style="display:flex;align-items:center;gap:8px;">' +
-          '<div style="font-size:10px;color:#6a7a9a;width:48px;">' + it.label + '</div>' +
+          '<div style="font-size:10px;color:var(--text-3);width:48px;">' + it.label + '</div>' +
           '<div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">' +
-            '<div style="width:' + pct + '%;height:100%;background:rgba(148,163,184,0.6);border-radius:3px;"></div>' +
+            '<div style="width:' + pct + '%;height:100%;background:#94a3b8;border-radius:3px;"></div>' +
           '</div>' +
-          '<div style="font-size:10px;color:#94a3b8;font-weight:700;min-width:28px;">' + pct + '%</div>' +
+          '<div style="font-size:10px;color:var(--text-2);font-weight:700;min-width:28px;">' + pct + '%</div>' +
           '</div>';
       }).join('');
     }
