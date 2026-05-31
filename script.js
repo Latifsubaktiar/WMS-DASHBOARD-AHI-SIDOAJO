@@ -1897,7 +1897,13 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
     });
 
     // Tambah total % di bawah chart
-    const avgPct = Math.round((inPct + storePct + outPct) / 3);
+    // Ambil % dari KPI cards yang sudah tampil
+    const kpiInPct  = parseInt(document.querySelector('#inboundStatCard  .kpi-footer-pct, #inboundStatCard  [id$="Pct"]')?.textContent || inPct);
+    const kpiStPct  = parseInt(document.querySelector('#storingStatCard  .kpi-footer-pct, #storingStatCard  [id$="Pct"]')?.textContent || storePct);
+    const kpiOutPct = parseInt(document.querySelector('#outboundStatCard .kpi-footer-pct, #outboundStatCard [id$="Pct"]')?.textContent || outPct);
+    // Gunakan overall dari donutTotal yang sudah dihitung benar
+    const overallEl = document.getElementById('donutTotal');
+    const avgPct = overallEl ? parseInt(overallEl.textContent) : Math.round((inPct + storePct + outPct) / 3);
     const wrap = ctx.closest('.donut-wrap');
     if (wrap) {
       let totalEl = wrap.querySelector('.pie-total-label');
