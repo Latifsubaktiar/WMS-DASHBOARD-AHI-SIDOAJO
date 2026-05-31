@@ -2118,8 +2118,32 @@ async function fetchPlannerDetail() {
     const trendCtx = document.getElementById('plTrendChart');
     if (trendCtx && data.trendData && data.trendData.length) {
       const existing = Chart.getChart(trendCtx); if(existing) existing.destroy();
+      // Custom plugin label % di atas titik line
+      const plLabelPlugin = {
+        id: 'plLabelPlugin',
+        afterDatasetsDraw(chart) {
+          const{ctx, data} = chart;
+          chart.data.datasets.forEach((dataset, i) => {
+            if (dataset.yAxisID !== 'y2') return;
+            const meta = chart.getDatasetMeta(i);
+            meta.data.forEach((point, j) => {
+              const val = dataset.data[j];
+              if (val === undefined || val === null) return;
+              ctx.save();
+              ctx.font = 'bold 9px Outfit, sans-serif';
+              ctx.fillStyle = '#d97706';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(val + '%', point.x, point.y - 5);
+              ctx.restore();
+            });
+          });
+        }
+      };
+
       new Chart(trendCtx.getContext('2d'), {
         type: 'bar',
+        plugins: [plLabelPlugin],
         data: {
           labels: data.trendData.map(d => d.date.slice(5)),
           datasets: [
@@ -2128,14 +2152,12 @@ async function fetchPlannerDetail() {
             { label: 'ACHIEVEMENT %', data: data.trendData.map(d => d.pct), type: 'line',
               borderColor: '#f59e0b', backgroundColor: 'transparent',
               pointBackgroundColor: '#f59e0b', pointBorderColor: '#fff', pointBorderWidth: 2,
-              pointRadius: 5, borderWidth: 2.5, yAxisID: 'y2', order: 1,
-              datalabels: { display: true, color: '#f59e0b', font: { size: 9, weight: '800' },
-                formatter: v => v + '%', anchor: 'end', align: 'top', offset: 2 }
-            }
+              pointRadius: 5, borderWidth: 2.5, yAxisID: 'y2', order: 1 }
           ]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
+          layout: { padding: { top: 20 } },
           scales: {
             x: { stacked: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
             y: { stacked: true, ticks: { color: '#475569', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
@@ -2144,12 +2166,9 @@ async function fetchPlannerDetail() {
           plugins: {
             legend: { labels: { color: '#475569', font: { size: 10, weight: '600' }, boxWidth: 12 } },
             tooltip: { backgroundColor: 'rgba(15,23,42,0.92)', titleColor: '#f0f4ff', bodyColor: '#cbd5e1',
-              callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw + (ctx.dataset.yAxisID === 'y2' ? '%' : ' LC') } },
-            datalabels: { display: ctx => ctx.dataset.yAxisID === 'y2', color: '#d97706',
-              font: { size: 9, weight: '900' }, formatter: v => v + '%', anchor: 'end', align: 'top', offset: 1 }
+              callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw + (ctx.dataset.yAxisID === 'y2' ? '%' : ' LC') } }
           }
-        },
-        plugins: [ChartDataLabels]
+        }
       });
     }
 
