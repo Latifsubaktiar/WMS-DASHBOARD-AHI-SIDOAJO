@@ -2086,60 +2086,216 @@ function togglePlannerPanel() {
 }
 
 async function fetchPlannerDetail() {
-  const body     = document.getElementById('plannerDetailBody');
-  const footer   = document.getElementById('plannerDetailFooter');
   const subtitle = document.getElementById('plannerDetailSubtitle');
-  if (!body) return;
-  body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data SLA Planner...</td></tr>';
+  const footer   = document.getElementById('plannerDetailFooter');
+  if (subtitle) subtitle.textContent = 'Memuat data...';
+
   try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getSLAPlanner');
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getPlannerDetail');
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Gagal');
+
     if (subtitle) subtitle.textContent = 'Periode: ' + data.bulan;
-    if (footer)   footer.textContent   = 'Data SLA Planner — ' + data.bulan;
+    if (footer)   footer.textContent   = 'Data Planner — ' + data.bulan + ' · ' + data.summary.totalAll + ' LC total';
 
-    const grwPct  = parseFloat(String(data.slaGrw).replace('%',''))  || 0;
-    const custPct = parseFloat(String(data.slaCust).replace('%','')) || 0;
-    const avgPct  = ((grwPct + custPct) / 2).toFixed(2);
+    const s = data.summary;
 
-    const valColor = (pct) => pct >= 99 ? '#16a34a' : pct >= 95 ? '#d97706' : '#dc2626';
-    const statusBadge = (pct) => pct >= 99
-      ? '<span style="background:rgba(22,163,74,0.12);color:#16a34a;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid rgba(22,163,74,0.25);">✅ ON TARGET</span>'
-      : pct >= 95
-      ? '<span style="background:rgba(217,119,6,0.12);color:#d97706;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid rgba(217,119,6,0.25);">⚠️ NEAR TARGET</span>'
-      : '<span style="background:rgba(220,38,38,0.12);color:#dc2626;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid rgba(220,38,38,0.25);">❌ BELOW TARGET</span>';
+    // ── KPI ──
+    const kv = document.getElementById('plKpiVendor');    if(kv) kv.textContent = s.vendorSupporting + '%';
+    const kc = document.getElementById('plKpiCompleted'); if(kc) kc.textContent = s.totalCompleted + ' LC';
+    const ko = document.getElementById('plKpiOnTime');    if(ko) ko.textContent = s.totalOnTime + ' LC';
+    const kd = document.getElementById('plKpiDelayed');   if(kd) kd.textContent = s.totalDelayed + ' LC';
 
-    // Update KPI cards
-    const kg = document.getElementById('plannerKpiGrw');  if(kg) { kg.textContent=data.slaGrw; kg.style.color=valColor(grwPct); }
-    const kc = document.getElementById('plannerKpiCust'); if(kc) { kc.textContent=data.slaCust; kc.style.color=valColor(custPct); }
-    const ka = document.getElementById('plannerKpiAvg');  if(ka) { ka.textContent=avgPct+'%'; ka.style.color=valColor(parseFloat(avgPct)); }
-    const bg = document.getElementById('barPlannerGrw');  if(bg) setTimeout(()=>bg.style.width=Math.min(grwPct,100)+'%',300);
-    const bc = document.getElementById('barPlannerCust'); if(bc) setTimeout(()=>bc.style.width=Math.min(custPct,100)+'%',300);
-    const ba = document.getElementById('barPlannerAvg');  if(ba) setTimeout(()=>ba.style.width=Math.min(parseFloat(avgPct),100)+'%',300);
-    const bdg = document.getElementById('badgePlannerGrw');  if(bdg) { bdg.textContent=grwPct>=99?'✅ ON TARGET':grwPct>=95?'⚠️ NEAR':'❌ BELOW'; bdg.style.color=valColor(grwPct); }
-    const bdc = document.getElementById('badgePlannerCust'); if(bdc) { bdc.textContent=custPct>=99?'✅ ON TARGET':custPct>=95?'⚠️ NEAR':'❌ BELOW'; bdc.style.color=valColor(custPct); }
-    const bda = document.getElementById('badgePlannerAvg');  if(bda) { const ap=parseFloat(avgPct); bda.textContent=ap>=99?'✅ ON TARGET':ap>=95?'⚠️ NEAR':'❌ BELOW'; bda.style.color=valColor(ap); }
+    // ── TREND CHART ──
+    const trendCtx = document.getElementById('plTrendChart');
+    if (trendCtx && data.trendData && data.trendData.length) {
+      const existing = Chart.getChart(trendCtx); if(existing) existing.destroy();
+      new Chart(trendCtx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: data.trendData.map(d => d.date.slice(5)),
+          datasets: [
+            { label: 'ON TIME (LC)', data: data.trendData.map(d => d.onTime), backgroundColor: 'rgba(59,130,246,0.8)', order: 2 },
+            { label: 'DELAYED (LC)', data: data.trendData.map(d => d.delayed), backgroundColor: 'rgba(239,68,68,0.8)', order: 2 },
+            { label: 'ACHIEVEMENT %', data: data.trendData.map(d => d.pct), type: 'line', borderColor: '#fbbf24', backgroundColor: 'transparent', pointBackgroundColor: '#fbbf24', pointRadius: 4, borderWidth: 2, yAxisID: 'y2', order: 1 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true, ticks: { color: '#6a7a9a', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { stacked: true, ticks: { color: '#6a7a9a', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y2: { position: 'right', min: 0, max: 100, ticks: { color: '#fbbf24', font: { size: 10 }, callback: v => v + '%' }, grid: { display: false } }
+          },
+          plugins: { legend: { labels: { color: '#6a7a9a', font: { size: 10 }, boxWidth: 12 } }, tooltip: { backgroundColor: 'rgba(13,17,23,0.95)', titleColor: '#f0f4ff', bodyColor: '#9ab8e8' } }
+        }
+      });
+    }
 
-    body.innerHTML =
-      '<tr style="border-bottom:1px solid rgba(200,215,240,0.2);">' +
-        '<td style="padding:16px 18px;font-size:13px;font-weight:700;color:var(--text);">SLA GRW</td>' +
-        '<td style="padding:16px 18px;text-align:center;"><span style="font-size:28px;font-weight:900;color:'+valColor(grwPct)+';letter-spacing:-1px;">'+data.slaGrw+'</span></td>' +
-        '<td style="padding:16px 18px;font-size:12px;color:var(--text-3);">SLA Pengiriman ke GRW / Gudang</td>' +
-        '<td style="padding:16px 18px;text-align:center;">'+statusBadge(grwPct)+'</td>' +
-      '</tr>' +
-      '<tr style="background:rgba(0,0,0,0.02);border-bottom:1px solid rgba(200,215,240,0.2);">' +
-        '<td style="padding:16px 18px;font-size:13px;font-weight:700;color:var(--text);">SLA CUSTOMER</td>' +
-        '<td style="padding:16px 18px;text-align:center;"><span style="font-size:28px;font-weight:900;color:'+valColor(custPct)+';letter-spacing:-1px;">'+data.slaCust+'</span></td>' +
-        '<td style="padding:16px 18px;font-size:12px;color:var(--text-3);">SLA Pengiriman ke Customer</td>' +
-        '<td style="padding:16px 18px;text-align:center;">'+statusBadge(custPct)+'</td>' +
-      '</tr>' +
-      '<tr>' +
-        '<td style="padding:16px 18px;font-size:13px;font-weight:700;color:var(--text);">RATA-RATA SLA</td>' +
-        '<td style="padding:16px 18px;text-align:center;"><span style="font-size:28px;font-weight:900;color:'+valColor(parseFloat(avgPct))+';letter-spacing:-1px;">'+avgPct+'%</span></td>' +
-        '<td style="padding:16px 18px;font-size:12px;color:var(--text-3);">Rata-rata SLA GRW + SLA Customer</td>' +
-        '<td style="padding:16px 18px;text-align:center;">'+statusBadge(parseFloat(avgPct))+'</td>' +
+    // ── CBM BY KOTA ──
+    const kotaBody = document.getElementById('plKotaBody');
+    if (kotaBody && data.kotaData) {
+      const fmt = v => v > 0 ? v.toLocaleString('id-ID') : '-';
+      const fmtCbm = v => v > 0 ? v.toFixed(2) : '-';
+      kotaBody.innerHTML = data.kotaData.map(r =>
+        '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">' +
+        '<td style="padding:6px 10px;font-size:11px;font-weight:700;color:#fbbf24;">' + r.kota + '</td>' +
+        '<td style="padding:6px 8px;text-align:right;color:#4ade80;font-size:11px;">' + fmtCbm(r.onTimeCbm) + '</td>' +
+        '<td style="padding:6px 8px;text-align:right;color:#4ade80;font-size:11px;">' + fmt(r.onTimeJml) + '</td>' +
+        '<td style="padding:6px 8px;text-align:right;color:#f87171;font-size:11px;">' + fmtCbm(r.terlambatCbm) + '</td>' +
+        '<td style="padding:6px 8px;text-align:right;color:#f87171;font-size:11px;">' + fmt(r.terlambatJml) + '</td>' +
+        '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + fmtCbm(r.belumCbm) + '</td>' +
+        '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + fmt(r.belumJml) + '</td>' +
+        '</tr>'
+      ).join('') +
+      '<tr style="background:rgba(251,191,36,0.1);border-top:1px solid rgba(251,191,36,0.3);">' +
+      '<td style="padding:7px 10px;font-size:11px;font-weight:900;color:#fbbf24;">Total</td>' +
+      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.onTimeCbm.toFixed(2) + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.onTimeJml + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.terlambatCbm.toFixed(2) + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.terlambatJml + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.belumCbm.toFixed(2) + '</td>' +
+      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.belumJml + '</td>' +
       '</tr>';
+    }
+
+    // ── VENDOR NOT AVAILABLE ──
+    const vnaBody = document.getElementById('plVendorNotAvailBody');
+    if (vnaBody) {
+      if (!data.vendorNotAvail || !data.vendorNotAvail.length) {
+        vnaBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6a7a9a;">Tidak ada data</td></tr>';
+      } else {
+        vnaBody.innerHTML = data.vendorNotAvail.slice(0,20).map((r,i) =>
+          '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+          '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
+          '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.lc + '</td>' +
+          '<td style="padding:6px 8px;color:#c8d8f8;font-size:11px;">' + r.carrier + '</td>' +
+          '<td style="padding:6px 8px;color:#c8d8f8;font-size:11px;">' + r.jalur + '</td>' +
+          '<td style="padding:6px 8px;color:#60a5fa;font-size:11px;">' + r.loadDate + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + r.cbm.toFixed(2) + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;color:#f87171;font-weight:700;font-size:11px;">' + (r.aging > 0 ? Math.round(r.aging) + ' HARI' : '-') + '</td>' +
+          '</tr>'
+        ).join('');
+      }
+    }
+
+    // ── VENDOR DELAYED ──
+    const delBody = document.getElementById('plDelayedBody');
+    if (delBody) {
+      if (!data.vendorDelayed || !data.vendorDelayed.length) {
+        delBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6a7a9a;">Tidak ada data</td></tr>';
+      } else {
+        delBody.innerHTML = data.vendorDelayed.slice(0,20).map((r,i) =>
+          '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+          '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
+          '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.lc + '</td>' +
+          '<td style="padding:6px 8px;color:#c8d8f8;font-size:11px;">' + r.carrier + '</td>' +
+          '<td style="padding:6px 8px;color:#c8d8f8;font-size:11px;">' + r.jalur + '</td>' +
+          '<td style="padding:6px 8px;color:#60a5fa;font-size:11px;">' + r.loadDate + '</td>' +
+          '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + r.cbm.toFixed(2) + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;color:#f87171;font-weight:700;font-size:11px;">' + r.agingLabel + '</td>' +
+          '</tr>'
+        ).join('');
+      }
+    }
+
+    // ── AGING PER CARRIER ──
+    const agBody = document.getElementById('plAgingBody');
+    if (agBody && data.agingData) {
+      const dc = v => v > 0 ? '<span style="color:#60a5fa;font-weight:700;">'+v+'</span>' : '<span style="color:#3a4a6a;">-</span>';
+      agBody.innerHTML = data.agingData.map((r,i) =>
+        '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+        '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
+        '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.carrier + '</td>' +
+        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a1) + '</td>' +
+        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a2) + '</td>' +
+        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a3) + '</td>' +
+        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a4) + '</td>' +
+        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a5) + '</td>' +
+        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a5up) + '</td>' +
+        '<td style="padding:6px 8px;text-align:center;font-size:11px;"><span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-weight:800;">' + r.total + '</span></td>' +
+        '</tr>'
+      ).join('') +
+      '<tr style="background:rgba(251,191,36,0.1);border-top:1px solid rgba(251,191,36,0.3);">' +
+      '<td colspan="2" style="padding:7px 10px;font-size:11px;font-weight:900;color:#fbbf24;">TOTAL</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a1||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a2||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a3||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a4||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a5||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;color:#fbbf24;font-weight:800;">' + (data.agingTotals.a5up||'-') + '</td>' +
+      '<td style="padding:7px 8px;text-align:center;"><span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-weight:900;">' + data.agingTotals.total + '</span></td>' +
+      '</tr>';
+    }
+
+    // ── VENDOR PERFORMANCE % ──
+    const vpBody = document.getElementById('plVendorPerfBody');
+    if (vpBody && data.vendorPerf) {
+      vpBody.innerHTML = data.vendorPerf.map((r,i) => {
+        const pct = parseFloat(r.pct);
+        const col = pct >= 100 ? '#4ade80' : pct >= 95 ? '#fbbf24' : '#f87171';
+        return '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">' +
+          '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
+          '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.carrier + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;color:#4ade80;font-weight:700;font-size:11px;">' + r.onTime + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;color:#f87171;font-weight:700;font-size:11px;">' + (r.delayed > 0 ? r.delayed : '-') + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;color:#94a3b8;font-size:11px;">' + r.total + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;"><span style="color:'+col+';font-weight:900;font-size:12px;">'+r.pct+'</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    // ── PERCENTAGE BREAKDOWN BARS ──
+    const bbEl = document.getElementById('plBreakdownBars');
+    if (bbEl) {
+      const maxV = Math.max(data.pctDelayed, data.pctOnTime, data.pctBelum, 1);
+      const barH = (v) => Math.round((v / 100) * 100);
+      bbEl.innerHTML =
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">' +
+          '<div style="font-size:12px;font-weight:900;color:#f87171;">' + data.pctDelayed + '%</div>' +
+          '<div style="width:100%;background:rgba(239,68,68,0.8);height:' + barH(data.pctDelayed) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
+          '<div style="font-size:10px;color:#6a7a9a;text-align:center;">TERLAMBAT</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:2;">' +
+          '<div style="font-size:12px;font-weight:900;color:#60a5fa;">' + data.pctOnTime + '%</div>' +
+          '<div style="width:100%;background:rgba(59,130,246,0.8);height:' + barH(data.pctOnTime) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
+          '<div style="font-size:10px;color:#6a7a9a;text-align:center;">ON TIME</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">' +
+          '<div style="font-size:12px;font-weight:900;color:#94a3b8;">' + data.pctBelum + '%</div>' +
+          '<div style="width:100%;background:rgba(148,163,184,0.5);height:' + barH(data.pctBelum) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
+          '<div style="font-size:10px;color:#6a7a9a;text-align:center;">BELUM SUPPORT</div>' +
+        '</div>';
+    }
+
+    // ── AGING BREAKDOWN ──
+    const abEl = document.getElementById('plAgingBreak');
+    if (abEl && data.agingBreak) {
+      const tot = data.agingBreakTotal || 1;
+      const items = [
+        { label:'1 Hari', val: data.agingBreak.h1 },
+        { label:'2 Hari', val: data.agingBreak.h2 },
+        { label:'3 Hari', val: data.agingBreak.h3 },
+        { label:'4 Hari', val: data.agingBreak.h4 },
+        { label:'5 Hari', val: data.agingBreak.h5 },
+        { label:'> 5 Hari', val: data.agingBreak.h5up },
+      ];
+      abEl.innerHTML = items.map(it => {
+        const pct = Math.round((it.val/tot)*100);
+        return '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<div style="font-size:10px;color:#6a7a9a;width:48px;">' + it.label + '</div>' +
+          '<div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">' +
+            '<div style="width:' + pct + '%;height:100%;background:rgba(148,163,184,0.6);border-radius:3px;"></div>' +
+          '</div>' +
+          '<div style="font-size:10px;color:#94a3b8;font-weight:700;min-width:28px;">' + pct + '%</div>' +
+          '</div>';
+      }).join('');
+    }
+
   } catch(e) {
-    if (body) body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--red)">Gagal: '+e.message+'</td></tr>';
+    console.error('Planner detail error:', e);
+    const els = ['plKotaBody','plVendorNotAvailBody','plDelayedBody','plAgingBody','plVendorPerfBody'];
+    els.forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML='<tr><td colspan="9" style="text-align:center;padding:16px;color:#f87171;">Gagal: '+e.message+'</td></tr>'; });
+    if(subtitle) subtitle.textContent = 'Error: ' + e.message;
   }
 }
