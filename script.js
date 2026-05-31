@@ -1707,16 +1707,16 @@ function renderInvAreaTable(rows, s) {
 // ── SVG stat chart helper ──
 function _makeSVGStatChart(elId, pct, color) {
   const el = document.getElementById(elId); if(!el) return;
-  const r=28,cx=34,cy=34,circ=2*Math.PI*r;
+  const r=30,cx=38,cy=38,circ=2*Math.PI*r;
   const dash=Math.min(pct,100)/100*circ;
   const bg='#e2e8f0';
-  el.innerHTML=`<svg width="68" height="68" viewBox="0 0 68 68">
+  el.innerHTML=`<svg width="76" height="76" viewBox="0 0 76 76">
     <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
     <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
       stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
       stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-    <text x="${cx}" y="${cy-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="${color}">${pct}%</text>
-    <text x="${cx}" y="${cy+10}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Progress</text>
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="900" fill="${color}">${pct}%</text>
+    <text x="${cx}" y="${cy+11}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="600" fill="#94a3b8">Progress</text>
   </svg>`;
 }
 
