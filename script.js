@@ -2324,11 +2324,11 @@ async function fetchPlannerDetail() {
       abEl.innerHTML = items.map(it => {
         const pct = Math.round((it.val/tot)*100);
         return '<div style="display:flex;align-items:center;gap:8px;">' +
-          '<div style="font-size:10px;color:var(--text-3);width:48px;">' + it.label + '</div>' +
-          '<div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">' +
-            '<div style="width:' + pct + '%;height:100%;background:#94a3b8;border-radius:3px;"></div>' +
+          '<div style="font-size:11px;font-weight:700;color:#0f172a;width:52px;">' + it.label + '</div>' +
+          '<div style="flex:1;height:8px;background:rgba(0,0,0,0.08);border-radius:4px;overflow:hidden;">' +
+            '<div style="width:' + pct + '%;height:100%;background:#334155;border-radius:4px;"></div>' +
           '</div>' +
-          '<div style="font-size:10px;color:var(--text-2);font-weight:700;min-width:28px;">' + pct + '%</div>' +
+          '<div style="font-size:11px;color:#0f172a;font-weight:900;min-width:32px;">' + pct + '%</div>' +
           '</div>';
       }).join('');
     }
