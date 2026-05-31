@@ -1416,6 +1416,8 @@ async function fetchDashboardStats() {
 
   // ✅ INVENTORY CONTROL — fetch akurasi dari sheet INVENTORY J26
   fetchInventoryAccuracy();
+  // ✅ SLA PLANNER — fetch SLA GRW & SLA CUSTOMER
+  fetchSLAPlanner();
 }
 
 // ══════════════════════════════════════
@@ -1705,6 +1707,28 @@ function renderInvAreaTable(rows, s) {
 
 
 // ── SVG stat chart helper ──
+// ── fetchSLAPlanner ──
+async function fetchSLAPlanner() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getSLAPlanner');
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const grwPct  = parseFloat(String(data.slaGrw).replace('%',''))||0;
+    const custPct = parseFloat(String(data.slaCust).replace('%',''))||0;
+    const avgPct  = Math.round((grwPct + custPct) / 2);
+
+    _makeSVGStatChart('plannerStatChart', avgPct, '#991b1b');
+
+    const sg = document.getElementById('plannerSlaGrw');   if(sg) sg.textContent = data.slaGrw;
+    const sc = document.getElementById('plannerSlaCust');  if(sc) sc.textContent = data.slaCust;
+    const pv = document.getElementById('plannerStatVal');  if(pv) pv.textContent = avgPct + '%';
+    const pf = document.getElementById('plannerStatFoot'); if(pf) pf.textContent = avgPct + '%';
+    const pb = document.getElementById('plannerStatBar');
+    if(pb) setTimeout(()=>pb.style.width=Math.min(avgPct,100)+'%',300);
+  } catch(e) { console.warn('SLA Planner error:', e); }
+}
+
 function _makeSVGStatChart(elId, pct, color) {
   const el = document.getElementById(elId); if(!el) return;
   const r=30,cx=38,cy=38,circ=2*Math.PI*r;
