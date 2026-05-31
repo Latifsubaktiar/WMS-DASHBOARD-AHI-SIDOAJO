@@ -1906,108 +1906,158 @@ async function fetchDailyActivity(){
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Gagal');
 
-    // Update card title
     const cardTitle = document.getElementById('dailyActivityTitle');
     if (cardTitle) cardTitle.innerHTML = `<span class="live-dot"></span>Troughput <span style="font-size:10px;font-weight:500;color:var(--text-3);margin-left:6px">Actual vs Forecast ${new Date().getFullYear()}</span>`;
 
     const wrap = document.getElementById('dailyActivityChartWrap');
     if (!wrap) return;
-    wrap.style.height = '320px';
-    wrap.style.paddingBottom = '0';
-    wrap.style.position = 'relative';
 
-    // Build canvas
-    wrap.innerHTML = `
-      <canvas id="troughputChart" style="width:100%;height:280px;"></canvas>
-      <div id="troughputFooter" style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px 0;font-size:10px;"></div>
-    `;
-
-    const ctx = document.getElementById('troughputChart').getContext('2d');
-    const labels   = data.labels;
-    const d        = data.data;
-    const boundary = data.actualBoundaryIdx;
-
-    // Colors persis seperti referensi
     const COL = {
-      inbound  : '#8B1A1A',   // merah tua
-      outbound : '#D4860B',   // orange
-      inventory: '#606060',   // abu
-      capacity : '#E8A020',   // orange muda
-      occupancy: '#7B2FBE',   // ungu
-      forecast : 'rgba(100,100,100,0.4)',
+      inbound  : '#8B1A1A',
+      outbound : '#D4860B',
+      inventory: '#5a5a5a',
+      capacity : '#c8a96e',
+      occupancy: '#7B2FBE',
     };
 
-    // Custom plugin: label angka di atas/dalam bar + garis vertikal pemisah
+    const d        = data.data;
+    const labels   = data.labels;
+    const boundary = data.actualBoundaryIdx;
+
+    wrap.innerHTML = `
+      <div id="troughputAccBox" style="position:absolute;top:32px;left:50%;transform:translateX(-50%);z-index:10;background:rgba(255,255,255,0.97);border:1.5px solid #e2e8f0;border-radius:6px;padding:6px 10px;box-shadow:0 2px 12px rgba(0,0,0,0.1);font-size:10px;display:none;"></div>
+      <canvas id="troughputChart" style="width:100%;height:290px;"></canvas>
+    `;
+    wrap.style.height = '310px';
+    wrap.style.position = 'relative';
+    wrap.style.padding = '8px 12px 0';
+
+    // Accuracy box
+    if (data.accuracy) {
+      const a = data.accuracy;
+      const fmt = v => v ? v.toLocaleString('id-ID') : '-';
+      const pctColor = p => !p ? '#475569' : p >= 95 ? '#16a34a' : p >= 80 ? '#d97706' : '#dc2626';
+      const pctBg    = p => !p ? '#f1f5f9' : p >= 95 ? '#dcfce7' : p >= 80 ? '#fef3c7' : '#fee2e2';
+      const box = document.getElementById('troughputAccBox');
+      if (box) {
+        box.style.display = 'block';
+        box.innerHTML = `
+          <div style="font-weight:800;color:#dc2626;font-size:10px;margin-bottom:4px;text-align:center;">● FORECAST ${data.boundaryLabel||''}</div>
+          <table style="border-collapse:collapse;font-size:10px;">
+            <tr style="background:#1e293b;color:#fff;">
+              <th style="padding:3px 8px;font-weight:700;">Parameter</th>
+              <th colspan="2" style="padding:3px 8px;text-align:center;border-left:1px solid rgba(255,255,255,0.2);">Inbound</th>
+              <th colspan="2" style="padding:3px 8px;text-align:center;border-left:1px solid rgba(255,255,255,0.2);">Demand In</th>
+              <th colspan="2" style="padding:3px 8px;text-align:center;border-left:1px solid rgba(255,255,255,0.2);">Outbound</th>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:2px 8px;color:#64748b;font-weight:600;"></td>
+              <td style="padding:2px 6px;text-align:center;color:#64748b;border-left:1px solid #e2e8f0;">Forecast</td>
+              <td style="padding:2px 6px;text-align:center;color:#64748b;border-left:1px solid #e2e8f0;">Actual</td>
+              <td style="padding:2px 6px;text-align:center;color:#64748b;border-left:1px solid #e2e8f0;">Forecast</td>
+              <td style="padding:2px 6px;text-align:center;color:#64748b;border-left:1px solid #e2e8f0;">Actual</td>
+              <td style="padding:2px 6px;text-align:center;color:#64748b;border-left:1px solid #e2e8f0;">Forecast</td>
+              <td style="padding:2px 6px;text-align:center;color:#64748b;border-left:1px solid #e2e8f0;">Actual</td>
+            </tr>
+            <tr>
+              <td style="padding:3px 8px;font-weight:700;color:#0f172a;">CBM</td>
+              <td style="padding:3px 6px;text-align:center;color:#475569;border-left:1px solid #e2e8f0;">${fmt(a.inboundForecast)}</td>
+              <td style="padding:3px 6px;text-align:center;font-weight:800;color:#0f172a;border-left:1px solid #e2e8f0;">${fmt(a.inboundActual)}</td>
+              <td style="padding:3px 6px;text-align:center;color:#475569;border-left:1px solid #e2e8f0;">${fmt(a.demandForecast)}</td>
+              <td style="padding:3px 6px;text-align:center;font-weight:800;color:#0f172a;border-left:1px solid #e2e8f0;">${fmt(a.demandActual)}</td>
+              <td style="padding:3px 6px;text-align:center;color:#475569;border-left:1px solid #e2e8f0;">${fmt(a.outboundForecast)}</td>
+              <td style="padding:3px 6px;text-align:center;font-weight:800;color:#0f172a;border-left:1px solid #e2e8f0;">${fmt(a.outboundActual)}</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:3px 8px;font-weight:700;color:#0f172a;">% Akurasi</td>
+              <td colspan="2" style="padding:3px 6px;text-align:center;font-weight:900;color:${pctColor(a.inboundPct)};background:${pctBg(a.inboundPct)};border-left:1px solid #e2e8f0;">${a.inboundPct||0}%</td>
+              <td colspan="2" style="padding:3px 6px;text-align:center;font-weight:900;color:${pctColor(a.demandPct)};background:${pctBg(a.demandPct)};border-left:1px solid #e2e8f0;">${a.demandPct||0}%</td>
+              <td colspan="2" style="padding:3px 6px;text-align:center;font-weight:900;color:${pctColor(a.outboundPct)};background:${pctBg(a.outboundPct)};border-left:1px solid #e2e8f0;">${a.outboundPct||0}%</td>
+            </tr>
+          </table>
+        `;
+      }
+    }
+
+    const ctx = document.getElementById('troughputChart').getContext('2d');
+    const existing = Chart.getChart(ctx.canvas); if (existing) existing.destroy();
+
+    // Custom plugin: label angka di dalam bar + % di line + garis pemisah
     const troughputPlugin = {
       id: 'troughputPlugin',
       afterDatasetsDraw(chart) {
-        const { ctx, data: cd, chartArea } = chart;
-        // Garis vertikal pemisah ACTUAL vs FORECAST
+        const { ctx: c, chartArea } = chart;
+        // Garis pemisah merah
         if (boundary >= 0 && boundary < labels.length - 1) {
           const meta0 = chart.getDatasetMeta(0);
-          if (meta0.data[boundary]) {
-            const xPos = meta0.data[boundary].x + (meta0.data[boundary+1] ? (meta0.data[boundary+1].x - meta0.data[boundary].x)/2 : 30);
-            ctx.save();
-            ctx.beginPath();
-            ctx.setLineDash([6,3]);
-            ctx.strokeStyle = '#dc2626';
-            ctx.lineWidth = 2;
-            ctx.moveTo(xPos, chartArea.top);
-            ctx.lineTo(xPos, chartArea.bottom);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            // Label ACTUAL
-            ctx.fillStyle = '#dc2626';
-            ctx.font = 'bold 9px Outfit,sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText('◀ ACTUAL', xPos - 4, chartArea.top + 12);
-            // Label FORECAST
-            ctx.fillStyle = '#2563eb';
-            ctx.textAlign = 'left';
-            ctx.fillText('FORECAST ▶', xPos + 4, chartArea.top + 12);
-            ctx.restore();
+          if (meta0.data[boundary] && meta0.data[boundary+1]) {
+            const x0 = meta0.data[boundary].x;
+            const x1 = meta0.data[boundary+1].x;
+            // Find rightmost bar of boundary group
+            let maxX = x0;
+            for (let di = 0; di < 4; di++) {
+              const m = chart.getDatasetMeta(di);
+              if (m.data[boundary]) maxX = Math.max(maxX, m.data[boundary].x);
+            }
+            const xPos = (maxX + x1) / 2;
+            c.save();
+            c.beginPath();
+            c.setLineDash([6,3]);
+            c.strokeStyle = '#dc2626';
+            c.lineWidth = 2;
+            c.moveTo(xPos, chartArea.top + 20);
+            c.lineTo(xPos, chartArea.bottom);
+            c.stroke();
+            c.setLineDash([]);
+            c.font = 'bold 9px Outfit,sans-serif';
+            c.fillStyle = '#dc2626';
+            c.textAlign = 'right';
+            c.fillText('◀ACTUAL', xPos - 3, chartArea.top + 32);
+            c.fillStyle = '#2563eb';
+            c.textAlign = 'left';
+            c.fillText('FORECAST▶', xPos + 3, chartArea.top + 32);
+            c.restore();
           }
         }
-        // Label angka di atas tiap bar
+        // Label angka di dalam tiap bar
         chart.data.datasets.forEach((dataset, di) => {
           if (dataset.type === 'line' || dataset.label === 'Capacity') return;
           const meta = chart.getDatasetMeta(di);
           meta.data.forEach((bar, i) => {
             const val = dataset.data[i];
-            if (!val) return;
-            ctx.save();
-            ctx.font = 'bold 8px Outfit,sans-serif';
-            ctx.fillStyle = '#fff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const barH = bar.base - bar.y;
-            if (barH > 14) ctx.fillText(val.toLocaleString('id-ID'), bar.x, bar.y + barH/2);
-            ctx.restore();
+            if (!val || val < 1000) return;
+            const barH = Math.abs(bar.base - bar.y);
+            if (barH < 14) return;
+            c.save();
+            c.font = 'bold 7.5px Outfit,sans-serif';
+            c.fillStyle = '#fff';
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            const label = val >= 1000 ? (val/1000).toFixed(1)+'K' : val.toString();
+            c.fillText(label, bar.x, bar.y + barH/2);
+            c.restore();
           });
         });
       },
       afterDraw(chart) {
-        const { ctx } = chart;
-        // Label % di atas titik occupancy line
+        const { ctx: c } = chart;
         chart.data.datasets.forEach((dataset, di) => {
           if (dataset.label !== 'Occupancy (%)') return;
           const meta = chart.getDatasetMeta(di);
           meta.data.forEach((point, i) => {
             const val = dataset.data[i];
             if (val === null || val === undefined) return;
-            ctx.save();
-            ctx.font = 'bold 9px Outfit,sans-serif';
-            ctx.fillStyle = COL.occupancy;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
-            ctx.fillText(val + '%', point.x, point.y - 3);
-            ctx.restore();
+            c.save();
+            c.font = 'bold 9px Outfit,sans-serif';
+            c.fillStyle = COL.occupancy;
+            c.textAlign = 'center';
+            c.textBaseline = 'bottom';
+            c.fillText(val + '%', point.x, point.y - 4);
+            c.restore();
           });
         });
       }
     };
-
-    const existing = Chart.getChart(ctx.canvas); if (existing) existing.destroy();
 
     new Chart(ctx, {
       type: 'bar',
@@ -2018,26 +2068,27 @@ async function fetchDailyActivity(){
           {
             label: 'Inbound (CBM)',
             data: d.map(r => r.inbound),
-            backgroundColor: d.map((r,i) => i <= boundary ? COL.inbound : COL.inbound + '99'),
-            order: 2
+            backgroundColor: d.map((r,i) => i <= boundary ? COL.inbound : COL.inbound + '77'),
+            borderRadius: 2, order: 2
           },
           {
             label: 'Outbound (CBM)',
             data: d.map(r => r.outbound),
-            backgroundColor: d.map((r,i) => i <= boundary ? COL.outbound : COL.outbound + '99'),
-            order: 2
+            backgroundColor: d.map((r,i) => i <= boundary ? COL.outbound : COL.outbound + '77'),
+            borderRadius: 2, order: 2
           },
           {
             label: 'Inventory (CBM)',
             data: d.map(r => r.inventory),
-            backgroundColor: d.map((r,i) => i <= boundary ? COL.inventory : COL.inventory + '99'),
-            order: 2
+            backgroundColor: d.map((r,i) => i <= boundary ? COL.inventory : COL.inventory + '77'),
+            borderRadius: 2, order: 2
           },
           {
             label: 'Capacity',
             data: d.map(r => r.capacity),
-            backgroundColor: d.map((r,i) => i <= boundary ? COL.capacity + '55' : COL.capacity + '33'),
-            order: 2
+            backgroundColor: d.map((r,i) => i <= boundary ? COL.capacity + 'cc' : COL.capacity + '55'),
+            borderRadius: 2, order: 2,
+            borderDash: [4,2]
           },
           {
             label: 'Occupancy (%)',
@@ -2051,15 +2102,14 @@ async function fetchDailyActivity(){
             pointRadius: 5,
             borderWidth: 2.5,
             segment: { borderDash: ctx2 => ctx2.p1DataIndex > boundary ? [5,3] : [] },
-            yAxisID: 'y2',
-            order: 1
+            yAxisID: 'y2', order: 1
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        layout: { padding: { top: 24, right: 10 } },
+        layout: { padding: { top: 30, right: 10 } },
         scales: {
           x: {
             ticks: { color: '#475569', font: { size: 9, weight: '600' } },
@@ -2069,12 +2119,11 @@ async function fetchDailyActivity(){
           y: {
             beginAtZero: true,
             ticks: { color: '#475569', font: { size: 9 }, callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v },
-            grid: { color: 'rgba(0,0,0,0.04)' },
+            grid: { color: 'rgba(0,0,0,0.05)' },
             border: { display: false }
           },
           y2: {
-            position: 'right',
-            min: 0, max: 110,
+            position: 'right', min: 0, max: 120,
             ticks: { color: COL.occupancy, font: { size: 9, weight: '700' }, callback: v => v <= 100 ? v + '%' : '' },
             grid: { display: false },
             border: { display: false }
@@ -2083,18 +2132,17 @@ async function fetchDailyActivity(){
         plugins: {
           legend: {
             position: 'top',
-            labels: { color: '#334155', font: { size: 10, weight: '600' }, boxWidth: 12, padding: 12 }
+            labels: { color: '#334155', font: { size: 10, weight: '600' }, boxWidth: 12, padding: 10 }
           },
           tooltip: {
             backgroundColor: 'rgba(15,23,42,0.92)',
-            titleColor: '#f0f4ff',
-            bodyColor: '#cbd5e1',
+            titleColor: '#f0f4ff', bodyColor: '#cbd5e1',
             callbacks: {
-              label: ctx => {
-                const v = ctx.raw;
+              label: c2 => {
+                const v = c2.raw;
                 if (v === null || v === undefined) return '';
-                const suffix = ctx.dataset.yAxisID === 'y2' ? '%' : ' CBM';
-                return ' ' + ctx.dataset.label + ': ' + (typeof v === 'number' ? v.toLocaleString('id-ID') : v) + suffix;
+                const suffix = c2.dataset.yAxisID === 'y2' ? '%' : ' CBM';
+                return ' ' + c2.dataset.label + ': ' + (typeof v === 'number' ? v.toLocaleString('id-ID') : v) + suffix;
               }
             }
           }
@@ -2102,24 +2150,10 @@ async function fetchDailyActivity(){
       }
     });
 
-    // Accuracy table
-    if (data.accuracy) {
-      const a = data.accuracy;
-      const fmt = v => v ? v.toLocaleString('id-ID') : '-';
-      const pctColor = p => p >= 95 ? '#16a34a' : p >= 80 ? '#d97706' : '#dc2626';
-      const footer = document.getElementById('troughputFooter');
-      if (footer) footer.innerHTML = `
-        <div style="font-size:10px;font-weight:700;color:#334155;">Akurasi Forecast ${data.boundaryLabel || ''}:</div>
-        <div style="display:flex;gap:16px;">
-          <span>Inbound: <b style="color:${pctColor(a.inboundPct)}">${a.inboundPct||0}%</b> (F:${fmt(a.inboundForecast)} / A:${fmt(a.inboundActual)})</span>
-          <span>Demand: <b style="color:${pctColor(a.demandPct)}">${a.demandPct||0}%</b> (F:${fmt(a.demandForecast)} / A:${fmt(a.demandActual)})</span>
-          <span>Outbound: <b style="color:${pctColor(a.outboundPct)}">${a.outboundPct||0}%</b> (F:${fmt(a.outboundForecast)} / A:${fmt(a.outboundActual)})</span>
-        </div>
-      `;
-    }
-
   } catch(e) {
     console.error('Troughput error:', e);
+    const wrap = document.getElementById('dailyActivityChartWrap');
+    if (wrap) wrap.innerHTML = `<div style="padding:20px;color:#dc2626;font-size:12px;">Error: ${e.message}</div>`;
   }
 }
 function addBeam(el, color) {
