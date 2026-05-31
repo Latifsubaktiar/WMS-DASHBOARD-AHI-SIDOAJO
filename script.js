@@ -2247,6 +2247,8 @@ function togglePlannerPanel() {
   }
 }
 
+fetchDailyActivity();
+
 async function fetchPlannerDetail() {
   const subtitle = document.getElementById('plannerDetailSubtitle');
   const footer   = document.getElementById('plannerDetailFooter');
