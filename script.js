@@ -1901,190 +1901,229 @@ const dataLabelPlugin={
 let lineChartInstance=null;
 
 async function fetchDailyActivity(){
-  try{
-    const res=await fetch(GAS_DASHBOARD_URL+'?action=getDailyActivity');
-    const data=await res.json(); if(!data.ok) return;
-    const isDark=document.body.classList.contains('dark');
-    const gridColor=isDark?'rgba(255,255,255,0.05)':'rgba(99,120,167,0.07)';
-    const tickColor=isDark?'#484f58':'#9ca3af';
-    if(lineChartInstance) lineChartInstance.destroy();
-    lineChartInstance=new Chart(document.getElementById('lineChart').getContext('2d'),{
-      type:'line', plugins:[dataLabelPlugin],
-      data:{labels:data.labels,datasets:[
-        {label:'Inbound', data:data.inbound, borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.08)',tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5},
-        {label:'Outbound',data:data.outbound,borderColor:'#d97706',backgroundColor:'rgba(217,119,6,0.08)', tension:0.4,fill:true,pointBackgroundColor:'#d97706',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:24,bottom:5}},plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:12,cornerRadius:10}},scales:{x:{grid:{color:gridColor},ticks:{font:{size:11},color:tickColor}},y:{grid:{color:gridColor},ticks:{font:{size:11},color:tickColor,stepSize:1},beginAtZero:true}}}
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getTroughput');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal');
+
+    // Update card title
+    const cardTitle = document.getElementById('dailyActivityTitle');
+    if (cardTitle) cardTitle.innerHTML = `<span class="live-dot"></span>Troughput <span style="font-size:10px;font-weight:500;color:var(--text-3);margin-left:6px">Actual vs Forecast ${new Date().getFullYear()}</span>`;
+
+    const wrap = document.getElementById('dailyActivityChartWrap');
+    if (!wrap) return;
+    wrap.style.height = '320px';
+    wrap.style.paddingBottom = '0';
+    wrap.style.position = 'relative';
+
+    // Build canvas
+    wrap.innerHTML = `
+      <canvas id="troughputChart" style="width:100%;height:280px;"></canvas>
+      <div id="troughputFooter" style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px 0;font-size:10px;"></div>
+    `;
+
+    const ctx = document.getElementById('troughputChart').getContext('2d');
+    const labels   = data.labels;
+    const d        = data.data;
+    const boundary = data.actualBoundaryIdx;
+
+    // Colors persis seperti referensi
+    const COL = {
+      inbound  : '#8B1A1A',   // merah tua
+      outbound : '#D4860B',   // orange
+      inventory: '#606060',   // abu
+      capacity : '#E8A020',   // orange muda
+      occupancy: '#7B2FBE',   // ungu
+      forecast : 'rgba(100,100,100,0.4)',
+    };
+
+    // Custom plugin: label angka di atas/dalam bar + garis vertikal pemisah
+    const troughputPlugin = {
+      id: 'troughputPlugin',
+      afterDatasetsDraw(chart) {
+        const { ctx, data: cd, chartArea } = chart;
+        // Garis vertikal pemisah ACTUAL vs FORECAST
+        if (boundary >= 0 && boundary < labels.length - 1) {
+          const meta0 = chart.getDatasetMeta(0);
+          if (meta0.data[boundary]) {
+            const xPos = meta0.data[boundary].x + (meta0.data[boundary+1] ? (meta0.data[boundary+1].x - meta0.data[boundary].x)/2 : 30);
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash([6,3]);
+            ctx.strokeStyle = '#dc2626';
+            ctx.lineWidth = 2;
+            ctx.moveTo(xPos, chartArea.top);
+            ctx.lineTo(xPos, chartArea.bottom);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            // Label ACTUAL
+            ctx.fillStyle = '#dc2626';
+            ctx.font = 'bold 9px Outfit,sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText('◀ ACTUAL', xPos - 4, chartArea.top + 12);
+            // Label FORECAST
+            ctx.fillStyle = '#2563eb';
+            ctx.textAlign = 'left';
+            ctx.fillText('FORECAST ▶', xPos + 4, chartArea.top + 12);
+            ctx.restore();
+          }
+        }
+        // Label angka di atas tiap bar
+        chart.data.datasets.forEach((dataset, di) => {
+          if (dataset.type === 'line' || dataset.label === 'Capacity') return;
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((bar, i) => {
+            const val = dataset.data[i];
+            if (!val) return;
+            ctx.save();
+            ctx.font = 'bold 8px Outfit,sans-serif';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const barH = bar.base - bar.y;
+            if (barH > 14) ctx.fillText(val.toLocaleString('id-ID'), bar.x, bar.y + barH/2);
+            ctx.restore();
+          });
+        });
+      },
+      afterDraw(chart) {
+        const { ctx } = chart;
+        // Label % di atas titik occupancy line
+        chart.data.datasets.forEach((dataset, di) => {
+          if (dataset.label !== 'Occupancy (%)') return;
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((point, i) => {
+            const val = dataset.data[i];
+            if (val === null || val === undefined) return;
+            ctx.save();
+            ctx.font = 'bold 9px Outfit,sans-serif';
+            ctx.fillStyle = COL.occupancy;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(val + '%', point.x, point.y - 3);
+            ctx.restore();
+          });
+        });
+      }
+    };
+
+    const existing = Chart.getChart(ctx.canvas); if (existing) existing.destroy();
+
+    new Chart(ctx, {
+      type: 'bar',
+      plugins: [troughputPlugin],
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Inbound (CBM)',
+            data: d.map(r => r.inbound),
+            backgroundColor: d.map((r,i) => i <= boundary ? COL.inbound : COL.inbound + '99'),
+            order: 2
+          },
+          {
+            label: 'Outbound (CBM)',
+            data: d.map(r => r.outbound),
+            backgroundColor: d.map((r,i) => i <= boundary ? COL.outbound : COL.outbound + '99'),
+            order: 2
+          },
+          {
+            label: 'Inventory (CBM)',
+            data: d.map(r => r.inventory),
+            backgroundColor: d.map((r,i) => i <= boundary ? COL.inventory : COL.inventory + '99'),
+            order: 2
+          },
+          {
+            label: 'Capacity',
+            data: d.map(r => r.capacity),
+            backgroundColor: d.map((r,i) => i <= boundary ? COL.capacity + '55' : COL.capacity + '33'),
+            order: 2
+          },
+          {
+            label: 'Occupancy (%)',
+            type: 'line',
+            data: d.map(r => r.occupancy),
+            borderColor: COL.occupancy,
+            backgroundColor: 'transparent',
+            pointBackgroundColor: d.map((r,i) => i <= boundary ? COL.occupancy : '#fff'),
+            pointBorderColor: COL.occupancy,
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            borderWidth: 2.5,
+            borderDash: d.map((r,i) => i > boundary ? [4,3] : []),
+            yAxisID: 'y2',
+            order: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 24, right: 10 } },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { color: '#475569', font: { size: 9, weight: '600' } },
+            grid: { display: false },
+            border: { display: false }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: { color: '#475569', font: { size: 9 }, callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v },
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            border: { display: false }
+          },
+          y2: {
+            position: 'right',
+            min: 0, max: 110,
+            ticks: { color: COL.occupancy, font: { size: 9, weight: '700' }, callback: v => v <= 100 ? v + '%' : '' },
+            grid: { display: false },
+            border: { display: false }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#334155', font: { size: 10, weight: '600' }, boxWidth: 12, padding: 12 }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(15,23,42,0.92)',
+            titleColor: '#f0f4ff',
+            bodyColor: '#cbd5e1',
+            callbacks: {
+              label: ctx => {
+                const v = ctx.raw;
+                if (v === null || v === undefined) return '';
+                const suffix = ctx.dataset.yAxisID === 'y2' ? '%' : ' CBM';
+                return ' ' + ctx.dataset.label + ': ' + (typeof v === 'number' ? v.toLocaleString('id-ID') : v) + suffix;
+              }
+            }
+          }
+        }
+      }
     });
-    const cardTitle=document.querySelector('#page-dashboard .mid-grid .card-title');
-    if(cardTitle&&data.weekStart) cardTitle.innerHTML=`<span class="live-dot"></span>Daily Activity <span style="font-size:10px;font-weight:500;color:var(--text-3);margin-left:6px">Minggu ini (ab ${data.weekStart})</span>`;
-  }catch(e){
-    console.warn('Daily activity error:',e);
-    if(lineChartInstance) lineChartInstance.destroy();
-    lineChartInstance=new Chart(document.getElementById('lineChart').getContext('2d'),{type:'line',data:{labels:['Sen','Sel','Rab','Kam','Jum','Sab'],datasets:[{label:'Inbound',data:[0,0,0,0,0,0],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#2563eb',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5},{label:'Outbound',data:[0,0,0,0,0,0],borderColor:'#d97706',backgroundColor:'rgba(217,119,6,0.06)',tension:0.4,fill:true,pointBackgroundColor:'#d97706',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'}},y:{grid:{color:'rgba(99,120,167,0.07)'},ticks:{font:{size:11},color:'#9ca3af'},beginAtZero:true}}}});
+
+    // Accuracy table
+    if (data.accuracy) {
+      const a = data.accuracy;
+      const fmt = v => v ? v.toLocaleString('id-ID') : '-';
+      const pctColor = p => p >= 95 ? '#16a34a' : p >= 80 ? '#d97706' : '#dc2626';
+      const footer = document.getElementById('troughputFooter');
+      if (footer) footer.innerHTML = `
+        <div style="font-size:10px;font-weight:700;color:#334155;">Akurasi Forecast ${data.boundaryLabel || ''}:</div>
+        <div style="display:flex;gap:16px;">
+          <span>Inbound: <b style="color:${pctColor(a.inboundPct)}">${a.inboundPct||0}%</b> (F:${fmt(a.inboundForecast)} / A:${fmt(a.inboundActual)})</span>
+          <span>Demand: <b style="color:${pctColor(a.demandPct)}">${a.demandPct||0}%</b> (F:${fmt(a.demandForecast)} / A:${fmt(a.demandActual)})</span>
+          <span>Outbound: <b style="color:${pctColor(a.outboundPct)}">${a.outboundPct||0}%</b> (F:${fmt(a.outboundForecast)} / A:${fmt(a.outboundActual)})</span>
+        </div>
+      `;
+    }
+
+  } catch(e) {
+    console.error('Troughput error:', e);
   }
 }
-fetchDailyActivity();
-
-new Chart(document.getElementById('donutChart').getContext('2d'),{
-  type:'doughnut',
-  data:{labels:['Inbound','Storing','Outbound','Belum Selesai'],datasets:[{data:[0,0,0,100],backgroundColor:['#16a34a','#8b5cf6','#d97706','#e2e8f0'],borderColor:['#fff','#fff','#fff','#fff'],borderWidth:3,hoverOffset:10}]},
-  options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(17,24,39,0.9)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}%`},padding:10,cornerRadius:10}}}
-});
-
-// ── BEAM on KPI cards ──
-const kpiBeams = {
-  inboundStatCard:   'rgba(59,130,246,0.35)',
-  storingStatCard:   'rgba(236,72,153,0.35)',
-  outboundStatCard:  'rgba(245,158,11,0.35)',
-  invControlCard:    'rgba(16,185,129,0.35)',
-  dailyActivityCard: 'rgba(99,102,241,0.3)',
-  persentaseCard:    'rgba(236,72,153,0.3)',
-};
-Object.entries(kpiBeams).forEach(([id, color]) => {
-  const card = document.getElementById(id);
-  if (!card) return;
-  const beam = document.createElement('div');
-  beam.style.cssText = `position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,${color},transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;`;
-  card.appendChild(beam);
-
-  card.addEventListener('mouseenter', () => {
-    beam.style.transition = 'none';
-    beam.style.left = '-100%';
-    void beam.offsetWidth;
-    beam.style.transition = 'left 1.2s ease';
-    beam.style.left = '160%';
-  });
-  card.addEventListener('mouseleave', () => {
-    beam.style.transition = 'none';
-    beam.style.left = '-100%';
-  });
-});
-
-// ── BEAM on progress cards ──
-function addBeam(el, color) {
-  if (!el) return;
-  el.style.position = 'relative';
-  el.style.overflow = 'hidden';
-  const b = document.createElement('div');
-  b.style.cssText = `position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,${color},transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;`;
-  el.appendChild(b);
-  el.addEventListener('mouseenter',()=>{b.style.transition='none';b.style.left='-100%';void b.offsetWidth;b.style.transition='left 1.2s ease';b.style.left='160%';});
-  el.addEventListener('mouseleave',()=>{b.style.transition='none';b.style.left='-100%';});
-}
-const pr = document.querySelectorAll('.progress-row > div');
-if(pr[0]) addBeam(pr[0],'rgba(59,130,246,0.3)');
-if(pr[1]) addBeam(pr[1],'rgba(236,72,153,0.3)');
-if(pr[2]) addBeam(pr[2],'rgba(245,158,11,0.3)');
-
-// ── NAVIGATION ──
-document.querySelectorAll('.nav-item').forEach(btn=>{btn.addEventListener('click',()=>{const p=btn.dataset.page;if(p)go(p);});});
-function go(p){
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  const nb=document.querySelector(`[data-page="${p}"]`); if(nb) nb.classList.add('active');
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.iframe-page').forEach(el=>{el.classList.remove('active');el.style.display='none';});
-  if(IFRAME_PAGES.includes(p)){const pg=document.getElementById(`page-${p}`);if(pg){pg.style.display='flex';pg.classList.add('active');}loadIframe(p);}
-  else{const pg=document.getElementById(`page-${p}`);if(pg)pg.classList.add('active');}
-}
-function goHome(){go('dashboard');IFRAME_PAGES.forEach(k=>{const f=document.getElementById(`ifr${cap(k)}`);if(f)f.src='about:blank';});}
-function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
-function loadIframe(key){
-  const url=URLS[key]; if(!url) return;
-  const f=document.getElementById(`ifr${cap(key)}`), ld=document.getElementById(`ld${cap(key)}`), er=document.getElementById(`err${cap(key)}`);
-  const tab=document.getElementById(`tab${cap(key)}`), errTab=document.getElementById(`errTab${cap(key)}`);
-  if(!f) return; if(tab) tab.href=url; if(errTab) errTab.href=url;
-  ld.classList.remove('hidden'); er.classList.remove('show'); f.style.opacity='0';
-  let realLoaded=false;
-  const t=setTimeout(()=>{ld.classList.add('hidden');er.classList.add('show');},20000);
-  f.onload=()=>{if(!realLoaded)return;clearTimeout(t);ld.classList.add('hidden');f.style.opacity='1';};
-  f.onerror=()=>{if(!realLoaded)return;clearTimeout(t);ld.classList.add('hidden');er.classList.add('show');};
-  f.src='about:blank'; setTimeout(()=>{realLoaded=true;f.src=url;},150);
-}
-function reloadIframe(frameId,key){const f=document.getElementById(frameId),url=URLS[key];if(!f||!url)return;const ld=document.getElementById(`ld${cap(key)}`),er=document.getElementById(`err${cap(key)}`);f.src='about:blank';ld.classList.remove('hidden');er.classList.remove('show');f.style.opacity='0';setTimeout(()=>{f.src=url;},100);}
-
-// ── AI SUPPORT ──
-function setupAI(inId,btnId,msgsId,typingId){
-  const inp=document.getElementById(inId),btn=document.getElementById(btnId),msgs=document.getElementById(msgsId),typing=document.getElementById(typingId);
-  if(!inp||!btn||!msgs) return;
-  function addBubble(text,type){const div=document.createElement('div');div.className=`ai-bubble ${type}`;div.style.whiteSpace='pre-wrap';div.textContent=text;if(typing&&msgs.contains(typing))msgs.insertBefore(div,typing);else msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
-  async function send(){const txt=inp.value.trim();if(!txt)return;addBubble(txt,'user');inp.value='';inp.disabled=true;btn.disabled=true;if(typing){typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;}try{const res=await fetch(GAS_AI_URL+'?q='+encodeURIComponent(txt));const data=await res.json();if(typing)typing.classList.remove('show');addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');}catch(e){if(typing)typing.classList.remove('show');addBubble('Maaf, terjadi kesalahan koneksi.','bot');}inp.disabled=false;btn.disabled=false;inp.focus();}
-  btn.addEventListener('click',send);inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
-}
-setupAI('aiIn','aiBtn','aiMsg','aiTyping');
-setupAI('aiIn2','aiBtn2','aiMsg2','aiTyping2');
-
-// ── NOTIFIKASI ──
-function getLastSeenTs(){return parseInt(localStorage.getItem('lastSeenTs_'+(me.name||'guest'))||'0');}
-function setLastSeenTs(ts){localStorage.setItem('lastSeenTs_'+(me.name||'guest'),ts);}
-function toggleNotif(){notifOpen=!notifOpen;document.getElementById('notifPanel').style.display=notifOpen?'block':'none';if(notifOpen){setLastSeenTs(Date.now());document.getElementById('notifBadge').style.display='none';document.getElementById('notifBadge').textContent='0';}}
-function clearNotifs(){notifList=[];setLastSeenTs(Date.now());document.getElementById('notifBadge').style.display='none';document.getElementById('notifList').innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';}
-function addNotif(msg){if(!msg||!msg.name)return;if(me.name&&msg.name===me.name)return;if(!msg.timestamp||msg.timestamp<=getLastSeenTs())return;notifList.unshift(msg);if(notifList.length>20)notifList.pop();if(!notifOpen){const badge=document.getElementById('notifBadge'),count=parseInt(badge.textContent||'0')+1;badge.textContent=count>9?'9+':count;badge.style.display='flex';const btn=document.getElementById('notifBtn');btn.style.animation='none';setTimeout(()=>btn.style.animation='shakeBell 0.5s ease',10);}renderNotifList();}
-function renderNotifList(){if(!notifList.length){document.getElementById('notifList').innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';return;}document.getElementById('notifList').innerHTML=notifList.map(m=>`<div style="padding:12px 18px;border-bottom:1px solid rgba(200,215,240,0.3);display:flex;align-items:flex-start;gap:10px;cursor:pointer" onclick="go('discussion')"><div style="width:36px;height:36px;border-radius:50%;background:${m.color||'#2563eb'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">${(m.name||'?').slice(0,2).toUpperCase()}</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#0f172a">${m.name||'User'} <span style="font-weight:400;color:#94a3b8">di Discussion</span></div><div style="font-size:12px;color:#334155;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.text||''}</div><div style="font-size:10px;color:#94a3b8;margin-top:3px">${m.timestamp?new Date(m.timestamp).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):''}</div></div><span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0">💬</span></div>`).join('');}
-document.addEventListener('click',e=>{if(notifOpen&&!document.getElementById('notifPanel').contains(e.target)&&!document.getElementById('notifBtn').contains(e.target)){notifOpen=false;document.getElementById('notifPanel').style.display='none';}});
-
-// ── DARK MODE ──
-let isDark=localStorage.getItem('wms_dark')==='1';
-function applyDark(){document.body.classList.toggle('dark',isDark);updateDarkToggle();}
-function toggleDark(){isDark=!isDark;localStorage.setItem('wms_dark',isDark?'1':'0');applyDark();}
-applyDark();
-
-// ── SETTINGS ──
-let profileColorIdx=parseInt(localStorage.getItem('wms_color')||'0');
-function updateSettingsUser(){if(!me.name)return;const ava=document.getElementById('settingsAva');if(ava){ava.textContent=me.initials;ava.style.background=me.color.bg;}const nm=document.getElementById('settingsName');if(nm)nm.textContent=me.name;const rl=document.getElementById('settingsRole');if(rl)rl.textContent=me.jabatan||'Member AHI Sidoarjo';}
-function toggleSettings(){settingsOpen=!settingsOpen;document.getElementById('settingsPanel').classList.toggle('open',settingsOpen);updateDarkToggle();}
-function updateDarkToggle(){const toggle=document.getElementById('darkToggle');if(toggle)toggle.classList.toggle('on',isDark);}
-function openProfile(){settingsOpen=false;document.getElementById('settingsPanel').classList.remove('open');document.getElementById('profileOverlay').classList.remove('hidden');document.getElementById('profileAvaBig').textContent=me.initials||'?';document.getElementById('profileAvaBig').style.background=me.color?me.color.bg:'#2563eb';document.getElementById('profileNameShow').textContent=me.name||'—';document.getElementById('profileJabatan').textContent=me.jabatan||'Staff';document.getElementById('profileNipShow').value=me.nip||'—';profileColorIdx=parseInt(localStorage.getItem('wms_color')||'0');document.querySelectorAll('#profileColorOpts .color-opt').forEach((el,i)=>{el.classList.toggle('selected',i===profileColorIdx);el.onclick=function(){document.querySelectorAll('#profileColorOpts .color-opt').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');profileColorIdx=parseInt(el.dataset.pidx||i);document.getElementById('profileAvaBig').style.background=el.style.background;};});}
-document.getElementById('profileSaveBtn').addEventListener('click',function(){me.color=AVATAR_COLORS[profileColorIdx];localStorage.setItem('wms_color',profileColorIdx);document.getElementById('headerAvatar').textContent=me.initials;document.getElementById('headerAvatar').style.background=me.color.bg;applyTheme(me.color.hex);updateSettingsUser();document.getElementById('profileOverlay').classList.add('hidden');});
-document.getElementById('profileCloseBtn').addEventListener('click',function(){document.getElementById('profileOverlay').classList.add('hidden');});
-document.getElementById('profileOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
-document.addEventListener('click',function(e){const panel=document.getElementById('settingsPanel'),btn=document.getElementById('settingsBtn');if(settingsOpen&&panel&&btn&&!panel.contains(e.target)&&!btn.contains(e.target)){settingsOpen=false;panel.classList.remove('open');}});
-
-// ── SEARCH BAR ──
-const SEARCH_ITEMS=[{label:'Dashboard',page:'dashboard',icon:'🏠',desc:'Halaman utama'},{label:'Planner',page:'planner',icon:'📋',desc:'Rencana Operasional'},{label:'Inbound',page:'inbound',icon:'📦',desc:'Dashboard Inbound'},{label:'Storing',page:'storing',icon:'🏗️',desc:'Dashboard Storing'},{label:'Outbound',page:'outbound',icon:'🚚',desc:'Dashboard Outbound'},{label:'Inventory',page:'inventory',icon:'📊',desc:'Manajemen Stok'},{label:'GA',page:'ga',icon:'🏢',desc:'General Affairs'},{label:'HR',page:'hr',icon:'👥',desc:'Human Resources'},{label:'Analyst',page:'analyst',icon:'📊',desc:'Dashboard Analitik Operasional'},{label:'Discussion',page:'discussion',icon:'💬',desc:'Discussion Room'},{label:'AI Support',page:'ai',icon:'🤖',desc:'Asisten AI Warehouse'}];
-const searchInput=document.getElementById('searchInput'), searchDropdown=document.getElementById('searchDropdown');
-function renderSearch(query){if(!query.trim()){searchDropdown.style.display='none';return;}const q=query.toLowerCase(),results=SEARCH_ITEMS.filter(item=>item.label.toLowerCase().includes(q)||item.desc.toLowerCase().includes(q));if(!results.length){searchDropdown.innerHTML='<div style="padding:12px 14px;font-size:12.5px;color:var(--text-3);text-align:center;">Tidak ditemukan</div>';searchDropdown.style.display='block';return;}searchDropdown.innerHTML=results.map(item=>`<div class="search-item" data-page="${item.page}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:all 0.15s;"><div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);display:grid;place-items:center;font-size:16px;flex-shrink:0;border:1px solid var(--accent-mid);">${item.icon}</div><div><div style="font-size:13px;font-weight:700;color:var(--text);">${item.label}</div><div style="font-size:11px;color:var(--text-3);">${item.desc}</div></div><span style="margin-left:auto;font-size:10px;color:var(--text-3);">↵</span></div>`).join('');searchDropdown.style.display='block';searchDropdown.querySelectorAll('.search-item').forEach(el=>{el.addEventListener('mouseenter',()=>{el.style.background='var(--accent-light)';});el.addEventListener('mouseleave',()=>{el.style.background='none';});el.addEventListener('click',()=>{go(el.dataset.page);searchInput.value='';searchDropdown.style.display='none';});});}
-if(searchInput){searchInput.addEventListener('input',e=>renderSearch(e.target.value));searchInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const first=searchDropdown.querySelector('.search-item');if(first){go(first.dataset.page);searchInput.value='';searchDropdown.style.display='none';}}if(e.key==='Escape'){searchInput.value='';searchDropdown.style.display='none';}});}
-document.addEventListener('click',e=>{if(searchDropdown&&!searchDropdown.contains(e.target)&&e.target!==searchInput)searchDropdown.style.display='none';});
-
-// ── MOBILE SIDEBAR ──
-function toggleSidebar(){const sidebar=document.querySelector('.sidebar'),overlay=document.getElementById('sidebarOverlay'),btn=document.getElementById('hamburgerBtn');sidebar.classList.toggle('open');overlay.classList.toggle('show');btn.classList.toggle('active');}
-function closeSidebar(){const sidebar=document.querySelector('.sidebar'),overlay=document.getElementById('sidebarOverlay'),btn=document.getElementById('hamburgerBtn');sidebar.classList.remove('open');overlay.classList.remove('show');btn.classList.remove('active');}
-document.querySelectorAll('.nav-item').forEach(btn=>{btn.addEventListener('click',()=>{if(window.innerWidth<=768)closeSidebar();});});
-
-// ══════════════════════════════════════
-//  PLANNER DETAIL PANEL
-// ══════════════════════════════════════
-let plannerPanelOpen = false;
-
-function togglePlannerPanel() {
-  plannerPanelOpen = !plannerPanelOpen;
-  const panel       = document.getElementById('plannerDetailPanel');
-  const midGrid     = document.querySelector('.mid-grid');
-  const progressRow = document.querySelector('.progress-row');
-  const bottomGrid  = document.querySelector('.bottom-grid');
-  if (!panel) return;
-
-  if (inboundPanelOpen)   { inboundPanelOpen   = false; const p=document.getElementById('inboundDetailPanel');   if(p) p.style.display='none'; }
-  if (storingPanelOpen)   { storingPanelOpen   = false; const p=document.getElementById('storingDetailPanel');   if(p) p.style.display='none'; }
-  if (outboundPanelOpen)  { outboundPanelOpen  = false; const p=document.getElementById('outboundDetailPanel');  if(p) p.style.display='none'; }
-  if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
-
-  if (plannerPanelOpen) {
-    panel.style.display = 'block';
-    if (midGrid)     midGrid.style.display     = 'none';
-    if (progressRow) progressRow.style.display = 'none';
-    if (bottomGrid)  bottomGrid.style.display  = 'none';
-    fetchPlannerDetail();
-    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  } else {
-    panel.style.display = 'none';
-    if (midGrid)     midGrid.style.display     = '';
-    if (progressRow) progressRow.style.display = '';
-    if (bottomGrid)  bottomGrid.style.display  = '';
-  }
-}
-
 async function fetchPlannerDetail() {
   const subtitle = document.getElementById('plannerDetailSubtitle');
   const footer   = document.getElementById('plannerDetailFooter');
