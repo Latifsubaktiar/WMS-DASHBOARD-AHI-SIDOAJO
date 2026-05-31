@@ -2023,7 +2023,8 @@ async function fetchDailyActivity(){
       const a  = data.accuracy;
       const fN = v => Math.round(v||0).toLocaleString('id-ID');
       const akb = p => {
-        const v = parseFloat(p||0);
+        let v = parseFloat(p||0);
+        if (v > 0 && v <= 1) v = v * 100;
         const bg = v>=95?'rgba(22,163,74,.18)':v>=80?'rgba(217,119,6,.18)':'rgba(220,38,38,.18)';
         const bc = v>=95?'rgba(22,163,74,.4)':v>=80?'rgba(217,119,6,.4)':'rgba(220,38,38,.4)';
         const fc = v>=95?'#16a34a':v>=80?'#d97706':'#dc2626';
@@ -2055,11 +2056,11 @@ async function fetchDailyActivity(){
             <tbody>
               <tr>
                 <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">CBM</td>
-                <td style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:9px;border:1px solid #e2e8f0;">${fN(a.inboundForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.inboundForecast)}</td>
                 <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.inboundActual)}</td>
-                <td style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:9px;border:1px solid #e2e8f0;">${fN(a.demandForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.demandForecast)}</td>
                 <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.demandActual)}</td>
-                <td style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:9px;border:1px solid #e2e8f0;">${fN(a.outboundForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.outboundForecast)}</td>
                 <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.outboundActual)}</td>
               </tr>
               <tr style="background:#f8fafc;">
