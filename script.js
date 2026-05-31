@@ -272,6 +272,7 @@ function toggleOutboundPanel() {
   if (inboundPanelOpen)   { inboundPanelOpen   = false; const p=document.getElementById('inboundDetailPanel');   if(p) p.style.display='none'; }
   if (storingPanelOpen)   { storingPanelOpen   = false; const p=document.getElementById('storingDetailPanel');   if(p) p.style.display='none'; }
   if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
+  if (plannerPanelOpen)   { plannerPanelOpen   = false; const p=document.getElementById('plannerDetailPanel');   if(p) p.style.display='none'; }
 
   if (outboundPanelOpen) {
     panel.style.display = 'block';
@@ -305,6 +306,7 @@ function toggleInventoryPanel() {
   if (inboundPanelOpen)  { inboundPanelOpen  = false; const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
   if (storingPanelOpen)  { storingPanelOpen  = false; const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
   if (outboundPanelOpen) { outboundPanelOpen = false; const p=document.getElementById('outboundDetailPanel'); if(p) p.style.display='none'; }
+  if (plannerPanelOpen)  { plannerPanelOpen  = false; const p=document.getElementById('plannerDetailPanel');  if(p) p.style.display='none'; }
 
   if (inventoryPanelOpen) {
     panel.style.display = 'block';
@@ -600,6 +602,7 @@ function stopSlideshow(){
   if(inboundPanelOpen){inboundPanelOpen=false;document.getElementById('inboundDetailPanel').style.display='none';}
   if(storingPanelOpen){storingPanelOpen=false;document.getElementById('storingDetailPanel').style.display='none';}
   if(outboundPanelOpen){outboundPanelOpen=false;document.getElementById('outboundDetailPanel').style.display='none';}
+  if(plannerPanelOpen){plannerPanelOpen=false;const pp=document.getElementById('plannerDetailPanel');if(pp)pp.style.display='none';}
   ['mid-grid','progress-row','bottom-grid'].forEach(cls=>{const e=document.querySelector('.'+cls);if(e)e.style.display='';});
   document.removeEventListener('keydown',onSlideshowKey);
   document.removeEventListener('fullscreenchange',onFullscreenChange);
@@ -653,6 +656,7 @@ async function prepareSlide(idx){
     if(keep!=='inbound'&&inboundPanelOpen){inboundPanelOpen=false;document.getElementById('inboundDetailPanel').style.display='none';}
     if(keep!=='storing'&&storingPanelOpen){storingPanelOpen=false;document.getElementById('storingDetailPanel').style.display='none';}
     if(keep!=='outbound'&&outboundPanelOpen){outboundPanelOpen=false;document.getElementById('outboundDetailPanel').style.display='none';}
+    if(plannerPanelOpen){plannerPanelOpen=false;const pp=document.getElementById('plannerDetailPanel');if(pp)pp.style.display='none';}
   };
   switch(idx){
     case 0:
@@ -711,6 +715,7 @@ function toggleStoringPanel() {
     if (inboundPanelOpen)   { inboundPanelOpen   = false; if(inboundPanel) inboundPanel.style.display='none'; }
     if (outboundPanelOpen)  { outboundPanelOpen  = false; const p=document.getElementById('outboundDetailPanel');  if(p) p.style.display='none'; }
     if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
+    if (plannerPanelOpen)   { plannerPanelOpen   = false; const p=document.getElementById('plannerDetailPanel');   if(p) p.style.display='none'; }
     panel.style.display = 'block';
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
@@ -977,6 +982,7 @@ function toggleInboundPanel() {
     if (storingPanelOpen)   { storingPanelOpen   = false; const sp=document.getElementById('storingDetailPanel');   if(sp) sp.style.display='none'; }
     if (outboundPanelOpen)  { outboundPanelOpen  = false; const op=document.getElementById('outboundDetailPanel');  if(op) op.style.display='none'; }
     if (inventoryPanelOpen) { inventoryPanelOpen = false; const ip=document.getElementById('inventoryDetailPanel'); if(ip) ip.style.display='none'; }
+    if (plannerPanelOpen)   { plannerPanelOpen   = false; const pp=document.getElementById('plannerDetailPanel');   if(pp) pp.style.display='none'; }
     panel.style.display = 'block';
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
