@@ -918,8 +918,8 @@
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
 
           <!-- Vendor Supporting -->
-          <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;" onmouseover="var b=this.querySelector('.pl-kpi-beam');if(b){b.style.transition='left 1.2s ease';b.style.left='160%'}" onmouseout="var b=this.querySelector('.pl-kpi-beam');if(b){b.style.transition='none';b.style.left='-100%'}">
-          <div class="pl-kpi-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
+          <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+          <div class="pl-kpi-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam 2.5s ease-in-out infinite;"></div>
             <div style="height:3px;background:#d97706;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(220,38,38,0.6),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -937,8 +937,8 @@
           </div>
 
           <!-- Total Completed LC -->
-          <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;" onmouseover="var b=this.querySelector('.pl-kpi-beam');if(b){b.style.transition='left 1.2s ease';b.style.left='160%'}" onmouseout="var b=this.querySelector('.pl-kpi-beam');if(b){b.style.transition='none';b.style.left='-100%'}">
-          <div class="pl-kpi-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
+          <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+          <div class="pl-kpi-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam 2.5s ease-in-out infinite;"></div>
             <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.5s ease-in-out infinite;"></div></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -956,8 +956,8 @@
           </div>
 
           <!-- Total On-Time LC -->
-          <div style="background:linear-gradient(160deg,#fff 55%,#dcfce7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;" onmouseover="var b=this.querySelector('.pl-kpi-beam');if(b){b.style.transition='left 1.2s ease';b.style.left='160%'}" onmouseout="var b=this.querySelector('.pl-kpi-beam');if(b){b.style.transition='none';b.style.left='-100%'}">
-          <div class="pl-kpi-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
+          <div style="background:linear-gradient(160deg,#fff 55%,#dcfce7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+          <div class="pl-kpi-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam 2.5s ease-in-out infinite;"></div>
             <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 4s ease-in-out infinite;"></div></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -975,8 +975,8 @@
           </div>
 
           <!-- Total Delayed LC -->
-          <div style="background:linear-gradient(160deg,#fff 55%,#fee2e2 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;" onmouseover="var b=this.querySelector('.pl-kpi-beam');if(b){b.style.transition='left 1.2s ease';b.style.left='160%'}" onmouseout="var b=this.querySelector('.pl-kpi-beam');if(b){b.style.transition='none';b.style.left='-100%'}">
-          <div class="pl-kpi-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
+          <div style="background:linear-gradient(160deg,#fff 55%,#fee2e2 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+          <div class="pl-kpi-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam 2.5s ease-in-out infinite;"></div>
             <div style="height:3px;background:#dc2626;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 4.5s ease-in-out infinite;"></div></div>
             <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
