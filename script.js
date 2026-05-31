@@ -1831,6 +1831,8 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
   if (chart) {
     chart.data.datasets[0].data = [inPct, storePct, outPct, sisa];
     chart.data.datasets[0].backgroundColor = ['#16a34a','#8b5cf6','#d97706', belumColor];
+    chart.data.datasets[0].borderColor = '#fff';
+    chart.data.datasets[0].borderWidth = 2;
     chart.update('none');
   }
 }
@@ -1856,7 +1858,7 @@ function renderDashStoringChart() {
   new Chart(canvas.getContext('2d'), {
     type: 'doughnut',
     data: { datasets: [{ data: [pickPct, stagePct, sisaPct], backgroundColor: ['#16a34a','#f59e0b','#dc2626'], borderColor: isDark?'#161b22':'#ffffff', borderWidth: 3, hoverOffset: 6 }] },
-    options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{legend:{display:false},tooltip:{enabled:false}} }
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}%`}}} }
   });
 }
 
