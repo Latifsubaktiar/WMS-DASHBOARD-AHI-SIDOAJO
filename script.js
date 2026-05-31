@@ -2159,8 +2159,8 @@ async function fetchPlannerDetail() {
           responsive: true, maintainAspectRatio: false,
           layout: { padding: { top: 20 } },
           scales: {
-            x: { stacked: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
-            y: { stacked: true, ticks: { color: '#475569', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true },
+            x: { stacked: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { display: false }, border: { display: false } },
+            y: { stacked: true, ticks: { color: '#475569', font: { size: 10 } }, grid: { display: false }, border: { display: false }, beginAtZero: true },
             y2: { position: 'right', min: 0, max: 110, ticks: { color: '#d97706', font: { size: 10, weight: '700' }, callback: v => v <= 100 ? v + '%' : '' }, grid: { display: false } }
           },
           plugins: {
@@ -2274,7 +2274,7 @@ async function fetchPlannerDetail() {
       vpBody.innerHTML = data.vendorPerf.map((r,i) => {
         const pct = parseFloat(r.pct);
         const col = pct >= 100 ? '#16a34a' : pct >= 95 ? '#d97706' : '#dc2626';
-        const bg = i%2===0 ? '' : 'background:rgba(241,245,249,0.7);';
+        const bg = i%2===0 ? 'background:rgba(255,255,255,0.7);' : 'background:rgba(226,232,240,0.5);';
         return '<tr style="'+bg+'border-bottom:1px solid rgba(200,215,240,0.3);">' +
           '<td style="padding:7px 10px;text-align:center;color:#94a3b8;font-size:11px;font-weight:600;">' + (i+1) + '</td>' +
           '<td style="padding:7px 12px;font-weight:800;color:#0f172a;font-size:12px;">' + r.carrier + '</td>' +
