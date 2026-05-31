@@ -1991,13 +1991,8 @@ async function fetchDailyActivity(){
             </tbody>
           </table>
         </div>`;
-      // Taruh di header card bukan di dalam chart
-      const accFloat = document.getElementById('troughputAccFloat');
-      if (accFloat) {
-        accFloat.innerHTML = '';
-        floatBox.style.cssText = 'display:inline-block;';
-        accFloat.appendChild(floatBox);
-      }
+      floatBox.style.cssText = 'position:absolute;top:18px;left:160px;z-index:10;';
+      wrap.appendChild(floatBox);
     }
 
     // Canvas
