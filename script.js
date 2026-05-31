@@ -1947,7 +1947,7 @@ async function fetchDailyActivity(){
         return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;background:${bg};border:1px solid ${bc};color:${fc};">${v.toFixed(2)}%</span>`;
       };
       const floatBox = document.createElement('div');
-      floatBox.style.cssText = 'position:absolute;top:8px;left:8px;z-index:10;';
+      floatBox.style.cssText = 'position:absolute;top:2px;left:80px;z-index:10;';
       floatBox.innerHTML = `
         <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.12);">
           <div style="background:#dc2626;padding:5px 12px;display:flex;align-items:center;gap:5px;">
