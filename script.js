@@ -1949,7 +1949,7 @@ async function fetchDailyActivity(){
       const floatBox = document.createElement('div');
       floatBox.style.cssText = 'display:inline-block;';
       floatBox.innerHTML = `
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);width:100%;">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <div style="background:#dc2626;padding:4px 10px;display:flex;align-items:center;gap:5px;">
             <div style="width:5px;height:5px;border-radius:50%;background:#fff;opacity:.8;flex-shrink:0;"></div>
             <span style="font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#fff;">FORECAST ${data.boundaryLabel||''}</span>
