@@ -194,6 +194,9 @@
           <button class="settings-item" onclick="openProfile()"><span class="settings-item-icon">👤</span><span>Lihat Profile</span></button>
           <button class="settings-item" onclick="toggleDark();updateDarkToggle()"><span class="settings-item-icon">🌙</span><span>Dark Mode</span><div class="dark-toggle" id="darkToggle"></div></button>
           <div class="settings-divider"></div>
+          <button class="settings-item" onclick="openHistoryLogin()"><span class="settings-item-icon">🕐</span><span>History Login</span></button>
+          <button class="settings-item" id="resetDiscBtn" style="display:none" onclick="confirmResetDiskusi()"><span class="settings-item-icon">🗑️</span><span>Reset Diskusi</span></button>
+          <div class="settings-divider"></div>
           <button class="settings-item danger" onclick="doLogout()"><span class="settings-item-icon">🚪</span><span>Ganti Akun</span></button>
         </div>
       </div>
@@ -1577,6 +1580,33 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(initKpiBeams, 2000);
 });
 </script>
+
+
+<!-- HISTORY LOGIN MODAL -->
+<div id="historyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.4);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 32px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.15);position:relative;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-size:16px;font-weight:900;color:#0a0f1e;">🕐 History Login</div>
+      <button onclick="closeHistoryModal()" style="width:32px;height:32px;border-radius:50%;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:16px;color:#94a3b8;">✕</button>
+    </div>
+    <div id="historyLoginList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;">
+      <div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM RESET DISKUSI MODAL -->
+<div id="resetDiscModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.4);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:32px;width:400px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,0.15);text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">🗑️</div>
+    <div style="font-size:18px;font-weight:900;color:#0a0f1e;margin-bottom:8px;">Reset Diskusi?</div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:24px;line-height:1.6;">Semua pesan di Discussion akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button onclick="closeResetDiscModal()" style="padding:10px 24px;border-radius:10px;border:1px solid #e2e8f0;background:#f8fafc;font-size:13px;font-weight:700;cursor:pointer;color:#475569;">Batal</button>
+      <button onclick="doResetDiskusi()" style="padding:10px 24px;border-radius:10px;border:none;background:linear-gradient(145deg,#dc2626,#b91c1c);font-size:13px;font-weight:700;cursor:pointer;color:#fff;box-shadow:0 4px 12px rgba(220,38,38,0.3);">Ya, Hapus Semua</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
