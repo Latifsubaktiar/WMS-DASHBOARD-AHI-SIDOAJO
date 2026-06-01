@@ -61,6 +61,35 @@
 .login-found-box .lf-tag { font-size:11px; color:var(--green); font-weight:800; text-transform:uppercase; letter-spacing:1px; }
 .login-found-box .lf-name { font-size:19px; font-weight:900; color:var(--text); letter-spacing:-0.5px; }
 .login-found-box .lf-jabatan { font-size:12px; color:var(--text-3); font-weight:600; }
+
+/* ══ MOBILE FIX — HP (max-width: 768px) ══ */
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .stat-card  { padding: 12px 10px !important; gap: 8px !important; flex-direction: column !important; align-items: flex-start !important; }
+  .stat-value { font-size: 28px !important; letter-spacing: -1px !important; }
+  .stat-icon  { width: 36px !important; height: 36px !important; font-size: 16px !important; transform: none !important; }
+  .stat-label { font-size: 10px !important; }
+  .progress-chart-wrap { width: 75px !important; height: 75px !important; }
+  .progress-pct { font-size: 13px !important; }
+  .page-header { flex-wrap: wrap; gap: 8px; margin-bottom: 14px !important; }
+  .page-title-wrap h1 { font-size: 18px !important; }
+  .date-chip { font-size: 10px !important; padding: 5px 10px !important; }
+  .mid-grid    { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .bottom-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .progress-row { grid-template-columns: 1fr !important; gap: 12px !important; }
+  #dailyActivityChartWrap { height: 220px !important; overflow: hidden !important; }
+  #dailyActivityChartWrap > div:first-child { display: none !important; }
+  .donut-wrap { padding: 12px !important; gap: 10px !important; }
+  .donut-canvas-wrap { width: 120px !important; height: 120px !important; }
+  .donut-center .total { font-size: 18px !important; }
+  .card-header { padding: 12px 14px 10px !important; }
+  .card-title  { font-size: 12px !important; }
+  .chart-wrap  { height: 160px !important; padding: 10px 12px !important; }
+  .page { padding: 12px !important; }
+  td { font-size: 11px !important; padding: 6px 8px !important; white-space: nowrap !important; }
+  th { font-size: 8.5px !important; padding: 7px 8px !important; white-space: nowrap !important; }
+  .donut-legend-item { font-size: 11px !important; }
+}
 </style>
 </head>
 <body>
