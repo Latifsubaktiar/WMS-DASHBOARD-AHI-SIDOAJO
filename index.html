@@ -1494,7 +1494,7 @@
 <script src="script.js"></script>
 
 <script>
-// KPI card beam loop - robust handler
+// KPI card beam - 1x per hover
 function initKpiBeams() {
   var ids = ['inboundStatCard','storingStatCard','outboundStatCard','invControlCard','plannerStatCard'];
   ids.forEach(function(id) {
@@ -1502,34 +1502,25 @@ function initKpiBeams() {
     if (!card || card._beamInited) return;
     card._beamInited = true;
     card.addEventListener('mouseenter', function() {
-      var self = this;
-      var beam = self.querySelector('.kpi-beam-2') || self.querySelector('.planner-beam');
+      var beam = this.querySelector('.kpi-beam-2') || this.querySelector('.planner-beam');
       if (!beam) return;
-      clearInterval(self._beamInterval);
-      function runBeam() {
-        beam.style.transition = 'none';
-        beam.style.left = '-100%';
-        setTimeout(function() {
-          beam.style.transition = 'left 1.2s ease';
-          beam.style.left = '160%';
-        }, 30);
-      }
-      runBeam();
-      self._beamInterval = setInterval(runBeam, 1600);
+      beam.style.transition = 'none';
+      beam.style.left = '-100%';
+      setTimeout(function() {
+        beam.style.transition = 'left 1.2s ease';
+        beam.style.left = '160%';
+      }, 30);
     });
     card.addEventListener('mouseleave', function() {
-      clearInterval(this._beamInterval);
       var beam = this.querySelector('.kpi-beam-2') || this.querySelector('.planner-beam');
       if (beam) { beam.style.transition = 'none'; beam.style.left = '-100%'; }
     });
   });
 }
-// Try multiple times to catch cards rendered late
 document.addEventListener('DOMContentLoaded', function() {
   initKpiBeams();
   setTimeout(initKpiBeams, 500);
-  setTimeout(initKpiBeams, 1500);
-  setTimeout(initKpiBeams, 3000);
+  setTimeout(initKpiBeams, 2000);
 });
 </script>
 
