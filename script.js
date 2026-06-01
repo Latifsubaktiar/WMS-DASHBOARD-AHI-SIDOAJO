@@ -65,7 +65,9 @@ let fbReady = false;
 let db = null, chatRef = null, onlineRef = null;
 let settingsOpen = false;
 let notifList = [], notifOpen = false, lastSeenTs = 0;
-const CHAT_PATH   = 'wms_ahi_chat/messages';
+const CHAT_PATH     = 'wms_ahi_chat/messages';
+const HISTORY_PATH  = 'wms_ahi_chat/login_history';
+const ADMIN_NIPS    = ['182126', '098592'];
 const ONLINE_PATH = 'wms_ahi_chat/online';
 
 // ── Init Firebase ──
@@ -141,6 +143,21 @@ function doLogin() {
   localStorage.setItem('wms_jabatan', me.jabatan);
   localStorage.setItem('wms_color',   selectedColorIdx);
   applyLogin();
+}
+function saveLoginHistory() {
+  if (!db || !me.nip) return;
+  try {
+    const tz = 'Asia/Jakarta';
+    const now = new Date();
+    const timeStr = now.toLocaleString('id-ID', { timeZone: tz, day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    db.ref(HISTORY_PATH).push({
+      nip     : me.nip,
+      name    : me.name,
+      jabatan : me.jabatan,
+      time    : timeStr,
+      timestamp: Date.now()
+    });
+  } catch(e) { console.warn('saveLoginHistory error:', e); }
 }
 
 function applyLogin() {
@@ -407,7 +424,10 @@ async function fetchOutboundPanel() {
     renderOutboundPanelTable(rows);
 
     // Full-body beam amber otomatis loop
-    setTimeout(()=>{
+    // Show Reset Diskusi hanya untuk admin
+  const resetBtn = document.getElementById('resetDiscBtn');
+  if (resetBtn) resetBtn.style.display = ADMIN_NIPS.includes(String(me.nip)) ? '' : 'none';
+  setTimeout(()=>{
       const speeds=['3s','3.5s','4s','4.5s'];
       document.querySelectorAll('#outboundDetailPanel [style*="overflow:hidden;box-shadow"]').forEach((card,i)=>{
         if(card.querySelector('.out-beam')) return;
@@ -2597,4 +2617,64 @@ async function fetchPlannerDetail() {
     els.forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML='<tr><td colspan="9" style="text-align:center;padding:16px;color:#f87171;">Gagal: '+e.message+'</td></tr>'; });
     if(subtitle) subtitle.textContent = 'Error: ' + e.message;
   }
+}
+// ── History Login ─────────────────────────────────────────────
+function openHistoryLogin() {
+  settingsOpen = false;
+  document.getElementById('settingsPanel').classList.remove('open');
+  const modal = document.getElementById('historyModal');
+  modal.style.display = 'flex';
+  const list = document.getElementById('historyLoginList');
+  list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>';
+  if (!db) { list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Firebase tidak tersedia</div>'; return; }
+  db.ref(HISTORY_PATH).orderByChild('timestamp').limitToLast(50).once('value', snap => {
+    const entries = [];
+    snap.forEach(child => entries.unshift(child.val()));
+    if (!entries.length) {
+      list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Belum ada history login</div>';
+      return;
+    }
+    list.innerHTML = entries.map((e,i) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${i%2===0?'#f8fafc':'#fff'};border-radius:10px;border:1px solid #f1f5f9;">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">${(e.name||'?').slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:#0f172a;">${e.name||'—'}</div>
+          <div style="font-size:11px;color:#64748b;">${e.jabatan||'—'} · NIP ${e.nip||'—'}</div>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;text-align:right;flex-shrink:0;">${e.time||'—'}</div>
+      </div>`).join('');
+  });
+}
+
+function closeHistoryModal() {
+  document.getElementById('historyModal').style.display = 'none';
+}
+
+// ── Reset Diskusi ─────────────────────────────────────────────
+function confirmResetDiskusi() {
+  settingsOpen = false;
+  document.getElementById('settingsPanel').classList.remove('open');
+  const modal = document.getElementById('resetDiscModal');
+  modal.style.display = 'flex';
+}
+
+function closeResetDiscModal() {
+  document.getElementById('resetDiscModal').style.display = 'none';
+}
+
+function doResetDiskusi() {
+  if (!db) return;
+  if (!ADMIN_NIPS.includes(String(me.nip))) {
+    alert('Hanya admin yang bisa reset diskusi!');
+    return;
+  }
+  db.ref(CHAT_PATH).remove().then(() => {
+    closeResetDiscModal();
+    // Notif sukses
+    const notif = document.createElement('div');
+    notif.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;background:#16a34a;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(22,163,74,0.3);animation:slideIn 0.3s ease;';
+    notif.textContent = '✅ Diskusi berhasil direset!';
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 3000);
+  }).catch(e => alert('Gagal reset: ' + e.message));
 }
