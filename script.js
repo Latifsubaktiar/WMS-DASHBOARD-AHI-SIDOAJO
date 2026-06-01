@@ -1839,8 +1839,11 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
   if (centerEl) centerEl.textContent = overall + '%';
   const iv = document.getElementById('donutInboundVal');  if(iv)  iv.textContent  = inPct    + '%';
   const sv = document.getElementById('donutStoringVal');  if(sv)  sv.textContent  = storePct + '%';
-  // Update total
-  const ov2 = document.getElementById('donutTotal'); if(ov2) ov2.textContent = Math.round((inPct+storePct+outPct)/3)+'%';
+  // Update total & rata-rata label dengan nilai terbaru
+  const avgNow = Math.round((inPct+storePct+outPct)/3);
+  const ov2 = document.getElementById('donutTotal'); if(ov2) ov2.textContent = avgNow+'%';
+  const lblNow = document.getElementById('pieTotalLabel');
+  if(lblNow) lblNow.innerHTML = `<span style="font-size:22px;font-weight:900;color:#1e293b;">${avgNow}%</span> <span style="font-size:10px;color:#94a3b8;">Rata-rata Progres</span>`;
   const ov = document.getElementById('donutOutboundVal'); if(ov)  ov.textContent  = outPct   + '%';
   const bv = document.getElementById('donutBelumVal');    if(bv)  bv.textContent  = sisa     + '%';
   const ctx = document.getElementById('donutChart'); if(!ctx) return;
@@ -1935,6 +1938,8 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
         totalEl.style.cssText = 'text-align:center;padding:6px 0 4px;font-size:11px;font-weight:700;color:#475569;';
         wrap.appendChild(totalEl);
       }
+      // Update dengan ID biar bisa di-update nanti
+      totalEl.id = 'pieTotalLabel';
       totalEl.innerHTML = `<span style="font-size:22px;font-weight:900;color:#1e293b;">${avgPct}%</span> <span style="font-size:10px;color:#94a3b8;">Rata-rata Progres</span>`;
     }
   }
