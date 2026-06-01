@@ -128,9 +128,63 @@ async function checkNip() {
   loadEl.classList.remove('show');
 }
 
-function doLogin() {
+// Generate device token unik per browser
+function getOrCreateDeviceToken() {
+  let token = localStorage.getItem('wms_device_token');
+  if (!token) {
+    token = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2,10);
+    localStorage.setItem('wms_device_token', token);
+  }
+  return token;
+}
+
+async function doLogin() {
   if (!verifiedData) return;
-  me.nip      = verifiedData.nip || document.getElementById('loginNip').value.trim();
+
+  const nip       = verifiedData.nip || document.getElementById('loginNip').value.trim();
+  const unlimited = verifiedData.unlimited;
+  const maxDevice = verifiedData.maxDevice || 0;
+  const errEl     = document.getElementById('loginErr');
+  const loadEl    = document.getElementById('loginLoading');
+  const btn       = document.getElementById('loginBtn');
+
+  // Kalau unlimited → langsung login
+  if (unlimited || maxDevice === 0) {
+    _applyLoginData(nip);
+    return;
+  }
+
+  // Cek & register device token
+  const token = getOrCreateDeviceToken();
+  loadEl.classList.add('show');
+  btn.disabled = true;
+
+  try {
+    // Cek apakah device ini sudah terdaftar
+    const checkRes  = await fetch(GAS_USER_URL + '?action=checkDevice&nip=' + encodeURIComponent(nip) + '&token=' + encodeURIComponent(token));
+    const checkData = await checkRes.json();
+
+    if (checkData.allowed) {
+      // Device sudah terdaftar atau pertama kali → register lalu login
+      if (checkData.firstTime || !checkData.unlimited) {
+        await fetch(GAS_USER_URL + '?action=registerDevice&nip=' + encodeURIComponent(nip) + '&token=' + encodeURIComponent(token));
+      }
+      _applyLoginData(nip);
+    } else {
+      // Device tidak diizinkan
+      loadEl.classList.remove('show');
+      btn.disabled = false;
+      errEl.textContent = '⚠️ Device ini tidak terdaftar. Batas ' + maxDevice + ' device untuk akun ini. Hubungi admin untuk reset.';
+      errEl.classList.add('show');
+    }
+  } catch(e) {
+    // Kalau error cek device → izinkan saja (fallback)
+    _applyLoginData(nip);
+  }
+}
+
+function _applyLoginData(nip) {
+  me.nip      = nip;
   me.name     = verifiedData.name || '—';
   me.jabatan  = verifiedData.jabatan || 'Staff';
   me.color    = AVATAR_COLORS[selectedColorIdx];
