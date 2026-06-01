@@ -879,11 +879,11 @@ function renderStoringBatchCards(rows) {
             <div style="font-size:7.5px;font-weight:700;color:#059669;text-transform:uppercase;">PICKED</div>
             <div style="font-size:14px;font-weight:900;color:#059669;line-height:1.2;">${num(d.pickedCase)}</div>
           </div>
-          <div style="background:#fff;border:1px solid rgba(236,72,153,0.3);padding:4px 7px;">
+          <div style="background:#fff;border:1px solid rgba(236,72,153,0.3);padding:4px 7px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4s ease-in-out infinite;pointer-events:none;"></div>
             <div style="font-size:7.5px;font-weight:700;color:#db2777;text-transform:uppercase;">STAGED</div>
             <div style="font-size:14px;font-weight:900;color:#db2777;line-height:1.2;">${num(d.stagedCase)}</div>
           </div>
-          <div style="background:#fff;border:1px solid rgba(239,68,68,0.3);padding:4px 7px;">
+          <div style="background:#fff;border:1px solid rgba(239,68,68,0.3);padding:4px 7px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4.5s ease-in-out infinite;pointer-events:none;"></div>
             <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">SISA</div>
             <div style="font-size:14px;font-weight:900;color:#dc2626;line-height:1.2;">${num(d.sisaCase)}</div>
           </div>
