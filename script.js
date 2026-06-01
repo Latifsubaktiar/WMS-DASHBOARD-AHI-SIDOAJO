@@ -148,14 +148,34 @@ async function doLogin() {
   const loadEl    = document.getElementById('loginLoading');
   const btn       = document.getElementById('loginBtn');
 
-  // Debug - hapus setelah confirmed working
   console.log('verifiedData:', JSON.stringify(verifiedData));
   console.log('unlimited:', unlimited, 'maxDevice:', maxDevice);
 
-  // Kalau unlimited → langsung login
-  if (unlimited === true || maxDevice === 0) {
+  // Kalau unlimited (kolom F kosong di sheet) → langsung login
+  // maxDevice 0 dari savedLogin artinya belum ada data device → tetap cek
+  if (unlimited === true) {
     _applyLoginData(nip);
     return;
+  }
+  // Kalau maxDevice 0 DAN unlimited tidak ada (dari savedLogin) → cek ke GAS dulu
+  if (maxDevice === 0 && unlimited === undefined) {
+    // Re-fetch dari GAS untuk dapat data device yang benar
+    try {
+      const reRes = await fetch(GAS_USER_URL + '?action=checkNip&nip=' + encodeURIComponent(nip));
+      const reData = await reRes.json();
+      if (reData.found) {
+        verifiedData = {...verifiedData, ...reData};
+        if (reData.unlimited === true) { _applyLoginData(nip); return; }
+        if (!reData.maxDevice || reData.maxDevice === 0) { _applyLoginData(nip); return; }
+        // Update maxDevice untuk lanjut cek device
+        verifiedData.maxDevice = reData.maxDevice;
+        verifiedData.unlimited = reData.unlimited;
+      } else {
+        _applyLoginData(nip); return; // fallback
+      }
+    } catch(e) {
+      _applyLoginData(nip); return; // fallback network error
+    }
   }
 
   // Cek & register device token
