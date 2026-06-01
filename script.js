@@ -128,87 +128,9 @@ async function checkNip() {
   loadEl.classList.remove('show');
 }
 
-// Generate device token unik per browser
-function getOrCreateDeviceToken() {
-  let token = localStorage.getItem('wms_device_token');
-  if (!token) {
-    token = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2,10);
-    localStorage.setItem('wms_device_token', token);
-  }
-  return token;
-}
-
-async function doLogin() {
+function doLogin() {
   if (!verifiedData) return;
-
-  const nip       = verifiedData.nip || document.getElementById('loginNip').value.trim();
-  const unlimited = verifiedData.unlimited;
-  const maxDevice = verifiedData.maxDevice || 0;
-  const errEl     = document.getElementById('loginErr');
-  const loadEl    = document.getElementById('loginLoading');
-  const btn       = document.getElementById('loginBtn');
-
-  console.log('verifiedData:', JSON.stringify(verifiedData));
-  console.log('unlimited:', unlimited, 'maxDevice:', maxDevice);
-
-  // Kalau unlimited (kolom F kosong di sheet) → langsung login
-  // maxDevice 0 dari savedLogin artinya belum ada data device → tetap cek
-  if (unlimited === true) {
-    _applyLoginData(nip);
-    return;
-  }
-  // Kalau maxDevice 0 DAN unlimited tidak ada (dari savedLogin) → cek ke GAS dulu
-  if (maxDevice === 0 && unlimited === undefined) {
-    // Re-fetch dari GAS untuk dapat data device yang benar
-    try {
-      const reRes = await fetch(GAS_USER_URL + '?action=checkNip&nip=' + encodeURIComponent(nip));
-      const reData = await reRes.json();
-      if (reData.found) {
-        verifiedData = {...verifiedData, ...reData};
-        if (reData.unlimited === true) { _applyLoginData(nip); return; }
-        if (!reData.maxDevice || reData.maxDevice === 0) { _applyLoginData(nip); return; }
-        // Update maxDevice untuk lanjut cek device
-        verifiedData.maxDevice = reData.maxDevice;
-        verifiedData.unlimited = reData.unlimited;
-      } else {
-        _applyLoginData(nip); return; // fallback
-      }
-    } catch(e) {
-      _applyLoginData(nip); return; // fallback network error
-    }
-  }
-
-  // Cek & register device token
-  const token = getOrCreateDeviceToken();
-  loadEl.classList.add('show');
-  btn.disabled = true;
-
-  try {
-    // Cek apakah device ini sudah terdaftar
-    const checkRes  = await fetch(GAS_USER_URL + '?action=checkDevice&nip=' + encodeURIComponent(nip) + '&token=' + encodeURIComponent(token));
-    const checkData = await checkRes.json();
-
-    if (checkData.allowed) {
-      // Device sudah terdaftar atau pertama kali → register lalu login
-      if (checkData.firstTime || !checkData.unlimited) {
-        await fetch(GAS_USER_URL + '?action=registerDevice&nip=' + encodeURIComponent(nip) + '&token=' + encodeURIComponent(token));
-      }
-      _applyLoginData(nip);
-    } else {
-      // Device tidak diizinkan
-      loadEl.classList.remove('show');
-      btn.disabled = false;
-      errEl.textContent = '⚠️ Device ini tidak terdaftar. Batas ' + maxDevice + ' device untuk akun ini. Hubungi admin untuk reset.';
-      errEl.classList.add('show');
-    }
-  } catch(e) {
-    // Kalau error cek device → izinkan saja (fallback)
-    _applyLoginData(nip);
-  }
-}
-
-function _applyLoginData(nip) {
-  me.nip      = nip;
+  me.nip      = verifiedData.nip || document.getElementById('loginNip').value.trim();
   me.name     = verifiedData.name || '—';
   me.jabatan  = verifiedData.jabatan || 'Staff';
   me.color    = AVATAR_COLORS[selectedColorIdx];
@@ -270,37 +192,6 @@ function applyLogin() {
     document.getElementById('loginColorsWrap').style.display='block';
     colorOptions.querySelectorAll('.color-opt').forEach((el,i)=>el.classList.toggle('selected',i===savedColor));
     const btn=document.getElementById('loginBtn'); if(btn) btn.textContent='Masuk ke Dashboard →';
-    // Auto-login dengan cek device token
-    const savedToken = localStorage.getItem('wms_device_token');
-    if (savedToken) {
-      // Ada token → cek ke GAS apakah masih valid
-      fetch(GAS_USER_URL + '?action=checkDevice&nip=' + encodeURIComponent(savedNip) + '&token=' + encodeURIComponent(savedToken))
-        .then(r => r.json())
-        .then(data => {
-          if (data.allowed) {
-            // Device valid → auto login
-            me.nip=savedNip; me.name=savedName; me.jabatan=savedJabatan||'Staff';
-            me.color=AVATAR_COLORS[savedColor]; me.initials=savedName.slice(0,2).toUpperCase();
-            applyLogin();
-          } else {
-            // Device tidak valid → hapus localStorage, paksa login ulang
-            localStorage.removeItem('wms_nip'); localStorage.removeItem('wms_name');
-            localStorage.removeItem('wms_jabatan'); localStorage.removeItem('wms_color');
-            localStorage.removeItem('wms_device_token');
-            const overlay=document.getElementById('loginOverlay');
-            if(overlay){ overlay.classList.remove('hidden'); overlay.style.opacity='1'; }
-            const errEl=document.getElementById('loginErr');
-            if(errEl){ errEl.textContent='⚠️ Device ini tidak terdaftar untuk akun '+savedNip+'. Hubungi admin.'; errEl.classList.add('show'); }
-          }
-        })
-        .catch(() => {
-          // Error network → izinkan saja (fallback)
-          me.nip=savedNip; me.name=savedName; me.jabatan=savedJabatan||'Staff';
-          me.color=AVATAR_COLORS[savedColor]; me.initials=savedName.slice(0,2).toUpperCase();
-          applyLogin();
-        });
-    }
-    // Tidak ada token → tidak auto-login, user harus klik Masuk dulu
   }
 })();
 
