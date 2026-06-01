@@ -1828,7 +1828,11 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
   const outPct  = outTotal>0 ? Math.round((outSelesai/outTotal)*100) : 0;
   // Storing: ambil dari KPI card Storing Today (pctPickingOverall = progress card)
   const s = window._storingData && window._storingData.summary;
-  const storePct = s ? Math.round(((s.pctPickingOverall||0) + (s.pctStagedOverall||0)) / 2) : 0;
+  // Storing: pakai formula sama dengan Storing card footer (sumPicked/sumRelease)
+  const storingS = window._storingData && window._storingData.summary;
+  const storePct = storingS && storingS.sumRelease > 0
+    ? Math.round(storingS.sumPicked / storingS.sumRelease * 100)
+    : (s ? Math.round(((s.pctPickingOverall||0) + (s.pctStagedOverall||0)) / 2) : 0);
   const sisa   = Math.max(0, 100 - inPct - storePct - outPct);
   const overall = Math.round((inPct + storePct + outPct) / 3);
   const centerEl = document.getElementById('donutTotal');
