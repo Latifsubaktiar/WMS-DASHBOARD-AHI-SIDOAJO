@@ -843,10 +843,10 @@ function renderStoringBatchCards(rows) {
   grid.style.gridTemplateColumns = `repeat(${Math.min(count,4)},1fr)`;
 
   const colors = [
-    { tint:'#ede9fe', border:'rgba(99,102,241,0.25)', accent:'#4f46e5', stripe:'#6366f1' },
-    { tint:'#d1fae5', border:'rgba(16,185,129,0.25)', accent:'#059669', stripe:'#10b981' },
-    { tint:'#fef3c7', border:'rgba(245,158,11,0.25)', accent:'#d97706', stripe:'#f59e0b' },
-    { tint:'#f3e8ff', border:'rgba(139,92,246,0.25)', accent:'#7c3aed', stripe:'#8b5cf6' },
+    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
+    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
+    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
+    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
   ];
 
   grid.innerHTML = batchList.map(([batchNum, d], i) => {
@@ -857,7 +857,7 @@ function renderStoringBatchCards(rows) {
     const num = n => Math.round(n).toLocaleString('id-ID');
 
     return `<div style="background:linear-gradient(160deg,#fff 55%,${col.tint} 100%);border:1px solid #e2e8f0;box-shadow:0 1px 6px rgba(0,0,0,0.06);position:relative;overflow:hidden;">
-      <div style="height:3px;background:${col.stripe};position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam ${3+i*0.4}s ease-in-out infinite;"></div></div>
+      <div style="height:3px;background:${col.stripe};position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.3),transparent);animation:cardBeam ${3+i*0.4}s ease-in-out infinite;"></div></div>
       <div style="padding:12px 14px 0;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
           <div style="display:flex;align-items:center;gap:8px;">
