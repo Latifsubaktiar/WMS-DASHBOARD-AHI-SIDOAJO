@@ -145,16 +145,21 @@ function doLogin() {
   applyLogin();
 }
 function saveLoginHistory() {
-  if (!db || !me.nip) return;
+  if (!me.nip) return;
+  // Kalau db belum ready, retry setelah 2 detik
+  if (!db) { setTimeout(saveLoginHistory, 2000); return; }
   try {
-    const tz = 'Asia/Jakarta';
     const now = new Date();
-    const timeStr = now.toLocaleString('id-ID', { timeZone: tz, day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const timeStr = now.toLocaleString('id-ID', {
+      timeZone: 'Asia/Jakarta',
+      day:'2-digit', month:'short', year:'numeric',
+      hour:'2-digit', minute:'2-digit', second:'2-digit'
+    });
     db.ref(HISTORY_PATH).push({
-      nip     : me.nip,
-      name    : me.name,
-      jabatan : me.jabatan,
-      time    : timeStr,
+      nip      : me.nip,
+      name     : me.name,
+      jabatan  : me.jabatan,
+      time     : timeStr,
       timestamp: Date.now()
     });
   } catch(e) { console.warn('saveLoginHistory error:', e); }
