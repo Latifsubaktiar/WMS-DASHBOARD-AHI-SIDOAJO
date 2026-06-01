@@ -1812,16 +1812,31 @@ async function fetchInventoryAccuracy() {
 }
 
 function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
-  const inPct  = inTotal>0  ? Math.round((inSelesai/inTotal)*100)   : 0;
-  const outPct = outTotal>0 ? Math.round((outSelesai/outTotal)*100) : 0;
+  // Ambil % dari KPI card progress yang sudah tampil - lebih akurat
+  const getCardPct = id => {
+    const el = document.querySelector('#'+id+' .kpi-footer-val, #'+id+' [class*="footer"] span:last-child');
+    if (el) { const v = parseInt(el.textContent); if (!isNaN(v)) return v; }
+    // Fallback: cari dari bar progress atau teks %
+    const card = document.getElementById(id);
+    if (card) {
+      const pctEl = card.querySelector('[id$="Pct"], .footer-pct');
+      if (pctEl) { const v = parseInt(pctEl.textContent); if (!isNaN(v)) return v; }
+    }
+    return 0;
+  };
+  const inPct   = inTotal>0  ? Math.round((inSelesai/inTotal)*100)   : 0;
+  const outPct  = outTotal>0 ? Math.round((outSelesai/outTotal)*100) : 0;
+  // Storing: ambil dari KPI card Storing Today (pctPickingOverall = progress card)
   const s = window._storingData && window._storingData.summary;
-  const storePct = s ? Math.round((s.pctPickingOverall + s.pctStagedOverall) / 2) : 0;
+  const storePct = s ? Math.round(((s.pctPickingOverall||0) + (s.pctStagedOverall||0)) / 2) : 0;
   const sisa   = Math.max(0, 100 - inPct - storePct - outPct);
   const overall = Math.round((inPct + storePct + outPct) / 3);
   const centerEl = document.getElementById('donutTotal');
   if (centerEl) centerEl.textContent = overall + '%';
   const iv = document.getElementById('donutInboundVal');  if(iv)  iv.textContent  = inPct    + '%';
   const sv = document.getElementById('donutStoringVal');  if(sv)  sv.textContent  = storePct + '%';
+  // Update total
+  const ov2 = document.getElementById('donutTotal'); if(ov2) ov2.textContent = Math.round((inPct+storePct+outPct)/3)+'%';
   const ov = document.getElementById('donutOutboundVal'); if(ov)  ov.textContent  = outPct   + '%';
   const bv = document.getElementById('donutBelumVal');    if(bv)  bv.textContent  = sisa     + '%';
   const ctx = document.getElementById('donutChart'); if(!ctx) return;
@@ -1902,8 +1917,11 @@ function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
     const kpiStPct  = parseInt(document.querySelector('#storingStatCard  .kpi-footer-pct, #storingStatCard  [id$="Pct"]')?.textContent || storePct);
     const kpiOutPct = parseInt(document.querySelector('#outboundStatCard .kpi-footer-pct, #outboundStatCard [id$="Pct"]')?.textContent || outPct);
     // Gunakan overall dari donutTotal yang sudah dihitung benar
+    // Rata-rata dari 3 KPI cards yang tampil
+    const avgPct = Math.round((inPct + storePct + outPct) / 3);
+    // Update donutTotal
     const overallEl = document.getElementById('donutTotal');
-    const avgPct = overallEl ? parseInt(overallEl.textContent) : Math.round((inPct + storePct + outPct) / 3);
+    if (overallEl) overallEl.textContent = avgPct + '%';
     const wrap = ctx.closest('.donut-wrap');
     if (wrap) {
       let totalEl = wrap.querySelector('.pie-total-label');
