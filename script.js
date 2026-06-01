@@ -148,8 +148,12 @@ async function doLogin() {
   const loadEl    = document.getElementById('loginLoading');
   const btn       = document.getElementById('loginBtn');
 
+  // Debug - hapus setelah confirmed working
+  console.log('verifiedData:', JSON.stringify(verifiedData));
+  console.log('unlimited:', unlimited, 'maxDevice:', maxDevice);
+
   // Kalau unlimited → langsung login
-  if (unlimited || maxDevice === 0) {
+  if (unlimited === true || maxDevice === 0) {
     _applyLoginData(nip);
     return;
   }
@@ -246,6 +250,37 @@ function applyLogin() {
     document.getElementById('loginColorsWrap').style.display='block';
     colorOptions.querySelectorAll('.color-opt').forEach((el,i)=>el.classList.toggle('selected',i===savedColor));
     const btn=document.getElementById('loginBtn'); if(btn) btn.textContent='Masuk ke Dashboard →';
+    // Auto-login dengan cek device token
+    const savedToken = localStorage.getItem('wms_device_token');
+    if (savedToken) {
+      // Ada token → cek ke GAS apakah masih valid
+      fetch(GAS_USER_URL + '?action=checkDevice&nip=' + encodeURIComponent(savedNip) + '&token=' + encodeURIComponent(savedToken))
+        .then(r => r.json())
+        .then(data => {
+          if (data.allowed) {
+            // Device valid → auto login
+            me.nip=savedNip; me.name=savedName; me.jabatan=savedJabatan||'Staff';
+            me.color=AVATAR_COLORS[savedColor]; me.initials=savedName.slice(0,2).toUpperCase();
+            applyLogin();
+          } else {
+            // Device tidak valid → hapus localStorage, paksa login ulang
+            localStorage.removeItem('wms_nip'); localStorage.removeItem('wms_name');
+            localStorage.removeItem('wms_jabatan'); localStorage.removeItem('wms_color');
+            localStorage.removeItem('wms_device_token');
+            const overlay=document.getElementById('loginOverlay');
+            if(overlay){ overlay.classList.remove('hidden'); overlay.style.opacity='1'; }
+            const errEl=document.getElementById('loginErr');
+            if(errEl){ errEl.textContent='⚠️ Device ini tidak terdaftar untuk akun '+savedNip+'. Hubungi admin.'; errEl.classList.add('show'); }
+          }
+        })
+        .catch(() => {
+          // Error network → izinkan saja (fallback)
+          me.nip=savedNip; me.name=savedName; me.jabatan=savedJabatan||'Staff';
+          me.color=AVATAR_COLORS[savedColor]; me.initials=savedName.slice(0,2).toUpperCase();
+          applyLogin();
+        });
+    }
+    // Tidak ada token → tidak auto-login, user harus klik Masuk dulu
   }
 })();
 
