@@ -2035,8 +2035,8 @@ function renderLppbdo(dates, rows) {
 
   const validDates = dates.map((d, i) => ({ d, i })).filter(x => x.d);
 
-  const thStyle  = 'padding:7px 10px;text-align:center;font-size:10px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;';
-  const thFirst  = 'padding:7px 12px;text-align:left;font-size:10px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:200px;';
+  const thStyle  = 'padding:9px 12px;text-align:center;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;';
+  const thFirst  = 'padding:9px 16px;text-align:left;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:220px;';
 
   // Filter kolom AVERAGE dari header (tampilkan hanya tanggal)
   const dateCols = validDates.filter(x => !/average/i.test(x.d));
@@ -2049,8 +2049,8 @@ function renderLppbdo(dates, rows) {
 
   body.innerHTML = rows.map((row, ri) => {
     const c = rowColors[ri] || rowColors[0];
-    const tdBase  = `padding:6px 10px;text-align:center;border:1px solid #e2e8f0;font-size:10.5px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'500'};`;
-    const tdFirst = `padding:6px 12px;text-align:left;border:1px solid #e2e8f0;font-size:10.5px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'600'};white-space:nowrap;`;
+    const tdBase  = `padding:8px 12px;text-align:center;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'500'};`;
+    const tdFirst = `padding:8px 16px;text-align:left;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'700'};white-space:nowrap;`;
     const cells = dateCols.map(x => {
       const val = row.values[x.i];
       const display = (val === null || val === undefined) ? '' : (val * 100).toFixed(2) + '%';
