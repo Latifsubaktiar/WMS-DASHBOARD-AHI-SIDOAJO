@@ -2069,14 +2069,16 @@ function renderLppbdoChart(rows) {
   if (!wrap) return;
 
   // Hitung average per kategori (skip null, skip 0)
+  // Hitung avg hanya dari tanggal yang ada data (non-null)
+  // row.values sudah desimal (0.0011 = 0.11%), tampilkan *100
   const avgOf = (values) => {
-    const valid = values.filter(v => v !== null && v !== undefined && v !== 0);
+    const valid = values.filter(v => v !== null && v !== undefined);
     if (!valid.length) return 0;
     return valid.reduce((a,b) => a+b, 0) / valid.length;
   };
 
   const labels   = rows.slice(0,3).map(r => r.kategori.replace('% LPPBDO ','').replace('% ',''));
-  const avgs     = rows.slice(0,3).map(r => parseFloat((avgOf(r.values)*100).toFixed(3)));
+  const avgs     = rows.slice(0,3).map(r => parseFloat((avgOf(r.values)*100).toFixed(4)));
   const colors   = ['#f97316','#7f1d1d','#94a3b8'];
   const shadows  = ['rgba(249,115,22,0.35)','rgba(127,29,29,0.35)','rgba(148,163,184,0.35)'];
 
