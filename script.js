@@ -2036,7 +2036,7 @@ function renderLppbdo(dates, rows) {
   const validDates = dates.map((d, i) => ({ d, i })).filter(x => x.d);
 
   const thStyle  = 'padding:9px 12px;text-align:center;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;';
-  const thFirst  = 'padding:9px 16px;text-align:left;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:220px;';
+  const thFirst  = 'padding:9px 16px;text-align:left;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:220px;position:sticky;left:0;z-index:2;';
 
   // Filter kolom AVERAGE dari header (tampilkan hanya tanggal)
   const dateCols = validDates.filter(x => !/average/i.test(x.d));
@@ -2050,16 +2050,26 @@ function renderLppbdo(dates, rows) {
   body.innerHTML = rows.map((row, ri) => {
     const c = rowColors[ri] || rowColors[0];
     const tdBase  = `padding:8px 12px;text-align:center;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'500'};`;
-    const tdFirst = `padding:8px 16px;text-align:left;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'700'};white-space:nowrap;`;
+    const tdFirst = `padding:8px 16px;text-align:left;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'700'};white-space:nowrap;position:sticky;left:0;z-index:1;`;
     const cells = dateCols.map(x => {
       const val = row.values[x.i];
       const display = (val === null || val === undefined) ? '' : (val * 100).toFixed(2) + '%';
       return `<td style="${tdBase}">${display}</td>`;
     }).join('');
+    // Teks di baris terakhir (TOTAL) saat scroll
+    const isTotal = c.bold;
+    const extraCell = isTotal
+      ? `<td colspan="999" style="${tdBase}text-align:center;font-size:11px;letter-spacing:0.06em;">
+          <span style="font-weight:900;color:#fff;opacity:0.85;">HISTORY %TAGE LPPBDO DC AHI SIDOARJO</span>
+          <span style="color:rgba(255,255,255,0.5);margin:0 8px;">—</span>
+          <span style="font-weight:600;color:rgba(255,255,255,0.6);font-size:10px;letter-spacing:0.1em;">CAUSE BY INTERNAL DC</span>
+        </td>`
+      : `<td colspan="999" style="${tdBase}"></td>`;
     return `<tr>
       <td style="${tdFirst}">${row.kategori}</td>
       <td style="${tdBase}">${row.uom}</td>
       ${cells}
+      ${extraCell}
     </tr>`;
   }).join('');
 
