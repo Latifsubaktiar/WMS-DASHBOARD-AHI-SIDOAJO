@@ -1999,6 +1999,67 @@ async function fetchInventoryValue(){
 
 fetchDashboardStats();
 setInterval(fetchDashboardStats,5*60*1000);
+fetchLppbdo();
+
+// ══════════════════════════════════════════════════════════════
+//  LPPBDO TABLE
+// ══════════════════════════════════════════════════════════════
+async function fetchLppbdo() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getLppbdo');
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    renderLppbdo(json.dates, json.rows);
+  } catch(e) {
+    const el = document.getElementById('lppbdoStatus');
+    if (el) el.textContent = 'Gagal memuat';
+    console.warn('LPPBDO error:', e);
+  }
+}
+
+function renderLppbdo(dates, rows) {
+  const head = document.getElementById('lppbdoHead');
+  const body = document.getElementById('lppbdoBody');
+  if (!head || !body) return;
+
+  // Warna per baris ikut spreadsheet
+  const rowColors = [
+    { bg: '#fef2f2', text: '#991b1b', bold: false }, // RUSAK     - merah muda
+    { bg: '#fef9c3', text: '#854d0e', bold: false }, // selisih   - kuning
+    { bg: '#f0fdf4', text: '#166534', bold: false }, // Sparepart - hijau muda
+    { bg: '#1e293b', text: '#ffffff', bold: true  }, // TOTAL     - gelap
+  ];
+
+  const validDates = dates.map((d, i) => ({ d, i })).filter(x => x.d);
+
+  const thStyle  = 'padding:7px 10px;text-align:center;font-size:10px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;';
+  const thFirst  = 'padding:7px 12px;text-align:left;font-size:10px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:200px;';
+
+  head.innerHTML = `<tr>
+    <th style="${thFirst}">Kategori</th>
+    <th style="${thStyle}">UOM</th>
+    ${validDates.map(x => `<th style="${thStyle}">${x.d}</th>`).join('')}
+  </tr>`;
+
+  body.innerHTML = rows.map((row, ri) => {
+    const c = rowColors[ri] || rowColors[0];
+    const tdBase  = `padding:6px 10px;text-align:center;border:1px solid #e2e8f0;font-size:10.5px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'500'};`;
+    const tdFirst = `padding:6px 12px;text-align:left;border:1px solid #e2e8f0;font-size:10.5px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'600'};white-space:nowrap;`;
+    const cells = validDates.map(x => {
+      const val = row.values[x.i];
+      const display = (val === null || val === undefined) ? '' : (val * 100).toFixed(2) + '%';
+      return `<td style="${tdBase}">${display}</td>`;
+    }).join('');
+    return `<tr>
+      <td style="${tdFirst}">${row.kategori}</td>
+      <td style="${tdBase}">${row.uom}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  const el = document.getElementById('lppbdoStatus');
+  if (el) el.textContent = `${validDates.length} hari`;
+}
 
 // ══════════════════════════════════════
 //  CHARTS — DAILY ACTIVITY
