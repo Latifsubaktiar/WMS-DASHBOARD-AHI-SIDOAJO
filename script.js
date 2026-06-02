@@ -294,6 +294,7 @@ function toggleOutboundPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
+    const lg1=document.getElementById('lppbdoGrid'); if(lg1) lg1.style.display='none';
     fetchOutboundPanel();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
@@ -301,6 +302,7 @@ function toggleOutboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
+    const lgr1=document.getElementById('lppbdoGrid'); if(lgr1) lgr1.style.display='';
     lineOutboundLoaded = false;
     switchOutboundTab('data');
   }
@@ -328,6 +330,7 @@ function toggleInventoryPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
+    const lg2=document.getElementById('lppbdoGrid'); if(lg2) lg2.style.display='none';
     if (!inventoryDetailLoaded) fetchInventoryDetail();
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
@@ -335,6 +338,7 @@ function toggleInventoryPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
   }
 }
 
@@ -738,6 +742,7 @@ function toggleStoringPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
+    const lg3=document.getElementById('lppbdoGrid'); if(lg3) lg3.style.display='none';
     if (!storingLoaded) fetchStoringToday();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
@@ -745,6 +750,7 @@ function toggleStoringPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
   }
 }
 
@@ -1005,6 +1011,7 @@ function toggleInboundPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
+    const lg4=document.getElementById('lppbdoGrid'); if(lg4) lg4.style.display='none';
     renderPanelInboundTable(window._inboundRows || []);
     fetchInlineProses();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
@@ -1013,6 +1020,7 @@ function toggleInboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
   }
 }
 
@@ -2513,6 +2521,7 @@ function togglePlannerPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
+    const lg5=document.getElementById('lppbdoGrid'); if(lg5) lg5.style.display='none';
     fetchPlannerDetail();
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
@@ -2520,6 +2529,7 @@ function togglePlannerPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
   }
 }
 
