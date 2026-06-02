@@ -2075,7 +2075,7 @@ function renderLppbdoChart(rows) {
   const labels   = rows.slice(0,3).map(r => r.kategori.replace('% LPPBDO ','').replace('% ',''));
   // Pakai kolom AVERAGE langsung dari sheet (kolom AH)
   console.log('LPPBDO rows average:', rows.map(r => ({k: r.kategori, avg: r.average})));
-  const avgs     = rows.slice(0,3).map(r => (r.average !== null && r.average !== undefined) ? parseFloat((r.average*100).toFixed(4)) : 0);
+  const avgs     = rows.slice(0,3).map(r => (r.average !== null && r.average !== undefined) ? parseFloat((r.average*100).toFixed(2)) : 0);
   const colors   = ['#f97316','#7f1d1d','#94a3b8'];
   const shadows  = ['rgba(249,115,22,0.35)','rgba(127,29,29,0.35)','rgba(148,163,184,0.35)'];
 
@@ -2137,14 +2137,14 @@ function renderLppbdoChart(rows) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: c => ` Avg: ${c.parsed.y.toFixed(3)}%`
+            label: c => ` Avg: ${c.parsed.y.toFixed(2)}%`
           }
         },
         datalabels: {
           anchor: 'end', align: 'top',
           color: ctx2 => colors[ctx2.dataIndex],
           font: { weight: '800', size: 10 },
-          formatter: v => v.toFixed(3) + '%'
+          formatter: v => v.toFixed(2) + '%'
         }
       },
       scales: {
