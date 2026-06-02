@@ -2067,18 +2067,10 @@ function renderLppbdo(dates, rows) {
   if (el) el.textContent = `${validDates.length} hari`;
 
   // MTD summary
-  const mtdEl = document.getElementById('lppbdoMtd');
-  if (mtdEl) {
-    const now = new Date();
-    const bulan = now.toLocaleString('id-ID', {month:'long', year:'numeric'});
-    const totalRow = rows.find(r => r.kategori.includes('TOTAL'));
-    const totalAvg = totalRow && totalRow.average !== null ? (totalRow.average * 100).toFixed(2) : '0.00';
-    const totalRow = rows.find(r => r.kategori.includes('TOTAL'));
-    const totalAvg = totalRow && totalRow.average !== null ? (totalRow.average * 100).toFixed(2) : '0.00';
-    const totalEl = document.getElementById('lppbdoTotalAvg');
-    if (totalEl) totalEl.innerHTML = `
-      <div style="font-size:18px;font-weight:900;color:#dc2626;">${totalAvg}%</div>`;
-  }
+  const totalRow = rows.find(r => r.kategori.includes('TOTAL'));
+  const totalAvg = totalRow && totalRow.average !== null ? (totalRow.average * 100).toFixed(2) : '0.00';
+  const totalEl = document.getElementById('lppbdoTotalAvg');
+  if (totalEl) totalEl.innerHTML = `<div style="font-size:18px;font-weight:900;color:#dc2626;">${totalAvg}%</div>`;
 
   // ── Summary Chart (3D-style bar) ──
   renderLppbdoChart(rows);
