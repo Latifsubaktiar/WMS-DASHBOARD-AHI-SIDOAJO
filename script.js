@@ -1783,7 +1783,8 @@ async function fetchInventoryAccuracy() {
     const card   = document.getElementById('invControlCard');
     const icon   = document.getElementById('invControlIcon');
 
-    if (!valEl) return;
+    if (!valEl) return; // Element belum ada (belum diklik)
+    window._invAccuracyData = data; // Simpan untuk dipakai saat klik
 
     // Update value
     valEl.textContent = pct.toFixed(2) + '%';
@@ -1812,7 +1813,7 @@ async function fetchInventoryAccuracy() {
     if (icon)   icon.style.background = iconBg;
 
     // Pie chart Progress CC - ambil dari window._invData jika sudah ada, fallback ke data.summary
-    const invS = (window._invData && window._invData.summary) ? window._invData.summary : data.summary;
+    const invS = (window._invData && window._invData.summary) ? window._invData.summary : (data.summary || {});
     const rawCcPct = String(invS.pctCcTotal||'0').replace('%','').trim();
     const ccPct = Math.round(parseFloat(rawCcPct)||0);
     _makeSVGStatChart('invStatChart', ccPct, color);
