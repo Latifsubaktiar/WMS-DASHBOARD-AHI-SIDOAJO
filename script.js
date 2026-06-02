@@ -2268,34 +2268,7 @@ async function fetchDailyActivity(){
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
               </tr>
-              <tr>
-                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">Inventory</td>
-                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.inventoryForecast)}</td>
-                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.inventoryActual)}</td>
-                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
-                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
-              </tr>
-              <tr style="background:#f8fafc;">
-                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#7c3aed;border:1px solid #e2e8f0;">Occupancy (%)</td>
-                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${a.occupancyForecast||'—'}%</td>
-                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#7c3aed;border:1px solid #e2e8f0;">${a.occupancyActual||'—'}%</td>
-                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
-                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
-              </tr>
-              <tr>
-                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">Capacity</td>
-                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.capacityForecast)}</td>
-                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.capacityActual)}</td>
-                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
-                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
-              </tr>
-              <tr style="background:#f8fafc;">
-                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#2563eb;border:1px solid #e2e8f0;">Forecast Out</td>
-                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.forecastOBForecast)}</td>
-                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#2563eb;border:1px solid #e2e8f0;">${fN(a.forecastOBActual)}</td>
-                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
-                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
-              </tr>
+
             </tbody>
           </table>
         </div>`;
