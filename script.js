@@ -2074,9 +2074,13 @@ function renderLppbdo(dates, rows) {
     const totalRow = rows.find(r => r.kategori.includes('TOTAL'));
     const totalAvg = totalRow && totalRow.average !== null ? (totalRow.average * 100).toFixed(2) : '0.00';
     mtdEl.innerHTML = `
-      <div style="font-size:9px;color:#94a3b8;font-weight:600;margin-bottom:2px;">MTD ${bulan}</div>
-      <div style="font-size:20px;font-weight:900;color:#dc2626;">${totalAvg}%</div>
-      <div style="font-size:9px;color:#64748b;">% Total LPPBDO</div>`;
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="font-size:10px;color:#94a3b8;font-weight:600;">MTD ${bulan}</div>
+        <div style="display:flex;align-items:baseline;gap:4px;">
+          <div style="font-size:18px;font-weight:900;color:#dc2626;">${totalAvg}%</div>
+          <div style="font-size:9px;color:#64748b;">Total LPPBDO</div>
+        </div>
+      </div>`;
   }
 
   // ── Summary Chart (3D-style bar) ──
