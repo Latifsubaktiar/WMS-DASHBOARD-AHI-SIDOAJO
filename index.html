@@ -1224,98 +1224,24 @@
         </div>
       </div>
     </div>
-    <!-- PROGRESS CHARTS ROW -->
-    <div class="progress-row" style="grid-template-columns:1fr 1fr 1fr;">
-      <!-- Inbound Progress -->
-      <div style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;">
-        <div style="height:3px;background:#3b82f6;flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.5s ease-in-out infinite;"></div></div>
-        <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:32px;height:32px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;">📦</div>
-            <div>
-              <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Inbound Progress</div>
-              <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
-            </div>
-          </div>
-          <span id="inboundPctBadge" style="font-size:12px;font-weight:800;color:#2563eb;background:rgba(37,99,235,0.08);padding:3px 10px;">—%</span>
-        </div>
-        <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
-          <div class="progress-chart-wrap">
-            <div style="position:relative;width:110px;height:110px;"><canvas id="dashInboundChart"></canvas></div>
-            <div class="progress-center">
-              <div class="progress-pct" id="dashInboundPct" style="color:#1e3a8a;">—</div>
-              <div class="progress-label">Selesai</div>
-            </div>
-          </div>
-          <div class="progress-legend">
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#16a34a"></span><span class="prog-leg-text">Selesai Unloading</span><span class="prog-leg-val" id="piInSelesai" style="color:#16a34a">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#2563eb"></span><span class="prog-leg-text">Proses</span><span class="prog-leg-val" id="piInProses" style="color:#2563eb">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Antri</span><span class="prog-leg-val" id="piInAntri" style="color:#f59e0b">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#dc2626"></span><span class="prog-leg-text">Belum Datang</span><span class="prog-leg-val" id="piInBelum" style="color:#dc2626">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#8b5cf6"></span><span class="prog-leg-text">HIT / MISS</span><span class="prog-leg-val" id="piInHitMiss" style="color:#8b5cf6">—</span></div>
+    <!-- TABEL LPPBDO -->
+    <div id="lppbdoSection" style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:16px;">
+      <div style="height:3px;background:linear-gradient(90deg,#dc2626,#f59e0b,#16a34a);flex-shrink:0;"></div>
+      <div style="padding:14px 20px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:32px;height:32px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:15px;">📋</div>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">LPPBDO — Internal Cause</div>
+            <div style="font-size:9.5px;color:#94a3b8;">Bulan Ini</div>
           </div>
         </div>
+        <span id="lppbdoStatus" style="font-size:11px;color:#94a3b8;font-weight:600;">Memuat...</span>
       </div>
-
-      <!-- Storing Progress -->
-      <div style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;">
-        <div style="height:3px;background:#10b981;flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.8s ease-in-out infinite;"></div></div>
-        <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:32px;height:32px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;">🏗️</div>
-            <div>
-              <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Storing Progress</div>
-              <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
-            </div>
-          </div>
-          <span id="storingPctBadge" style="font-size:12px;font-weight:800;color:#059669;background:rgba(5,150,105,0.08);padding:3px 10px;">—%</span>
-        </div>
-        <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
-          <div class="progress-chart-wrap">
-            <div style="position:relative;width:110px;height:110px;"><canvas id="dashStoringChart"></canvas></div>
-            <div class="progress-center">
-              <div class="progress-pct" id="dashStoringPct" style="color:#064e3b;">—</div>
-              <div class="progress-label">Progres</div>
-            </div>
-          </div>
-          <div class="progress-legend">
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#16a34a"></span><span class="prog-leg-text">Picking Done</span><span class="prog-leg-val" id="piStorePickingVal" style="color:#16a34a">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Staged (DS)</span><span class="prog-leg-val" id="piStoreStagedVal" style="color:#f59e0b">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#ef4444"></span><span class="prog-leg-text">Sisa Picking</span><span class="prog-leg-val" id="piStoreSisaVal" style="color:#ef4444">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#8b5cf6"></span><span class="prog-leg-text">% Kapasitas</span><span class="prog-leg-val" id="piStoreKapVal" style="color:#8b5cf6">—</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Outbound Progress -->
-      <div style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;">
-        <div style="height:3px;background:#f59e0b;flex-shrink:0;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 3.1s ease-in-out infinite;"></div></div>
-        <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:32px;height:32px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;">🚚</div>
-            <div>
-              <div style="font-size:11px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">Outbound Progress</div>
-              <div style="font-size:9.5px;color:#94a3b8;">Hari Ini</div>
-            </div>
-          </div>
-          <span id="outboundPctBadge" style="font-size:12px;font-weight:800;color:#d97706;background:rgba(217,119,6,0.08);padding:3px 10px;">—%</span>
-        </div>
-        <div class="progress-body" style="padding:14px 20px 16px;flex:1;">
-          <div class="progress-chart-wrap">
-            <div style="position:relative;width:110px;height:110px;"><canvas id="dashOutboundChart"></canvas></div>
-            <div class="progress-center">
-              <div class="progress-pct" id="dashOutboundPct" style="color:#78350f;">—</div>
-              <div class="progress-label">Selesai</div>
-            </div>
-          </div>
-          <div class="progress-legend">
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#16a34a"></span><span class="prog-leg-text">Selesai</span><span class="prog-leg-val" id="piOutSelesai" style="color:#16a34a">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#2563eb"></span><span class="prog-leg-text">Proses</span><span class="prog-leg-val" id="piOutProses" style="color:#2563eb">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#f59e0b"></span><span class="prog-leg-text">Antri</span><span class="prog-leg-val" id="piOutAntri" style="color:#f59e0b">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#dc2626"></span><span class="prog-leg-text">Belum Datang</span><span class="prog-leg-val" id="piOutBelum" style="color:#dc2626">—</span></div>
-            <div class="prog-leg-item"><span class="prog-leg-dot" style="background:#8b5cf6"></span><span class="prog-leg-text">HIT / MISS</span><span class="prog-leg-val" id="piOutHitMiss" style="color:#8b5cf6">—</span></div>
-          </div>
-        </div>
+      <div style="overflow-x:auto;padding:0;">
+        <table id="lppbdoTable" style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px;">
+          <thead id="lppbdoHead"></thead>
+          <tbody id="lppbdoBody"></tbody>
+        </table>
       </div>
     </div>
 
