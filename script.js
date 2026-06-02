@@ -2056,20 +2056,10 @@ function renderLppbdo(dates, rows) {
       const display = (val === null || val === undefined) ? '' : (val * 100).toFixed(2) + '%';
       return `<td style="${tdBase}">${display}</td>`;
     }).join('');
-    // Teks di baris terakhir (TOTAL) saat scroll
-    const isTotal = c.bold;
-    const extraCell = isTotal
-      ? `<td colspan="999" style="${tdBase}text-align:center;font-size:11px;letter-spacing:0.06em;">
-          <span style="font-weight:900;color:#fff;opacity:0.85;">HISTORY %TAGE LPPBDO DC AHI SIDOARJO</span>
-          <span style="color:rgba(255,255,255,0.5);margin:0 8px;">—</span>
-          <span style="font-weight:600;color:rgba(255,255,255,0.6);font-size:10px;letter-spacing:0.1em;">CAUSE BY INTERNAL DC</span>
-        </td>`
-      : `<td colspan="999" style="${tdBase}"></td>`;
     return `<tr>
       <td style="${tdFirst}">${row.kategori}</td>
       <td style="${tdBase}">${row.uom}</td>
       ${cells}
-      ${extraCell}
     </tr>`;
   }).join('');
 
