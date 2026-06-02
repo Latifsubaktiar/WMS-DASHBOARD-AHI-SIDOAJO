@@ -1347,7 +1347,7 @@ function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
   const cvIn=document.getElementById('dashInboundChart'); if(!cvIn) return;
   dashInboundChart=new Chart(cvIn.getContext('2d'),{
     type:'doughnut',
-    data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
+    data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#2563eb','#06b6d4','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} truck`}}}}
   });
 }
@@ -1415,7 +1415,7 @@ async function fetchDashboardStats() {
       const sb2=document.getElementById('inbStatBelum'); if(sb2) sb2.textContent=belum;
       // Pie chart
       const inPct = total>0 ? Math.round(selesai/total*100) : 0;
-      _makeSVGStatChart('inboundStatChart', inPct, '#16a34a');
+      _makeSVGStatChart('inboundStatChart', inPct, '#2563eb');
       const inBar = document.querySelector('#inboundStatCard .stat-bar-fill');
       const inFoot = document.querySelector('#inboundStatCard .stat-foot-val');
       if(inBar) setTimeout(()=>inBar.style.width=inPct+'%',300);
