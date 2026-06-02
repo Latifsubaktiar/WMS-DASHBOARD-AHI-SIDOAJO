@@ -2633,14 +2633,17 @@ function openHistoryLogin() {
   const list = document.getElementById('historyLoginList');
   list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>';
   if (!db) { list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Firebase tidak tersedia</div>'; return; }
-  db.ref(HISTORY_PATH).limitToLast(50).once('value', snap => {
+  db.ref(HISTORY_PATH).once('value', snap => {
     const entries = [];
-    snap.forEach(child => entries.unshift(child.val()));
-    if (!entries.length) {
+    snap.forEach(child => entries.push(child.val()));
+    // Sort by timestamp descending (terbaru dulu)
+    entries.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+    const show = entries.slice(0, 50);
+    if (!show.length) {
       list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Belum ada history login</div>';
       return;
     }
-    list.innerHTML = entries.map((e,i) => `
+    list.innerHTML = show.map((e,i) => `
       <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${i%2===0?'#f8fafc':'#fff'};border-radius:10px;border:1px solid #f1f5f9;">
         <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">${(e.name||'?').slice(0,2).toUpperCase()}</div>
         <div style="flex:1;min-width:0;">
