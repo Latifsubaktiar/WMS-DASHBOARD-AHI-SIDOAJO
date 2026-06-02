@@ -1225,21 +1225,23 @@
       </div>
     </div>
     <!-- TABEL LPPBDO -->
-    <div id="lppbdoSection" style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);">
-      <div style="height:3px;background:linear-gradient(90deg,#f97316,#7f1d1d,#94a3b8);flex-shrink:0;"></div>
-      <div style="padding:14px 20px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="width:32px;height:32px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:15px;">📋</div>
-          <div>
-            <div style="font-size:12px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">LPPBDO — Internal Cause</div>
-            <div style="font-size:9.5px;color:#94a3b8;">Bulan Ini</div>
+    <!-- LPPBDO grid — ikut mid-grid layout -->
+    <div style="display:grid;grid-template-columns:1fr 306px;gap:18px;margin-top:18px;">
+
+      <!-- Tabel LPPBDO -->
+      <div id="lppbdoSection" style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);">
+        <div style="height:3px;background:linear-gradient(90deg,#f97316,#7f1d1d,#94a3b8);flex-shrink:0;"></div>
+        <div style="padding:14px 20px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:32px;height:32px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:15px;">📋</div>
+            <div>
+              <div style="font-size:12px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">LPPBDO — Internal Cause</div>
+              <div style="font-size:9.5px;color:#94a3b8;">Bulan Ini</div>
+            </div>
           </div>
+          <span id="lppbdoStatus" style="font-size:11px;color:#94a3b8;font-weight:600;">Memuat...</span>
         </div>
-        <span id="lppbdoStatus" style="font-size:11px;color:#94a3b8;font-weight:600;">Memuat...</span>
-      </div>
-      <div style="display:flex;gap:0;">
-        <!-- Tabel -->
-        <div style="flex:1;overflow-x:auto;min-width:0;display:flex;flex-direction:column;">
+        <div style="overflow-x:auto;display:flex;flex-direction:column;">
           <table id="lppbdoTable" style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px;">
             <thead id="lppbdoHead"></thead>
             <tbody id="lppbdoBody"></tbody>
@@ -1255,12 +1257,19 @@
             </div>
           </div>
         </div>
-        <!-- Summary Chart -->
-        <div style="width:300px;flex-shrink:0;border-left:1px solid #e2e8f0;padding:14px 14px 10px;display:flex;flex-direction:column;align-self:stretch;">
-          <div style="font-size:11px;font-weight:800;color:#1e293b;margin-bottom:8px;text-align:center;">Avg % per Kategori</div>
-          <div id="lppbdoChartWrap" style="flex:1;min-height:160px;"></div>
-          <div id="lppbdoMtd" style="margin-top:10px;text-align:center;border-top:1px solid #f1f5f9;padding-top:8px;"></div>
+      </div>
+
+      <!-- Chart LPPBDO -->
+      <div style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);display:flex;flex-direction:column;">
+        <div style="height:3px;background:linear-gradient(90deg,#f97316,#7f1d1d,#94a3b8);flex-shrink:0;"></div>
+        <div style="padding:14px 16px 10px;border-bottom:1px solid #f1f5f9;">
+          <div style="font-size:12px;font-weight:800;color:#1e293b;">Avg % per Kategori</div>
+          <div style="font-size:9.5px;color:#94a3b8;">LPPBDO Bulan Ini</div>
         </div>
+        <div style="flex:1;padding:12px 16px;min-height:200px;">
+          <div id="lppbdoChartWrap" style="height:200px;"></div>
+        </div>
+        <div id="lppbdoMtd" style="text-align:center;border-top:1px solid #f1f5f9;padding:10px 16px;"></div>
       </div>
 
     </div>
