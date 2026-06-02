@@ -339,7 +339,8 @@ function toggleInventoryPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
-  }
+
+    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
 
 async function fetchOutboundPanel() {
@@ -751,7 +752,8 @@ function toggleStoringPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
-  }
+
+    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
 
 async function fetchStoringStatCard() {
@@ -1021,7 +1023,8 @@ function toggleInboundPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
-  }
+
+    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
 
 function switchPanelTab(tab) {
@@ -2530,7 +2533,8 @@ function togglePlannerPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
-  }
+
+    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
 
 fetchDailyActivity();
