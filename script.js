@@ -1,2851 +1,1555 @@
-// ══════════════════════════════════════════════════════════
-//  🔥 FIREBASE CONFIG
-// ══════════════════════════════════════════════════════════
-const firebaseConfig = {
-  apiKey:            "AIzaSyB6odEt5wEdtq6H-NyXK2BpLqrxxW5WENA",
-  authDomain:        "wms-ahi-sidoarjo.firebaseapp.com",
-  databaseURL:       "https://wms-ahi-sidoarjo-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "wms-ahi-sidoarjo",
-  storageBucket:     "wms-ahi-sidoarjo.firebasestorage.app",
-  messagingSenderId: "834978642750",
-  appId:             "1:834978642750:web:e0ed9877bc9281dba94a6f",
-  measurementId:     "G-8ZPFL4DH0D"
-};
-
-// Register ChartDataLabels plugin
-if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
-
-const GAS_USER_URL = 'https://script.google.com/macros/s/AKfycbxTVbfZUlgGGJL9YgO6XLuCS6Ro4ksk9Iy8t486SFvCB-xRnHIFo1X6b8-PD9Qjn4qp/exec';
-const GAS_DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
-
-const URLS = {
-  planner:   'https://plannerazko.github.io/DashboardPlanning/',
-  inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbznK9XTBd5Zz07tyb-1bvjQEa00pXEMPFOXhCtYaBqthThQUliRjcXUYYr27VaXV-888w/exec',
-  outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
-  analyst:   'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzbsvn8Tiu3N3WGjBRbN_6-CsqAI9vTl2IxW1bsYi92Gk15Alzzk1JBvL4iyyvnL8nj/exec',
-  inbound:   'https://script.google.com/macros/s/AKfycbyuWCeC7vR3JrVbDu9wn99FCtWl9oN1hZ3pJ5Kbrx9sOXg_l9xjoIAu2qTZMSulYWrb/exec', storing: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyBTR01ZrItlvxh1C83yxFs5B8lwK5t-a4kuKHir8s8a1SprmUA_6TsRkzDZpWOaBL9Ew/exec',
-  ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
-  hr:        null,
-};
-const IFRAME_PAGES   = ['inventory','outbound','planner','ga','analyst','storing','inbound'];
-const GAS_AI_URL     = 'https://script.google.com/macros/s/AKfycbzphhWpNaHVnvJzRl2dO2g-JsUnLByOPvkYZWIKoN_XrfD42uF_m7sqPgNkhUCIQlEu/exec';
-
-const AVATAR_COLORS = [
-  { bg: 'linear-gradient(145deg,#3b82f6,#1d4ed8)', hex: '#3b82f6' },
-  { bg: 'linear-gradient(145deg,#ec4899,#db2777)', hex: '#ec4899' },
-  { bg: 'linear-gradient(145deg,#06b6d4,#0891b2)', hex: '#06b6d4' },
-  { bg: 'linear-gradient(145deg,#10b981,#059669)', hex: '#10b981' },
-  { bg: 'linear-gradient(145deg,#f59e0b,#d97706)', hex: '#f59e0b' },
-  { bg: 'linear-gradient(145deg,#8b5cf6,#7c3aed)', hex: '#8b5cf6' },
-  { bg: 'linear-gradient(145deg,#ef4444,#dc2626)', hex: '#ef4444' },
-  { bg: 'linear-gradient(145deg,#64748b,#475569)', hex: '#64748b' },
-];
-const THEME_COLORS = {
-  '#3b82f6': { accent:'#2563eb', dark:'#1d4ed8', light:'#eff6ff', mid:'#bfdbfe' },
-  '#ec4899': { accent:'#db2777', dark:'#be185d', light:'#fdf2f8', mid:'#fbcfe8' },
-  '#06b6d4': { accent:'#0891b2', dark:'#0e7490', light:'#ecfeff', mid:'#a5f3fc' },
-  '#10b981': { accent:'#059669', dark:'#047857', light:'#ecfdf5', mid:'#a7f3d0' },
-  '#f59e0b': { accent:'#d97706', dark:'#b45309', light:'#fffbeb', mid:'#fde68a' },
-  '#8b5cf6': { accent:'#7c3aed', dark:'#6d28d9', light:'#f5f3ff', mid:'#ddd6fe' },
-  '#ef4444': { accent:'#dc2626', dark:'#b91c1c', light:'#fef2f2', mid:'#fecaca' },
-  '#64748b': { accent:'#475569', dark:'#334155', light:'#f8fafc', mid:'#cbd5e1' },
-};
-function applyTheme(hexColor) {
-  const theme = THEME_COLORS[hexColor] || THEME_COLORS['#3b82f6'];
-  const root = document.documentElement;
-  root.style.setProperty('--accent', theme.accent);
-  root.style.setProperty('--accent-dark', theme.dark);
-  root.style.setProperty('--accent-light', theme.light);
-  root.style.setProperty('--accent-mid', theme.mid);
-}
-
-// ── User session — SEMUA DEKLARASI DI ATAS ──
-let me = { nip: '', name: '', jabatan: '', color: AVATAR_COLORS[0], initials: '' };
-let fbReady = false;
-let db = null, chatRef = null, onlineRef = null;
-let settingsOpen = false;
-let notifList = [], notifOpen = false, lastSeenTs = 0;
-const CHAT_PATH     = 'wms_ahi_chat/messages';
-const ADMIN_NIPS    = ['182126', '098592'];
-const ONLINE_PATH = 'wms_ahi_chat/online';
-
-// ── Init Firebase ──
-function initFirebase() {
-  try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-    chatRef   = db.ref(CHAT_PATH);
-    onlineRef = db.ref(ONLINE_PATH);
-    fbReady = true;
-    console.log('✅ Firebase connected!');
-  } catch(e) { console.error('Firebase init error:', e); }
-}
-initFirebase();
-
-// ══════════════════════════════════════
-//  LOGIN
-// ══════════════════════════════════════
-const colorOptions = document.getElementById('colorOptions');
-let selectedColorIdx = 0;
-colorOptions.querySelectorAll('.color-opt').forEach(el => {
-  el.addEventListener('click', () => {
-    colorOptions.querySelectorAll('.color-opt').forEach(x => x.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedColorIdx = parseInt(el.dataset.idx || '0');
-  });
-});
-let nipVerified = false, verifiedData = null;
-document.getElementById('loginBtn').addEventListener('click', handleLoginClick);
-document.getElementById('loginNip').addEventListener('keydown', e => { if (e.key === 'Enter') handleLoginClick(); });
-
-function handleLoginClick() { if (!nipVerified) checkNip(); else doLogin(); }
-
-async function checkNip() {
-  const nipInput = document.getElementById('loginNip');
-  const nip = nipInput.value.trim();
-  const errEl = document.getElementById('loginErr');
-  const loadEl = document.getElementById('loginLoading');
-  const btn = document.getElementById('loginBtn');
-  if (!nip) { errEl.textContent='NIP tidak boleh kosong!'; errEl.classList.add('show'); nipInput.focus(); return; }
-  errEl.classList.remove('show'); loadEl.classList.add('show'); btn.disabled=true; nipInput.disabled=true;
-  try {
-    const res = await fetch(GAS_USER_URL + '?action=checkNip&nip=' + encodeURIComponent(nip));
-    const data = await res.json();
-    if (data.found) {
-      verifiedData = data; nipVerified = true;
-      document.getElementById('previewName').textContent    = data.name    || '—';
-      document.getElementById('previewJabatan').textContent = data.jabatan || 'Staff';
-      document.getElementById('loginFoundBox').classList.add('show');
-      document.getElementById('loginColorsWrap').style.display = 'block';
-      btn.textContent = 'Masuk ke Dashboard →'; btn.disabled = false; nipInput.disabled = true;
-    } else {
-      errEl.textContent = '❌ NIP tidak terdaftar! Hubungi admin. (Latif Subaktiar_0838-3084-8989)';
-      errEl.classList.add('show'); btn.disabled=false; nipInput.disabled=false; nipInput.focus();
-    }
-  } catch(e) {
-    errEl.textContent='⚠️ Gagal terhubung ke server. Coba lagi.'; errEl.classList.add('show');
-    btn.disabled=false; nipInput.disabled=false;
-  }
-  loadEl.classList.remove('show');
-}
-
-function doLogin() {
-  if (!verifiedData) return;
-  me.nip      = verifiedData.nip || document.getElementById('loginNip').value.trim();
-  me.name     = verifiedData.name || '—';
-  me.jabatan  = verifiedData.jabatan || 'Staff';
-  me.color    = AVATAR_COLORS[selectedColorIdx];
-  me.initials = me.name.slice(0,2).toUpperCase();
-  applyTheme(me.color.hex);
-  localStorage.setItem('wms_nip',     me.nip);
-  localStorage.setItem('wms_name',    me.name);
-  localStorage.setItem('wms_jabatan', me.jabatan);
-  localStorage.setItem('wms_color',   selectedColorIdx);
-  applyLogin();
-}
-function saveLoginHistory() {
-  if (!me.nip || !me.name) return;
-  try {
-    const url = GAS_DASHBOARD_URL + '?action=saveLoginHistory' +
-      '&nip='     + encodeURIComponent(me.nip) +
-      '&name='    + encodeURIComponent(me.name) +
-      '&jabatan=' + encodeURIComponent(me.jabatan||'');
-    fetch(url).catch(e => console.warn('saveLoginHistory error:', e));
-  } catch(e) { console.warn('saveLoginHistory error:', e); }
-}
-
-function applyLogin() {
-  const av = document.getElementById('headerAvatar');
-  av.textContent = me.initials; av.style.background = me.color.bg;
-  document.getElementById('headerName').textContent = me.name;
-  if (fbReady && onlineRef) {
-    const safeKey = me.name.replace(/[.#$/[\]\s]/g,'_');
-    const myOnlineRef = onlineRef.child(safeKey);
-    myOnlineRef.set({ name:me.name, jabatan:me.jabatan, color:me.color.hex, nip:me.nip, ts:firebase.database.ServerValue.TIMESTAMP });
-    myOnlineRef.onDisconnect().remove();
-    onlineRef.on('value', snap => {
-      const count = snap.numChildren();
-      document.getElementById('onlineCount').textContent = count + ' online';
-      const discCount = document.getElementById('onlineCountDisc');
-      if (discCount) discCount.textContent = count + ' user';
-      const list = document.getElementById('onlineList');
-      if (!list) return;
-      const users = [];
-      snap.forEach(child => { users.push(child.val()); });
-      if (!users.length) { list.innerHTML='<div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Belum ada yang online</div>'; return; }
-      list.innerHTML = users.map(u => `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.5);border:1px solid rgba(200,215,240,0.3);">
-          <div style="width:36px;height:36px;border-radius:50%;background:${u.color||'#2563eb'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);">${(u.name||'?').slice(0,2).toUpperCase()}</div>
-          <div style="min-width:0;"><div style="font-size:12.5px;font-weight:700;color:var(--text)">${u.name||'User'}</div><div style="font-size:10.5px;color:var(--text-3)">${u.jabatan||'Staff'}</div></div>
-          ${u.name===me.name?'<span style="font-size:10px;background:var(--accent-light);color:var(--accent);padding:2px 8px;border-radius:10px;font-weight:700;margin-left:auto">Kamu</span>':''}
-        </div>`).join('');
-    });
-  }
-  lastSeenTs = parseInt(localStorage.getItem('lastSeenTs_'+me.name)||'0');
-  startChat();
-  const overlay = document.getElementById('loginOverlay');
-  overlay.style.opacity='0'; overlay.style.transition='opacity 0.3s ease';
-  setTimeout(saveLoginHistory, 1500); // simpan history setelah Firebase ready
-  setTimeout(()=>overlay.classList.add('hidden'),300);
-  setTimeout(updateSettingsUser,350);
-}
-
-(function checkSavedLogin() {
-  const savedNip=localStorage.getItem('wms_nip'), savedName=localStorage.getItem('wms_name');
-  const savedJabatan=localStorage.getItem('wms_jabatan'), savedColor=parseInt(localStorage.getItem('wms_color')||'0');
-  if (savedNip && savedName) {
-    nipVerified=true; verifiedData={nip:savedNip,name:savedName,jabatan:savedJabatan||'Staff'};
-    selectedColorIdx=savedColor; applyTheme(AVATAR_COLORS[savedColor].hex);
-    const nipInput=document.getElementById('loginNip');
-    if(nipInput){nipInput.value=savedNip;nipInput.disabled=true;}
-    document.getElementById('previewName').textContent=savedName;
-    document.getElementById('previewJabatan').textContent=savedJabatan||'Staff';
-    document.getElementById('loginFoundBox').classList.add('show');
-    document.getElementById('loginColorsWrap').style.display='block';
-    colorOptions.querySelectorAll('.color-opt').forEach((el,i)=>el.classList.toggle('selected',i===savedColor));
-    const btn=document.getElementById('loginBtn'); if(btn) btn.textContent='Masuk ke Dashboard →';
-  }
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WMS Dashboard – AHI Sidoarjo</title>
+<link rel="icon" type="image/jpeg" href="nailong%20lucu.jpg">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+(function(){
+  var l=document.querySelector("link[rel='icon']");
+  if(!l){l=document.createElement('link');l.rel='icon';document.head.appendChild(l);}
+  l.type='image/jpeg';
+  l.href='nailong%20lucu.jpg?v='+Date.now();
 })();
-
-function doLogout() {
-  localStorage.removeItem('wms_nip'); localStorage.removeItem('wms_name');
-  localStorage.removeItem('wms_jabatan'); localStorage.removeItem('wms_color');
-  nipVerified=false; verifiedData=null;
-  document.getElementById('loginNip').value=''; document.getElementById('loginNip').disabled=false;
-  document.getElementById('loginFoundBox').classList.remove('show');
-  document.getElementById('loginColorsWrap').style.display='none';
-  document.getElementById('loginBtn').textContent='Masuk ke Dashboard →';
-  document.getElementById('loginErr').classList.remove('show');
-  settingsOpen=false;
-  document.getElementById('settingsPanel').classList.remove('open');
-  const overlay=document.getElementById('loginOverlay');
-  overlay.classList.remove('hidden'); overlay.style.opacity='1';
+</script>
+<style>
+.login-nip-hint { font-size:11.5px; color:var(--text-3); margin-top:6px; font-weight:500; display:flex; align-items:center; gap:5px; }
+.login-loading { display:none; align-items:center; justify-content:center; gap:10px; font-size:13px; color:var(--text-3); font-weight:600; margin-top:10px; }
+.login-loading.show { display:flex; }
+.login-spinner { width:18px; height:18px; border:2px solid var(--accent-mid); border-top-color:var(--accent); border-radius:50%; animation:nipSpin 0.7s linear infinite; }
+@keyframes nipSpin { to{transform:rotate(360deg)} }
+@keyframes kpiBeam { 0%{left:-100%;opacity:1;} 100%{left:160%;opacity:1;} }
+/* ── SIDEBAR NAV RAISED EFFECT ── */
+.nav-item {
+  box-shadow: 0 2px 0 rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.7) !important;
+  border-bottom: 2px solid rgba(0,0,0,0.1) !important;
+  transition: all 0.15s ease !important;
 }
-
-// ══════════════════════════════════════
-//  CHAT ENGINE
-// ══════════════════════════════════════
-const seenIds = new Set();
-function startChat() {
-  if (!fbReady) { document.getElementById('discStatus').textContent='⚠️ Offline — Firebase error'; loadDemoMessages(); setupOfflineChat('miniDiscIn','miniDiscBtn','miniDiscMsg'); setupOfflineChat('fullDiscIn','fullDiscBtn','fullDiscMsg'); return; }
-  document.getElementById('discStatus').textContent='🟢 Terhubung';
-  const loadTime=Date.now();
-  chatRef.limitToLast(100).on('child_added', snap=>{
-    const msg=snap.val(); if(!msg||seenIds.has(snap.key)) return;
-    seenIds.add(snap.key);
-    const isNew=msg.timestamp&&msg.timestamp>(loadTime-3000);
-    renderMessage(msg,snap.key,'miniDiscMsg',5,isNew); renderMessage(msg,snap.key,'fullDiscMsg',999,isNew);
-    if(isNew) addNotif(msg);
-  });
-  setupFirebaseChat('miniDiscIn','miniDiscBtn','miniDiscMsg');
-  setupFirebaseChat('fullDiscIn','fullDiscBtn','fullDiscMsg');
+.nav-item:hover {
+  box-shadow: 0 4px 0 rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1) !important;
+  transform: translateY(-1px) !important;
+  border-bottom: 3px solid rgba(0,0,0,0.12) !important;
 }
-function renderMessage(msg,key,listId,maxItems,isNew=true){
-  const list=document.getElementById(listId); if(!list) return;
-  if(list.querySelector(`[data-key="${key}"]`)) return;
-  while(list.children.length>=maxItems) list.removeChild(list.firstChild);
-  const isMine=msg.name===me.name, timeStr=msg.timestamp?formatTime(new Date(msg.timestamp)):'';
-  const row=document.createElement('div'); row.className='disc-msg'+(isMine?' mine':''); row.dataset.key=key;
-  row.innerHTML=`<div class="disc-avatar" style="background:${msg.color||'linear-gradient(145deg,#3b82f6,#1d4ed8)'}">${(msg.name||'?').slice(0,2).toUpperCase()}</div><div class="disc-bubble-wrap"><div class="disc-meta">${isMine?`<span class="disc-time">${timeStr}</span><span class="disc-name">Kamu</span>`:`<span class="disc-name">${escHtml(msg.name)}</span><span class="disc-time">${timeStr}</span>`}</div><div class="disc-bubble">${escHtml(msg.text)}</div></div>`;
-  list.appendChild(row); if(isNew) list.scrollTop=list.scrollHeight;
+.nav-item.active {
+  box-shadow: 0 3px 0 rgba(37,99,235,0.4), 0 2px 8px rgba(37,99,235,0.2) !important;
+  border: 1px solid rgba(37,99,235,0.3) !important;
+  border-bottom: 3px solid rgba(37,99,235,0.5) !important;
+  transform: translateY(0) !important;
 }
-function setupFirebaseChat(inId,btnId,listId){
-  const inp=document.getElementById(inId),btn=document.getElementById(btnId); if(!inp||!btn) return;
-  function send(){ const text=inp.value.trim(); if(!text) return; inp.value=''; inp.disabled=true; btn.disabled=true; chatRef.push({name:me.name,text,color:me.color.bg,initials:me.initials,timestamp:firebase.database.ServerValue.TIMESTAMP}).finally(()=>{inp.disabled=false;btn.disabled=false;inp.focus();}); }
-  btn.addEventListener('click',send); inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
-}
-const demoMessages=[{name:'Rani',text:'Stok ABC mulai menipis, perlu restock segera.',color:'linear-gradient(145deg,#ec4899,#db2777)',timestamp:Date.now()-120000},{name:'Budi',text:'Besok ada inbound besar jam 10 pagi.',color:'linear-gradient(145deg,#06b6d4,#0891b2)',timestamp:Date.now()-80000},{name:'Tapes',text:'Forklift sudah stand by di loading area.',color:'linear-gradient(145deg,#10b981,#059669)',timestamp:Date.now()-30000}];
-function loadDemoMessages(){ demoMessages.forEach((msg,i)=>{renderMessage(msg,'demo-'+i,'miniDiscMsg',5);renderMessage(msg,'demo-'+i,'fullDiscMsg',999);}); }
-function setupOfflineChat(inId,btnId,listId){
-  const inp=document.getElementById(inId),btn=document.getElementById(btnId); if(!inp||!btn) return;
-  function send(){ const text=inp.value.trim(); if(!text) return; const msg={name:me.name,text,color:me.color.bg,timestamp:Date.now()}; renderMessage(msg,'local-'+Date.now(),'miniDiscMsg',5); renderMessage(msg,'local-'+Date.now()+1,'fullDiscMsg',999); inp.value=''; inp.focus(); }
-  btn.addEventListener('click',send); inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
-}
-function formatTime(date){ const now=new Date(),diff=now-date; if(diff<60000) return 'baru saja'; if(diff<3600000) return Math.floor(diff/60000)+' mnt lalu'; if(date.toDateString()===now.toDateString()) return date.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}); return date.toLocaleDateString('id-ID',{day:'numeric',month:'short'}); }
-function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+/* ── PROGRESS CENTER FIX ── */
+.progress-chart-wrap { position:relative !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; }
+.progress-center { position:absolute !important; inset:0 !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; pointer-events:none; z-index:3; }
+.progress-pct { font-size:22px !important; font-weight:900 !important; line-height:1 !important; letter-spacing:-0.5px !important; }
+.progress-label { font-size:10px !important; color:#94a3b8 !important; margin-top:2px !important; }
+@keyframes invBeam { 0%{left:-60%} 100%{left:120%} }
+@keyframes cardBeam { 0%{left:-80%} 100%{left:120%} }
+@keyframes kpiBodyBeam { 0%{left:-100%} 100%{left:160%} }
+@keyframes plKpiScan { 0%{left:-30%} 100%{left:115%} }
+.main { background:#dde3ed !important; }
+.card-stripe {position:absolute;top:0;left:0;width:100%;height:4px;overflow:hidden;}
+.card-stripe::after {content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.5s ease-in-out infinite;}
+.login-found-box { display:none; flex-direction:column; align-items:center; gap:5px; padding:14px; background:var(--green-bg); border:1px solid rgba(22,163,74,0.25); border-radius:var(--r-sm); margin-top:14px; }
+.login-found-box.show { display:flex; }
+.login-found-box .lf-tag { font-size:11px; color:var(--green); font-weight:800; text-transform:uppercase; letter-spacing:1px; }
+.login-found-box .lf-name { font-size:19px; font-weight:900; color:var(--text); letter-spacing:-0.5px; }
+.login-found-box .lf-jabatan { font-size:12px; color:var(--text-3); font-weight:600; }
 
-const d=new Date();
-const dateStr=d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-document.getElementById('todayDate').textContent=dateStr;
-document.getElementById('todayDate2').textContent=dateStr;
-
-// ══════════════════════════════════════
-//  OUTBOUND DETAIL PANEL
-// ══════════════════════════════════════
-let outboundPanelOpen   = false;
-let inventoryPanelOpen  = false;  // ✅ di sini bersama panel lainnya
-let inventoryDetailLoaded = false;
-
-function toggleOutboundPanel() {
-  outboundPanelOpen = !outboundPanelOpen;
-  const panel       = document.getElementById('outboundDetailPanel');
-  const midGrid     = document.querySelector('.mid-grid');
-  const progressRow = document.querySelector('.progress-row');
-  const bottomGrid  = document.querySelector('.bottom-grid');
-  if (!panel) return;
-
-  if (inboundPanelOpen)   { inboundPanelOpen   = false; const p=document.getElementById('inboundDetailPanel');   if(p) p.style.display='none'; }
-  if (storingPanelOpen)   { storingPanelOpen   = false; const p=document.getElementById('storingDetailPanel');   if(p) p.style.display='none'; }
-  if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
-  if (plannerPanelOpen)   { plannerPanelOpen   = false; const p=document.getElementById('plannerDetailPanel');   if(p) p.style.display='none'; }
-
-  if (outboundPanelOpen) {
-    panel.style.display = 'block';
-    if (midGrid)     midGrid.style.display     = 'none';
-    if (progressRow) progressRow.style.display = 'none';
-    if (bottomGrid)  bottomGrid.style.display  = 'none';
-    fetchOutboundPanel();
-    setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
-  } else {
-    panel.style.display = 'none';
-    if (midGrid)     midGrid.style.display     = '';
-    if (progressRow) progressRow.style.display = '';
-    if (bottomGrid)  bottomGrid.style.display  = '';
-    lineOutboundLoaded = false;
-    switchOutboundTab('data');
+/* ══ MOBILE FIX — HP (max-width: 768px) ══ */
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .stats-grid > * { min-width: 0 !important; overflow: hidden !important; }
+  /* Mini boxes scroll horizontal */
+  .stat-card > div[style*="display:grid"], 
+  .stat-card > div[style*="display: grid"],
+  .stat-card [style*="grid-template-columns:repeat(4"] { 
+    display: flex !important; 
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important; 
+    gap: 6px !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
   }
-}
-
-// ══════════════════════════════════════
-//  INVENTORY CONTROL DETAIL PANEL
-// ══════════════════════════════════════
-function toggleInventoryPanel() {
-  inventoryPanelOpen = !inventoryPanelOpen;
-  const panel       = document.getElementById('inventoryDetailPanel');
-  const midGrid     = document.querySelector('.mid-grid');
-  const progressRow = document.querySelector('.progress-row');
-  const bottomGrid  = document.querySelector('.bottom-grid');
-  if (!panel) return;
-
-  // Tutup semua panel lain
-  if (inboundPanelOpen)  { inboundPanelOpen  = false; const p=document.getElementById('inboundDetailPanel');  if(p) p.style.display='none'; }
-  if (storingPanelOpen)  { storingPanelOpen  = false; const p=document.getElementById('storingDetailPanel');  if(p) p.style.display='none'; }
-  if (outboundPanelOpen) { outboundPanelOpen = false; const p=document.getElementById('outboundDetailPanel'); if(p) p.style.display='none'; }
-  if (plannerPanelOpen)  { plannerPanelOpen  = false; const p=document.getElementById('plannerDetailPanel');  if(p) p.style.display='none'; }
-
-  if (inventoryPanelOpen) {
-    panel.style.display = 'block';
-    if (midGrid)     midGrid.style.display     = 'none';
-    if (progressRow) progressRow.style.display = 'none';
-    if (bottomGrid)  bottomGrid.style.display  = 'none';
-    if (!inventoryDetailLoaded) fetchInventoryDetail();
-    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  } else {
-    panel.style.display = 'none';
-    if (midGrid)     midGrid.style.display     = '';
-    if (progressRow) progressRow.style.display = '';
-    if (bottomGrid)  bottomGrid.style.display  = '';
+  .stat-card [style*="grid-template-columns:repeat(4"]::-webkit-scrollbar { display: none !important; }
+  /* Mini box item width */
+  .stat-card [style*="grid-template-columns:repeat(4"] > div { 
+    min-width: 60px !important; 
+    flex-shrink: 0 !important;
   }
-}
-
-async function fetchOutboundPanel() {
-  const tbody   = document.getElementById('outboundPanelBody');
-  const summary = document.getElementById('outboundPanelSummary');
-  const footer  = document.getElementById('outboundPanelFooter');
-  const sub     = document.getElementById('outboundPanelSubtitle');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data outbound...</td></tr>';
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getOutboundDetail');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-
-    const rows = data.data || [];
-    const selesai = rows.filter(r=>String(r.status).toUpperCase().includes('SELESAI')||String(r.status).toUpperCase().includes('KELUAR')).length;
-    const proses  = rows.filter(r=>String(r.status).toUpperCase().includes('PROSES')||String(r.status).toUpperCase().includes('LOADING')).length;
-    const antri   = rows.filter(r=>String(r.status).toUpperCase().includes('ANTRI')).length;
-    const belum   = rows.length - selesai - proses - antri;
-    const total   = rows.length || 1;
-
-    const toNum = (v) => { const n=parseFloat(String(v).replace('%','')||'0'); return isNaN(n)?0:(n>1?n:Math.round(n*100)); };
-    const avgPc  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.ppc),0)/total)  : 0;
-    const avgStg = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pstg),0)/total) : 0;
-    const avgLd  = rows.length ? Math.round(rows.reduce((s,r)=>s+toNum(r.pld),0)/total)  : 0;
-    const pctSel = Math.round((selesai/total)*100);
-
-    if (sub)    sub.textContent = `Total: ${rows.length} armada hari ini`;
-    if (footer) footer.textContent = rows.length + ' data outbound hari ini';
-    if (summary) summary.innerHTML = `
-      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(22,163,74,0.12);color:#16a34a;border:1px solid rgba(22,163,74,0.25)">✅ ${selesai} Selesai</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(37,99,235,0.12);color:#3b82f6;border:1px solid rgba(37,99,235,0.25)">⏳ ${proses} Proses</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)">🕐 ${antri} Antri</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">🔴 ${belum} Belum</span>
-    `;
-
-    const isDark = document.body.classList.contains('dark');
-
-    const makeSVGOut = (elId, pct, color) => {
-      const el=document.getElementById(elId); if(!el) return;
-      const r=26,cx=32,cy=32,circ=2*Math.PI*r;
-      const dash=Math.min(pct,100)/100*circ;
-      const bg=isDark?'#334155':'#e2e8f0';
-      el.innerHTML=`<svg width="64" height="64" viewBox="0 0 64 64">
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
-          stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
-          stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-        <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="900" fill="${color}">${pct}%</text>
-      </svg>`;
-    };
-
-    // Status Armada card
-    document.getElementById('pctOutSelesai').textContent = pctSel + '%';
-    document.getElementById('footOutStatus').textContent = pctSel + '%';
-    document.getElementById('outMiniSelesai').textContent = selesai;
-    document.getElementById('outMiniProses').textContent  = proses;
-    document.getElementById('outMiniAntri').textContent   = antri;
-    document.getElementById('outMiniBelum').textContent   = belum;
-    makeSVGOut('chartOutStatus', pctSel, '#d97706');
-    const bo=document.getElementById('barOutStatus'); if(bo) setTimeout(()=>bo.style.width=Math.min(pctSel,100)+'%',300);
-
-    // % PC
-    document.getElementById('pctOutPc').textContent  = avgPc + '%';
-    document.getElementById('footOutPc').textContent = avgPc + '%';
-    makeSVGOut('chartOutPc', avgPc, '#16a34a');
-    const bp=document.getElementById('barOutPc'); if(bp) setTimeout(()=>bp.style.width=Math.min(avgPc,100)+'%',300);
-
-    // % STG
-    document.getElementById('pctOutStg').textContent = avgStg + '%';
-    document.getElementById('footOutStg').textContent= avgStg + '%';
-    makeSVGOut('chartOutStg', avgStg, '#2563eb');
-    const bs=document.getElementById('barOutStg'); if(bs) setTimeout(()=>bs.style.width=Math.min(avgStg,100)+'%',300);
-
-    // % LD
-    document.getElementById('pctOutLd').textContent  = avgLd + '%';
-    document.getElementById('footOutLd').textContent = avgLd + '%';
-    makeSVGOut('chartOutLd', avgLd, '#ec4899');
-    const bl=document.getElementById('barOutLd'); if(bl) setTimeout(()=>bl.style.width=Math.min(avgLd,100)+'%',300);
-
-    renderOutboundPanelTable(rows);
-
-    // Full-body beam amber otomatis loop
-    // Show Reset Diskusi hanya untuk admin
-  const resetBtn = document.getElementById('resetDiscBtn');
-  if (resetBtn) resetBtn.style.display = ADMIN_NIPS.includes(String(me.nip)) ? '' : 'none';
-  setTimeout(()=>{
-      const speeds=['3s','3.5s','4s','4.5s'];
-      document.querySelectorAll('#outboundDetailPanel [style*="overflow:hidden;box-shadow"]').forEach((card,i)=>{
-        if(card.querySelector('.out-beam')) return;
-        const b=document.createElement('div');
-        b.className='out-beam';
-        b.style.cssText=`position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.18),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam ${speeds[i]||'3.5s'} ease-in-out infinite;`;
-        card.style.position='relative';
-        card.style.overflow='hidden';
-        card.appendChild(b);
-      });
-    },300);
-  } catch(e) {
-    if(tbody) tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
+  /* Storing mini boxes - RELEASE PICKED STAGED SISA */
+  .stat-card [style*="grid-template-columns:repeat(4,1fr)"] > div,
+  .stat-card div[style*="repeat(4"] > div { 
+    min-width: 55px !important; 
+    flex-shrink: 0 !important;
+    padding: 4px 6px !important;
   }
+  .stat-card  { padding: 12px 10px !important; gap: 8px !important; flex-direction: column !important; align-items: flex-start !important; }
+  .stat-value { font-size: 28px !important; letter-spacing: -1px !important; }
+  .stat-icon  { width: 36px !important; height: 36px !important; font-size: 16px !important; transform: none !important; }
+  .stat-label { font-size: 10px !important; }
+  .progress-chart-wrap { width: 75px !important; height: 75px !important; }
+  .progress-pct { font-size: 13px !important; }
+  .page-header { flex-wrap: wrap; gap: 8px; margin-bottom: 14px !important; }
+  .page-title-wrap h1 { font-size: 18px !important; }
+  .date-chip { font-size: 10px !important; padding: 5px 10px !important; }
+  .mid-grid    { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .bottom-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .progress-row { grid-template-columns: 1fr !important; gap: 12px !important; }
+  #dailyActivityChartWrap { height: 220px !important; overflow: hidden !important; }
+  #dailyActivityChartWrap > div:first-child { display: none !important; }
+  .donut-wrap { padding: 12px !important; gap: 10px !important; }
+  .donut-canvas-wrap { width: 120px !important; height: 120px !important; }
+  .donut-center .total { font-size: 18px !important; }
+  .card-header { padding: 12px 14px 10px !important; }
+  .card-title  { font-size: 12px !important; }
+  .chart-wrap  { height: 160px !important; padding: 10px 12px !important; }
+  .page { padding: 12px !important; }
+  td { font-size: 11px !important; padding: 6px 8px !important; white-space: nowrap !important; }
+  th { font-size: 8.5px !important; padding: 7px 8px !important; white-space: nowrap !important; }
+  .donut-legend-item { font-size: 11px !important; }
 }
+</style>
+</head>
+<body>
 
-function switchOutboundTab(tab) {
-  const wData = document.getElementById('outWrapData');
-  const wLine = document.getElementById('outWrapLine');
-  const bData = document.getElementById('outTabData');
-  const bLine = document.getElementById('outTabLine');
-  if (tab === 'data') {
-    if(wData) wData.style.display = '';
-    if(wLine) wLine.style.display = 'none';
-    if(bData) { bData.style.color='var(--accent)'; bData.style.borderBottom='2px solid var(--accent)'; }
-    if(bLine) { bLine.style.color='var(--text-3)'; bLine.style.borderBottom='2px solid transparent'; }
-  } else {
-    if(wData) wData.style.display = 'none';
-    if(wLine) wLine.style.display = '';
-    if(bLine) { bLine.style.color='var(--accent)'; bLine.style.borderBottom='2px solid var(--accent)'; }
-    if(bData) { bData.style.color='var(--text-3)'; bData.style.borderBottom='2px solid transparent'; }
-    fetchLineOutbound();
-  }
-}
+<!-- LOGIN MODAL -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAQABAADASIAAhEBAxEB/8QAHQABAAIDAQEBAQAAAAAAAAAAAAEIBgcJBQQDAv/EAFwQAQABAwMBBQIGCwwFCQcEAwABAgMEBQYRBwgSITFBUWETFyJxgZQJFBYjMkJSVnKRoRUYMzdDYnWCkqKz0SQ1dLGyJTZXdpW0wdPhJzRTY3ODo0RFZZPD0vD/xAAWAQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAWEQEBAQAAAAAAAAAAAAAAAAAAEQH/2gAMAwEAAhEDEQA/AKZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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pW9eo+RhZG89anVLmDRXRjzONatdyKpiav4OmnnmYjz9jEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//2Q==" alt="SCM Logo" style="width:80px;height:80px;object-fit:contain;background:#000;border-radius:12px;">
+    </div>
+    <div class="login-title">Selamat Datang 👋</div>
+    <div class="login-sub">Masukkan NIP kamu untuk mengakses dashboard</div>
+    <div class="login-field">
+      <label>NIP Kamu</label>
+      <input type="text" id="loginNip" placeholder="Masukkan NIP..." maxlength="20" autocomplete="off" inputmode="numeric">
+      <div class="login-nip-hint">🔒 Hanya NIP terdaftar yang bisa masuk</div>
+    </div>
+    <div class="login-found-box" id="loginFoundBox">
+      <span class="lf-tag">✅ NIP Ditemukan</span>
+      <span class="lf-name" id="previewName">—</span>
+      <span class="lf-jabatan" id="previewJabatan">—</span>
+    </div>
+    <div class="login-colors" id="loginColorsWrap" style="display:none;">
+      <label>Warna Avatar</label>
+      <div class="color-options" id="colorOptions">
+        <div class="color-opt selected" style="background:linear-gradient(145deg,#3b82f6,#1d4ed8)" data-idx="0"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#ec4899,#db2777)" data-idx="1"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#06b6d4,#0891b2)" data-idx="2"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#10b981,#059669)" data-idx="3"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#f59e0b,#d97706)" data-idx="4"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#8b5cf6,#7c3aed)" data-idx="5"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#ef4444,#dc2626)" data-idx="6"></div>
+        <div class="color-opt" style="background:linear-gradient(145deg,#64748b,#475569)" data-idx="7"></div>
+      </div>
+    </div>
+    <div class="login-loading" id="loginLoading">
+      <div class="login-spinner"></div>
+      <span>Memeriksa NIP...</span>
+    </div>
+    <button class="login-btn" id="loginBtn">Masuk ke Dashboard →</button>
+    <div class="login-err" id="loginErr">NIP tidak terdaftar!</div>
+  </div>
+</div>
 
-let lineOutboundLoaded = false;
-async function fetchLineOutbound() {
-  if (lineOutboundLoaded) return;
-  const tbody = document.getElementById('lineOutboundBody'); if(!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:24px;color:var(--text-3)">Memuat Line Outbound...</td></tr>';
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getLineOutbound');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-    lineOutboundLoaded = true;
-    renderLineOutboundTable(data.data, data.summary);
-  } catch(e) {
-    if(tbody) tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
-  }
-}
+<!-- DASHBOARD SHELL -->
+<div class="shell">
 
-function renderLineOutboundTable(rows, summary) {
-  const tbody = document.getElementById('lineOutboundBody'); if(!tbody) return;
-  if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="14" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>'; return; }
+<!-- HEADER -->
+<header class="header">
+  <div class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <div class="brand">
+    <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAQABAADASIAAhEBAxEB/8QAHQABAAIDAQEBAQAAAAAAAAAAAAEIBgcJBQQDAv/EAFwQAQABAwMBBQIGCwwFCQcEAwABAgMEBQYRBwgSITFBUWETFyJxgZQJFBYjMkJSVnKRoRUYMzdDYnWCkqKz0SQ1dLGyJTZXdpW0wdPhJzRTY3ODo0RFZZPD0vD/xAAWAQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAWEQEBAQAAAAAAAAAAAAAAAAAAEQH/2gAMAwEAAhEDEQA/AKZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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pW9eo+RhZG89anVLmDRXRjzONatdyKpiav4OmnnmYjz9jEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//2Q==" alt="SCM Logo" style="width:40px;height:40px;object-fit:contain;background:#000;">
+    <div>
+      <div class="brand-name">WMS</div>
+      <div class="brand-sub">AHI Sidoarjo</div>
+    </div>
+  </div>
+  <div class="header-search">
+    <span style="font-size:13px;color:var(--text-3)">🔍</span>
+    <input type="text" id="searchInput" placeholder="Cari departemen atau menu..." autocomplete="off">
+  </div>
+  <div id="searchDropdown" style="display:none;position:absolute;top:54px;left:252px;width:320px;background:rgba(255,255,255,0.97);backdrop-filter:blur(24px);border:1px solid rgba(200,215,240,0.5);border-radius:14px;box-shadow:0 8px 32px rgba(99,120,167,0.18);z-index:9999;overflow:hidden;padding:8px;"></div>
+  <div class="header-actions">
+    <div class="icon-btn" id="notifBtn" onclick="toggleNotif()" style="position:relative">🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span></div>
+    <div class="settings-wrap">
+      <div class="icon-btn" id="settingsBtn" onclick="toggleSettings()" title="Pengaturan">⚙️</div>
+      <div class="settings-panel" id="settingsPanel">
+        <div class="settings-user">
+          <div class="settings-avatar" id="settingsAva">?</div>
+          <div class="settings-user-info">
+            <div class="settings-username" id="settingsName">...</div>
+            <div class="settings-role" id="settingsRole">Member AHI Sidoarjo</div>
+          </div>
+        </div>
+        <div class="settings-menu">
+          <button class="settings-item" onclick="openProfile()"><span class="settings-item-icon">👤</span><span>Lihat Profile</span></button>
+          <button class="settings-item" onclick="toggleDark();updateDarkToggle()"><span class="settings-item-icon">🌙</span><span>Dark Mode</span><div class="dark-toggle" id="darkToggle"></div></button>
+          <div class="settings-divider"></div>
+          <button class="settings-item" onclick="openHistoryLogin()"><span class="settings-item-icon">🕐</span><span>History Login</span></button>
+          <button class="settings-item" id="resetDiscBtn" style="display:none" onclick="confirmResetDiskusi()"><span class="settings-item-icon">🗑️</span><span>Reset Diskusi</span></button>
+          <div class="settings-divider"></div>
+          <button class="settings-item danger" onclick="doLogout()"><span class="settings-item-icon">🚪</span><span>Ganti Akun</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="user-pill" id="headerUser" onclick="toggleSettings()">
+      <div class="avatar" id="headerAvatar" style="background:linear-gradient(145deg,#3b82f6,#7c3aed)">?</div>
+      <span class="name" id="headerName">...</span>
+      <span class="chevron">▾</span>
+    </div>
+  </div>
+</header>
 
-  const isDark = document.body.classList.contains('dark');
-  const hdrBg    = isDark ? '#0a0f1e' : '#1e293b';
-  const hdrText  = '#ffffff';
-  const hdrStyle = `background:${hdrBg};color:${hdrText};font-weight:800;font-size:11px;text-align:center;padding:8px 10px;letter-spacing:0.5px;`;
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+    <button class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span>Dashboard</button>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Departemen</div>
+    <button class="nav-item" data-page="planner"><span class="nav-icon">📋</span>Planner<span class="nav-tag tag-green">Live</span></button>
+    <button class="nav-item" data-page="inbound"><span class="nav-icon">📦</span>Inbound<span class="nav-tag tag-green">Live</span></button>
+    <button class="nav-item" data-page="storing"><span class="nav-icon">🏗️</span>Storing<span class="nav-tag tag-green">Live</span></button>
+    <button class="nav-item" data-page="outbound"><span class="nav-icon">🚚</span>Outbound<span class="nav-tag tag-green">Live</span></button>
+    <button class="nav-item" data-page="inventory"><span class="nav-icon">📊</span>Inventory<span class="nav-tag tag-green">Live</span></button>
+    <button class="nav-item" data-page="ga"><span class="nav-icon">🏢</span>GA<span class="nav-tag tag-green">Live</span></button>
+    <button class="nav-item" data-page="hr"><span class="nav-icon">👥</span>HR<span class="nav-tag tag-orange">Soon</span></button>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Lainnya</div>
+    <button class="nav-item" data-page="analyst"><span class="nav-icon">📈</span>Analyst<span class="nav-tag tag-blue">Live</span></button>
+    <button class="nav-item" data-page="discussion"><span class="nav-icon">💬</span>Discussion<span class="nav-tag tag-blue" id="discBadge">Live</span></button>
+    <button class="nav-item" data-page="ai"><span class="nav-icon">🤖</span>AI Support</button>
+  </div>
+  <div class="sidebar-footer">
+    <div class="sys-info">
+      <div class="sys-label">System Status</div>
+      <div class="sys-bar-wrap"><span class="sys-bar-label">Server</span><div class="sys-bar-track"><div class="sys-bar-fill" style="width:72%;background:linear-gradient(90deg,#16a34a,#4ade80)"></div></div><span class="sys-bar-val">72%</span></div>
+      <div class="sys-bar-wrap"><span class="sys-bar-label">Memory</span><div class="sys-bar-track"><div class="sys-bar-fill" style="width:45%;background:linear-gradient(90deg,#2563eb,#60a5fa)"></div></div><span class="sys-bar-val">45%</span></div>
+      <div class="sys-bar-wrap"><span class="sys-bar-label">Storage</span><div class="sys-bar-track"><div class="sys-bar-fill" style="width:88%;background:linear-gradient(90deg,#d97706,#f87171)"></div></div><span class="sys-bar-val">88%</span></div>
+    </div>
+  </div>
+</aside>
 
-  const c  = 'text-align:center;font-size:11px;color:var(--text-2);padding:7px 10px;';
-  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;color:var(--text-2);padding:7px 10px;';
+<!-- MAIN -->
+<main class="main" id="mainContent">
 
-  const ketBadge = (v) => {
-    const u = String(v||'').toUpperCase();
-    if (u.includes('PROSES'))  return `<span class="badge badge-blue">⏳ ${v}</span>`;
-    if (u.includes('ANTRI'))   return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)">🕐 ${v}</span>`;
-    if (u.includes('BELUM'))   return `<span class="badge badge-red">🔴 ${v}</span>`;
-    if (u.includes('SELESAI')||u.includes('KELUAR')) return `<span class="badge badge-green">✅ ${v}</span>`;
-    return `<span style="color:var(--text-3);font-size:11px">${v||'—'}</span>`;
-  };
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div class="page-title-wrap"><h1>Dashboard</h1><p>Ringkasan operasional hari ini — AHI Sidoarjo</p></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="slideshowBtn" onclick="toggleSlideshow()" style="display:flex;align-items:center;gap:7px;padding:8px 16px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:var(--r-sm);color:#fff;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,0.35);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          <span style="font-size:14px">▶</span> Slide Show
+        </button>
+        <div class="date-chip">📅 <span id="todayDate">—</span></div>
+      </div>
+    </div>
+    <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">
 
-  const pBar = (pct) => {
-    const n = parseFloat(pct)||0, p = n>1?Math.round(n):Math.round(n*100);
-    const col = p>=80?'#16a34a':p>=50?'#f59e0b':'#ef4444';
-    if (p===0) return `<span style="color:var(--text-3);font-size:11px">0%</span>`;
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:4px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(p,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${p}%</span></div>`;
-  };
-
-  tbody.innerHTML = rows.map(r => {
-    if (r.isHeader) {
-      return `<tr style="background:${hdrBg}">${r.cols.map(c => `<td style="${hdrStyle}">${c||'—'}</td>`).join('')}</tr>`;
-    }
-    return `<tr>
-      <td style="${c}">${r.no||'—'}</td>
-      <td style="${cn}font-weight:800;color:var(--accent)">${r.noLine||'—'}</td>
-      <td style="font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);padding:7px 10px">${r.noLc||'—'}</td>
-      <td style="font-size:11px;color:var(--text-2);padding:7px 10px;max-width:180px">${r.shipping||'—'}</td>
-      <td style="${c}font-weight:800;color:var(--accent)">${r.batch||'—'}</td>
-      <td style="${cn}">${r.stuffing||'—'}</td>
-      <td style="font-size:11px;color:var(--text-2);padding:7px 10px">${r.armada||'—'}</td>
-      <td style="${cn}">${r.cbmS2||'—'}</td>
-      <td style="background:rgba(22,163,74,0.05);padding:7px 10px;text-align:center">${pBar(r.pctPc)}</td>
-      <td style="background:rgba(37,99,235,0.05);padding:7px 10px;text-align:center">${pBar(r.pctStg)}</td>
-      <td style="${c}">${r.type||'—'}</td>
-      <td style="${cn}">${r.nopol||'—'}</td>
-      <td style="padding:7px 10px;text-align:center">${ketBadge(r.ket)}</td>
-      <td style="${c}font-weight:700;color:var(--text)">${r.loading||'—'}</td>
-    </tr>`;
-  }).join('');
-}
-
-function renderOutboundPanelTable(rows) {
-  const tbody = document.getElementById('outboundPanelBody'); if(!tbody) return;
-  if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>'; return; }
-
-  const shiftStyle = (penyelesaian) => {
-    const m = String(penyelesaian||'').match(/SHIFT\s*(\d+)/i);
-    const n = m ? parseInt(m[1]) : 1;
-    switch(n) {
-      case 2: return { bg:'rgba(234,179,8,0.22)',  border:'4px solid rgba(234,179,8,1)' };
-      case 3: return { bg:'rgba(34,197,94,0.20)',  border:'4px solid rgba(34,197,94,1)' };
-      case 4: return { bg:'rgba(59,130,246,0.20)', border:'4px solid rgba(59,130,246,1)' };
-      default:return { bg:'',                       border:'' };
-    }
-  };
-
-  const isDarkO=document.body.classList.contains('dark');
-  const txO=isDarkO?'#f0f4ff':'#0a0f1e';
-  const cn = `text-align:center;font-size:12px;font-family:"JetBrains Mono",monospace;font-weight:600;color:${txO};`;
-  const c  = `font-size:12px;font-weight:600;color:${txO};`;
-
-  const pBar = (v) => {
-    const pct=parseFloat(String(v||'0').replace('%',''))||0;
-    const n=pct>1?Math.round(pct):Math.round(pct*100);
-    const col=n>=80?'#15803d':n>=50?'#b45309':'#b91c1c';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:5px;background:rgba(0,0,0,0.12);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:900;color:${col}">${n}%</span></div>`;
-  };
-  const statusBadge = (s) => {
-    const u=String(s||'').toUpperCase();
-    if(u.includes('KELUAR DC')||u.includes('KELUAR')) return `<span class="badge badge-green">✅ ${s}</span>`;
-    if(u.includes('SELESAI'))  return `<span class="badge badge-green">✅ ${s}</span>`;
-    if(u.includes('TERLAMBAT'))return `<span class="badge badge-red">⚠️ ${s}</span>`;
-    if(u.includes('PROSES')||u.includes('LOADING')) return `<span class="badge badge-blue">⏳ ${s}</span>`;
-    if(u.includes('ANTRI'))    return `<span class="badge badge-orange" style="display:inline-flex;align-items:center;gap:4px;">🕐 ${s}</span>`;
-    if(u.includes('BELUM'))    return `<span class="badge badge-red">🔴 ${s}</span>`;
-    return `<span style="color:var(--text-3);font-size:12px">${s||'—'}</span>`;
-  };
-
-  tbody.innerHTML = rows.map((r,i) => {
-    const ss = shiftStyle(r.penyelesaian);
-    const trStyle = `background:${ss.bg};${ss.border?'border-left:'+ss.border:''}`;
-    return `<tr style="${trStyle}">
-    <td style="${cn}">${i+1}</td>
-    <td style="${c}font-weight:800">${r.penyelesaian||'—'}</td>
-    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:${txO}">${escHtml(r.transno||'—')}</td>
-    <td style="background:rgba(21,128,61,0.12)">${pBar(r.ppc)}</td>
-    <td style="background:rgba(29,78,216,0.12)">${pBar(r.pstg)}</td>
-    <td style="background:rgba(180,83,9,0.12)">${pBar(r.pld)}</td>
-    <td style="${c}">${escHtml(r.shippingline||'—')}</td>
-    <td style="${cn}">${escHtml(r.bu||'—')}</td>
-    <td style="${cn}">${escHtml(r.carrierId||'—')}</td>
-    <td style="${cn}">${r.stuffingTime||'—'}</td>
-    <td style="${c}">${escHtml(r.jenisArmada||'—')}</td>
-    <td style="${cn}">${escHtml(r.nopol||'—')}</td>
-    <td style="text-align:center">${statusBadge(r.status)}</td>
-  </tr>`;
-  }).join('');
-}
-
-// ══════════════════════════════════════
-//  SLIDESHOW MODE
-// ══════════════════════════════════════
-let slideshowActive = false;
-let slideshowIndex  = 0;
-let slideshowRAF    = null;
-let slideshowTimer  = null;
-const SLIDES=[{name:'🏠 Dashboard'},{name:'📦 Inbound Data'},{name:'📋 Putaway'},{name:'🏗️ Storing'},{name:'🚚 Outbound'},{name:'📊 Line OB'}];
-function toggleSlideshow(){if(slideshowActive)stopSlideshow();else startSlideshow();}
-function startSlideshow(){
-  slideshowActive=true;slideshowIndex=0;
-  const el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});
-  const h=document.querySelector('.header'),s=document.querySelector('.sidebar');
-  if(h)h.style.display='none';if(s)s.style.display='none';
-  const sh=document.querySelector('.shell');if(sh){sh.style.gridTemplateColumns='1fr';sh.style.gridTemplateRows='1fr';}
-  document.body.classList.add('slideshow-mode');
-  const btn=document.getElementById('slideshowBtn');if(btn)btn.innerHTML='<span style="font-size:14px">⏹</span> Stop';
-  createFadeOverlay();showSlideshowIndicator();
-  document.addEventListener('keydown',onSlideshowKey);
-  document.addEventListener('fullscreenchange',onFullscreenChange);
-  runSlide(0);
-}
-function stopSlideshow(){
-  slideshowActive=false;
-  if(slideshowRAF){cancelAnimationFrame(slideshowRAF);slideshowRAF=null;}
-  if(slideshowTimer){clearTimeout(slideshowTimer);slideshowTimer=null;}
-  if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
-  const h=document.querySelector('.header'),s=document.querySelector('.sidebar');
-  if(h)h.style.display='';if(s)s.style.display='';
-  const sh=document.querySelector('.shell');if(sh){sh.style.gridTemplateColumns='';sh.style.gridTemplateRows='';}
-  document.body.classList.remove('slideshow-mode');
-  document.getElementById('slideshowOverlay')?.remove();
-  document.getElementById('slideshowIndicator')?.remove();
-  const btn=document.getElementById('slideshowBtn');if(btn)btn.innerHTML='<span style="font-size:14px">▶</span> Slide Show';
-  if(inboundPanelOpen){inboundPanelOpen=false;document.getElementById('inboundDetailPanel').style.display='none';}
-  if(storingPanelOpen){storingPanelOpen=false;document.getElementById('storingDetailPanel').style.display='none';}
-  if(outboundPanelOpen){outboundPanelOpen=false;document.getElementById('outboundDetailPanel').style.display='none';}
-  if(plannerPanelOpen){plannerPanelOpen=false;const pp=document.getElementById('plannerDetailPanel');if(pp)pp.style.display='none';}
-  ['mid-grid','progress-row','bottom-grid'].forEach(cls=>{const e=document.querySelector('.'+cls);if(e)e.style.display='';});
-  document.removeEventListener('keydown',onSlideshowKey);
-  document.removeEventListener('fullscreenchange',onFullscreenChange);
-}
-function onSlideshowKey(e){if(e.key==='Escape')stopSlideshow();}
-function onFullscreenChange(){if(!document.fullscreenElement&&slideshowActive)stopSlideshow();}
-function createFadeOverlay(){
-  document.getElementById('slideshowOverlay')?.remove();
-  const div=document.createElement('div');
-  div.id='slideshowOverlay';
-  div.style.cssText='position:fixed;inset:0;z-index:9998;background:#000;opacity:0;pointer-events:none;transition:opacity 0.45s ease;';
-  document.body.appendChild(div);
-}
-function fadeOut(){return new Promise(res=>{const ov=document.getElementById('slideshowOverlay');if(!ov){res();return;}ov.style.opacity='0.65';setTimeout(res,480);});}
-function fadeIn(){return new Promise(res=>{const ov=document.getElementById('slideshowOverlay');if(!ov){res();return;}ov.style.opacity='0';setTimeout(res,480);});}
-function ssleep(ms){return new Promise(res=>{if(!slideshowActive){res();return;}slideshowTimer=setTimeout(res,ms);});}
-async function runSlide(idx){
-  if(!slideshowActive)return;
-  slideshowIndex=idx%SLIDES.length;
-  updateSlideshowIndicator(slideshowIndex);
-  await fadeOut();
-  await prepareSlide(slideshowIndex);
-  const tbl=getSlideTableEl(slideshowIndex);
-  if(tbl)tbl.scrollTop=0;
-  if(slideshowIndex===0){const m=document.querySelector('.main');if(m)m.scrollTop=0;}
-  await fadeIn();
-  await ssleep(1000);
-  await scrollTableSlowly(tbl);
-  await ssleep(3500);
-  if(slideshowActive)runSlide(slideshowIndex+1);
-}
-function getSlideTableEl(idx){ return document.querySelector('.main'); }
-async function scrollTableSlowly(el){
-  if(!el||!slideshowActive)return;
-  return new Promise(resolve=>{
-    const maxMs=20000,start=Date.now(),px=0.55;
-    function step(){
-      if(!slideshowActive||Date.now()-start>maxMs){resolve();return;}
-      const max=el.scrollHeight-el.clientHeight;
-      if(max<5||el.scrollTop>=max-2){resolve();return;}
-      el.scrollTop+=px;
-      slideshowRAF=requestAnimationFrame(step);
-    }
-    if(el.scrollHeight-el.clientHeight<5){resolve();return;}
-    slideshowRAF=requestAnimationFrame(step);
-  });
-}
-async function prepareSlide(idx){
-  const hideG=()=>['mid-grid','progress-row','bottom-grid'].forEach(cls=>{const e=document.querySelector('.'+cls);if(e)e.style.display='none';});
-  const closeAll=(keep)=>{
-    if(keep!=='inbound'&&inboundPanelOpen){inboundPanelOpen=false;document.getElementById('inboundDetailPanel').style.display='none';}
-    if(keep!=='storing'&&storingPanelOpen){storingPanelOpen=false;document.getElementById('storingDetailPanel').style.display='none';}
-    if(keep!=='outbound'&&outboundPanelOpen){outboundPanelOpen=false;document.getElementById('outboundDetailPanel').style.display='none';}
-    if(plannerPanelOpen){plannerPanelOpen=false;const pp=document.getElementById('plannerDetailPanel');if(pp)pp.style.display='none';}
-  };
-  switch(idx){
-    case 0:
-      if(inboundPanelOpen){inboundPanelOpen=false;document.getElementById('inboundDetailPanel').style.display='none';}
-      if(storingPanelOpen){storingPanelOpen=false;document.getElementById('storingDetailPanel').style.display='none';}
-      if(outboundPanelOpen){outboundPanelOpen=false;document.getElementById('outboundDetailPanel').style.display='none';}
-      ['mid-grid','progress-row','bottom-grid'].forEach(cls=>{const e=document.querySelector('.'+cls);if(e)e.style.display='';});
-      break;
-    case 1:
-      closeAll('inbound');
-      if(!inboundPanelOpen){inboundPanelOpen=true;const p=document.getElementById('inboundDetailPanel');if(p)p.style.display='block';hideG();renderPanelInboundTable(window._inboundRows||[]);fetchInlineProses();}
-      switchPanelTab('inbound');break;
-    case 2:switchPanelTab('inline');break;
-    case 3:
-      closeAll('storing');
-      if(!storingPanelOpen){storingPanelOpen=true;const p=document.getElementById('storingDetailPanel');if(p)p.style.display='block';hideG();if(window._storingData)renderStoringPanel(window._storingData);else await fetchStoringToday();}
-      break;
-    case 4:
-      closeAll('outbound');
-      if(!outboundPanelOpen){outboundPanelOpen=true;const p=document.getElementById('outboundDetailPanel');if(p)p.style.display='block';hideG();await fetchOutboundPanel();}
-      switchOutboundTab('data');break;
-    case 5:switchOutboundTab('line');await fetchLineOutbound();break;
-  }
-}
-function jumpSlide(idx){if(slideshowRAF)cancelAnimationFrame(slideshowRAF);if(slideshowTimer)clearTimeout(slideshowTimer);runSlide(idx);}
-
-function showSlideshowIndicator(){
-  document.getElementById('slideshowIndicator')?.remove();
-  const div=document.createElement('div');
-  div.id='slideshowIndicator';
-  div.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;align-items:center;gap:12px;background:rgba(4,6,14,0.88);backdrop-filter:blur(16px);border:1px solid rgba(79,142,247,0.2);border-radius:40px;padding:10px 22px;box-shadow:0 8px 32px rgba(0,0,0,0.5);';
-  div.innerHTML=SLIDES.map((s,i)=>`<div onclick="jumpSlide(${i})" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:2px 4px;"><div id="sdot${i}" style="width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s;"></div><span id="slbl${i}" style="font-size:9px;color:rgba(255,255,255,0.3);font-weight:600;white-space:nowrap;transition:all 0.3s;">${s.name}</span></div>`).join('')+'<div style="width:1px;height:28px;background:rgba(255,255,255,0.1);margin:0 4px;"></div><button onclick="stopSlideshow()" style="background:rgba(239,68,68,0.85);border:none;border-radius:20px;padding:5px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">✕ Stop</button>';
-  document.body.appendChild(div);
-  updateSlideshowIndicator(0);
-}
-function updateSlideshowIndicator(idx){
-  SLIDES.forEach((_,i)=>{
-    const dot=document.getElementById('sdot'+i),lbl=document.getElementById('slbl'+i),on=i===idx;
-    if(dot){dot.style.background=on?'#4f8ef7':'rgba(255,255,255,0.2)';dot.style.transform=on?'scale(1.6)':'scale(1)';dot.style.boxShadow=on?'0 0 10px rgba(79,142,247,0.9)':'none';}
-    if(lbl){lbl.style.color=on?'#93c5fd':'rgba(255,255,255,0.3)';lbl.style.fontWeight=on?'800':'600';}
-  });
-}
-let storingPanelOpen = false;
-let storingLoaded    = false;
-
-function toggleStoringPanel() {
-  storingPanelOpen = !storingPanelOpen;
-  const panel       = document.getElementById('storingDetailPanel');
-  const midGrid     = document.querySelector('.mid-grid');
-  const progressRow = document.querySelector('.progress-row');
-  const bottomGrid  = document.querySelector('.bottom-grid');
-  const inboundPanel= document.getElementById('inboundDetailPanel');
-  if (!panel) return;
-
-  if (storingPanelOpen) {
-    if (inboundPanelOpen)   { inboundPanelOpen   = false; if(inboundPanel) inboundPanel.style.display='none'; }
-    if (outboundPanelOpen)  { outboundPanelOpen  = false; const p=document.getElementById('outboundDetailPanel');  if(p) p.style.display='none'; }
-    if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
-    if (plannerPanelOpen)   { plannerPanelOpen   = false; const p=document.getElementById('plannerDetailPanel');   if(p) p.style.display='none'; }
-    panel.style.display = 'block';
-    if (midGrid)     midGrid.style.display     = 'none';
-    if (progressRow) progressRow.style.display = 'none';
-    if (bottomGrid)  bottomGrid.style.display  = 'none';
-    if (!storingLoaded) fetchStoringToday();
-    setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
-  } else {
-    panel.style.display = 'none';
-    if (midGrid)     midGrid.style.display     = '';
-    if (progressRow) progressRow.style.display = '';
-    if (bottomGrid)  bottomGrid.style.display  = '';
-  }
-}
-
-async function fetchStoringStatCard() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getStoringToday');
-    const data = await res.json();
-    if (!data.ok) return;
-    const s = data.summary;
-    const el = document.querySelector('#storingStatCard .stat-value');
-    if (el) { el.textContent = s.total; el.style.color = '#db2777'; }
-    // Mini boxes
-    const sr=document.getElementById('strStatRelease'); if(sr) sr.textContent=(s.sumRelease||0).toLocaleString('id-ID');
-    const sp=document.getElementById('strStatPicked');  if(sp) sp.textContent=(s.sumPicked||0).toLocaleString('id-ID');
-    const ss=document.getElementById('strStatStaged');  if(ss) ss.textContent=(s.sumStaged||0).toLocaleString('id-ID');
-    const si=document.getElementById('strStatSisa');    if(si) si.textContent=(s.sumSisa||0).toLocaleString('id-ID');
-    // Pie chart
-    const strPct = s.sumRelease>0 ? Math.round(s.sumPicked/s.sumRelease*100) : 0;
-    _makeSVGStatChart('storingStatChart', strPct, '#ec4899');
-    const strBar  = document.querySelector('#storingStatCard .stat-bar-fill');
-    const strFoot = document.querySelector('#storingStatCard .stat-foot-val');
-    if(strBar) setTimeout(()=>strBar.style.width=Math.min(strPct,100)+'%',300);
-    if(strFoot) strFoot.textContent=strPct+'%';
-    window._storingData = data;
-    renderDashStoringChart();
-    if (window._lastInTotal !== undefined) updateInventoryStatusDonut(window._lastInTotal, window._lastInSelesai, window._lastOutTotal, window._lastOutSelesai);
-  } catch(e) { console.warn('Storing stat card error:', e); }
-}
-
-async function fetchStoringToday() {
-  if (window._storingData && window._storingData.ok) {
-    renderStoringPanel(window._storingData);
-    return;
-  }
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getStoringToday');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-    window._storingData = data;
-    renderStoringPanel(data);
-  } catch(e) {
-    console.warn('Storing error:', e);
-    const tb = document.getElementById('storingTableBody');
-    if (tb) tb.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
-  }
-}
-
-function renderStoringPanel(data) {
-  storingLoaded = true;
-  const s = data.summary;
-  const isDark = document.body.classList.contains('dark');
-
-  document.getElementById('storingSubtitle').textContent = `Total: ${s.total} LC/PO | Release: ${s.sumRelease.toLocaleString()} Case`;
-  document.getElementById('storingFooter').textContent = s.total + ' LC/PO terdaftar';
-
-  const makeSVG = (elId, pct, color) => {
-    const el = document.getElementById(elId); if(!el) return;
-    const r=26,cx=32,cy=32,circ=2*Math.PI*r;
-    const dash=Math.min(pct,100)/100*circ;
-    const bg=isDark?'#334155':'#e2e8f0';
-    el.innerHTML=`<svg width="64" height="64" viewBox="0 0 64 64">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
-        stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
-        stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-    </svg>`;
-  };
-
-  const p1 = s.pctPickingOverall;
-  const p2 = s.pctStagedOverall;
-  const p3 = s.avgKapasitas;
-
-  renderStoringTable(data.data);
-  renderStoringBatchCards(data.data);
-
-  // Beam kilat pink otomatis loop seperti Inbound panel
-  setTimeout(()=>{
-    const speeds = ['3s','3.5s','4s'];
-    document.querySelectorAll('#storingDetailPanel [style*="overflow:hidden;box-shadow"]').forEach((card,i)=>{
-      if(card.querySelector('.store-beam')) return;
-      const b=document.createElement('div');
-      b.className='store-beam';
-      b.style.cssText=`position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.18),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam ${speeds[i]||'3.5s'} ease-in-out infinite;`;
-      card.style.position='relative';
-      card.style.overflow='hidden';
-      card.appendChild(b);
-    });
-  },300);
-}
-
-function renderStoringBatchCards(rows) {
-  const grid = document.getElementById('storingBatchGrid');
-  if (!grid || !rows || !rows.length) return;
-
-  // Group by batch
-  const batches = {};
-  rows.forEach(r => {
-    const b = String(r.batch||'').trim() || '?';
-    if (!batches[b]) batches[b] = { noLc:new Set(), releaseCase:0, pickedCase:0, stagedCase:0, sisaCase:0 };
-    batches[b].noLc.add(r.noLc);
-    batches[b].releaseCase += parseFloat(r.releaseCase)||0;
-    batches[b].pickedCase  += parseFloat(r.pickedCase)||0;
-    batches[b].stagedCase  += parseFloat(r.stagedCase)||0;
-    batches[b].sisaCase    += parseFloat(r.sisaCase)||0;
-  });
-
-  const batchList = Object.entries(batches).sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}));
-  const count = batchList.length;
-
-  // Adjust grid columns dynamically
-  grid.style.gridTemplateColumns = `repeat(${Math.min(count,4)},1fr)`;
-
-  const colors = [
-    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
-    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
-    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
-    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
-  ];
-
-  grid.innerHTML = batchList.map(([batchNum, d], i) => {
-    const col = colors[i % colors.length];
-    const pickPct = d.releaseCase>0 ? Math.round(d.pickedCase/d.releaseCase*100) : 0;
-    const stagePct = d.releaseCase>0 ? Math.round(d.stagedCase/d.releaseCase*100) : 0;
-    const lcCount = d.noLc.size;
-    const num = n => Math.round(n).toLocaleString('id-ID');
-
-    return `<div style="background:linear-gradient(160deg,#fff 55%,${col.tint} 100%);border:1px solid #e2e8f0;box-shadow:0 1px 6px rgba(0,0,0,0.06);position:relative;overflow:hidden;">
-      <div style="height:3px;background:${col.stripe};position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.3),transparent);animation:cardBeam ${3+i*0.4}s ease-in-out infinite;"></div></div>
-      <div style="padding:12px 14px 0;">
+      <!-- INBOUND TODAY -->
+      <div id="inboundStatCard" onclick="toggleInboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#dbeafe 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div class="kpi-beam-2" style="position:absolute;top:0;left:-100%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:28px;height:28px;background:${col.accent};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;">${batchNum}</div>
-            <div>
-              <div style="font-size:12px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
-              <div style="font-size:9px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
-            </div>
+          <div>
+            <div style="width:32px;height:32px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">📦</div>
+            <div class="stat-value" style="font-size:36px;font-weight:900;color:#2563eb;letter-spacing:-2px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Inbound Today</div>
+            <div class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;">Armada masuk DC</div>
           </div>
-          <div style="font-size:11px;font-weight:800;color:${col.accent};">${pickPct}%</div>
+          <div id="inboundStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
         </div>
-        <!-- Mini KPI boxes -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
-          <div style="background:#fff;border:1px solid rgba(245,158,11,0.3);padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#d97706;text-transform:uppercase;">RELEASE</div>
-            <div style="font-size:14px;font-weight:900;color:#d97706;line-height:1.2;">${num(d.releaseCase)}</div>
-          </div>
-          <div style="background:#fff;border:1px solid rgba(16,185,129,0.3);padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#059669;text-transform:uppercase;">PICKED</div>
-            <div style="font-size:14px;font-weight:900;color:#059669;line-height:1.2;">${num(d.pickedCase)}</div>
-          </div>
-          <div style="background:#fff;border:1px solid rgba(236,72,153,0.3);padding:4px 7px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4s ease-in-out infinite;pointer-events:none;"></div>
-            <div style="font-size:7.5px;font-weight:700;color:#db2777;text-transform:uppercase;">STAGED</div>
-            <div style="font-size:14px;font-weight:900;color:#db2777;line-height:1.2;">${num(d.stagedCase)}</div>
-          </div>
-          <div style="background:#fff;border:1px solid rgba(239,68,68,0.3);padding:4px 7px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4.5s ease-in-out infinite;pointer-events:none;"></div>
-            <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">SISA</div>
-            <div style="font-size:14px;font-weight:900;color:#dc2626;line-height:1.2;">${num(d.sisaCase)}</div>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">✅ FINISH</div><div id="inbStatFinish" style="font-size:18px;font-weight:900;color:#16a34a;line-height:1.1;">—</div></div><div style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">⏳ PROSES</div><div id="inbStatProses" style="font-size:18px;font-weight:900;color:#2563eb;line-height:1.1;">—</div></div><div style="background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#d97706;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">🕐 ANTRI</div><div id="inbStatAntri" style="font-size:18px;font-weight:900;color:#d97706;line-height:1.1;">—</div></div><div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">🔴 BELUM</div><div id="inbStatBelum" style="font-size:18px;font-weight:900;color:#dc2626;line-height:1.1;">—</div></div>
         </div>
-        <!-- Pick Rate bar -->
-        <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px;">
-          <span>Pick Rate</span><span style="color:${col.accent};">${pickPct}%</span>
+        <div style="height:3px;background:rgba(0,0,0,0.06);"><div class="stat-bar-fill" style="height:100%;background:#3b82f6;width:0%;transition:width 1s;"></div></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
+          <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">INBOUND</span>
+          <span class="stat-foot-val" style="font-weight:900;color:#2563eb;">—</span>
         </div>
-        <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:6px;"><div style="height:100%;background:${col.accent};width:${pickPct}%;transition:width 1s;"></div></div>
-        <!-- Stage Rate bar -->
-        <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px;">
-          <span>Stage Rate</span><span style="color:#ec4899;">${stagePct}%</span>
-        </div>
-        <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:12px;"><div style="height:100%;background:#ec4899;width:${stagePct}%;transition:width 1s;"></div></div>
       </div>
-    </div>`;
-  }).join('');
-}
 
-function renderStoringTable(rows) {
-  const tbody = document.getElementById('storingTableBody');
-  if (!tbody) return;
-  if (!rows || !rows.length) {
-    tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';
-    return;
-  }
-
-  const batchStyle = (batch) => {
-    const b = parseInt(batch) || 0;
-    switch(b) {
-      case 2: return { bg:'rgba(234,179,8,0.22)',  border:'4px solid rgba(234,179,8,1)' };
-      case 3: return { bg:'rgba(34,197,94,0.20)',  border:'4px solid rgba(34,197,94,1)' };
-      case 4: return { bg:'rgba(59,130,246,0.20)', border:'4px solid rgba(59,130,246,1)' };
-      default:return { bg:'',                       border:'' };
-    }
-  };
-
-  const isDarkS=document.body.classList.contains('dark');
-  const txS=isDarkS?'#f0f4ff':'#0a0f1e';
-  const ct = `text-align:center;font-size:11px;font-weight:600;color:${txS};`;
-  const cn = `text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:${txS};`;
-  const num = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toLocaleString() : '—';
-  const dec = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toFixed(2) : '—';
-
-  const pBar = (pct) => {
-    const n = parseInt(pct) || 0;
-    const col = n>=80?'#15803d':n>=50?'#b45309':'#b91c1c';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-      <div style="width:52px;height:6px;background:rgba(0,0,0,0.12);border-radius:3px;">
-        <div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div>
-      </div>
-      <span style="font-size:10px;font-weight:900;color:${col}">${pct||'0%'}</span>
-    </div>`;
-  };
-
-  tbody.innerHTML = rows.map((r,i) => {
-    const bs = batchStyle(r.batch);
-    const trStyle = `background:${bs.bg};${bs.border?'border-left:'+bs.border:''}`;
-    return `<tr style="${trStyle}">
-    <td style="${ct}">${i+1}</td>
-    <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:${txS}">${escHtml(r.noLc)}</td>
-    <td style="${ct}font-weight:900;font-size:12px">${escHtml(r.batch)}</td>
-    <td style="font-size:11px;font-weight:600;color:${txS};max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
-    <td style="${ct}">${escHtml(r.tipeArmada)}</td>
-    <td style="${cn}">${num(r.kapasitas)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.10)">${num(r.releaseCase)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.10)">${dec(r.releaseCbm)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.10)">${dec(r.astorCbm)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.10)">${num(r.pickedCase)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.10)">${dec(r.pickedCbm)}</td>
-    <td style="${cn}background:rgba(239,68,68,0.10);color:${r.sisaCase>0?'#b91c1c':'#15803d'};font-weight:900">${num(r.sisaCase)}</td>
-    <td style="background:rgba(16,185,129,0.10);${ct}">${pBar(r.pctPicking)}</td>
-    <td style="${cn}background:rgba(16,185,129,0.10)">${dec(r.pencPickCbm)}</td>
-    <td style="${cn}background:rgba(245,158,11,0.10);color:${r.sisaPick99>0?'#b45309':'#15803d'};font-weight:900">${num(r.sisaPick99)}</td>
-    <td style="${cn}background:rgba(99,102,241,0.10)">${num(r.stagedCase)}</td>
-    <td style="${cn}background:rgba(99,102,241,0.10)">${dec(r.stagedCbm)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.pencDsCase)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.10)">${dec(r.pencDsCbm)}</td>
-    <td style="background:rgba(234,179,8,0.10);${ct}">${pBar(r.pctKapasitas)}</td>
-  </tr>`;
-  }).join('');
-}
-
-// ══════════════════════════════════════
-//  INBOUND DETAIL PANEL
-// ══════════════════════════════════════
-let inboundPanelOpen = false;
-let inlineLoaded     = false;
-
-function toggleInboundPanel() {
-  inboundPanelOpen = !inboundPanelOpen;
-  const panel       = document.getElementById('inboundDetailPanel');
-  const midGrid     = document.querySelector('.mid-grid');
-  const progressRow = document.querySelector('.progress-row');
-  const bottomGrid  = document.querySelector('.bottom-grid');
-  if (!panel) return;
-
-  if (inboundPanelOpen) {
-    if (storingPanelOpen)   { storingPanelOpen   = false; const sp=document.getElementById('storingDetailPanel');   if(sp) sp.style.display='none'; }
-    if (outboundPanelOpen)  { outboundPanelOpen  = false; const op=document.getElementById('outboundDetailPanel');  if(op) op.style.display='none'; }
-    if (inventoryPanelOpen) { inventoryPanelOpen = false; const ip=document.getElementById('inventoryDetailPanel'); if(ip) ip.style.display='none'; }
-    if (plannerPanelOpen)   { plannerPanelOpen   = false; const pp=document.getElementById('plannerDetailPanel');   if(pp) pp.style.display='none'; }
-    panel.style.display = 'block';
-    if (midGrid)     midGrid.style.display     = 'none';
-    if (progressRow) progressRow.style.display = 'none';
-    if (bottomGrid)  bottomGrid.style.display  = 'none';
-    renderPanelInboundTable(window._inboundRows || []);
-    fetchInlineProses();
-    setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
-  } else {
-    panel.style.display = 'none';
-    if (midGrid)     midGrid.style.display     = '';
-    if (progressRow) progressRow.style.display = '';
-    if (bottomGrid)  bottomGrid.style.display  = '';
-  }
-}
-
-function switchPanelTab(tab) {
-  const tblIn=document.getElementById('panelInboundTable'), tblInl=document.getElementById('panelInlineTable');
-  const btnIn=document.getElementById('panelTabInbound'),   btnInl=document.getElementById('panelTabInline');
-  if (tab==='inbound') {
-    tblIn.style.display=''; tblInl.style.display='none';
-    btnIn.style.color='var(--accent)'; btnIn.style.borderBottom='2px solid var(--accent)';
-    btnInl.style.color='var(--text-3)'; btnInl.style.borderBottom='2px solid transparent';
-  } else {
-    tblIn.style.display='none'; tblInl.style.display='';
-    btnIn.style.color='var(--text-3)'; btnIn.style.borderBottom='2px solid transparent';
-    btnInl.style.color='var(--accent)'; btnInl.style.borderBottom='2px solid var(--accent)';
-    if (!inlineLoaded) fetchInlineProses();
-  }
-}
-
-function renderPanelInboundTable(rows) {
-  const tbody=document.getElementById('panelInboundBody'); if(!tbody) return;
-  if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>'; return; }
-  const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
-  const wtBg=(s,i)=>{const wt=getWt(s);if(wt===1)return i%2===0?'#f0f9ff':'#e0f2fe';if(wt===2)return i%2===0?'#f5f3ff':'#ede9fe';if(wt===3)return i%2===0?'#fdf4ff':'#fae8ff';return i%2===0?'#f8fafc':'#fff';};
-  const wtLeft=(s)=>{const wt=getWt(s);if(wt===1)return 'border-left:3px solid #2563eb';if(wt===2)return 'border-left:3px solid #8b5cf6';if(wt===3)return 'border-left:3px solid #ec4899';return 'border-left:3px solid #e2e8f0';};
-  const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
-  tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing,i)};${wtLeft(r.stuffing)};border-bottom:1px solid rgba(200,215,240,0.3);">
-    <td style="text-align:center;font-size:11px;color:#94a3b8;padding:9px 8px;">${i+1}</td>
-    <td style="font-weight:800;font-size:12px;color:#1e293b;padding:9px 10px;">${escHtml(r.noLc)}</td>
-    <td style="font-size:11.5px;color:#475569;padding:9px 10px;">${escHtml(r.noPolisi)}</td>
-    <td style="font-size:11.5px;color:#475569;padding:9px 10px;">${escHtml(r.ekspedisi)}</td>
-    <td style="font-size:11px;font-weight:600;color:#64748b;padding:9px 10px;text-align:center;">${escHtml(r.type)}</td>
-    <td style="font-size:11px;font-weight:700;color:#64748b;padding:9px 10px;text-align:center;">${escHtml(r.bu)}</td>
-    <td style="font-size:12px;font-weight:800;color:${r.checkIn?'#16a34a':'#94a3b8'};padding:9px 10px;text-align:center;">${r.checkIn||'—'}</td>
-    <td style="font-size:11.5px;font-weight:700;color:#1e293b;padding:9px 10px;text-align:center;">${r.stuffing||'—'}</td>
-    <td style="padding:7px 10px;text-align:center;">${
-      r.updateUnload
-        ? String(r.updateUnload).toUpperCase()==='FINISH'
-          ? '<span class="badge badge-green">✅ FINISH</span>'
-          : String(r.updateUnload).toUpperCase()==='PROSES'
-          ? '<span class="badge badge-blue">⏳ PROSES</span>'
-          : String(r.updateUnload).toUpperCase()==='ANTRI'
-          ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;background:rgba(234,179,8,0.15);color:#92400e;border:1px solid rgba(234,179,8,0.3)">🕐 ANTRI</span>'
-          : `<span style="font-size:11px;font-weight:700;padding:3px 10px;background:#f1f5f9;color:#475569;">${escHtml(r.updateUnload)}</span>`
-        : '<span style="color:#94a3b8;font-size:12px">—</span>'
-    }</td>
-    <td style="padding:7px 10px;text-align:center;">${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:#94a3b8;font-size:12px">—</span>'}</td>
-  </tr>`).join('');
-}
-
-async function fetchInlineProses() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getInlineProses');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error||'Gagal');
-    inlineLoaded = true;
-    const tgl=document.getElementById('inlineTanggal'); if(tgl) tgl.textContent='📅 Tanggal Unload: '+data.tanggalUnload;
-    const footer=document.getElementById('panelFooter'); if(footer) footer.textContent=data.total+' LC/PO terdaftar hari ini';
-    const s=data.summary, isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
-
-    // SVG donut - lebih reliable dari Chart.js canvas
-    const makeSVGDonut=(elId,pct,color)=>{
-      const el=document.getElementById(elId); if(!el) return;
-      const r=26,cx=32,cy=32,circ=2*Math.PI*r;
-      const dash=Math.min(pct,100)/100*circ;
-      const bg=isDark?'#334155':'#e2e8f0';
-      el.innerHTML=`<svg width="64" height="64" viewBox="0 0 64 64">
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
-          stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
-          stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-      </svg>`;
-    };
-
-    const inboundRows=window._inboundRows||[];
-    const putawayRows=data.data||[]; // data dari GAS inline proses - punya aktQty, putInQty dll
-    const finishArmada=inboundRows.filter(r=>r&&r.updateUnload&&['DONE','FINISH'].includes(String(r.updateUnload).toUpperCase())).length;
-    const prosesArmada=inboundRows.filter(r=>r&&r.updateUnload&&String(r.updateUnload).toUpperCase()==='PROSES').length;
-    const antriArmada =inboundRows.filter(r=>r&&r.updateUnload&&String(r.updateUnload).toUpperCase()==='ANTRI').length;
-    const belumArmada =inboundRows.filter(r=>r&&(!r.updateUnload||String(r.updateUnload).trim()==='')).length;
-    const totalArmada =inboundRows.length||0;
-    const pctUnload=totalArmada>0?Math.round((finishArmada/totalArmada)*100):(s&&s.pctUnloading||0);
-    document.getElementById('pctUnloading').textContent='';
-    document.getElementById('infoUnloading') && (document.getElementById('infoUnloading').textContent='');
-    // Mini boxes
-    const mf=document.getElementById('inbMiniFinish'); if(mf) mf.textContent=finishArmada;
-    const mp=document.getElementById('inbMiniProses'); if(mp) mp.textContent=prosesArmada;
-    const ma=document.getElementById('inbMiniAntri');  if(ma) ma.textContent=antriArmada;
-    const mb=document.getElementById('inbMiniBelum');  if(mb) mb.textContent=belumArmada;
-    // Pie chart dengan % di dalam
-    const unEl=document.getElementById('chartUnloading');
-    if(unEl){
-      const r=26,cx=32,cy=32,circ=2*Math.PI*r;
-      const dash=Math.min(pctUnload,100)/100*circ;
-      unEl.innerHTML=`<svg width="72" height="72" viewBox="0 0 64 64">
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="7"/>
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#16a34a" stroke-width="7"
-          stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
-          stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-        <text x="${cx}" y="${cy-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="#16a34a">${pctUnload}%</text>
-        <text x="${cx}" y="${cy+9}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Selesai</text>
-      </svg>`;
-    }
-    const fu=document.getElementById('pctUnloadingFoot'); if(fu) fu.textContent=pctUnload+'%';
-    const bu=document.getElementById('barUnloading'); if(bu) setTimeout(()=>bu.style.width=pctUnload+'%',300);
-
-    // % Aktual Receive
-    const pctAkt=(s&&s.avgPctAkt)||0;
-    document.getElementById('pctAktualRcv') && (document.getElementById('pctAktualRcv').textContent='');
-    // mini boxes aktual
-    const sumAktQty=putawayRows.reduce((a,r)=>a+(parseFloat(r.aktQty)||0),0);
-    const sumAktLpn=putawayRows.reduce((a,r)=>a+(parseFloat(r.aktLpn)||0),0);
-    const aqb=document.getElementById('aktQtyBox'); if(aqb) aqb.textContent=sumAktQty.toLocaleString('id-ID');
-    const alb=document.getElementById('aktLpnBox'); if(alb) alb.textContent=sumAktLpn.toLocaleString('id-ID');
-    // chart aktual
-    const aktEl=document.getElementById('chartAktualRcv');
-    if(aktEl){const r2=26,cx2=32,cy2=32,c2=2*Math.PI*r2,d2=Math.min(pctAkt,100)/100*c2;aktEl.innerHTML=`<svg width="72" height="72" viewBox="0 0 64 64"><circle cx="${cx2}" cy="${cy2}" r="${r2}" fill="none" stroke="#e2e8f0" stroke-width="7"/><circle cx="${cx2}" cy="${cy2}" r="${r2}" fill="none" stroke="#059669" stroke-width="7" stroke-dasharray="${d2.toFixed(2)} ${c2.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${cx2} ${cy2})"/><text x="${cx2}" y="${cy2-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="#059669">${pctAkt}%</text><text x="${cx2}" y="${cy2+9}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Selesai</text></svg>`;}
-    const ba=document.getElementById('barAktualRcv'); if(ba) setTimeout(()=>ba.style.width=pctAkt+'%',300);
-    const fa=document.getElementById('pctAktualRcvFoot'); if(fa) fa.textContent=pctAkt+'%';
-
-    // % Putaway Inbound = LPN Putaway IN / LPN Aktual Receive
-    const sumLpnAkt = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.aktLpn)||0),0);
-    const sumLpnPutIn = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.putInLpn)||0),0);
-    const sumQtyPutIn = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.putInQty)||0),0);
-    const sumSisaPutIn = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.sisaInLpn)||0),0);
-    const pctPutIn = sumLpnAkt>0 ? Math.round(sumLpnPutIn/sumLpnAkt*100) : (s&&s.avgPctPutIn2)||0;
-    document.getElementById('pctPutawayIn') && (document.getElementById('pctPutawayIn').textContent='');
-    // mini boxes putIn
-    const piqb=document.getElementById('putInQtyBox'); if(piqb) piqb.textContent=sumQtyPutIn.toLocaleString('id-ID');
-    const pilb=document.getElementById('putInLpnBox'); if(pilb) pilb.textContent=sumLpnPutIn.toLocaleString('id-ID');
-    const pisb=document.getElementById('putInSisaBox'); if(pisb) pisb.textContent=sumSisaPutIn.toLocaleString('id-ID');
-    // chart putIn
-    const piEl=document.getElementById('chartPutawayIn');
-    if(piEl){const r3=26,cx3=32,cy3=32,c3=2*Math.PI*r3,d3=Math.min(pctPutIn,100)/100*c3;piEl.innerHTML=`<svg width="72" height="72" viewBox="0 0 64 64"><circle cx="${cx3}" cy="${cy3}" r="${r3}" fill="none" stroke="#e2e8f0" stroke-width="7"/><circle cx="${cx3}" cy="${cy3}" r="${r3}" fill="none" stroke="#7c3aed" stroke-width="7" stroke-dasharray="${d3.toFixed(2)} ${c3.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${cx3} ${cy3})"/><text x="${cx3}" y="${cy3-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="#7c3aed">${pctPutIn}%</text><text x="${cx3}" y="${cy3+9}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Selesai</text></svg>`;}
-    const bpi=document.getElementById('barPutawayIn'); if(bpi) setTimeout(()=>bpi.style.width=Math.min(pctPutIn,100)+'%',300);
-    const fpi=document.getElementById('pctPutawayInFoot'); if(fpi) fpi.textContent=pctPutIn+'%';
-
-    // % Putaway Storing = LPN Putaway STR / LPN Putaway IN
-    const sumLpnPutStr = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.putStrLpn)||0),0);
-    const sumQtyPutStr = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.putStrQty)||0),0);
-    const sumSisaPutStr = putawayRows.reduce((acc,r)=>acc+(parseFloat(r.sisaStrLpn)||0),0);
-    const pctPutStr = sumLpnPutIn>0 ? Math.round(sumLpnPutStr/sumLpnPutIn*100) : (s&&s.avgPctPutStr)||0;
-    document.getElementById('pctPutawayStr') && (document.getElementById('pctPutawayStr').textContent='');
-    // mini boxes putStr
-    const psqb=document.getElementById('putStrQtyBox'); if(psqb) psqb.textContent=sumQtyPutStr.toLocaleString('id-ID');
-    const pslb=document.getElementById('putStrLpnBox'); if(pslb) pslb.textContent=sumLpnPutStr.toLocaleString('id-ID');
-    const pssb=document.getElementById('putStrSisaBox'); if(pssb) pssb.textContent=sumSisaPutStr.toLocaleString('id-ID');
-    // chart putStr
-    const psEl=document.getElementById('chartPutawayStr');
-    if(psEl){const r4=26,cx4=32,cy4=32,c4=2*Math.PI*r4,d4=Math.min(pctPutStr,100)/100*c4;psEl.innerHTML=`<svg width="72" height="72" viewBox="0 0 64 64"><circle cx="${cx4}" cy="${cy4}" r="${r4}" fill="none" stroke="#e2e8f0" stroke-width="7"/><circle cx="${cx4}" cy="${cy4}" r="${r4}" fill="none" stroke="#d97706" stroke-width="7" stroke-dasharray="${d4.toFixed(2)} ${c4.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${cx4} ${cy4})"/><text x="${cx4}" y="${cy4-4}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="900" fill="#d97706">${pctPutStr}%</text><text x="${cx4}" y="${cy4+9}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="600" fill="#94a3b8">Selesai</text></svg>`;}
-    const bps=document.getElementById('barPutawayStr'); if(bps) setTimeout(()=>bps.style.width=Math.min(pctPutStr,100)+'%',300);
-    const fps=document.getElementById('pctPutawayStrFoot'); if(fps) fps.textContent=pctPutStr+'%';
-
-    renderPanelInlineTable(data.data);
-  } catch(e) {
-    console.warn('Inline proses error:',e);
-    const tbody=document.getElementById('panelInlineBody');
-    if(tbody) tbody.innerHTML=`<tr><td colspan="36" style="text-align:center;padding:20px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
-  }
-}
-
-function renderPanelInlineTable(rows) {
-  const tbody=document.getElementById('panelInlineBody'); if(!tbody) return;
-  if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="36" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>';return;}
-  const isDarkI=document.body.classList.contains('dark');
-  const txI=isDarkI?'#f0f4ff':'#0a0f1e';
-  const c=`text-align:center;font-size:11px;font-weight:600;color:${txI};`;
-  const cn=`text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:${txI};`;
-  const pBar=(pct)=>{const n=parseInt(pct)||0;const col=n>=100?'#15803d':n>=90?'#1d4ed8':n>=70?'#b45309':'#b91c1c';return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:52px;height:5px;background:rgba(0,0,0,0.12);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:900;color:${col}">${pct||'—'}</span></div>`;};
-  const statusBadge=(s)=>{const col=s==='OUT'?'#15803d':'#b45309',bg=s==='OUT'?'rgba(21,128,61,0.15)':'rgba(180,83,9,0.15)';return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${col};font-weight:900;font-size:10px;border:1px solid ${col}66">${escHtml(s)||'—'}</span>`;};
-  const num=(v)=>(v!==undefined&&v!==null&&v!=='')&&!isNaN(Number(v))?Number(v).toLocaleString():'—';
-  const sisa=(v)=>{const n=Number(v)||0;return `<span style="font-weight:900;color:${n>0?'#b45309':'#15803d'}">${n}</span>`;};
-  tbody.innerHTML=rows.map((r,i)=>`<tr>
-    <td style="${c}">${i+1}</td>
-    <td style="font-weight:900;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:${txI}">${escHtml(r.noLc)}</td>
-    <td style="${c}">${escHtml(r.type)}</td><td style="${cn}">${escHtml(r.nopol)}</td>
-    <td style="${c}">${escHtml(r.batch)}</td>
-    <td style="${cn}font-size:10px">${r.tglIn||'—'}</td><td style="${cn}font-size:10px">${r.tglOpen||'—'}</td><td style="${cn}font-size:10px">${r.tglClose||'—'}</td>
-    <td style="${c}">${statusBadge(r.status)}</td>
-    <td style="${cn}background:rgba(8,145,178,0.10)">${num(r.planQty)}</td><td style="${cn}background:rgba(8,145,178,0.10)">${r.planCbm||'—'}</td><td style="${cn}background:rgba(8,145,178,0.10)">${num(r.planEstLpn)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.10)">${num(r.aktQty)}</td><td style="${cn}background:rgba(22,163,74,0.10)">${num(r.aktLpn)}</td>
-    <td style="background:rgba(22,163,74,0.10);${c}" colspan="2">${pBar(r.pctAkt)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.10)">${num(r.ftQty)}</td><td style="${cn}background:rgba(139,92,246,0.10)">${num(r.ftLpn)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.10)">${num(r.putInQty)}</td><td style="${cn}background:rgba(37,99,235,0.10)">${num(r.putInLpn)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.10)">${sisa(r.sisaInLpn)}</td>
-    <td style="background:rgba(37,99,235,0.10);${c}" colspan="2">${pBar(r.putInPct)}</td>
-    <td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1InQty)}</td><td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1InLpn)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2InQty)}</td><td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2InLpn)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.10)">${num(r.putStrQty)}</td><td style="${cn}background:rgba(22,163,74,0.10)">${num(r.putStrLpn)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.10)">${sisa(r.sisaStrLpn)}</td>
-    <td style="background:rgba(22,163,74,0.10);${c}" colspan="2">${pBar(r.putStrPct)}</td>
-    <td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1StrQty)}</td><td style="${cn}background:rgba(234,179,8,0.10)">${num(r.sh1StrLpn)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2StrQty)}</td><td style="${cn}background:rgba(59,130,246,0.10)">${num(r.sh2StrLpn)}</td>
-  </tr>`).join('');
-}
-
-// ══════════════════════════════════════
-//  TAB SWITCH (bottom table)
-// ══════════════════════════════════════
-let currentDashTab = 'inbound';
-let outboundDetailLoaded = false;
-
-function switchDashTab(tab) {
-  currentDashTab = tab;
-  const inWrap  = document.getElementById('tableInboundWrap');
-  const stWrap  = document.getElementById('tableStoringWrap');
-  const outWrap = document.getElementById('tableOutboundWrap');
-  const btnIn   = document.getElementById('tabBtnInbound');
-  const btnSt   = document.getElementById('tabBtnStoring');
-  const btnOut  = document.getElementById('tabBtnOutbound');
-  const cnt     = document.getElementById('dashTableCount');
-
-  [inWrap,stWrap,outWrap].forEach(w=>{ if(w) w.style.display='none'; });
-  [btnIn,btnSt,btnOut].forEach(b=>{ if(b){ b.style.color='var(--text-3)'; b.style.borderBottom='2px solid transparent'; }});
-
-  if (tab === 'inbound') {
-    if(inWrap)  inWrap.style.display  = '';
-    if(btnIn) { btnIn.style.color='var(--accent)'; btnIn.style.borderBottom='2px solid var(--accent)'; }
-    if(cnt) cnt.textContent = (window._inboundRows||[]).length + ' data inbound hari ini';
-  } else if (tab === 'storing') {
-    if(stWrap)  stWrap.style.display  = '';
-    if(btnSt) { btnSt.style.color='#8b5cf6'; btnSt.style.borderBottom='2px solid #8b5cf6'; }
-    if (window._storingData && window._storingData.data) {
-      renderDashStoringBody(window._storingData.data);
-      if(cnt) cnt.textContent = window._storingData.total + ' data storing hari ini';
-    } else {
-      fetchStoringStatCard().then(()=>{
-        if(window._storingData) { renderDashStoringBody(window._storingData.data); if(cnt) cnt.textContent=window._storingData.total+' data storing hari ini'; }
-      });
-    }
-  } else {
-    if(outWrap) outWrap.style.display = '';
-    if(btnOut){ btnOut.style.color='var(--accent)'; btnOut.style.borderBottom='2px solid var(--accent)'; }
-    if(!outboundDetailLoaded) fetchOutboundDetail();
-  }
-}
-
-function renderDashStoringBody(rows) {
-  const tbody = document.getElementById('dashStoringBody'); if(!tbody) return;
-  if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data storing hari ini</td></tr>';return;}
-  const c  = 'text-align:center;font-size:11px;color:var(--text-2);';
-  const cn = 'text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;color:var(--text-2);';
-  const num = (v) => (!isNaN(Number(v))&&v!=='') ? Number(v).toLocaleString() : '—';
-  const dec = (v) => (!isNaN(Number(v))&&v!=='') ? Number(v).toFixed(2) : '—';
-  const pBar = (pct) => {
-    const n=parseInt(pct)||0, col=n>=80?'#16a34a':n>=50?'#f59e0b':'#ef4444';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:4px;background:rgba(148,163,184,0.2);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:800;color:${col}">${pct||'0%'}</span></div>`;
-  };
-  tbody.innerHTML = rows.map((r,i)=>`<tr>
-    <td style="${c}">${i+1}</td>
-    <td style="font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text)">${escHtml(r.noLc)}</td>
-    <td style="${c}">${escHtml(r.batch)}</td>
-    <td style="font-size:11px;color:var(--text-2);max-width:130px">${escHtml(r.tujuan)}</td>
-    <td style="${c}">${escHtml(r.tipeArmada)}</td>
-    <td style="${cn}">${num(r.kapasitas)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.05)">${num(r.releaseCase)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.05)">${dec(r.releaseCbm)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.05)">${dec(r.astorCbm)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.05)">${num(r.pickedCase)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.05)">${dec(r.pickedCbm)}</td>
-    <td style="${cn}background:rgba(239,68,68,0.05);color:${r.sisaCase>0?'#ef4444':'#16a34a'};font-weight:800">${num(r.sisaCase)}</td>
-    <td style="background:rgba(16,185,129,0.05);${c}">${pBar(r.pctPicking)}</td>
-    <td style="${cn}background:rgba(16,185,129,0.05)">${dec(r.pencPickCbm)}</td>
-    <td style="${cn}background:rgba(245,158,11,0.05);color:${r.sisaPick99>0?'#f59e0b':'#16a34a'};font-weight:800">${num(r.sisaPick99)}</td>
-    <td style="${cn}background:rgba(99,102,241,0.05)">${num(r.stagedCase)}</td>
-    <td style="${cn}background:rgba(99,102,241,0.05)">${dec(r.stagedCbm)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.05)">${num(r.pencDsCase)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.05)">${dec(r.pencDsCbm)}</td>
-    <td style="background:rgba(234,179,8,0.05);${c}">${pBar(r.pctKapasitas)}</td>
-  </tr>`).join('');
-}
-
-async function fetchOutboundDetail() {
-  const tbody=document.getElementById('dashOutboundBody'); if(!tbody) return;
-  tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data outbound...</td></tr>';
-  try {
-    const res=await fetch(GAS_DASHBOARD_URL+'?action=getOutboundDetail');
-    const data=await res.json();
-    if(!data.ok) throw new Error(data.error||'Gagal');
-    outboundDetailLoaded=true; renderDashOutboundTable(data.data);
-    const cnt=document.getElementById('dashTableCount'); if(cnt) cnt.textContent=data.total+' data outbound hari ini';
-  } catch(e) { tbody.innerHTML=`<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--red)">Gagal memuat: ${e.message}</td></tr>`; }
-}
-
-function renderDashOutboundTable(rows) {
-  const tbody=document.getElementById('dashOutboundBody'); if(!tbody) return;
-  if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data outbound hari ini</td></tr>';return;}
-  tbody.innerHTML=rows.map((r,i)=>`<tr>
-    <td class="mono" style="font-size:12px">${i+1}</td>
-    <td style="font-size:12px;font-weight:600">${escHtml(r.penyelesaian)}</td>
-    <td class="mono" style="font-size:11px">${escHtml(r.transno)}</td>
-    <td style="font-size:12px;text-align:center;color:${r.ppc==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.ppc||'—'}</td>
-    <td style="font-size:12px;text-align:center;color:${r.pstg==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.pstg||'—'}</td>
-    <td style="font-size:12px;text-align:center;color:${r.pld==='100%'?'var(--green)':'var(--orange)'};font-weight:700">${r.pld||'—'}</td>
-    <td style="font-size:11px">${escHtml(r.shippingline)}</td>
-    <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
-    <td style="font-size:11px">${escHtml(r.carrierId)}</td>
-    <td style="font-size:12px;font-weight:600">${r.stuffingTime||'—'}</td>
-    <td style="font-size:11px">${escHtml(r.jenisArmada)}</td>
-    <td class="mono" style="font-size:11px">${escHtml(r.nopol)}</td>
-    <td>${r.status.toUpperCase().includes('SELESAI')||r.status.toUpperCase().includes('KELUAR')?`<span class="badge badge-green">✅ ${escHtml(r.status)}</span>`:r.status.toUpperCase().includes('TERLAMBAT')?`<span class="badge badge-red">⚠️ ${escHtml(r.status)}</span>`:`<span class="badge badge-orange">⏳ ${escHtml(r.status)}</span>`}</td>
-  </tr>`).join('');
-}
-
-// ══════════════════════════════════════
-//  STAT CARDS + CHARTS
-// ══════════════════════════════════════
-let dashInboundChart=null, dashOutboundChart=null;
-
-function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
-  const pct=total>0?Math.round((selesai/total)*100):0;
-  const _si=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  _si('dashInboundPct',pct+'%');
-  _si('inboundPctBadge',pct+'% Selesai');
-  _si('piInSelesai',selesai+' truck');
-  _si('piInProses',proses+' truck');
-  _si('piInAntri',antri+' truck');
-  _si('piInBelum',belum+' truck');
-  _si('piInHitMiss',hit+' HIT / '+miss+' MISS');
-  const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
-  if(dashInboundChart) dashInboundChart.destroy();
-  const cvIn=document.getElementById('dashInboundChart'); if(!cvIn) return;
-  dashInboundChart=new Chart(cvIn.getContext('2d'),{
-    type:'doughnut',
-    data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} truck`}}}}
-  });
-}
-
-function renderDashOutboundChart(total,selesai,proses,antri,belum,hit,miss) {
-  proses=proses||0; antri=antri||0; belum=belum||0; hit=hit||0; miss=miss||0;
-  const pct=total>0?Math.round((selesai/total)*100):0;
-  const _so=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  _so('dashOutboundPct',pct+'%');
-  _so('outboundPctBadge',pct+'% Selesai');
-  _so('piOutSelesai',selesai+' armada');
-  _so('piOutProses',proses+' armada');
-  _so('piOutAntri',antri+' armada');
-  _so('piOutBelum',belum+' armada');
-  _so('piOutHitMiss',hit+' HIT / '+miss+' MISS');
-  const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
-  if(dashOutboundChart) dashOutboundChart.destroy();
-  const cvOut=document.getElementById('dashOutboundChart'); if(!cvOut) return;
-  dashOutboundChart=new Chart(cvOut.getContext('2d'),{
-    type:'doughnut',
-    data:{labels:['Selesai','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} armada`}}}}
-  });
-}
-
-function renderDashInboundTable(rows) {
-  window._inboundRows=rows||[];
-  const tbody=document.getElementById('dashInboundBody'), count=document.getElementById('dashTableCount');
-  if(!tbody) return;
-  if(!rows||!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data inbound hari ini</td></tr>';if(count&&currentDashTab==='inbound')count.textContent='0 data inbound hari ini';return;}
-  const getWt=(s)=>{const m=s&&s.match(/WT\s*(\d+)/i);return m?parseInt(m[1]):999;};
-  const wtBg=(s)=>{const wt=getWt(s);if(wt===2)return 'rgba(59,130,246,0.20)';if(wt===3)return 'rgba(139,92,246,0.20)';return '';};
-  const wtBL=(s)=>{const wt=getWt(s);if(wt===2)return 'border-left:4px solid rgba(59,130,246,1)';if(wt===3)return 'border-left:4px solid rgba(139,92,246,1)';return '';};
-  const wtCol=(s)=>{const wt=getWt(s);if(wt===2)return 'var(--text)';if(wt===3)return 'var(--text)';return 'var(--text-2)';};
-  const sorted=[...rows].sort((a,b)=>getWt(a.stuffing)-getWt(b.stuffing));
-  tbody.innerHTML=sorted.map((r,i)=>`<tr style="background:${wtBg(r.stuffing)};${wtBL(r.stuffing)}">
-    <td class="mono" style="font-size:12px">${i+1}</td>
-    <td style="font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace">${escHtml(r.noLc)}</td>
-    <td class="mono" style="font-size:12px">${escHtml(r.noPolisi)}</td>
-    <td style="font-size:12px">${escHtml(r.ekspedisi)}</td>
-    <td style="font-size:12px">${escHtml(r.type)}</td>
-    <td class="mono" style="font-size:12px">${escHtml(r.bu)}</td>
-    <td style="font-size:12px;color:${r.checkIn?'var(--green)':'var(--text-3)'};font-weight:${r.checkIn?'700':'400'}">${r.checkIn||'—'}</td>
-    <td style="font-size:11px;max-width:140px;white-space:normal;font-weight:700;color:${wtCol(r.stuffing)}">${r.stuffing||'—'}</td>
-    <td>${r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('HIT')?'<span class="badge badge-green">🎯 HIT</span>':r.hitMiss&&r.hitMiss.toString().toUpperCase().includes('MISS')?'<span class="badge badge-red">⚠️ MISS</span>':'<span style="color:var(--text-3);font-size:12px">—</span>'}</td>
-  </tr>`).join('');
-  if(count&&currentDashTab==='inbound') count.textContent=rows.length+' data inbound hari ini';
-}
-
-async function fetchDashboardStats() {
-  let inboundTotal=0,inboundSelesai=0,inboundCheckedIn=0,inboundHit=0,inboundMiss=0;
-  let outboundTotal=0,outboundSelesai=0;
-  try {
-    const resIn=await fetch(GAS_DASHBOARD_URL+'?action=getInbound');
-    const dataIn=await resIn.json();
-    if(dataIn.ok){
-      const{total,checkedIn,selesai,proses,antri,belum,hit,miss}=dataIn.summary;
-      inboundTotal=total; inboundSelesai=selesai; inboundCheckedIn=checkedIn; inboundHit=hit; inboundMiss=miss;
-      const el=document.querySelector('#inboundStatCard .stat-value');
-      if(el) el.textContent=total;
-      // Mini boxes
-      const sf=document.getElementById('inbStatFinish'); if(sf) sf.textContent=selesai;
-      const sp=document.getElementById('inbStatProses'); if(sp) sp.textContent=proses;
-      const sa=document.getElementById('inbStatAntri');  if(sa) sa.textContent=antri;
-      const sb2=document.getElementById('inbStatBelum'); if(sb2) sb2.textContent=belum;
-      // Pie chart
-      const inPct = total>0 ? Math.round(selesai/total*100) : 0;
-      _makeSVGStatChart('inboundStatChart', inPct, '#16a34a');
-      const inBar = document.querySelector('#inboundStatCard .stat-bar-fill');
-      const inFoot = document.querySelector('#inboundStatCard .stat-foot-val');
-      if(inBar) setTimeout(()=>inBar.style.width=inPct+'%',300);
-      if(inFoot) inFoot.textContent=inPct+'%';
-      renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss);
-      renderDashInboundTable(dataIn.data);
-    }
-  } catch(e){console.warn('Inbound stats error:',e);}
-  try {
-    const resOut=await fetch(GAS_DASHBOARD_URL+'?action=getOutbound');
-    const dataOut=await resOut.json();
-    if(dataOut.ok){
-      outboundTotal=dataOut.total; outboundSelesai=dataOut.selesai;
-      const el=document.querySelector('#outboundStatCard .stat-value');
-      if(el) el.textContent=dataOut.total;
-      // Mini boxes
-      const os=document.getElementById('outStatSelesai'); if(os) os.textContent=dataOut.selesai||0;
-      const op=document.getElementById('outStatProses');  if(op) op.textContent=dataOut.proses||0;
-      const oa=document.getElementById('outStatAntri');   if(oa) oa.textContent=dataOut.antri||0;
-      const ob=document.getElementById('outStatBelum');   if(ob) ob.textContent=dataOut.belum||0;
-      // Pie chart
-      const outPct = dataOut.total>0 ? Math.round((dataOut.selesai/dataOut.total)*100) : 0;
-      _makeSVGStatChart('outboundStatChart', outPct, '#d97706');
-      const outBar = document.querySelector('#outboundStatCard .stat-bar-fill');
-      const outFoot = document.querySelector('#outboundStatCard .stat-foot-val');
-      if(outBar) setTimeout(()=>outBar.style.width=outPct+'%',300);
-      if(outFoot) outFoot.textContent=outPct+'%';
-      renderDashOutboundChart(dataOut.total,dataOut.selesai,dataOut.proses||0,dataOut.antri||0,dataOut.belum||0,dataOut.hit||0,dataOut.miss||0);
-    }
-  } catch(e){console.warn('Outbound stats error:',e);}
-  updateInventoryStatusDonut(inboundTotal,inboundSelesai,outboundTotal,outboundSelesai);
-  window._lastInTotal=inboundTotal; window._lastInSelesai=inboundSelesai;
-  window._lastOutTotal=outboundTotal; window._lastOutSelesai=outboundSelesai;
-  fetchInventoryValue();
-  fetchStoringStatCard();
-
-  // ✅ INVENTORY CONTROL — fetch akurasi dari sheet INVENTORY J26
-  fetchInventoryAccuracy();
-  // ✅ SLA PLANNER — fetch SLA GRW & SLA CUSTOMER
-  fetchSLAPlanner();
-}
-
-// ══════════════════════════════════════
-//  ✅ INVENTORY CONTROL ACCURACY
-// ══════════════════════════════════════
-
-async function fetchInventoryDetail() {
-  const lorongBody = document.getElementById('invLorongBody');
-  const areaBody   = document.getElementById('invAreaBody');
-  if (lorongBody) lorongBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr>';
-  if (areaBody)   areaBody.innerHTML   = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr>';
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getInventoryDetail');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-    inventoryDetailLoaded = true;
-    renderInventoryPanel(data);
-  } catch(e) {
-    const lb = document.getElementById('invLorongBody');
-    const ab = document.getElementById('invAreaBody');
-    const sb = document.getElementById('invPanelSubtitle');
-    if (lb) lb.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--red)">Gagal memuat: ${e.message}</td></tr>`;
-    if (ab) ab.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--red)">Gagal</td></tr>`;
-    if (sb) sb.textContent = 'Gagal memuat data';
-    console.error('fetchInventoryDetail error:', e);
-  }
-}
-
-function renderInventoryPanel(data) {
-  const s    = data.summary;
-  const rows = data.rows || [];
-
-  const subtitle = document.getElementById('invPanelSubtitle');
-  const footer   = document.getElementById('invPanelFooter');
-
-  const totalLok = Number(s.totalLokasi).toLocaleString('id-ID');
-  const totalCcN = Number(s.totalCc).toLocaleString('id-ID');
-  if (subtitle) subtitle.textContent = `${data.bulan || ''} · Total ${totalLok} Lokasi · ${totalCcN} CC`;
-
-  // Update stat card mini boxes dengan data lengkap
-  const il2=document.getElementById('invStatLokasi'); if(il2) il2.textContent=totalLok;
-  const ic2=document.getElementById('invStatCC');     if(ic2) ic2.textContent=totalCcN;
-  const ih2=document.getElementById('invStatHit');    if(ih2) ih2.textContent=Number(s.totalHit||0).toLocaleString('id-ID');
-  const im2=document.getElementById('invStatMiss');   if(im2) im2.textContent=Number(s.totalMiss||0).toLocaleString('id-ID');
-  const ccPct2 = Math.round(parseFloat(String(s.pctCcTotal||'0').replace('%',''))||0);
-  _makeSVGStatChart('invStatChart', ccPct2, '#10b981');
-  if (footer)   footer.textContent   = `${rows.filter(r=>!r.isAreaRow).length} lorong terdaftar · Akurasi keseluruhan: ${s.akurasiTotal} · Diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
-
-  // ── KPI CARDS (top-border accent, like image 2) ──
-  const kpiRow  = document.getElementById('invKpiRow');
-  const MISS    = Number(s.totalMiss);
-  const akuNum  = parseFloat(s.akurasiTotal) || 0;
-  const belumN  = Math.max(0, Number(s.totalLokasi) - Number(s.totalCc));
-
-  const kpis = [
-    { label:'PROGRESS CC',   val: s.pctCcTotal,
-      sub1l:'SUDAH CC', sub1v: totalCcN, sub2l:'TOTAL LOKASI', sub2v: totalLok,
-      color:'#2563eb', icon:'📊' },
-    { label:'TOTAL LOKASI',  val: totalLok,
-      sub1l:'JML TERDAFTAR', sub1v: totalLok, sub2l:'SUDAH CC', sub2v: totalCcN,
-      color:'#7c3aed', icon:'📍' },
-    { label:'TOTAL CC SCAN', val: totalCcN,
-      sub1l:'SUDAH SCAN', sub1v: totalCcN, sub2l:'BELUM CC', sub2v: belumN.toLocaleString('id-ID'),
-      color:'#0891b2', icon:'🔢' },
-    { label:'TOTAL HIT',     val: Number(s.totalHit).toLocaleString('id-ID'),
-      sub1l:'SESUAI FISIK', sub1v: Number(s.totalHit).toLocaleString('id-ID'), sub2l:'DARI CC', sub2v: totalCcN,
-      color:'#16a34a', icon:'✅' },
-    { label:'TOTAL MISS',    val: Number(s.totalMiss).toLocaleString('id-ID'),
-      sub1l:'DISCREPANCY', sub1v: Number(s.totalMiss).toLocaleString('id-ID'), sub2l:'DARI CC', sub2v: totalCcN,
-      color: MISS > 0 ? '#dc2626' : '#16a34a', icon: MISS > 0 ? '❌' : '✅' },
-    { label:'AKURASI TOTAL', val: s.akurasiTotal,
-      sub1l:'HIT / CC SCAN', sub1v:`${Number(s.totalHit).toLocaleString('id-ID')} / ${totalCcN}`, sub2l:'TARGET', sub2v:'≥ 99.5%',
-      color: akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626', icon:'🎯' },
-  ];
-
-  if (kpiRow) {
-    kpiRow.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.25);';
-    kpiRow.innerHTML = kpis.map((k,i) => `
-      <div style="background:linear-gradient(160deg,#fff 55%,${k.color}18 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
-        <div style="height:3px;background:${k.color};position:relative;overflow:hidden;">
-          <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:kpiBodyBeam ${3+i*0.4}s ease-in-out infinite;"></div>
-        </div>
-        <div style="padding:11px 12px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;">
-          <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);transform:skewX(-15deg);animation:kpiBodyBeam ${3.5+i*0.4}s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-            <div style="font-size:9px;font-weight:700;color:#64748b;letter-spacing:0.1em;text-transform:uppercase;">${k.label}</div>
-            <div style="font-size:14px;line-height:1;">${k.icon}</div>
+      <!-- STORING TODAY -->
+      <div id="storingStatCard" onclick="toggleStoringPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#fce7f3 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div class="kpi-beam-2" style="position:absolute;top:0;left:-100%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.3),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="width:32px;height:32px;background:#fce7f3;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">🏗️</div>
+            <div class="stat-value" style="font-size:36px;font-weight:900;color:#db2777;letter-spacing:-2px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Storing Today</div>
+            <div class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;">Picking progress</div>
           </div>
-          <div style="font-size:${k.val.length>8?'17px':'22px'};font-weight:900;color:${k.color};line-height:1;letter-spacing:-0.5px;margin-bottom:3px;">${k.val}</div>
-          <div style="font-size:8.5px;color:${k.color};font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">— ${k.label}</div>
-          <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:auto;"><div style="height:100%;background:${k.color};width:100%;"></div></div>
+          <div id="storingStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:9px;padding:6px 12px;background:#f8fafc;border-top:1px solid #f1f5f9;">
-          <div><div style="color:#94a3b8;margin-bottom:1px;">${k.sub1l}</div><div style="font-weight:700;color:#475569;">${k.sub1v}</div></div>
-          <div style="text-align:right;"><div style="color:#94a3b8;margin-bottom:1px;">${k.sub2l}</div><div style="font-weight:700;color:#475569;">${k.sub2v}</div></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#d97706;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">RELEASE</div><div id="strStatRelease" style="font-size:18px;font-weight:900;color:#d97706;line-height:1.1;">—</div></div><div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">PICKED</div><div id="strStatPicked" style="font-size:18px;font-weight:900;color:#059669;line-height:1.1;">—</div></div><div style="background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#db2777;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">STAGED</div><div id="strStatStaged" style="font-size:18px;font-weight:900;color:#db2777;line-height:1.1;">—</div></div><div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">SISA</div><div id="strStatSisa" style="font-size:18px;font-weight:900;color:#dc2626;line-height:1.1;">—</div></div>
         </div>
-      </div>`).join('');
-  }
-
-  // ── PROGRESS BAR ──
-  const pct = parseFloat(s.pctCcTotal) || 0;
-  const pb  = document.getElementById('invProgressBar');
-  const pl  = document.getElementById('invProgressLabel');
-  if (pb) setTimeout(() => pb.style.width = Math.min(pct,100)+'%', 200);
-  if (pl) pl.textContent = s.pctCcTotal;
-
-  // ── RENDER TABLES ──
-  renderInvLorongTable(rows, s);
-  renderInvAreaTable(rows, s);
-}
-
-// ── TABLE KIRI: DETAIL BY LORONG ──
-function renderInvLorongTable(rows, s) {
-  const tbody = document.getElementById('invLorongBody');
-  if (!tbody) return;
-
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data</td></tr>';
-    return;
-  }
-
-  const AREA_COL  = { '1':'#2563eb', '2':'#d97706', '3':'#16a34a' };
-  const AREA_BG   = { '1':'rgba(37,99,235,0.04)', '2':'rgba(217,119,6,0.04)', '3':'rgba(22,163,74,0.04)' };
-  const AREA_SUM  = { '1':'rgba(37,99,235,0.18)', '2':'rgba(217,119,6,0.18)', '3':'rgba(22,163,74,0.18)' };
-
-  // Pre-hitung rowspan untuk SPV AREA (hanya data rows, bukan area summary)
-  const dataOnly = rows.filter(r => !r.isAreaRow);
-  const rowspanMap = new Map(); // index → rowspan count
-  for (let i = 0; i < dataOnly.length; i++) {
-    if (dataOnly[i].spvArea) {
-      let span = 1;
-      while (i + span < dataOnly.length && !dataOnly[i + span].spvArea && !dataOnly[i + span].isAreaRow) span++;
-      rowspanMap.set(i, span);
-    }
-  }
-
-  let curArea = '1';
-  let dataIdx = 0;
-  let html = '';
-
-  rows.forEach(r => {
-    const m = (r.spvArea || '').match(/(\d+)/);
-    if (m) curArea = m[1];
-    const col = AREA_COL[curArea] || '#64748b';
-
-    if (r.isAreaRow) {
-      // AREA summary row
-      const bg     = AREA_SUM[curArea] || 'rgba(100,116,139,0.18)';
-      const akuNum = parseFloat(r.akurasi) || 0;
-      const akuCol = akuNum >= 99.5 ? '#16a34a' : akuNum >= 98 ? '#d97706' : '#dc2626';
-      html += `<tr style="background:${bg};border-top:2px solid ${col}60;border-bottom:2px solid ${col}60;">
-        <td style="padding:9px 10px;font-weight:900;color:${col};font-size:12px;text-align:center;border-right:1px solid ${col}30;">${escHtml(r.spvArea)}</td>
-        <td colspan="2" style="padding:9px 10px;text-align:center;font-size:11px;color:${col};font-weight:700;letter-spacing:0.05em;">— SUBTOTAL —</td>
-        <td style="padding:9px 10px;text-align:right;font-weight:800;color:${col};">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
-        <td style="padding:9px 10px;text-align:right;font-weight:800;color:${col};">${r.cc.toLocaleString('id-ID')}</td>
-        <td style="padding:9px 10px;text-align:right;font-weight:800;color:#16a34a;">${r.hit.toLocaleString('id-ID')}</td>
-        <td style="padding:9px 10px;text-align:right;font-weight:800;color:${r.miss>0?'#dc2626':'#94a3b8'};">${r.miss.toLocaleString('id-ID')}</td>
-        <td style="padding:9px 10px;text-align:center;font-weight:800;color:${col};">${r.pctCc}</td>
-        <td style="padding:9px 10px;text-align:center;font-weight:900;color:${akuCol};">${r.akurasi}</td>
-      </tr>`;
-      return;
-    }
-
-    // Normal lorong row
-    const rowBg  = AREA_BG[curArea] || '';
-    const akuNum = parseFloat(r.akurasi) || 0;
-    const akuColor = akuNum >= 100 ? '#16a34a' : akuNum >= 99 ? '#2563eb' : akuNum >= 98 ? '#d97706' : '#dc2626';
-    const akuBg    = akuNum >= 100 ? 'rgba(22,163,74,0.12)' : akuNum >= 99 ? 'rgba(37,99,235,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
-
-    // SPV AREA cell dengan rowspan + vertical center
-    let spvCell = '';
-    if (r.spvArea && rowspanMap.has(dataIdx)) {
-      const span = rowspanMap.get(dataIdx);
-      spvCell = `<td rowspan="${span}" style="text-align:center;vertical-align:middle;font-size:11px;font-weight:800;color:${col};background:${rowBg};border-right:2px solid ${col}40;padding:4px 8px;line-height:1.4;">${escHtml(r.spvArea).replace(/\n/g,'<br>')}</td>`;
-    }
-    // kalau spvArea kosong = sudah di-merge, skip cell ini
-
-    html += `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.1);">
-      ${spvCell}
-      <td style="padding:7px 10px;font-size:11.5px;color:var(--text-2);">${escHtml(r.pic)}</td>
-      <td style="padding:7px 10px;text-align:center;font-weight:900;color:${col};font-size:13px;">${escHtml(String(r.lorong))}</td>
-      <td style="padding:7px 10px;text-align:right;font-weight:600;color:var(--text-2);">${r.jumlahLokasi.toLocaleString('id-ID')}</td>
-      <td style="padding:7px 10px;text-align:right;font-weight:700;color:#0891b2;">${r.cc.toLocaleString('id-ID')}</td>
-      <td style="padding:7px 10px;text-align:right;font-weight:700;color:#16a34a;">${r.hit.toLocaleString('id-ID')}</td>
-      <td style="padding:7px 10px;text-align:right;font-weight:${r.miss>0?800:600};color:${r.miss>0?'#dc2626':'#94a3b8'};">${r.miss.toLocaleString('id-ID')}</td>
-      <td style="padding:7px 10px;text-align:center;color:var(--text-2);">${r.pctCc}</td>
-      <td style="padding:5px 10px;text-align:center;"><span style="display:inline-block;padding:2px 9px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:11px;font-weight:800;white-space:nowrap;">${r.akurasi}</span></td>
-    </tr>`;
-    dataIdx++;
-  });
-
-  // TOTAL row
-  const ak    = parseFloat(s.akurasiTotal) || 0;
-  const akCol = ak >= 99.5 ? '#4ade80' : '#f87171';
-  html += `<tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
-    <td colspan="3" style="padding:9px 10px;color:#fff;font-weight:900;font-size:11.5px;letter-spacing:0.04em;">TOTAL</td>
-    <td style="padding:9px 10px;text-align:right;color:#fff;font-weight:800;">${Number(s.totalLokasi).toLocaleString('id-ID')}</td>
-    <td style="padding:9px 10px;text-align:right;color:#22d3ee;font-weight:800;">${Number(s.totalCc).toLocaleString('id-ID')}</td>
-    <td style="padding:9px 10px;text-align:right;color:#4ade80;font-weight:800;">${Number(s.totalHit).toLocaleString('id-ID')}</td>
-    <td style="padding:9px 10px;text-align:right;color:${Number(s.totalMiss)>0?'#f87171':'#94a3b8'};font-weight:800;">${Number(s.totalMiss).toLocaleString('id-ID')}</td>
-    <td style="padding:9px 10px;text-align:center;color:#a78bfa;font-weight:800;">${s.pctCcTotal}</td>
-    <td style="padding:9px 10px;text-align:center;color:${akCol};font-weight:900;font-size:12px;">${s.akurasiTotal}</td>
-  </tr>`;
-
-  tbody.innerHTML = html;
-}
-
-// ── TABLE KANAN: SEBARAN AKURASI BY LEVEL RAK ──
-function renderInvAreaTable(rows, s) {
-  const tbody = document.getElementById('invAreaBody');
-  if (!tbody) return;
-
-  const AREA_COL = { '1':'#2563eb', '2':'#d97706', '3':'#16a34a' };
-  const AREA_BG  = { '1':'rgba(37,99,235,0.04)', '2':'rgba(217,119,6,0.04)', '3':'rgba(22,163,74,0.04)' };
-
-  // Helper: warna akurasi level
-  const lvColor = (v) => {
-    if (!v || v === '0%' || v === '—') return '#94a3b8';
-    const n = parseFloat(v);
-    if (n >= 100) return '#16a34a';
-    if (n >= 99)  return '#2563eb';
-    if (n >= 98)  return '#d97706';
-    return '#dc2626';
-  };
-  const lvCell = (v) => {
-    if (!v || v === '0%' || v === '—') return `<td style="padding:6px 7px;text-align:center;color:#94a3b8;font-size:10px;">—</td>`;
-    const col = lvColor(v);
-    const n   = parseFloat(v);
-    const fw  = n < 100 ? 800 : 700;
-    return `<td style="padding:6px 7px;text-align:center;color:${col};font-weight:${fw};font-size:10.5px;">${v}</td>`;
-  };
-
-  const dataRows  = rows.filter(r => !r.isAreaRow);
-  const areaRows  = rows.filter(r =>  r.isAreaRow);
-
-  if (!dataRows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-3);">Tidak ada data</td></tr>';
-    return;
-  }
-
-  let curArea = '1';
-  let html = '';
-
-  dataRows.forEach(r => {
-    const m = (r.spvArea || r.area || '').match(/(\d+)/);
-    if (m) curArea = m[1];
-    const col    = AREA_COL[curArea] || '#64748b';
-    const rowBg  = AREA_BG[curArea]  || '';
-    const lv     = r.levelData || [];
-    const akuNum   = parseFloat(r.akurasi) || 0;
-    const akuColor = akuNum >= 100 ? '#16a34a' : akuNum >= 99 ? '#2563eb' : akuNum >= 98 ? '#d97706' : '#dc2626';
-    const akuBg    = akuNum >= 100 ? 'rgba(22,163,74,0.12)' : akuNum >= 99 ? 'rgba(37,99,235,0.12)' : akuNum >= 98 ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)';
-
-    html += `<tr style="background:${rowBg};border-bottom:1px solid rgba(200,215,240,0.08);">
-      <td style="padding:6px 10px;text-align:center;font-weight:900;color:${col};font-size:13px;">${escHtml(String(r.lorong))}</td>
-      <td style="padding:6px 8px;text-align:center;"><span style="display:inline-block;padding:2px 7px;border-radius:20px;background:${akuBg};color:${akuColor};font-size:10.5px;font-weight:800;">${r.akurasi||'—'}</span></td>
-      ${lvCell(lv[0])}${lvCell(lv[1])}${lvCell(lv[2])}${lvCell(lv[3])}
-      ${lvCell(lv[4])}${lvCell(lv[5])}${lvCell(lv[6])}${lvCell(lv[7])}
-    </tr>`;
-  });
-
-  // Area summary rows
-  areaRows.forEach(a => {
-    const m   = (a.spvArea || '').match(/(\d+)/);
-    const key = m ? m[1] : '1';
-    const col = AREA_COL[key] || '#64748b';
-    const lv  = a.levelData || [];
-    const akuNum = parseFloat(a.akurasi) || 0;
-    const akuCol = akuNum >= 99.5 ? '#4ade80' : akuNum >= 98 ? '#fb923c' : '#f87171';
-    html += `<tr style="background:#2d3748;border-top:1px solid rgba(100,116,139,0.3);">
-      <td style="padding:7px 10px;text-align:center;font-weight:900;color:${col};font-size:11px;letter-spacing:0.03em;">${a.spvArea}</td>
-      <td style="padding:7px 8px;text-align:center;font-weight:900;color:${akuCol};font-size:11px;">${a.akurasi||'—'}</td>
-      ${lvCell(lv[0])}${lvCell(lv[1])}${lvCell(lv[2])}${lvCell(lv[3])}
-      ${lvCell(lv[4])}${lvCell(lv[5])}${lvCell(lv[6])}${lvCell(lv[7])}
-    </tr>`;
-  });
-
-  // TOTAL row
-  html += `<tr style="background:#1e293b;border-top:2px solid rgba(100,116,139,0.4);">
-    <td style="padding:9px 10px;text-align:center;color:#fff;font-weight:900;font-size:11px;">TOTAL</td>
-    <td style="padding:9px 8px;text-align:center;color:#4ade80;font-weight:900;font-size:11px;">${s.akurasiTotal}</td>
-    <td colspan="8" style="padding:9px 10px;text-align:center;color:#94a3b8;font-size:10px;">—</td>
-  </tr>`;
-
-  tbody.innerHTML = html;
-}
-
-
-// ── SVG stat chart helper ──
-// ── fetchSLAPlanner ──
-async function fetchSLAPlanner() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getSLAPlanner');
-    const data = await res.json();
-    if (!data.ok) return;
-
-    const grwPct  = parseFloat(String(data.slaGrw).replace('%',''))||0;
-    const custPct = parseFloat(String(data.slaCust).replace('%',''))||0;
-    const avgPct  = Math.round((grwPct + custPct) / 2);
-
-    _makeSVGStatChart('plannerStatChart', avgPct, '#991b1b');
-
-    const sg = document.getElementById('plannerSlaGrw');   if(sg) sg.textContent = data.slaGrw;
-    const sc = document.getElementById('plannerSlaCust');  if(sc) sc.textContent = data.slaCust;
-    const pv = document.getElementById('plannerStatVal');  if(pv) pv.textContent = avgPct + '%';
-    const pf = document.getElementById('plannerStatFoot'); if(pf) pf.textContent = avgPct + '%';
-    const pb = document.getElementById('plannerStatBar');
-    if(pb) setTimeout(()=>pb.style.width=Math.min(avgPct,100)+'%',300);
-  } catch(e) { console.warn('SLA Planner error:', e); }
-}
-
-function _makeSVGStatChart(elId, pct, color) {
-  const el = document.getElementById(elId); if(!el) return;
-  const r=30,cx=38,cy=38,circ=2*Math.PI*r;
-  const dash=Math.min(pct,100)/100*circ;
-  const bg='#e2e8f0';
-  el.innerHTML=`<svg width="76" height="76" viewBox="0 0 76 76">
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
-      stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
-      stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-    <text x="${cx}" y="${cy-4}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="900" fill="${color}">${pct}%</text>
-    <text x="${cx}" y="${cy+11}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="600" fill="#94a3b8">Progress</text>
-  </svg>`;
-}
-
-async function fetchInventoryAccuracy() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getInventoryAccuracy');
-    const data = await res.json();
-    if (!data.ok) return;
-
-    const pct    = parseFloat(data.accuracy);
-    const valEl  = document.getElementById('invAccuracyVal');
-    const subEl  = document.getElementById('invAccuracySub');
-    const card   = document.getElementById('invControlCard');
-    const icon   = document.getElementById('invControlIcon');
-
-    if (!valEl) return;
-
-    // Update value
-    valEl.textContent = pct.toFixed(2) + '%';
-
-    let color, gradColors, label, labelClass, iconBg, borderColor;
-    if (pct >= 99.5) {
-      color = '#10b981'; gradColors = '#10b981,#6ee7b7';
-      label = '✅ Akurasi Sangat Baik'; labelClass = 'up';
-      iconBg = 'rgba(16,185,129,0.08)'; borderColor = 'rgba(16,185,129,0.15)';
-    } else if (pct >= 98) {
-      color = '#d97706'; gradColors = '#d97706,#fbbf24';
-      label = '⚠️ Perlu Perhatian'; labelClass = '';
-      iconBg = 'rgba(217,119,6,0.08)'; borderColor = 'rgba(217,119,6,0.15)';
-    } else {
-      color = '#dc2626'; gradColors = '#dc2626,#f87171';
-      label = '❌ Di Bawah Target'; labelClass = 'dn';
-      iconBg = 'rgba(220,38,38,0.08)'; borderColor = 'rgba(220,38,38,0.15)';
-    }
-
-    valEl.style.color = color;
-    if (subEl) subEl.innerHTML = `<span style="color:${color};font-weight:700">${label}</span>`;
-
-    const topBar = document.getElementById('invControlTopBar');
-    if (card)   card.style.borderColor = borderColor;
-    if (topBar) topBar.innerHTML = `<div style="height:100%;background:linear-gradient(90deg,${gradColors});width:${pct>99?99:pct}%;transition:width 1s;"></div>`;
-    if (icon)   icon.style.background = iconBg;
-
-    // Pie chart Progress CC - ambil dari window._invData jika sudah ada, fallback ke data.summary
-    const invS = (window._invData && window._invData.summary) ? window._invData.summary : data.summary;
-    const rawCcPct = String(invS.pctCcTotal||'0').replace('%','').trim();
-    const ccPct = Math.round(parseFloat(rawCcPct)||0);
-    _makeSVGStatChart('invStatChart', ccPct, color);
-
-    // Mini boxes - dari invS
-    const il=document.getElementById('invStatLokasi'); if(il) il.textContent=Number(invS.totalLokasi||0).toLocaleString('id-ID');
-    const ic=document.getElementById('invStatCC');     if(ic) ic.textContent=Number(invS.totalCc||0).toLocaleString('id-ID');
-    const ih=document.getElementById('invStatHit');    if(ih) ih.textContent=Number(invS.totalHit||0).toLocaleString('id-ID');
-    const im=document.getElementById('invStatMiss');   if(im) im.textContent=Number(invS.totalMiss||0).toLocaleString('id-ID');
-
-
-  } catch(e) {
-    console.warn('Inventory accuracy error:', e);
-  }
-}
-
-function updateInventoryStatusDonut(inTotal,inSelesai,outTotal,outSelesai){
-  // Ambil % dari KPI card progress yang sudah tampil - lebih akurat
-  const getCardPct = id => {
-    const el = document.querySelector('#'+id+' .kpi-footer-val, #'+id+' [class*="footer"] span:last-child');
-    if (el) { const v = parseInt(el.textContent); if (!isNaN(v)) return v; }
-    // Fallback: cari dari bar progress atau teks %
-    const card = document.getElementById(id);
-    if (card) {
-      const pctEl = card.querySelector('[id$="Pct"], .footer-pct');
-      if (pctEl) { const v = parseInt(pctEl.textContent); if (!isNaN(v)) return v; }
-    }
-    return 0;
-  };
-  const inPct   = inTotal>0  ? Math.round((inSelesai/inTotal)*100)   : 0;
-  const outPct  = outTotal>0 ? Math.round((outSelesai/outTotal)*100) : 0;
-  // Storing: ambil dari KPI card Storing Today (pctPickingOverall = progress card)
-  const s = window._storingData && window._storingData.summary;
-  // Storing: pakai formula sama dengan Storing card footer (sumPicked/sumRelease)
-  const storingS = window._storingData && window._storingData.summary;
-  const storePct = storingS && storingS.sumRelease > 0
-    ? Math.round(storingS.sumPicked / storingS.sumRelease * 100)
-    : (s ? Math.round(((s.pctPickingOverall||0) + (s.pctStagedOverall||0)) / 2) : 0);
-  const sisa   = Math.max(0, 100 - inPct - storePct - outPct);
-  const overall = Math.round((inPct + storePct + outPct) / 3);
-  const centerEl = document.getElementById('donutTotal');
-  if (centerEl) centerEl.textContent = overall + '%';
-  const iv = document.getElementById('donutInboundVal');  if(iv)  iv.textContent  = inPct    + '%';
-  const sv = document.getElementById('donutStoringVal');  if(sv)  sv.textContent  = storePct + '%';
-  // Update total & rata-rata label dengan nilai terbaru
-  const avgNow = Math.round((inPct+storePct+outPct)/3);
-  const ov2 = document.getElementById('donutTotal'); if(ov2) ov2.textContent = avgNow+'%';
-  const lblNow = document.getElementById('pieTotalLabel');
-  if(lblNow) lblNow.innerHTML = `<span style="font-size:22px;font-weight:900;color:#1e293b;">${avgNow}%</span> <span style="font-size:10px;color:#94a3b8;">Rata-rata Progres</span>`;
-  const ov = document.getElementById('donutOutboundVal'); if(ov)  ov.textContent  = outPct   + '%';
-  const bv = document.getElementById('donutBelumVal');    if(bv)  bv.textContent  = sisa     + '%';
-  const ctx = document.getElementById('donutChart'); if(!ctx) return;
-  const isDark = document.body.classList.contains('dark');
-  const belumColor = isDark ? '#1e293b' : '#e2e8f0';
-  const chart = Chart.getChart(ctx);
-  if (chart) {
-    chart.data.datasets[0].data = [inPct, storePct, outPct, sisa];
-    chart.data.datasets[0].backgroundColor = ['#16a34a','#8b5cf6','#d97706', belumColor];
-    chart.data.datasets[0].borderColor = '#fff';
-    chart.data.datasets[0].borderWidth = 2;
-    chart.update('none');
-  } else {
-    // Shadow 3D effect plugin
-    const shadow3d = {
-      id:'shadow3d',
-      beforeDraw(chart) {
-        const {ctx:c} = chart;
-        c.save();
-        c.shadowColor = 'rgba(0,0,0,0.25)';
-        c.shadowBlur = 12;
-        c.shadowOffsetX = 4;
-        c.shadowOffsetY = 8;
-      },
-      afterDraw(chart) {
-        chart.ctx.restore();
-      }
-    };
-
-    // Label plugin
-    const labelPlugin = {
-      id:'pieLabel',
-      afterDatasetsDraw(chart) {
-        const {ctx:c, data} = chart;
-        chart.data.datasets.forEach((dataset, di) => {
-          const meta = chart.getDatasetMeta(di);
-          meta.data.forEach((arc, i) => {
-            const val = dataset.data[i];
-            if (!val || val < 3) return;
-            const mid = (arc.startAngle + arc.endAngle) / 2;
-            const r   = (arc.innerRadius + arc.outerRadius) / 2;
-            const x   = arc.x + Math.cos(mid) * r * 0.75;
-            const y   = arc.y + Math.sin(mid) * r * 0.75;
-            c.save();
-            c.font = 'bold 11px Outfit,sans-serif';
-            c.fillStyle = '#fff';
-            c.textAlign = 'center';
-            c.textBaseline = 'middle';
-            c.shadowColor = 'rgba(0,0,0,0.5)';
-            c.shadowBlur = 3;
-            c.fillText(val + '%', x, y);
-            c.restore();
-          });
-        });
-      }
-    };
-
-    new Chart(ctx.getContext('2d'), {
-      type: 'pie',
-      plugins: [shadow3d, labelPlugin],
-      data: { labels:['Inbound','Storing','Outbound','Belum Selesai'],
-        datasets:[{data:[inPct,storePct,outPct,sisa],
-          backgroundColor:['#16a34a','#8b5cf6','#d97706',belumColor],
-          borderColor:'#fff', borderWidth:2, hoverOffset:10,
-          offset: [4,4,4,2]}] },
-      options: { responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false},
-          tooltip:{backgroundColor:'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',
-            callbacks:{label:ctx2=>` ${ctx2.label}: ${ctx2.raw}%`}},
-          datalabels:{display:false}
-        }
-      }
-    });
-
-    // Tambah total % di bawah chart
-    // Ambil % dari KPI cards yang sudah tampil
-    const kpiInPct  = parseInt(document.querySelector('#inboundStatCard  .kpi-footer-pct, #inboundStatCard  [id$="Pct"]')?.textContent || inPct);
-    const kpiStPct  = parseInt(document.querySelector('#storingStatCard  .kpi-footer-pct, #storingStatCard  [id$="Pct"]')?.textContent || storePct);
-    const kpiOutPct = parseInt(document.querySelector('#outboundStatCard .kpi-footer-pct, #outboundStatCard [id$="Pct"]')?.textContent || outPct);
-    // Gunakan overall dari donutTotal yang sudah dihitung benar
-    // Rata-rata dari 3 KPI cards yang tampil
-    const avgPct = Math.round((inPct + storePct + outPct) / 3);
-    // Update donutTotal
-    const overallEl = document.getElementById('donutTotal');
-    if (overallEl) overallEl.textContent = avgPct + '%';
-    const wrap = ctx.closest('.donut-wrap');
-    if (wrap) {
-      let totalEl = wrap.querySelector('.pie-total-label');
-      if (!totalEl) {
-        totalEl = document.createElement('div');
-        totalEl.className = 'pie-total-label';
-        totalEl.style.cssText = 'text-align:center;padding:6px 0 4px;font-size:11px;font-weight:700;color:#475569;';
-        wrap.appendChild(totalEl);
-      }
-      // Update dengan ID biar bisa di-update nanti
-      totalEl.id = 'pieTotalLabel';
-      totalEl.innerHTML = `<span style="font-size:22px;font-weight:900;color:#1e293b;">${avgPct}%</span> <span style="font-size:10px;color:#94a3b8;">Rata-rata Progres</span>`;
-    }
-  }
-}
-
-function renderDashStoringChart() {
-  const s = window._storingData && window._storingData.summary;
-  if (!s) return;
-  const pickPct  = s.pctPickingOverall || 0;
-  const stagePct = s.pctStagedOverall  || 0;
-  const sisaPct  = Math.max(0, 100 - pickPct);
-  const avgPct   = Math.round((pickPct + stagePct) / 2);
-  const badge = document.getElementById('storingPctBadge');
-  const pctEl = document.getElementById('dashStoringPct');
-  if (badge) badge.textContent = avgPct + '% Progres';
-  if (pctEl) pctEl.textContent = avgPct + '%';
-  const pp = document.getElementById('piStorePickingVal'); if(pp) pp.textContent = pickPct  + '%';
-  const ps = document.getElementById('piStoreStagedVal');  if(ps) ps.textContent = stagePct + '%';
-  const pr = document.getElementById('piStoreSisaVal');    if(pr) pr.textContent = sisaPct  + '%';
-  const pk = document.getElementById('piStoreKapVal');     if(pk) pk.textContent = (s.avgKapasitas||0) + '%';
-  const canvas = document.getElementById('dashStoringChart'); if(!canvas) return;
-  const ex = Chart.getChart(canvas); if(ex) ex.destroy();
-  const isDark = document.body.classList.contains('dark');
-  new Chart(canvas.getContext('2d'), {
-    type: 'doughnut',
-    data: { datasets: [{ data: [pickPct, stagePct, sisaPct], backgroundColor: ['#16a34a','#f59e0b','#dc2626'], borderColor: isDark?'#161b22':'#ffffff', borderWidth: 3, hoverOffset: 6 }] },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw}%`}}} }
-  });
-}
-
-async function fetchInventoryValue(){
-  try{
-    const res=await fetch(GAS_DASHBOARD_URL+'?action=getDashboardData');
-    const data=await res.json(); if(!data.ok) return;
-    const inv=data.mtd&&data.mtd.inventory?data.mtd.inventory:0;
-    const el=document.querySelector('#storingStatCard .stat-value');
-    const sb=document.querySelector('#storingStatCard .stat-sub');
-    if(el&&inv){const fmt=inv>=1000000?'Rp '+(inv/1000000).toFixed(1).replace('.0','')+' Jt':inv>=1000?'Rp '+(inv/1000).toFixed(0)+' Rb':inv;el.textContent=fmt;el.style.fontSize='16px';}
-    if(sb&&data.mtd) sb.textContent='Data bulan '+(data.mtd.monthName||'');
-  }catch(e){console.warn('Inventory value error:',e);}
-}
-
-fetchDashboardStats();
-setInterval(fetchDashboardStats,5*60*1000);
-fetchLppbdo();
-
-// ══════════════════════════════════════════════════════════════
-//  LPPBDO TABLE
-// ══════════════════════════════════════════════════════════════
-async function fetchLppbdo() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getLppbdo');
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error);
-    renderLppbdo(json.dates, json.rows);
-  } catch(e) {
-    const el = document.getElementById('lppbdoStatus');
-    if (el) el.textContent = 'Gagal memuat';
-    console.warn('LPPBDO error:', e);
-  }
-}
-
-function renderLppbdo(dates, rows) {
-  const head = document.getElementById('lppbdoHead');
-  const body = document.getElementById('lppbdoBody');
-  if (!head || !body) return;
-
-  // Warna per baris ikut spreadsheet
-  const rowColors = [
-    { bg: '#fff3e0', text: '#b45309', bold: false }, // RUSAK     - orange
-    { bg: '#3b0000', text: '#fca5a5', bold: false }, // selisih   - maroon gelap
-    { bg: '#ffffff', text: '#1e293b', bold: false }, // Sparepart - putih
-    { bg: '#1e293b', text: '#ffffff', bold: true  }, // TOTAL     - gelap
-  ];
-
-  const validDates = dates.map((d, i) => ({ d, i })).filter(x => x.d);
-
-  const thStyle  = 'padding:9px 12px;text-align:center;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;';
-  const thFirst  = 'padding:9px 16px;text-align:left;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:220px;position:sticky;left:0;z-index:2;';
-
-  // Filter kolom AVERAGE dari header (tampilkan hanya tanggal)
-  const dateCols = validDates.filter(x => !/average/i.test(x.d));
-
-  head.innerHTML = `<tr>
-    <th style="${thFirst}">Kategori</th>
-    <th style="${thStyle}">UOM</th>
-    ${dateCols.map(x => `<th style="${thStyle}">${x.d}</th>`).join('')}
-  </tr>`;
-
-  body.innerHTML = rows.map((row, ri) => {
-    const c = rowColors[ri] || rowColors[0];
-    const tdBase  = `padding:8px 12px;text-align:center;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'500'};`;
-    const tdFirst = `padding:8px 16px;text-align:left;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'700'};white-space:nowrap;position:sticky;left:0;z-index:1;`;
-    const cells = dateCols.map(x => {
-      const val = row.values[x.i];
-      const display = (val === null || val === undefined) ? '' : (val * 100).toFixed(2) + '%';
-      return `<td style="${tdBase}">${display}</td>`;
-    }).join('');
-    return `<tr>
-      <td style="${tdFirst}">${row.kategori}</td>
-      <td style="${tdBase}">${row.uom}</td>
-      ${cells}
-    </tr>`;
-  }).join('');
-
-  const el = document.getElementById('lppbdoStatus');
-  if (el) el.textContent = `${validDates.length} hari`;
-
-  // MTD summary
-  const mtdEl = document.getElementById('lppbdoMtd');
-  if (mtdEl) {
-    const now = new Date();
-    const bulan = now.toLocaleString('id-ID', {month:'long', year:'numeric'});
-    const totalRow = rows.find(r => r.kategori.includes('TOTAL'));
-    const totalAvg = totalRow && totalRow.average !== null ? (totalRow.average * 100).toFixed(2) : '0.00';
-    mtdEl.innerHTML = `
-      <div style="font-size:9px;color:#94a3b8;font-weight:600;margin-bottom:2px;">MTD ${bulan}</div>
-      <div style="font-size:20px;font-weight:900;color:#dc2626;">${totalAvg}%</div>
-      <div style="font-size:9px;color:#64748b;">% Total LPPBDO</div>`;
-  }
-
-  // ── Summary Chart (3D-style bar) ──
-  renderLppbdoChart(rows);
-}
-
-function renderLppbdoChart(rows) {
-  const wrap = document.getElementById('lppbdoChartWrap');
-  if (!wrap) return;
-
-  // Hitung average per kategori (skip null, skip 0)
-  const labels   = rows.slice(0,3).map(r => r.kategori.replace('% LPPBDO ','').replace('% ',''));
-  // Pakai kolom AVERAGE langsung dari sheet (kolom AH)
-  console.log('LPPBDO rows average:', rows.map(r => ({k: r.kategori, avg: r.average})));
-  const avgs     = rows.slice(0,3).map(r => (r.average !== null && r.average !== undefined) ? parseFloat((r.average*100).toFixed(2)) : 0);
-  const colors   = ['#f97316','#7f1d1d','#94a3b8'];
-  const shadows  = ['rgba(249,115,22,0.35)','rgba(127,29,29,0.35)','rgba(148,163,184,0.35)'];
-
-  // 3D effect plugin
-  const bar3dPlugin = {
-    id: 'bar3d',
-    afterDatasetsDraw(chart) {
-      const {ctx} = chart;
-      chart.data.datasets.forEach((ds, di) => {
-        const meta = chart.getDatasetMeta(di);
-        meta.data.forEach((bar, i) => {
-          const {x, y, width, height, base} = bar.getProps(['x','y','width','height','base']);
-          const depth = 8;
-          const col   = colors[i] || '#888';
-          // Top face
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(x - width/2,     y);
-          ctx.lineTo(x - width/2 + depth, y - depth);
-          ctx.lineTo(x + width/2 + depth, y - depth);
-          ctx.lineTo(x + width/2,     y);
-          ctx.closePath();
-          ctx.fillStyle = 'rgba(255,255,255,0.25)';
-          ctx.fill();
-          // Right face
-          ctx.beginPath();
-          ctx.moveTo(x + width/2,     y);
-          ctx.lineTo(x + width/2 + depth, y - depth);
-          ctx.lineTo(x + width/2 + depth, base - depth);
-          ctx.lineTo(x + width/2,     base);
-          ctx.closePath();
-          ctx.fillStyle = 'rgba(0,0,0,0.18)';
-          ctx.fill();
-          ctx.restore();
-        });
-      });
-    }
-  };
-
-  wrap.innerHTML = '<canvas id="lppbdoChart" style="width:100%;height:100%;"></canvas>';
-  const ctx = document.getElementById('lppbdoChart').getContext('2d');
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data: avgs,
-        backgroundColor: colors,
-        borderRadius: 2,
-        borderSkipped: false,
-        borderWidth: 0,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: c => ` Avg: ${c.parsed.y.toFixed(2)}%`
-          }
-        },
-        datalabels: {
-          anchor: 'end', align: 'top',
-          color: ctx2 => colors[ctx2.dataIndex],
-          font: { weight: '800', size: 10 },
-          formatter: v => v.toFixed(2) + '%'
-        }
-      },
-      scales: {
-        x: { grid: { display:false }, ticks: { font:{size:9,weight:'700'}, color:'#475569' }, border:{display:false} },
-        y: { beginAtZero: true, grid: { color:'rgba(0,0,0,0.05)' }, ticks: { callback: v => v+'%', font:{size:9}, color:'#94a3b8' }, border:{display:false} }
-      },
-      animation: { duration: 600 }
-    },
-    plugins: [bar3dPlugin]
-  });
-}
-
-// ══════════════════════════════════════
-//  CHARTS — DAILY ACTIVITY
-// ══════════════════════════════════════
-Chart.defaults.color='#6b7280';
-Chart.defaults.font.family='Outfit';
-
-const dataLabelPlugin={
-  id:'customDataLabels',
-  afterDatasetsDraw(chart){
-    const{ctx}=chart;
-    chart.data.datasets.forEach((dataset,i)=>{
-      const meta=chart.getDatasetMeta(i);
-      meta.data.forEach((point,j)=>{
-        const val=dataset.data[j]; if(!val||val===0) return;
-        ctx.save();
-        ctx.font='bold 11px Outfit, sans-serif';
-        ctx.fillStyle=dataset.borderColor;
-        ctx.textAlign='center';
-        ctx.textBaseline=i===0?'bottom':'top';
-        ctx.fillText(val,point.x,point.y+(i===0?-6:6));
-        ctx.restore();
-      });
-    });
-  }
-};
-
-let lineChartInstance=null;
-
-async function fetchDailyActivity(){
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getTroughput');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-
-    const cardTitle = document.getElementById('dailyActivityTitle');
-    if (cardTitle) cardTitle.innerHTML = `<span class="live-dot"></span>Troughput`;
-
-    const wrap = document.getElementById('dailyActivityChartWrap');
-    if (!wrap) return;
-
-    // Warna PERSIS seperti referensi foto Analyst
-    const C = {
-      inbound  : { bar: '#991b1b', label: '#7f1d1d' },
-      outbound : { bar: '#f97316', label: '#ea580c' },
-      inventory: { bar: '#334155', label: '#1e293b' },
-      occupancy: '#7c3aed',
-      capacity : 'rgba(14,165,233,.6)',
-      forecast : 'rgba(37,99,235,.75)',
-    };
-
-    const d        = data.data;
-    const labels   = data.labels;
-    const boundary = data.actualBoundaryIdx;
-    const bl = v => (!v || v === 0) ? '' : v >= 10000 ? (v/1000).toFixed(1)+'K' : Math.round(v).toLocaleString('id-ID');
-
-    wrap.innerHTML = '';
-    wrap.style.height = '320px';
-    wrap.style.position = 'relative';
-    wrap.style.padding = '8px 12px 0';
-
-    // ── Forecast float box COMPACT ──
-    if (data.accuracy) {
-      const a  = data.accuracy;
-      const fN = v => Math.round(v||0).toLocaleString('id-ID');
-      const akb = p => {
-        let v = parseFloat(p||0);
-        if (v > 0 && v <= 1) v = v * 100;
-        const bg = v>=95?'rgba(22,163,74,.18)':v>=80?'rgba(217,119,6,.18)':'rgba(220,38,38,.18)';
-        const bc = v>=95?'rgba(22,163,74,.4)':v>=80?'rgba(217,119,6,.4)':'rgba(220,38,38,.4)';
-        const fc = v>=95?'#16a34a':v>=80?'#d97706':'#dc2626';
-        return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:900;background:${bg};border:1px solid ${bc};color:${fc};">${v.toFixed(2)}%</span>`;
-      };
-      const floatBox = document.createElement('div');
-      floatBox.style.cssText = 'display:inline-block;';
-      floatBox.innerHTML = `
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-          <table style="border-collapse:collapse;font-size:10px;width:100%;">
+        <div style="height:3px;background:rgba(0,0,0,0.06);"><div class="stat-bar-fill" style="height:100%;background:#ec4899;width:0%;transition:width 1s;"></div></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
+          <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">STORING</span>
+          <span class="stat-foot-val" style="font-weight:900;color:#db2777;">—</span>
+        </div>
+      </div>
+
+      <!-- OUTBOUND TODAY -->
+      <div id="outboundStatCard" onclick="toggleOutboundPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#fef3c7 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div class="kpi-beam-2" style="position:absolute;top:0;left:-100%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.35),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="width:32px;height:32px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">🚚</div>
+            <div id="outboundStatVal" class="stat-value" style="font-size:36px;font-weight:900;color:#d97706;letter-spacing:-2px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Outbound Today</div>
+            <div id="outboundStatSub" class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;">Armada keluar DC</div>
+          </div>
+          <div id="outboundStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">✅ SELESAI</div><div id="outStatSelesai" style="font-size:18px;font-weight:900;color:#16a34a;line-height:1.1;">—</div></div><div style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">⏳ PROSES</div><div id="outStatProses" style="font-size:18px;font-weight:900;color:#2563eb;line-height:1.1;">—</div></div><div style="background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#d97706;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">🕐 ANTRI</div><div id="outStatAntri" style="font-size:18px;font-weight:900;color:#d97706;line-height:1.1;">—</div></div><div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">🔴 BELUM</div><div id="outStatBelum" style="font-size:18px;font-weight:900;color:#dc2626;line-height:1.1;">—</div></div>
+        </div>
+        <div style="height:3px;background:rgba(0,0,0,0.06);"><div class="stat-bar-fill" style="height:100%;background:#f59e0b;width:0%;transition:width 1s;"></div></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
+          <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">OUTBOUND</span>
+          <span class="stat-foot-val" style="font-weight:900;color:#d97706;">—</span>
+        </div>
+      </div>
+
+
+      <!-- INDEX PLANNER -->
+      <div id="plannerStatCard" onclick="togglePlannerPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#ffe4e4 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';var b=this.querySelector('.planner-beam');b.style.transition='none';b.style.left='-100%'">
+        <div class="planner-beam" style="position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.25),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="width:32px;height:32px;background:#ffe4e4;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">📋</div>
+            <div id="plannerStatVal" class="stat-value" style="font-size:36px;font-weight:900;color:#991b1b;letter-spacing:-2px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Index Planner</div>
+            <div class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;">Logistics Planning</div>
+          </div>
+          <div id="plannerStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(153,27,27,0.08);border:1px solid rgba(153,27,27,0.25);padding:6px 8px 5px;">
+            <div style="font-size:8px;font-weight:800;color:#991b1b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">SLA GRW</div>
+            <div id="plannerSlaGrw" style="font-size:22px;font-weight:900;color:#991b1b;line-height:1.1;">—</div>
+          </div>
+          <div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;">
+            <div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">SLA CUSTOMER</div>
+            <div id="plannerSlaCust" style="font-size:22px;font-weight:900;color:#dc2626;line-height:1.1;">—</div>
+          </div>
+        </div>
+        <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="plannerStatBar" style="height:100%;background:#991b1b;width:0%;transition:width 1s;"></div></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
+          <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">PLANNER</span>
+          <span id="plannerStatFoot" style="font-weight:900;color:#991b1b;">—</span>
+        </div>
+      </div>
+
+      <!-- INVENTORY CONTROL -->
+      <div id="invControlCard" onclick="toggleInventoryPanel()" style="cursor:pointer;background:linear-gradient(160deg,#fff 50%,#d1fae5 100%);border:1px solid #e2e8f0;padding:16px 16px 0;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 1px 6px rgba(0,0,0,0.07);" onmouseover="this.style.transform='translateY(-4px) scale(1.02)';this.style.boxShadow='0 10px 28px rgba(0,0,0,0.13)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div class="kpi-beam-2" style="position:absolute;top:0;left:-100%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(16,185,129,0.3),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;transition:left 1.2s ease;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div id="invControlIcon" style="width:32px;height:32px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;">📋</div>
+            <div id="invAccuracyVal" class="stat-value" style="font-size:30px;font-weight:900;color:#059669;letter-spacing:-1px;line-height:1;">—</div>
+            <div style="font-size:11.5px;font-weight:700;color:#1e293b;margin-top:3px;">Inventory Control</div>
+            <div class="stat-sub" style="font-size:10px;color:#94a3b8;margin-top:1px;"><span id="invAccuracySub">Akurasi stok</span></div>
+          </div>
+          <div id="invStatChart" style="width:76px;height:76px;flex-shrink:0;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;">
+          <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">TOTAL LOKASI</div><div id="invStatLokasi" style="font-size:13px;font-weight:900;color:#4f46e5;line-height:1.1;">—</div></div><div style="background:rgba(8,145,178,0.08);border:1px solid rgba(8,145,178,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#0891b2;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">TOTAL CC</div><div id="invStatCC" style="font-size:13px;font-weight:900;color:#0891b2;line-height:1.1;">—</div></div><div style="background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">TOTAL HIT</div><div id="invStatHit" style="font-size:13px;font-weight:900;color:#059669;line-height:1.1;">—</div></div><div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);padding:6px 8px 5px;"><div style="font-size:8px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">TOTAL MISS</div><div id="invStatMiss" style="font-size:13px;font-weight:900;color:#dc2626;line-height:1.1;">—</div></div>
+        </div>
+        <div id="invControlTopBar" style="height:3px;background:rgba(0,0,0,0.06);"><div style="height:100%;background:#10b981;width:99%;transition:width 1s;"></div></div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:9px;">
+          <span style="font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;">ACCURACY</span>
+          <span style="font-weight:900;color:#10b981;">≥ 99.5%</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ STORING DETAIL PANEL ═══ -->
+    <div id="storingDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
+        <div style="padding:14px 20px 12px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(22,163,74,0.06),transparent);">
+          <div>
+            <span style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;"><span class="live-dot"></span>🏗️ Storing Dashboard — Plan Loading</span>
+            <div id="storingSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div>
+          </div>
+          <button onclick="toggleStoringPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+        </div>
+
+        <!-- BATCH CARDS DYNAMIC -->
+        <div style="padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+          <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">📊 Pencapaian per Batch</div>
+          <div id="storingBatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
+        </div>
+
+        <!-- TABLE -->
+        <div style="overflow-x:auto;flex:1;overflow-y:auto;background:#fff;">
+          <table id="storingTable" style="width:100%;border-collapse:collapse;font-size:11px;">
             <thead>
-              <tr>
-                <th style="padding:3px 8px;background:#1e293b;color:#fff;font-size:7.5px;font-weight:700;text-align:center;min-width:80px;"></th>
-                <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Inbound</th>
-                <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Demand In</th>
-                <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Outbound</th>
+              <tr style="background:#1e293b;position:sticky;top:0;z-index:2;">
+                <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO</th>
+                <th rowspan="2" style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;min-width:110px;">NO LC</th>
+                <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BATCH</th>
+                <th rowspan="2" style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;min-width:140px;">TUJUAN</th>
+                <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TIPE ARMADA</th>
+                <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">KAP.</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;border-bottom:1px solid rgba(37,99,235,0.3);">RELEASE</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#c4b5fd;border-bottom:1px solid rgba(139,92,246,0.3);">ASTOR</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;border-bottom:1px solid rgba(22,163,74,0.3);">PICKED</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#f87171;border-bottom:1px solid rgba(239,68,68,0.3);">SISA</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#34d399;border-bottom:1px solid rgba(16,185,129,0.3);">PENCAPAIAN PICKING</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;border-bottom:1px solid rgba(245,158,11,0.3);">SISA 99%</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#a5b4fc;border-bottom:1px solid rgba(99,102,241,0.3);">STAGED DS</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;border-bottom:1px solid rgba(59,130,246,0.3);">PENCAPAIAN DS</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fde68a;border-bottom:1px solid rgba(234,179,8,0.3);">% KAP</th>
               </tr>
-              <tr style="background:#f8fafc;">
-                <th style="padding:2px 6px;font-size:7px;font-weight:700;color:#64748b;text-align:left;border:1px solid #e2e8f0;"></th>
-                <th style="padding:2px 6px;font-size:7px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:2px 6px;font-size:7px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
-                <th style="padding:2px 6px;font-size:7px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:2px 6px;font-size:7px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
-                <th style="padding:2px 6px;font-size:7px;color:#94a3b8;text-align:center;border:1px solid #e2e8f0;">Forecast</th>
-                <th style="padding:2px 6px;font-size:7px;color:#0f172a;font-weight:800;text-align:center;border:1px solid #e2e8f0;">Actual</th>
+              <tr style="background:#2d3748;">
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#c4b5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#f87171;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#34d399;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#34d399;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#a5b4fc;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#a5b4fc;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fde68a;">%</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">CBM</td>
-                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.inboundForecast)}</td>
-                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.inboundActual)}</td>
-                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.demandForecast)}</td>
-                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.demandActual)}</td>
-                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.outboundForecast)}</td>
-                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.outboundActual)}</td>
-              </tr>
-              <tr style="background:#f8fafc;">
-                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;">% Akurasi</td>
-                <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.inboundPct)}</td>
-                <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
-                <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
-              </tr>
+            <tbody id="storingTableBody" style="background:transparent;"></tbody>
+          </table>
+        </div>
+        <div id="storingFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+      </div>
+    </div>
 
+        <!-- ═══ OUTBOUND DETAIL PANEL ═══ -->
+    <div id="outboundDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
+        <div style="padding:14px 20px 12px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(217,119,6,0.06),transparent);">
+          <div>
+            <span style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;"><span class="live-dot"></span>🚚 Outbound Dashboard — Data Hari Ini</span>
+            <div id="outboundPanelSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div>
+          </div>
+          <button onclick="toggleOutboundPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+
+          <!-- Status Armada -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#d97706;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div style="width:30px;height:30px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;">🚚</div>
+                <div id="chartOutStatus" style="width:64px;height:64px;flex-shrink:0;"></div>
+              </div>
+              <div id="pctOutSelesai" style="font-size:28px;font-weight:900;color:#d97706;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:6px;">Status Armada</div>
+              <!-- Mini boxes -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#16a34a;text-transform:uppercase;">Selesai</div>
+                  <div id="outMiniSelesai" style="font-size:16px;font-weight:900;color:#16a34a;line-height:1;">0</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">Proses</div>
+                  <div id="outMiniProses" style="font-size:16px;font-weight:900;color:#2563eb;line-height:1;">0</div>
+                </div>
+                <div style="background:#fffbeb;border:1px solid #fde68a;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#d97706;text-transform:uppercase;">Antri</div>
+                  <div id="outMiniAntri" style="font-size:16px;font-weight:900;color:#d97706;line-height:1;">0</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">Belum</div>
+                  <div id="outMiniBelum" style="font-size:16px;font-weight:900;color:#dc2626;line-height:1;">0</div>
+                </div>
+              </div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barOutStatus" style="height:100%;background:#d97706;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">STATUS</span>
+              <span id="footOutStatus" style="font-weight:900;color:#d97706;">—</span>
+            </div>
+          </div>
+
+          <!-- % PC Picking -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#d1fae5 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 3.5s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div style="width:30px;height:30px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;">📦</div>
+                <div id="chartOutPc" style="width:64px;height:64px;flex-shrink:0;"></div>
+              </div>
+              <div id="pctOutPc" style="font-size:28px;font-weight:900;color:#16a34a;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% PC (Picking)</div>
+              <div id="infoOutPc" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Picking</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutPc" style="height:100%;background:#16a34a;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %PC</span>
+              <span id="footOutPc" style="font-weight:900;color:#16a34a;">—</span>
+            </div>
+          </div>
+
+          <!-- % STG Staging -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 4s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div style="width:30px;height:30px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;">🚛</div>
+                <div id="chartOutStg" style="width:64px;height:64px;flex-shrink:0;"></div>
+              </div>
+              <div id="pctOutStg" style="font-size:28px;font-weight:900;color:#2563eb;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% STG (Staging)</div>
+              <div id="infoOutStg" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Staging</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutStg" style="height:100%;background:#2563eb;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %STG</span>
+              <span id="footOutStg" style="font-weight:900;color:#2563eb;">—</span>
+            </div>
+          </div>
+
+          <!-- % LD Loading -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fce7f3 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#ec4899;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 4.5s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div style="width:30px;height:30px;background:#fce7f3;display:flex;align-items:center;justify-content:center;font-size:15px;">🎯</div>
+                <div id="chartOutLd" style="width:64px;height:64px;flex-shrink:0;"></div>
+              </div>
+              <div id="pctOutLd" style="font-size:28px;font-weight:900;color:#ec4899;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% LD (Loading)</div>
+              <div id="infoOutLd" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Loading</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutLd" style="height:100%;background:#ec4899;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %LD</span>
+              <span id="footOutLd" style="font-weight:900;color:#ec4899;">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,215,240,0.3);padding:0 20px;">
+          <button id="outTabData" onclick="switchOutboundTab('data')" style="padding:10px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);transition:all 0.2s;">📋 Data Outbound</button>
+          <button id="outTabLine" onclick="switchOutboundTab('line')" style="padding:10px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">📊 Line Outbound</button>
+        </div>
+
+        <!-- TABLE DATA OUTBOUND -->
+        <div id="outWrapData" style="overflow-x:auto;flex:1;overflow-y:auto;background:#fff;">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead>
+              <tr style="background:#1e293b;position:sticky;top:0;z-index:2;">
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">NO</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">PENYELESAIAN</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">TRANS NO</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">%PC</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;">%STG</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#f9a8d4;">%LD</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">SHIPPING LINE</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">CARRIER ID</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fcd34d;">STUFFING</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">JENIS ARMADA</th>
+                <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO POL</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="outboundPanelBody" style="background:#fff;"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- TABLE LINE OUTBOUND -->
+        <div id="outWrapLine" style="overflow-x:auto;flex:1;overflow-y:auto;display:none;background:#fff;">
+          <table id="lineOutboundTable" style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead>
+              <tr style="background:#1e293b;position:sticky;top:0;z-index:2;">
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">NO</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">NO LINE</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO LC</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">SHIPPING LINE</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BATCH</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fcd34d;">STUFFING</th>
+                <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">ARMADA</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">CBM S2</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">%PC</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;">%STG</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TYPE</th>
+                <th style="padding:8px 8px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO POL</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">KET</th>
+                <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fcd34d;">LOADING</th>
+              </tr>
+            </thead>
+            <tbody id="lineOutboundBody" style="background:#fff;"><tr><td colspan="14" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="outboundPanelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+      </div>
+    </div>
+    <div id="inboundDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;">
+        <div style="padding:14px 20px 12px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(37,99,235,0.06),transparent);">
+          <div><span style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;"><span class="live-dot"></span>📦 Detail Inbound — Monitoring Putaway</span>
+          <div id="inlineTanggal" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div></div>
+          <button onclick="toggleInboundPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+        </div>
+
+        <!-- KPI CARDS KOTAK TAJAM -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+
+          <!-- Unloading -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
+            <div style="height:3px;background:#3b82f6;"></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.18),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 3s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div>
+                  <div style="width:30px;height:30px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:6px;">📥</div>
+                  <div style="font-size:13px;font-weight:900;color:#1e293b;">Unloading</div>
+                  <div id="pctUnloading" style="display:none;"></div>
+                </div>
+                <div id="chartUnloading" style="width:72px;height:72px;flex-shrink:0;"></div>
+              </div>
+              <!-- Mini boxes -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#16a34a;text-transform:uppercase;">✅ Finish</div>
+                  <div id="inbMiniFinish" style="font-size:16px;font-weight:900;color:#16a34a;line-height:1.1;">0</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">⏳ Proses</div>
+                  <div id="inbMiniProses" style="font-size:16px;font-weight:900;color:#2563eb;line-height:1.1;">0</div>
+                </div>
+                <div style="background:#fffbeb;border:1px solid #fde68a;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#d97706;text-transform:uppercase;">🕐 Antri</div>
+                  <div id="inbMiniAntri" style="font-size:16px;font-weight:900;color:#d97706;line-height:1.1;">0</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">🔴 Belum</div>
+                  <div id="inbMiniBelum" style="font-size:16px;font-weight:900;color:#dc2626;line-height:1.1;">0</div>
+                </div>
+              </div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barUnloading" style="height:100%;background:#3b82f6;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:7px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">UNLOADING</span>
+              <span id="pctUnloadingFoot" style="font-weight:900;color:#2563eb;">—</span>
+            </div>
+          </div>
+
+          <!-- Aktual Receive -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#d1fae5 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
+            <div style="height:3px;background:#10b981;"></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.18),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 3.5s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div>
+                  <div style="width:30px;height:30px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:6px;">📊</div>
+                  <div style="font-size:13px;font-weight:900;color:#1e293b;">Aktual Receive</div>
+                  <div id="pctAktualRcv" style="display:none;"></div>
+                </div>
+                <div id="chartAktualRcv" style="width:72px;height:72px;flex-shrink:0;"></div>
+              </div>
+              <!-- Mini boxes QTY & LPN -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#059669;text-transform:uppercase;">📦 QTY</div>
+                  <div id="aktQtyBox" style="font-size:14px;font-weight:900;color:#059669;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">🔢 LPN</div>
+                  <div id="aktLpnBox" style="font-size:14px;font-weight:900;color:#2563eb;line-height:1.1;">—</div>
+                </div>
+              </div>
+              <div id="infoAktualRcv" style="display:none;"></div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barAktualRcv" style="height:100%;background:#10b981;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:7px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AKTUAL RCV</span>
+              <span id="pctAktualRcvFoot" style="font-weight:900;color:#059669;">—</span>
+            </div>
+          </div>
+
+          <!-- Putaway Inbound -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#f3e8ff 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
+            <div style="height:3px;background:#8b5cf6;"></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.18),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div>
+                  <div style="width:30px;height:30px;background:#f3e8ff;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:6px;">🏬</div>
+                  <div style="font-size:13px;font-weight:900;color:#1e293b;">Putaway Inbound</div>
+                  <div id="pctPutawayIn" style="display:none;"></div>
+                </div>
+                <div id="chartPutawayIn" style="width:72px;height:72px;flex-shrink:0;"></div>
+              </div>
+              <!-- Mini boxes QTY, LPN, SISA -->
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#f5f3ff;border:1px solid #ddd6fe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#7c3aed;text-transform:uppercase;">📦 QTY</div>
+                  <div id="putInQtyBox" style="font-size:13px;font-weight:900;color:#7c3aed;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">🔢 LPN</div>
+                  <div id="putInLpnBox" style="font-size:13px;font-weight:900;color:#2563eb;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">📋 SISA</div>
+                  <div id="putInSisaBox" style="font-size:13px;font-weight:900;color:#dc2626;line-height:1.1;">—</div>
+                </div>
+              </div>
+              <div id="infoPutawayIn" style="display:none;"></div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barPutawayIn" style="height:100%;background:#8b5cf6;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:7px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">PUTAWAY IN</span>
+              <span id="pctPutawayInFoot" style="font-weight:900;color:#7c3aed;">—</span>
+            </div>
+          </div>
+
+          <!-- Putaway Storing -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
+            <div style="height:3px;background:#f59e0b;"></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.18),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4.5s ease-in-out infinite;pointer-events:none;z-index:1;"></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div>
+                  <div style="width:30px;height:30px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:6px;">📦</div>
+                  <div style="font-size:13px;font-weight:900;color:#1e293b;">Putaway Storing</div>
+                  <div id="pctPutawayStr" style="display:none;"></div>
+                </div>
+                <div id="chartPutawayStr" style="width:72px;height:72px;flex-shrink:0;"></div>
+              </div>
+              <!-- Mini boxes QTY, LPN, SISA -->
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;">
+                <div style="background:#fffbeb;border:1px solid #fde68a;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#d97706;text-transform:uppercase;">📦 QTY</div>
+                  <div id="putStrQtyBox" style="font-size:13px;font-weight:900;color:#d97706;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">🔢 LPN</div>
+                  <div id="putStrLpnBox" style="font-size:13px;font-weight:900;color:#2563eb;line-height:1.1;">—</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
+                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">📋 SISA</div>
+                  <div id="putStrSisaBox" style="font-size:13px;font-weight:900;color:#dc2626;line-height:1.1;">—</div>
+                </div>
+              </div>
+              <div id="infoPutawayStr" style="display:none;"></div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barPutawayStr" style="height:100%;background:#f59e0b;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:7px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">PUTAWAY STR</span>
+              <span id="pctPutawayStrFoot" style="font-weight:900;color:#d97706;">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div style="display:flex;border-bottom:1px solid rgba(200,215,240,0.3);padding:0 20px;">
+          <button id="panelTabInbound" onclick="switchPanelTab('inbound')" style="padding:10px 18px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);">📋 Data Inbound</button>
+          <button id="panelTabInline" onclick="switchPanelTab('inline')" style="padding:10px 18px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);">🏬 Monitoring Putaway</button>
+        </div>
+        <!-- TABLE Inbound -->
+        <!-- TABLE Data Inbound -->
+        <div id="panelInboundTable" style="overflow-x:auto;flex:1;overflow-y:auto;">
+          <div style="background:#1e293b;color:#fff;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.07em;">DATA INBOUND HARI INI</div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="background:#2d3748;">
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO LC</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO POLISI</th>
+                <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">EKSPEDISI</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TYPE</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;white-space:nowrap;">CHECK IN</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;white-space:nowrap;">STUFFING</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#fb923c;white-space:nowrap;">UNLOADING</th>
+                <th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;white-space:nowrap;">HIT/MISS</th>
+              </tr>
+            </thead>
+            <tbody id="panelInboundBody" style="background:#fff;">
+              <tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-3)">Memuat...</td></tr>
             </tbody>
           </table>
-        </div>`;
-      floatBox.style.cssText = 'position:absolute;top:6px;left:160px;z-index:10;';
-      wrap.appendChild(floatBox);
-    }
+        </div>
 
-    // Canvas
-    const canvas = document.createElement('canvas');
-    canvas.id = 'troughputChart';
-    canvas.style.cssText = 'width:100%;height:100%;';
-    wrap.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
-    const existing = Chart.getChart(ctx.canvas); if (existing) existing.destroy();
+        <!-- TABLE Putaway -->
+        <div id="panelInlineTable" style="overflow-x:auto;flex:1;overflow-y:auto;display:none;">
+          <div style="background:#1e293b;color:#fff;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.07em;">MONITORING PUTAWAY</div>
+          <table id="inlineTable" style="font-size:11px;min-width:1800px;border-collapse:collapse;">
+            <thead>
+              <tr style="background:#2d3748;">
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;min-width:30px;vertical-align:middle;">NO</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;min-width:120px;vertical-align:middle;">NO LC/PO</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">TYPE</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">NOPOL</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">BATCH</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">IN</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">OPEN</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">CLOSE</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;vertical-align:middle;">STATUS</th>
+                <th colspan="3" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;border-bottom:1px solid rgba(8,145,178,0.4);">PLAN</th>
+                <th colspan="4" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;border-bottom:1px solid rgba(22,163,74,0.4);">AKTUAL RECEIVE</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;border-bottom:1px solid rgba(139,92,246,0.4);">FLOWTHRU</th>
+                <th colspan="5" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;border-bottom:1px solid rgba(37,99,235,0.4);">PUTAWAY INBOUND</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;border-bottom:1px solid rgba(234,179,8,0.4);">SHIFT 1</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;border-bottom:1px solid rgba(59,130,246,0.4);">SHIFT 2</th>
+                <th colspan="5" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;border-bottom:1px solid rgba(22,163,74,0.4);">PUTAWAY STORING</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;border-bottom:1px solid rgba(234,179,8,0.4);">SHIFT 1</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;border-bottom:1px solid rgba(59,130,246,0.4);">SHIFT 2</th>
+              </tr>
+              <tr style="background:#374151;">
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#22d3ee;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#22d3ee;">CBM</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#22d3ee;">EST/LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">%RCV</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#a78bfa;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#a78bfa;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">SISA</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#60a5fa;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">SISA</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">%</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">LPN</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">QTY</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">LPN</th>
+              </tr>
+            </thead>
+            <tbody id="panelInlineBody"><tr><td colspan="36" style="text-align:center;padding:20px;color:var(--text-3)">Klik tab Monitoring Putaway untuk memuat...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="panelFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+      </div>
+    </div>
 
-    const troughputPlugin = {
-      id: 'troughputPlugin',
-      afterDatasetsDraw(chart) {
-        const { ctx: c, chartArea } = chart;
-        if (boundary >= 0 && boundary < labels.length - 1) {
-          const meta0 = chart.getDatasetMeta(0);
-          if (meta0.data[boundary] && meta0.data[boundary+1]) {
-            let maxX = meta0.data[boundary].x;
-            for (let di = 0; di < 3; di++) {
-              const m = chart.getDatasetMeta(di);
-              if (m.data[boundary]) maxX = Math.max(maxX, m.data[boundary].x);
-            }
-            const xPos = (maxX + meta0.data[boundary+1].x) / 2;
-            c.save();
-            c.beginPath();
-            c.setLineDash([6,4]);
-            c.strokeStyle = '#dc2626';
-            c.lineWidth = 2;
-            c.moveTo(xPos, chartArea.top + 8);
-            c.lineTo(xPos, chartArea.bottom);
-            c.stroke();
-            c.setLineDash([]);
-            c.font = 'bold 8px sans-serif';
-            c.fillStyle = '#dc2626';
-            c.textAlign = 'right';
-            c.fillText('◀ ACTUAL', xPos - 4, chartArea.top + 20);
-            c.fillStyle = '#64748b';
-            c.textAlign = 'left';
-            c.fillText('FORECAST ▶', xPos + 4, chartArea.top + 20);
-            c.restore();
-          }
-        }
-      },
-      afterDraw(chart) {
-        const { ctx: c } = chart;
-        chart.data.datasets.forEach((dataset, di) => {
-          if (dataset.label !== 'Occupancy (%)') return;
-          const meta = chart.getDatasetMeta(di);
-          meta.data.forEach((point, i) => {
-            const val = dataset.data[i];
-            if (!val) return;
-            c.save();
-            c.font = 'bold 11px sans-serif';
-            c.fillStyle = C.occupancy;
-            c.textAlign = 'center';
-            c.textBaseline = 'bottom';
-            c.fillText(val + '%', point.x, point.y - 4);
-            c.restore();
-          });
-        });
-      }
-    };
+    <!-- ═══ INVENTORY CONTROL DETAIL PANEL ═══ -->
+    <div id="inventoryDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;padding:0;">
 
-    new Chart(ctx, {
-      data: {
-        labels,
-        datasets: [
-          { type:'bar', label:'Inbound (CBM)',   data:d.map(r=>r.inbound),   backgroundColor:C.inbound.bar,   borderRadius:4, borderSkipped:false, yAxisID:'yL', order:3, datalabels:{anchor:'end',align:'top',offset:0,color:C.inbound.label,  font:{weight:'700',size:9},formatter:bl} },
-          { type:'bar', label:'Outbound (CBM)',  data:d.map(r=>r.outbound),  backgroundColor:C.outbound.bar,  borderRadius:4, borderSkipped:false, yAxisID:'yL', order:3, datalabels:{anchor:'end',align:'top',offset:0,color:C.outbound.label, font:{weight:'700',size:9},formatter:bl} },
-          { type:'bar', label:'Inventory (CBM)', data:d.map(r=>r.inventory), backgroundColor:C.inventory.bar, borderRadius:4, borderSkipped:false, yAxisID:'yL', order:3, datalabels:{anchor:'end',align:'top',offset:0,color:C.inventory.label,font:{weight:'700',size:9},formatter:bl} },
-          { type:'line', label:'Occupancy (%)',   data:d.map(r=>r.occupancy), borderColor:C.occupancy, backgroundColor:'rgba(124,58,237,.06)', borderWidth:2.5, tension:0.3, fill:false, pointRadius:5, pointBackgroundColor:C.occupancy, pointBorderColor:'#111', pointBorderWidth:2, yAxisID:'yR', order:1, datalabels:{display:false} },
-          { type:'line', label:'Capacity',        data:d.map(r=>r.capacity),  borderColor:C.capacity, backgroundColor:'transparent', borderWidth:1.8, borderDash:[8,5], pointRadius:0, tension:0, yAxisID:'yL', order:2, datalabels:{display:false} },
-          { type:'line', label:'Forecast Outbound', data:d.map(r=>r.forecastOB), borderColor:C.forecast, backgroundColor:'transparent', borderWidth:1.8, borderDash:[6,4], pointRadius:4, pointBackgroundColor:C.forecast, pointBorderColor:'#111', pointBorderWidth:1.5, tension:0.2, yAxisID:'yL', order:2, datalabels:{display:false} }
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        interaction:{ mode:'index', intersect:false },
-        animation:{ duration:800, easing:'easeOutQuart' },
-        layout:{ padding:{ top:12, right:8 } },
-        scales: {
-          x:  { grid:{color:'rgba(0,0,0,0.04)'}, ticks:{maxRotation:0,font:{size:9,weight:'600'},color:'#475569'}, border:{display:false} },
-          yL: { type:'linear', position:'left',  beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v,font:{size:9},color:'#475569'}, border:{display:false} },
-          yR: { type:'linear', position:'right', min:0, max:100, grid:{display:false}, ticks:{callback:v=>v+'%',stepSize:25,color:C.occupancy,font:{size:10,weight:'700'}}, border:{display:false} }
-        },
-        plugins: {
-          legend:{ display:false },
-          tooltip:{
-            backgroundColor:'rgba(10,10,10,.95)', borderColor:'rgba(212,160,23,.2)', borderWidth:1,
-            titleColor:'#e8c35a', titleFont:{weight:'700',size:12}, bodyColor:'#888', bodyFont:{size:11},
-            padding:{top:10,bottom:10,left:14,right:14}, cornerRadius:8,
-            callbacks:{ label: c2 => { const v=c2.parsed.y; if(!v&&v!==0)return''; if(c2.dataset.yAxisID==='yR')return' ● '+c2.dataset.label+': '+v.toFixed(0)+'%'; return' ● '+c2.dataset.label+': '+Math.round(v).toLocaleString('id-ID')+' CBM'; } }
-          },
-          datalabels:{ display: c2 => c2.dataset.type==='bar' }
-        }
-      },
-      plugins:[troughputPlugin]
-    });
-
-    // Legend manual — atas chart
-    const legendDiv = document.createElement('div');
-    legendDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;padding:0 4px 6px;font-size:10px;font-weight:600;color:#475569;';
-    legendDiv.innerHTML = `
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.inbound.bar};border-radius:2px;display:inline-block;"></span>Inbound</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.outbound.bar};border-radius:2px;display:inline-block;"></span>Outbound</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.inventory.bar};border-radius:2px;display:inline-block;"></span>Inventory</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:${C.occupancy};border-radius:50%;display:inline-block;"></span>Occupancy (%)</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;display:inline-block;border-top:2px dashed ${C.capacity};"></span>Capacity</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;display:inline-block;border-top:2px dashed ${C.forecast};"></span>Forecast Out</span>`;
-    wrap.insertBefore(legendDiv, canvas);
-
-  } catch(e) {
-    console.error('Troughput error:', e);
-    const w = document.getElementById('dailyActivityChartWrap');
-    if (w) w.innerHTML = `<div style="padding:20px;color:#dc2626;font-size:12px;">Error: ${e.message}</div>`;
-  }
-}
-function addBeam(el, color) {
-  if (!el) return;
-  el.style.position = 'relative';
-  el.style.overflow = 'hidden';
-  const b = document.createElement('div');
-  b.style.cssText = `position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,${color},transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;`;
-  el.appendChild(b);
-  el.addEventListener('mouseenter',()=>{b.style.transition='none';b.style.left='-100%';void b.offsetWidth;b.style.transition='left 1.2s ease';b.style.left='160%';});
-  el.addEventListener('mouseleave',()=>{b.style.transition='none';b.style.left='-100%';});
-}
-const pr = document.querySelectorAll('.progress-row > div');
-if(pr[0]) addBeam(pr[0],'rgba(59,130,246,0.3)');
-if(pr[1]) addBeam(pr[1],'rgba(236,72,153,0.3)');
-if(pr[2]) addBeam(pr[2],'rgba(245,158,11,0.3)');
-
-// ── NAVIGATION ──
-document.querySelectorAll('.nav-item').forEach(btn=>{btn.addEventListener('click',()=>{const p=btn.dataset.page;if(p)go(p);});});
-function go(p){
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  const nb=document.querySelector(`[data-page="${p}"]`); if(nb) nb.classList.add('active');
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.iframe-page').forEach(el=>{el.classList.remove('active');el.style.display='none';});
-  if(IFRAME_PAGES.includes(p)){const pg=document.getElementById(`page-${p}`);if(pg){pg.style.display='flex';pg.classList.add('active');}loadIframe(p);}
-  else{const pg=document.getElementById(`page-${p}`);if(pg)pg.classList.add('active');}
-}
-function goHome(){go('dashboard');IFRAME_PAGES.forEach(k=>{const f=document.getElementById(`ifr${cap(k)}`);if(f)f.src='about:blank';});}
-function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
-function loadIframe(key){
-  const url=URLS[key]; if(!url) return;
-  const f=document.getElementById(`ifr${cap(key)}`), ld=document.getElementById(`ld${cap(key)}`), er=document.getElementById(`err${cap(key)}`);
-  const tab=document.getElementById(`tab${cap(key)}`), errTab=document.getElementById(`errTab${cap(key)}`);
-  if(!f) return; if(tab) tab.href=url; if(errTab) errTab.href=url;
-  ld.classList.remove('hidden'); er.classList.remove('show'); f.style.opacity='0';
-  let realLoaded=false;
-  const t=setTimeout(()=>{ld.classList.add('hidden');er.classList.add('show');},20000);
-  f.onload=()=>{if(!realLoaded)return;clearTimeout(t);ld.classList.add('hidden');f.style.opacity='1';};
-  f.onerror=()=>{if(!realLoaded)return;clearTimeout(t);ld.classList.add('hidden');er.classList.add('show');};
-  f.src='about:blank'; setTimeout(()=>{realLoaded=true;f.src=url;},150);
-}
-function reloadIframe(frameId,key){const f=document.getElementById(frameId),url=URLS[key];if(!f||!url)return;const ld=document.getElementById(`ld${cap(key)}`),er=document.getElementById(`err${cap(key)}`);f.src='about:blank';ld.classList.remove('hidden');er.classList.remove('show');f.style.opacity='0';setTimeout(()=>{f.src=url;},100);}
-
-// ── AI SUPPORT ──
-function setupAI(inId,btnId,msgsId,typingId){
-  const inp=document.getElementById(inId),btn=document.getElementById(btnId),msgs=document.getElementById(msgsId),typing=document.getElementById(typingId);
-  if(!inp||!btn||!msgs) return;
-  function addBubble(text,type){const div=document.createElement('div');div.className=`ai-bubble ${type}`;div.style.whiteSpace='pre-wrap';div.textContent=text;if(typing&&msgs.contains(typing))msgs.insertBefore(div,typing);else msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
-  async function send(){const txt=inp.value.trim();if(!txt)return;addBubble(txt,'user');inp.value='';inp.disabled=true;btn.disabled=true;if(typing){typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;}try{const res=await fetch(GAS_AI_URL+'?q='+encodeURIComponent(txt));const data=await res.json();if(typing)typing.classList.remove('show');addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');}catch(e){if(typing)typing.classList.remove('show');addBubble('Maaf, terjadi kesalahan koneksi.','bot');}inp.disabled=false;btn.disabled=false;inp.focus();}
-  btn.addEventListener('click',send);inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
-}
-setupAI('aiIn','aiBtn','aiMsg','aiTyping');
-setupAI('aiIn2','aiBtn2','aiMsg2','aiTyping2');
-
-// ── NOTIFIKASI ──
-function getLastSeenTs(){return parseInt(localStorage.getItem('lastSeenTs_'+(me.name||'guest'))||'0');}
-function setLastSeenTs(ts){localStorage.setItem('lastSeenTs_'+(me.name||'guest'),ts);}
-function toggleNotif(){notifOpen=!notifOpen;document.getElementById('notifPanel').style.display=notifOpen?'block':'none';if(notifOpen){setLastSeenTs(Date.now());document.getElementById('notifBadge').style.display='none';document.getElementById('notifBadge').textContent='0';}}
-function clearNotifs(){notifList=[];setLastSeenTs(Date.now());document.getElementById('notifBadge').style.display='none';document.getElementById('notifList').innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';}
-function addNotif(msg){if(!msg||!msg.name)return;if(me.name&&msg.name===me.name)return;if(!msg.timestamp||msg.timestamp<=getLastSeenTs())return;notifList.unshift(msg);if(notifList.length>20)notifList.pop();if(!notifOpen){const badge=document.getElementById('notifBadge'),count=parseInt(badge.textContent||'0')+1;badge.textContent=count>9?'9+':count;badge.style.display='flex';const btn=document.getElementById('notifBtn');btn.style.animation='none';setTimeout(()=>btn.style.animation='shakeBell 0.5s ease',10);}renderNotifList();}
-function renderNotifList(){if(!notifList.length){document.getElementById('notifList').innerHTML='<div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div>';return;}document.getElementById('notifList').innerHTML=notifList.map(m=>`<div style="padding:12px 18px;border-bottom:1px solid rgba(200,215,240,0.3);display:flex;align-items:flex-start;gap:10px;cursor:pointer" onclick="go('discussion')"><div style="width:36px;height:36px;border-radius:50%;background:${m.color||'#2563eb'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">${(m.name||'?').slice(0,2).toUpperCase()}</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#0f172a">${m.name||'User'} <span style="font-weight:400;color:#94a3b8">di Discussion</span></div><div style="font-size:12px;color:#334155;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.text||''}</div><div style="font-size:10px;color:#94a3b8;margin-top:3px">${m.timestamp?new Date(m.timestamp).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}):''}</div></div><span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-weight:700;flex-shrink:0">💬</span></div>`).join('');}
-document.addEventListener('click',e=>{if(notifOpen&&!document.getElementById('notifPanel').contains(e.target)&&!document.getElementById('notifBtn').contains(e.target)){notifOpen=false;document.getElementById('notifPanel').style.display='none';}});
-
-// ── DARK MODE ──
-let isDark=localStorage.getItem('wms_dark')==='1';
-function applyDark(){document.body.classList.toggle('dark',isDark);updateDarkToggle();}
-function toggleDark(){isDark=!isDark;localStorage.setItem('wms_dark',isDark?'1':'0');applyDark();}
-applyDark();
-
-// ── SETTINGS ──
-let profileColorIdx=parseInt(localStorage.getItem('wms_color')||'0');
-function updateSettingsUser(){if(!me.name)return;const ava=document.getElementById('settingsAva');if(ava){ava.textContent=me.initials;ava.style.background=me.color.bg;}const nm=document.getElementById('settingsName');if(nm)nm.textContent=me.name;const rl=document.getElementById('settingsRole');if(rl)rl.textContent=me.jabatan||'Member AHI Sidoarjo';}
-function toggleSettings(){settingsOpen=!settingsOpen;document.getElementById('settingsPanel').classList.toggle('open',settingsOpen);updateDarkToggle();}
-function updateDarkToggle(){const toggle=document.getElementById('darkToggle');if(toggle)toggle.classList.toggle('on',isDark);}
-function openProfile(){settingsOpen=false;document.getElementById('settingsPanel').classList.remove('open');document.getElementById('profileOverlay').classList.remove('hidden');document.getElementById('profileAvaBig').textContent=me.initials||'?';document.getElementById('profileAvaBig').style.background=me.color?me.color.bg:'#2563eb';document.getElementById('profileNameShow').textContent=me.name||'—';document.getElementById('profileJabatan').textContent=me.jabatan||'Staff';document.getElementById('profileNipShow').value=me.nip||'—';profileColorIdx=parseInt(localStorage.getItem('wms_color')||'0');document.querySelectorAll('#profileColorOpts .color-opt').forEach((el,i)=>{el.classList.toggle('selected',i===profileColorIdx);el.onclick=function(){document.querySelectorAll('#profileColorOpts .color-opt').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');profileColorIdx=parseInt(el.dataset.pidx||i);document.getElementById('profileAvaBig').style.background=el.style.background;};});}
-document.getElementById('profileSaveBtn').addEventListener('click',function(){me.color=AVATAR_COLORS[profileColorIdx];localStorage.setItem('wms_color',profileColorIdx);document.getElementById('headerAvatar').textContent=me.initials;document.getElementById('headerAvatar').style.background=me.color.bg;applyTheme(me.color.hex);updateSettingsUser();document.getElementById('profileOverlay').classList.add('hidden');});
-document.getElementById('profileCloseBtn').addEventListener('click',function(){document.getElementById('profileOverlay').classList.add('hidden');});
-document.getElementById('profileOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden');});
-document.addEventListener('click',function(e){const panel=document.getElementById('settingsPanel'),btn=document.getElementById('settingsBtn');if(settingsOpen&&panel&&btn&&!panel.contains(e.target)&&!btn.contains(e.target)){settingsOpen=false;panel.classList.remove('open');}});
-
-// ── SEARCH BAR ──
-const SEARCH_ITEMS=[{label:'Dashboard',page:'dashboard',icon:'🏠',desc:'Halaman utama'},{label:'Planner',page:'planner',icon:'📋',desc:'Rencana Operasional'},{label:'Inbound',page:'inbound',icon:'📦',desc:'Dashboard Inbound'},{label:'Storing',page:'storing',icon:'🏗️',desc:'Dashboard Storing'},{label:'Outbound',page:'outbound',icon:'🚚',desc:'Dashboard Outbound'},{label:'Inventory',page:'inventory',icon:'📊',desc:'Manajemen Stok'},{label:'GA',page:'ga',icon:'🏢',desc:'General Affairs'},{label:'HR',page:'hr',icon:'👥',desc:'Human Resources'},{label:'Analyst',page:'analyst',icon:'📊',desc:'Dashboard Analitik Operasional'},{label:'Discussion',page:'discussion',icon:'💬',desc:'Discussion Room'},{label:'AI Support',page:'ai',icon:'🤖',desc:'Asisten AI Warehouse'}];
-const searchInput=document.getElementById('searchInput'), searchDropdown=document.getElementById('searchDropdown');
-function renderSearch(query){if(!query.trim()){searchDropdown.style.display='none';return;}const q=query.toLowerCase(),results=SEARCH_ITEMS.filter(item=>item.label.toLowerCase().includes(q)||item.desc.toLowerCase().includes(q));if(!results.length){searchDropdown.innerHTML='<div style="padding:12px 14px;font-size:12.5px;color:var(--text-3);text-align:center;">Tidak ditemukan</div>';searchDropdown.style.display='block';return;}searchDropdown.innerHTML=results.map(item=>`<div class="search-item" data-page="${item.page}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:all 0.15s;"><div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);display:grid;place-items:center;font-size:16px;flex-shrink:0;border:1px solid var(--accent-mid);">${item.icon}</div><div><div style="font-size:13px;font-weight:700;color:var(--text);">${item.label}</div><div style="font-size:11px;color:var(--text-3);">${item.desc}</div></div><span style="margin-left:auto;font-size:10px;color:var(--text-3);">↵</span></div>`).join('');searchDropdown.style.display='block';searchDropdown.querySelectorAll('.search-item').forEach(el=>{el.addEventListener('mouseenter',()=>{el.style.background='var(--accent-light)';});el.addEventListener('mouseleave',()=>{el.style.background='none';});el.addEventListener('click',()=>{go(el.dataset.page);searchInput.value='';searchDropdown.style.display='none';});});}
-if(searchInput){searchInput.addEventListener('input',e=>renderSearch(e.target.value));searchInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const first=searchDropdown.querySelector('.search-item');if(first){go(first.dataset.page);searchInput.value='';searchDropdown.style.display='none';}}if(e.key==='Escape'){searchInput.value='';searchDropdown.style.display='none';}});}
-document.addEventListener('click',e=>{if(searchDropdown&&!searchDropdown.contains(e.target)&&e.target!==searchInput)searchDropdown.style.display='none';});
-
-// ── MOBILE SIDEBAR ──
-function toggleSidebar(){const sidebar=document.querySelector('.sidebar'),overlay=document.getElementById('sidebarOverlay'),btn=document.getElementById('hamburgerBtn');sidebar.classList.toggle('open');overlay.classList.toggle('show');btn.classList.toggle('active');}
-function closeSidebar(){const sidebar=document.querySelector('.sidebar'),overlay=document.getElementById('sidebarOverlay'),btn=document.getElementById('hamburgerBtn');sidebar.classList.remove('open');overlay.classList.remove('show');btn.classList.remove('active');}
-document.querySelectorAll('.nav-item').forEach(btn=>{btn.addEventListener('click',()=>{if(window.innerWidth<=768)closeSidebar();});});
-
-// ══════════════════════════════════════
-//  PLANNER DETAIL PANEL
-// ══════════════════════════════════════
-let plannerPanelOpen = false;
-
-function togglePlannerPanel() {
-  plannerPanelOpen = !plannerPanelOpen;
-  const panel       = document.getElementById('plannerDetailPanel');
-  const midGrid     = document.querySelector('.mid-grid');
-  const progressRow = document.querySelector('.progress-row');
-  const bottomGrid  = document.querySelector('.bottom-grid');
-  if (!panel) return;
-
-  if (inboundPanelOpen)   { inboundPanelOpen   = false; const p=document.getElementById('inboundDetailPanel');   if(p) p.style.display='none'; }
-  if (storingPanelOpen)   { storingPanelOpen   = false; const p=document.getElementById('storingDetailPanel');   if(p) p.style.display='none'; }
-  if (outboundPanelOpen)  { outboundPanelOpen  = false; const p=document.getElementById('outboundDetailPanel');  if(p) p.style.display='none'; }
-  if (inventoryPanelOpen) { inventoryPanelOpen = false; const p=document.getElementById('inventoryDetailPanel'); if(p) p.style.display='none'; }
-
-  if (plannerPanelOpen) {
-    panel.style.display = 'block';
-    if (midGrid)     midGrid.style.display     = 'none';
-    if (progressRow) progressRow.style.display = 'none';
-    if (bottomGrid)  bottomGrid.style.display  = 'none';
-    fetchPlannerDetail();
-    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  } else {
-    panel.style.display = 'none';
-    if (midGrid)     midGrid.style.display     = '';
-    if (progressRow) progressRow.style.display = '';
-    if (bottomGrid)  bottomGrid.style.display  = '';
-  }
-}
-
-fetchDailyActivity();
-
-async function fetchPlannerDetail() {
-  const subtitle = document.getElementById('plannerDetailSubtitle');
-  const footer   = document.getElementById('plannerDetailFooter');
-  if (subtitle) subtitle.textContent = 'Memuat data...';
-
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getPlannerDetail');
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Gagal');
-
-    if (subtitle) subtitle.textContent = 'Periode: ' + data.bulan;
-    if (footer)   footer.textContent   = 'Data Planner — ' + data.bulan + ' · ' + data.summary.totalAll + ' LC total';
-
-    const s = data.summary;
-
-    // ── KPI ──
-    const kv = document.getElementById('plKpiVendor');    if(kv) { kv.textContent = s.vendorSupporting + '%'; kv.style.color = parseFloat(s.vendorSupporting) >= 95 ? '#d97706' : '#dc2626'; }
-    const kc = document.getElementById('plKpiCompleted'); if(kc) { kc.textContent = s.totalCompleted.toLocaleString('id-ID') + ' LC'; }
-    const ko = document.getElementById('plKpiOnTime');    if(ko) { ko.textContent = s.totalOnTime.toLocaleString('id-ID') + ' LC'; }
-    const kd = document.getElementById('plKpiDelayed');   if(kd) { kd.textContent = s.totalDelayed.toLocaleString('id-ID') + ' LC'; kd.style.color = s.totalDelayed > 0 ? '#dc2626' : '#16a34a'; }
-    // Footer & bar KPI cards
-    const fv = document.getElementById('footPlVendor');    if(fv) { fv.textContent = s.vendorSupporting + '%'; fv.style.color = parseFloat(s.vendorSupporting) >= 95 ? '#d97706' : '#dc2626'; }
-    const fc = document.getElementById('footPlCompleted'); if(fc) fc.textContent = s.totalCompleted.toLocaleString('id-ID') + ' LC';
-    const fo = document.getElementById('footPlOnTime');    if(fo) fo.textContent = s.totalOnTime.toLocaleString('id-ID') + ' LC';
-    const fd = document.getElementById('footPlDelayed');   if(fd) { fd.textContent = s.totalDelayed.toLocaleString('id-ID') + ' LC'; fd.style.color = s.totalDelayed > 0 ? '#dc2626' : '#16a34a'; }
-    const bv = document.getElementById('barPlVendor');  if(bv) setTimeout(()=>bv.style.width=Math.min(parseFloat(s.vendorSupporting),100)+'%',300);
-    const bo = document.getElementById('barPlOnTime');  if(bo) setTimeout(()=>bo.style.width=s.totalCompleted>0?Math.round(s.totalOnTime/s.totalCompleted*100)+'%':'0%',300);
-    const bd = document.getElementById('barPlDelayed'); if(bd) setTimeout(()=>bd.style.width=s.totalCompleted>0?Math.min(Math.round(s.totalDelayed/s.totalCompleted*100)*3,100)+'%':'0%',300);
-
-    // ── TREND CHART ──
-    const trendCtx = document.getElementById('plTrendChart');
-    if (trendCtx && data.trendData && data.trendData.length) {
-      const existing = Chart.getChart(trendCtx); if(existing) existing.destroy();
-      // Custom plugin label % di atas titik line
-      const plLabelPlugin = {
-        id: 'plLabelPlugin',
-        afterDatasetsDraw(chart) {
-          const{ctx, data} = chart;
-          chart.data.datasets.forEach((dataset, i) => {
-            if (dataset.yAxisID !== 'y2') return;
-            const meta = chart.getDatasetMeta(i);
-            meta.data.forEach((point, j) => {
-              const val = dataset.data[j];
-              if (val === undefined || val === null) return;
-              ctx.save();
-              ctx.font = 'bold 9px Outfit, sans-serif';
-              ctx.fillStyle = '#d97706';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'bottom';
-              ctx.fillText(val + '%', point.x, point.y - 5);
-              ctx.restore();
-            });
-          });
-        }
-      };
-
-      new Chart(trendCtx.getContext('2d'), {
-        type: 'bar',
-        plugins: [plLabelPlugin],
-        data: {
-          labels: data.trendData.map(d => d.date.slice(5)),
-          datasets: [
-            { label: 'ON TIME (LC)', data: data.trendData.map(d => d.onTime), backgroundColor: '#2563eb', order: 2 },
-            { label: 'DELAYED (LC)', data: data.trendData.map(d => d.delayed), backgroundColor: '#ef4444', order: 2 },
-            { label: 'ACHIEVEMENT %', data: data.trendData.map(d => d.pct), type: 'line',
-              borderColor: '#f59e0b', backgroundColor: 'transparent',
-              pointBackgroundColor: '#f59e0b', pointBorderColor: '#fff', pointBorderWidth: 2,
-              pointRadius: 5, borderWidth: 2.5, yAxisID: 'y2', order: 1 }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          layout: { padding: { top: 20 } },
-          scales: {
-            x: { stacked: true, ticks: { color: '#475569', font: { size: 9 } }, grid: { display: false }, border: { display: false } },
-            y: { stacked: true, ticks: { color: '#475569', font: { size: 10 } }, grid: { display: false }, border: { display: false }, beginAtZero: true },
-            y2: { position: 'right', min: 0, max: 110, ticks: { color: '#d97706', font: { size: 10, weight: '700' }, callback: v => v <= 100 ? v + '%' : '' }, grid: { display: false } }
-          },
-          plugins: {
-            legend: { labels: { color: '#475569', font: { size: 10, weight: '600' }, boxWidth: 12 } },
-            tooltip: { backgroundColor: 'rgba(15,23,42,0.92)', titleColor: '#f0f4ff', bodyColor: '#cbd5e1',
-              callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw + (ctx.dataset.yAxisID === 'y2' ? '%' : ' LC') } }
-          }
-        }
-      });
-    }
-
-    // ── CBM BY KOTA ──
-    const kotaBody = document.getElementById('plKotaBody');
-    if (kotaBody && data.kotaData) {
-      const fmt = v => v > 0 ? v.toLocaleString('id-ID') : '-';
-      const fmtCbm = v => v > 0 ? v.toFixed(2) : '-';
-      kotaBody.innerHTML = data.kotaData.map(r =>
-        '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
-        '<td style="padding:6px 10px;font-size:11px;font-weight:800;color:#1e293b;">' + r.kota + '</td>' +
-        '<td style="padding:6px 8px;text-align:right;color:#4ade80;font-size:11px;">' + fmtCbm(r.onTimeCbm) + '</td>' +
-        '<td style="padding:6px 8px;text-align:right;color:#4ade80;font-size:11px;">' + fmt(r.onTimeJml) + '</td>' +
-        '<td style="padding:6px 8px;text-align:right;color:#f87171;font-size:11px;">' + fmtCbm(r.terlambatCbm) + '</td>' +
-        '<td style="padding:6px 8px;text-align:right;color:#f87171;font-size:11px;">' + fmt(r.terlambatJml) + '</td>' +
-        '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + fmtCbm(r.belumCbm) + '</td>' +
-        '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + fmt(r.belumJml) + '</td>' +
-        '</tr>'
-      ).join('') +
-      '<tr style="background:rgba(37,99,235,0.06);border-top:2px solid rgba(37,99,235,0.2);">' +
-      '<td style="padding:7px 10px;font-size:11px;font-weight:900;color:#1e293b;">TOTAL</td>' +
-      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.onTimeCbm.toFixed(2) + '</td>' +
-      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.onTimeJml + '</td>' +
-      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.terlambatCbm.toFixed(2) + '</td>' +
-      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.terlambatJml + '</td>' +
-      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.belumCbm.toFixed(2) + '</td>' +
-      '<td style="padding:7px 8px;text-align:right;color:#fbbf24;font-weight:800;font-size:11px;">' + data.kotaTotals.belumJml + '</td>' +
-      '</tr>';
-    }
-
-    // ── VENDOR NOT AVAILABLE ──
-    const vnaBody = document.getElementById('plVendorNotAvailBody');
-    if (vnaBody) {
-      if (!data.vendorNotAvail || !data.vendorNotAvail.length) {
-        vnaBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6a7a9a;">Tidak ada data</td></tr>';
-      } else {
-        vnaBody.innerHTML = data.vendorNotAvail.slice(0,20).map((r,i) =>
-          '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
-          '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
-          '<td style="padding:6px 10px;font-weight:800;color:#2563eb;font-family:JetBrains Mono,monospace;font-size:11px;">' + r.lc + '</td>' +
-          '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.carrier + '</td>' +
-          '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.jalur + '</td>' +
-          '<td style="padding:6px 8px;color:#2563eb;font-size:11px;font-weight:600;">' + r.loadDate + '</td>' +
-          '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + r.cbm.toFixed(2) + '</td>' +
-          '<td style="padding:6px 8px;text-align:center;color:#f87171;font-weight:700;font-size:11px;">' + (r.aging > 0 ? Math.round(r.aging) + ' HARI' : '-') + '</td>' +
-          '</tr>'
-        ).join('');
-      }
-    }
-
-    // ── VENDOR DELAYED ──
-    const delBody = document.getElementById('plDelayedBody');
-    if (delBody) {
-      if (!data.vendorDelayed || !data.vendorDelayed.length) {
-        delBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6a7a9a;">Tidak ada data</td></tr>';
-      } else {
-        delBody.innerHTML = data.vendorDelayed.slice(0,20).map((r,i) =>
-          '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
-          '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
-          '<td style="padding:6px 10px;font-weight:800;color:#2563eb;font-family:JetBrains Mono,monospace;font-size:11px;">' + r.lc + '</td>' +
-          '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.carrier + '</td>' +
-          '<td style="padding:6px 8px;color:var(--text-2);font-size:11px;">' + r.jalur + '</td>' +
-          '<td style="padding:6px 8px;color:#2563eb;font-size:11px;font-weight:600;">' + r.loadDate + '</td>' +
-          '<td style="padding:6px 8px;text-align:right;color:#94a3b8;font-size:11px;">' + r.cbm.toFixed(2) + '</td>' +
-          '<td style="padding:6px 8px;text-align:center;color:#f87171;font-weight:700;font-size:11px;">' + r.agingLabel + '</td>' +
-          '</tr>'
-        ).join('');
-      }
-    }
-
-    // ── AGING PER CARRIER ──
-    const agBody = document.getElementById('plAgingBody');
-    if (agBody && data.agingData) {
-      const dc = v => v > 0 ? '<span style="color:#60a5fa;font-weight:700;">'+v+'</span>' : '<span style="color:#3a4a6a;">-</span>';
-      agBody.innerHTML = data.agingData.map((r,i) =>
-        '<tr style="border-bottom:1px solid rgba(200,215,240,0.25);">' +
-        '<td style="padding:6px 8px;text-align:center;color:#6a7a9a;font-size:11px;">' + (i+1) + '</td>' +
-        '<td style="padding:6px 10px;font-weight:700;color:#fbbf24;font-size:11px;">' + r.carrier + '</td>' +
-        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a1) + '</td>' +
-        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a2) + '</td>' +
-        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a3) + '</td>' +
-        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a4) + '</td>' +
-        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a5) + '</td>' +
-        '<td style="padding:6px 8px;text-align:center;font-size:11px;">' + dc(r.a5up) + '</td>' +
-        '<td style="padding:6px 8px;text-align:center;font-size:11px;"><span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-weight:800;">' + r.total + '</span></td>' +
-        '</tr>'
-      ).join('') +
-      '<tr style="background:rgba(37,99,235,0.06);border-top:2px solid rgba(37,99,235,0.2);">' +
-      '<td colspan="2" style="padding:7px 10px;font-size:11px;font-weight:900;color:#1e293b;">TOTAL</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a1||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a2||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a3||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a4||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a5||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;color:#1e293b;font-weight:800;">' + (data.agingTotals.a5up||'-') + '</td>' +
-      '<td style="padding:7px 8px;text-align:center;"><span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-weight:900;">' + data.agingTotals.total + '</span></td>' +
-      '</tr>';
-    }
-
-    // ── VENDOR PERFORMANCE % ──
-    const vpBody = document.getElementById('plVendorPerfBody');
-    if (vpBody && data.vendorPerf) {
-      vpBody.innerHTML = data.vendorPerf.map((r,i) => {
-        const pct = parseFloat(r.pct);
-        const col = pct >= 100 ? '#16a34a' : pct >= 95 ? '#d97706' : '#dc2626';
-        const bg = i%2===0 ? 'background:rgba(255,255,255,0.7);' : 'background:rgba(226,232,240,0.5);';
-        return '<tr style="'+bg+'border-bottom:1px solid rgba(200,215,240,0.3);">' +
-          '<td style="padding:7px 10px;text-align:center;color:#94a3b8;font-size:11px;font-weight:600;">' + (i+1) + '</td>' +
-          '<td style="padding:7px 12px;font-weight:800;color:#0f172a;font-size:12px;">' + r.carrier + '</td>' +
-          '<td style="padding:7px 10px;text-align:center;color:#16a34a;font-weight:800;font-size:12px;">' + r.onTime + '</td>' +
-          '<td style="padding:7px 10px;text-align:center;color:#dc2626;font-weight:800;font-size:12px;">' + (r.delayed > 0 ? r.delayed : '<span style="color:#94a3b8;">-</span>') + '</td>' +
-          '<td style="padding:7px 10px;text-align:center;color:#475569;font-size:12px;font-weight:700;">' + r.total + '</td>' +
-          '<td style="padding:7px 10px;text-align:center;"><span style="color:'+col+';font-weight:900;font-size:13px;">'+r.pct+'</span></td>' +
-          '</tr>';
-      }).join('');
-    }
-
-    // ── PERCENTAGE BREAKDOWN BARS ──
-    const bbEl = document.getElementById('plBreakdownBars');
-    if (bbEl) {
-      const maxV = Math.max(data.pctDelayed, data.pctOnTime, data.pctBelum, 1);
-      const barH = (v) => Math.round((v / 100) * 100);
-      bbEl.innerHTML =
-        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">' +
-          '<div style="font-size:12px;font-weight:900;color:#f87171;">' + data.pctDelayed + '%</div>' +
-          '<div style="width:100%;background:#ef4444;height:' + barH(data.pctDelayed) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
-          '<div style="font-size:10px;color:var(--text-3);text-align:center;">TERLAMBAT</div>' +
-        '</div>' +
-        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:2;">' +
-          '<div style="font-size:12px;font-weight:900;color:#60a5fa;">' + data.pctOnTime + '%</div>' +
-          '<div style="width:100%;background:#3b82f6;height:' + barH(data.pctOnTime) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
-          '<div style="font-size:10px;color:var(--text-3);text-align:center;">ON TIME</div>' +
-        '</div>' +
-        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">' +
-          '<div style="font-size:12px;font-weight:900;color:#94a3b8;">' + data.pctBelum + '%</div>' +
-          '<div style="width:100%;background:#94a3b8;height:' + barH(data.pctBelum) + 'px;min-height:4px;border-radius:3px 3px 0 0;margin-top:auto;"></div>' +
-          '<div style="font-size:10px;color:var(--text-3);text-align:center;">BELUM SUPPORT</div>' +
-        '</div>';
-    }
-
-    // ── AGING BREAKDOWN ──
-    const abEl = document.getElementById('plAgingBreak');
-    if (abEl && data.agingBreak) {
-      const tot = data.agingBreakTotal || 1;
-      const items = [
-        { label:'1 Hari', val: data.agingBreak.h1 },
-        { label:'2 Hari', val: data.agingBreak.h2 },
-        { label:'3 Hari', val: data.agingBreak.h3 },
-        { label:'4 Hari', val: data.agingBreak.h4 },
-        { label:'5 Hari', val: data.agingBreak.h5 },
-        { label:'> 5 Hari', val: data.agingBreak.h5up },
-      ];
-      abEl.innerHTML = items.map(it => {
-        const pct = Math.round((it.val/tot)*100);
-        return '<div style="display:flex;align-items:center;gap:8px;">' +
-          '<div style="font-size:11px;font-weight:700;color:#0f172a;width:52px;">' + it.label + '</div>' +
-          '<div style="flex:1;height:8px;background:rgba(0,0,0,0.08);border-radius:4px;overflow:hidden;">' +
-            '<div style="width:' + pct + '%;height:100%;background:#334155;border-radius:4px;"></div>' +
-          '</div>' +
-          '<div style="font-size:11px;color:#0f172a;font-weight:900;min-width:32px;">' + pct + '%</div>' +
-          '</div>';
-      }).join('');
-    }
-
-  } catch(e) {
-    console.error('Planner detail error:', e);
-    const els = ['plKotaBody','plVendorNotAvailBody','plDelayedBody','plAgingBody','plVendorPerfBody'];
-    els.forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML='<tr><td colspan="9" style="text-align:center;padding:16px;color:#f87171;">Gagal: '+e.message+'</td></tr>'; });
-    if(subtitle) subtitle.textContent = 'Error: ' + e.message;
-  }
-}
-// ── History Login ─────────────────────────────────────────────
-function openHistoryLogin() {
-  settingsOpen = false;
-  document.getElementById('settingsPanel').classList.remove('open');
-  const modal = document.getElementById('historyModal');
-  modal.style.display = 'flex';
-  const list = document.getElementById('historyLoginList');
-  list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>';
-  if (!db) { list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Firebase tidak tersedia</div>'; return; }
-  fetch(GAS_DASHBOARD_URL + '?action=getLoginHistory')
-    .then(r => r.json())
-    .then(data => {
-      if (!data.ok || !data.entries.length) {
-        list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Belum ada history login</div>';
-        return;
-      }
-      list.innerHTML = data.entries.map((e,i) => `
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${i%2===0?'#f8fafc':'#fff'};border-radius:10px;border:1px solid #f1f5f9;">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">${(e.name||'?').slice(0,2).toUpperCase()}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:800;color:#0f172a;">${e.name||'—'}</div>
-            <div style="font-size:11px;color:#64748b;">${e.jabatan||'—'} · NIP ${e.nip||'—'}</div>
+        <!-- ── HEADER ── -->
+        <div style="padding:20px 28px 16px;border-bottom:1px solid rgba(200,215,240,0.25);background:linear-gradient(135deg,rgba(22,163,74,0.05),transparent);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2px;">Inventory Control — AHI Sidoarjo</div>
+              <div style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:-0.4px;">Cycle Count Detail</div>
+              <div id="invPanelSubtitle" style="font-size:11.5px;color:var(--text-3);font-weight:500;margin-top:4px;">Memuat data...</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;margin-top:4px;">
+              <div style="display:flex;align-items:center;gap:5px;background:rgba(22,163,74,0.1);color:#16a34a;border:1px solid rgba(22,163,74,0.25);border-radius:20px;padding:5px 13px;font-size:11px;font-weight:700;"><span class="live-dot"></span>LIVE</div>
+              <button onclick="toggleInventoryPanel()" style="border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:6px 16px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+            </div>
           </div>
-          <div style="font-size:11px;color:#94a3b8;text-align:right;flex-shrink:0;">${e.time||'—'}</div>
-        </div>`).join('');
-    })
-    .catch(() => {
-      list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Gagal memuat history</div>';
+        </div>
+
+        <!-- ── KPI CARDS (top-border style, like image 2) ── -->
+        <div id="invKpiRow" style="display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid rgba(200,215,240,0.25);">
+          <!-- diisi JS -->
+        </div>
+
+        <!-- ── PROGRESS BAR ── -->
+        <div style="padding:11px 28px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;align-items:center;gap:14px;">
+          <span style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;">📊 Progress Cycle Count</span>
+          <div style="flex:1;height:10px;background:rgba(148,163,184,0.15);border-radius:10px;overflow:hidden;position:relative;">
+            <div id="invProgressBar" style="height:100%;background:linear-gradient(90deg,#2563eb,#06b6d4,#10b981);border-radius:10px;width:0%;transition:width 1.2s cubic-bezier(0.22,0.61,0.36,1);position:relative;overflow:hidden;">
+              <!-- Lampu bergerak -->
+              <div style="position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent);animation:invBeam 2s ease-in-out infinite;border-radius:10px;"></div>
+            </div>
+          </div>
+          <span id="invProgressLabel" style="font-size:13px;font-weight:900;color:var(--accent);white-space:nowrap;min-width:48px;text-align:right;">0%</span>
+        </div>
+
+        <!-- ── LAPORAN TERPADU ── -->
+        <div style="padding:18px 28px 0;flex:1;overflow-y:auto;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2px;">LAPORAN TERPADU</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div style="font-size:16px;font-weight:800;color:var(--text);">Summary Cycle Count &amp; Akurasi</div>
+            <button onclick="window.print()" style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-2);background:var(--bg);border-radius:var(--r-xs);padding:5px 14px;font-size:11px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">🖨️ Print Summary</button>
+          </div>
+
+          <!-- TWO TABLES -->
+          <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:16px;padding-bottom:20px;">
+
+            <!-- LEFT TABLE: DETAIL BY LORONG -->
+            <div style="min-width:0;border-radius:0 0 8px 8px;overflow:hidden;border:1px solid rgba(200,215,240,0.3);">
+              <div style="background:#1e293b;color:#fff;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.07em;">DETAIL CYCLE COUNT BY LORONG</div>
+              <div style="overflow-x:auto;">
+                <table id="invLorongTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <thead>
+                    <tr style="background:#2d3748;">
+                      <th style="padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">SPV AREA</th>
+                      <th style="padding:7px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">PIC</th>
+                      <th style="padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">LORONG</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">JML LOKASI</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#22d3ee;">CC</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#4ade80;">HIT</th>
+                      <th style="padding:7px 10px;text-align:right;font-size:10px;font-weight:700;color:#fb923c;">MISS</th>
+                      <th style="padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">% CC</th>
+                      <th style="padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#f9a8d4;white-space:nowrap;">AKURASI LORONG</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invLorongBody">
+                    <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- RIGHT TABLE: SEBARAN AKURASI BY LEVEL RAK -->
+            <div style="min-width:0;border-radius:0 0 8px 8px;overflow:hidden;border:1px solid rgba(200,215,240,0.3);">
+              <div style="background:#1e293b;color:#fff;padding:9px 16px;font-size:11px;font-weight:700;letter-spacing:0.07em;">SEBARAN AKURASI BY LEVEL RAK</div>
+              <div style="overflow-x:auto;">
+                <table id="invAreaTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+                  <thead>
+                    <tr style="background:#2d3748;">
+                      <th style="padding:7px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">LORONG</th>
+                      <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#f9a8d4;white-space:nowrap;">AKURASI LORONG</th>
+                      <th style="padding:7px 7px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">1</th>
+                      <th style="padding:7px 7px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">2</th>
+                      <th style="padding:7px 7px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">3</th>
+                      <th style="padding:7px 7px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">4</th>
+                      <th style="padding:7px 7px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">5</th>
+                      <th style="padding:7px 7px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">6</th>
+                      <th style="padding:7px 7px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">7</th>
+                      <th style="padding:7px 7px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">8</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invAreaBody">
+                    <tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text-3)">Memuat...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div id="invPanelFooter" style="padding:8px 28px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);flex-shrink:0;"></div>
+      </div>
+    </div>
+
+    <!-- PLANNER DETAIL PANEL -->
+    <!-- PLANNER DETAIL PANEL -->
+    <div id="plannerDetailPanel" style="display:none;margin-bottom:18px;">
+      <div class="card" style="overflow:hidden;background:var(--bg);">
+
+        <!-- HEADER -->
+        <div style="padding:14px 20px 12px;border-bottom:1px solid rgba(200,215,240,0.2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,rgba(153,27,27,0.06),transparent);position:relative;overflow:hidden;">
+          <div>
+            <span style="font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px;"><span class="live-dot"></span>📋 Planner Dashboard — Vendor Performance</span>
+            <div id="plannerDetailSubtitle" style="font-size:11px;color:var(--text-3);font-weight:500;margin-top:3px"></div>
+          </div>
+          <button onclick="togglePlannerPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
+        </div>
+
+        <!-- KPI SUMMARY - style selaras dengan panel lain -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:-30%;width:25%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.25),transparent);transform:skewX(-15deg);pointer-events:none;z-index:100;animation:plKpiScan 5s ease-in-out infinite;"></div>
+
+          <!-- Vendor Supporting -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#d97706;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(220,38,38,0.6),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">VENDOR SUPPORTING</div>
+                <div style="font-size:14px;">🚛</div>
+              </div>
+              <div id="plKpiVendor" style="font-size:30px;font-weight:900;color:#d97706;letter-spacing:-1px;line-height:1;margin-bottom:3px;">—</div>
+              <div style="font-size:10px;color:#94a3b8;flex:1;">Monthly On-Time Avg</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPlVendor" style="height:100%;background:#d97706;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">ON-TIME AVG</span>
+              <span id="footPlVendor" style="font-weight:900;color:#d97706;">—</span>
+            </div>
+          </div>
+
+          <!-- Total Completed LC -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL COMPLETED LC</div>
+                <div style="font-size:14px;">📦</div>
+              </div>
+              <div id="plKpiCompleted" style="font-size:30px;font-weight:900;color:#2563eb;letter-spacing:-1px;line-height:1;margin-bottom:3px;">—</div>
+              <div style="font-size:10px;color:#94a3b8;flex:1;">Total Load Containers</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div style="height:100%;background:#2563eb;width:100%;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">COMPLETED</span>
+              <span id="footPlCompleted" style="font-weight:900;color:#2563eb;">—</span>
+            </div>
+          </div>
+
+          <!-- Total On-Time LC -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#dcfce7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL ON-TIME LC</div>
+                <div style="font-size:14px;">✅</div>
+              </div>
+              <div id="plKpiOnTime" style="font-size:30px;font-weight:900;color:#16a34a;letter-spacing:-1px;line-height:1;margin-bottom:3px;">—</div>
+              <div style="font-size:10px;color:#94a3b8;flex:1;">Delivered Within Schedule</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPlOnTime" style="height:100%;background:#16a34a;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">ON TIME</span>
+              <span id="footPlOnTime" style="font-weight:900;color:#16a34a;">—</span>
+            </div>
+          </div>
+
+          <!-- Total Delayed LC -->
+          <div style="background:linear-gradient(160deg,#fff 55%,#fee2e2 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#dc2626;position:relative;overflow:hidden;"></div>
+            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;">TOTAL DELAYED LC</div>
+                <div style="font-size:14px;">⚠️</div>
+              </div>
+              <div id="plKpiDelayed" style="font-size:30px;font-weight:900;color:#dc2626;letter-spacing:-1px;line-height:1;margin-bottom:3px;">—</div>
+              <div style="font-size:10px;color:#94a3b8;flex:1;">Requires Dispatch Follow-up</div>
+              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barPlDelayed" style="height:100%;background:#dc2626;width:0%;transition:width 1s;"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
+              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;">DELAYED</span>
+              <span id="footPlDelayed" style="font-weight:900;color:#dc2626;">—</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TREND CHART -->
+        <div style="padding:18px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+          <div style="font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;">📈 Trend Daily Vendor Performance (On Time Achievement)</div>
+          <div style="position:relative;height:200px;overflow:hidden;background:transparent;" id="plTrendWrap">
+            <canvas id="plTrendChart" style="width:100%;height:200px;"></canvas>
+          </div>
+        </div>
+
+        <!-- TWO COLUMN: CBM by City + Vendor Not Available -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(200,215,240,0.2);">
+
+          <!-- CBM BY CITY -->
+          <div style="border-right:1px solid rgba(200,215,240,0.2);">
+            <div style="padding:12px 16px;background:rgba(153,27,27,0.04);border-bottom:1px solid rgba(200,215,240,0.2);font-size:11px;font-weight:700;color:#991b1b;">🏙️ CBM &amp; CONTAINER BY CITY : UNSUPPORTED &amp; DELAYED</div>
+            <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead style="position:sticky;top:0;z-index:2;">
+                  <tr style="background:#1e293b;border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <th rowspan="2" style="padding:9px 12px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:2px solid rgba(255,255,255,0.15);vertical-align:middle;">KOTA</th>
+                    <th colspan="2" style="padding:7px 8px;text-align:center;color:#4ade80;font-size:11px;font-weight:800;border-bottom:2px solid #16a34a;border-right:2px solid rgba(255,255,255,0.15);">ON TIME</th>
+                    <th colspan="2" style="padding:7px 8px;text-align:center;color:#f87171;font-size:11px;font-weight:800;border-bottom:2px solid #dc2626;border-right:2px solid rgba(255,255,255,0.15);">TERLAMBAT</th>
+                    <th colspan="2" style="padding:7px 8px;text-align:center;color:#94a3b8;font-size:11px;font-weight:800;border-bottom:2px solid #64748b;">BELUM SUPPORT</th>
+                  </tr>
+                  <tr style="background:#2d3748;">
+                    <th style="padding:6px 10px;text-align:right;color:#4ade80;font-size:10px;font-weight:700;border-right:1px solid rgba(255,255,255,0.06);">CBM</th>
+                    <th style="padding:6px 10px;text-align:right;color:#4ade80;font-size:10px;font-weight:700;border-right:2px solid rgba(255,255,255,0.15);">JML</th>
+                    <th style="padding:6px 10px;text-align:right;color:#f87171;font-size:10px;font-weight:700;border-right:1px solid rgba(255,255,255,0.06);">CBM</th>
+                    <th style="padding:6px 10px;text-align:right;color:#f87171;font-size:10px;font-weight:700;border-right:2px solid rgba(255,255,255,0.15);">JML</th>
+                    <th style="padding:6px 10px;text-align:right;color:#94a3b8;font-size:10px;font-weight:700;border-right:1px solid rgba(255,255,255,0.06);">CBM</th>
+                    <th style="padding:6px 10px;text-align:right;color:#94a3b8;font-size:10px;font-weight:700;">JML</th>
+                  </tr>
+                </thead>
+                <tbody id="plKotaBody" style="background:transparent;"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- VENDOR NOT AVAILABLE -->
+          <div>
+            <div style="padding:12px 16px;background:rgba(153,27,27,0.04);border-bottom:1px solid rgba(200,215,240,0.2);font-size:11px;font-weight:700;color:#991b1b;">⚠️ VENDOR SUPPORT NOT AVAILABLE</div>
+            <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead style="position:sticky;top:0;z-index:2;">
+                  <tr style="background:#1e293b;border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <th style="padding:9px 10px;text-align:center;color:#94a3b8;font-size:10px;font-weight:700;border-right:1px solid rgba(255,255,255,0.08);width:36px;">#</th>
+                    <th style="padding:9px 12px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">LC</th>
+                    <th style="padding:9px 10px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">CARRIER</th>
+                    <th style="padding:9px 10px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">JALUR</th>
+                    <th style="padding:9px 10px;text-align:left;color:#60a5fa;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">LOAD DATE</th>
+                    <th style="padding:9px 10px;text-align:right;color:#fff;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">CBM</th>
+                    <th style="padding:9px 10px;text-align:center;color:#f87171;font-size:11px;font-weight:800;">AGING LC</th>
+                  </tr>
+                </thead>
+                <tbody id="plVendorNotAvailBody" style="background:transparent;"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PERCENTAGE BREAKDOWN + VENDOR RESPONSE DELAYED -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(200,215,240,0.2);">
+
+          <!-- PERCENTAGE BREAKDOWN -->
+          <div style="border-right:1px solid rgba(200,215,240,0.2);padding:16px 20px;background:rgba(241,245,249,0.6);">
+            <div style="font-size:11px;font-weight:700;color:#fbbf24;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px;">% PERCENTAGE BREAKDOWN</div>
+            <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:16px;height:120px;" id="plBreakdownBars"></div>
+            <div id="plAgingBreak" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+
+          <!-- VENDOR RESPONSE DELAYED -->
+          <div style="background:rgba(241,245,249,0.6);">
+            <div style="padding:12px 16px;background:rgba(220,38,38,0.04);border-bottom:1px solid rgba(200,215,240,0.2);font-size:11px;font-weight:700;color:#dc2626;">🔴 VENDOR RESPONSE DELAYED</div>
+            <div style="overflow-x:auto;max-height:260px;overflow-y:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead style="position:sticky;top:0;z-index:2;">
+                  <tr style="background:#1e293b;border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <th style="padding:9px 10px;text-align:center;color:#94a3b8;font-size:10px;font-weight:700;border-right:1px solid rgba(255,255,255,0.08);width:36px;">#</th>
+                    <th style="padding:9px 12px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">LC</th>
+                    <th style="padding:9px 10px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">CARRIER</th>
+                    <th style="padding:9px 10px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">JALUR</th>
+                    <th style="padding:9px 10px;text-align:left;color:#60a5fa;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">LOAD DATE</th>
+                    <th style="padding:9px 10px;text-align:right;color:#fff;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">CBM</th>
+                    <th style="padding:9px 10px;text-align:center;color:#f87171;font-size:11px;font-weight:800;">TERLAMBAT</th>
+                  </tr>
+                </thead>
+                <tbody id="plDelayedBody" style="background:transparent;"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- AGING PER CARRIER + VENDOR PERFORMANCE -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(200,215,240,0.2);">
+
+          <!-- DELIVERY DELAY AGING PER CARRIER -->
+          <div style="border-right:1px solid rgba(200,215,240,0.2);background:rgba(241,245,249,0.6);">
+            <div style="padding:12px 16px;background:rgba(37,99,235,0.07);border-bottom:1px solid rgba(200,215,240,0.2);font-size:11px;font-weight:700;color:#2563eb;">⏰ DELIVERY DELAY AGING PER CARRIER</div>
+            <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead style="position:sticky;top:0;z-index:2;">
+                  <tr style="background:#1e293b;border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <th style="padding:9px 10px;text-align:center;color:#94a3b8;font-size:10px;font-weight:700;border-right:1px solid rgba(255,255,255,0.08);width:36px;">NO</th>
+                    <th style="padding:9px 12px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:2px solid rgba(255,255,255,0.15);">CARRIER</th>
+                    <th style="padding:9px 8px;text-align:center;color:#60a5fa;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.06);">1</th>
+                    <th style="padding:9px 8px;text-align:center;color:#60a5fa;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.06);">2</th>
+                    <th style="padding:9px 8px;text-align:center;color:#60a5fa;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.06);">3</th>
+                    <th style="padding:9px 8px;text-align:center;color:#60a5fa;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.06);">4</th>
+                    <th style="padding:9px 8px;text-align:center;color:#60a5fa;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.06);">5</th>
+                    <th style="padding:9px 8px;text-align:center;color:#60a5fa;font-size:11px;font-weight:800;border-right:2px solid rgba(255,255,255,0.15);">5 UP</th>
+                    <th style="padding:9px 10px;text-align:center;color:#f87171;font-size:11px;font-weight:800;">TOTAL DELAY</th>
+                  </tr>
+                </thead>
+                <tbody id="plAgingBody" style="background:transparent;"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- VENDOR PERFORMANCE % -->
+          <div style="background:rgba(241,245,249,0.6);">
+            <div style="padding:12px 16px;background:rgba(22,163,74,0.07);border-bottom:1px solid rgba(200,215,240,0.2);font-size:11px;font-weight:700;color:#16a34a;">🏆 VENDOR PERFORMANCE %</div>
+            <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead style="position:sticky;top:0;z-index:2;">
+                  <tr style="background:#1e293b;border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <th style="padding:9px 10px;text-align:center;color:#94a3b8;font-size:10px;font-weight:700;border-right:1px solid rgba(255,255,255,0.08);width:36px;">NO</th>
+                    <th style="padding:9px 12px;text-align:left;color:#fff;font-size:11px;font-weight:800;border-right:2px solid rgba(255,255,255,0.15);">CARRIER</th>
+                    <th style="padding:9px 10px;text-align:center;color:#4ade80;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">ON TIME</th>
+                    <th style="padding:9px 10px;text-align:center;color:#f87171;font-size:11px;font-weight:800;border-right:1px solid rgba(255,255,255,0.08);">DELAYED</th>
+                    <th style="padding:9px 10px;text-align:center;color:#fff;font-size:11px;font-weight:800;border-right:2px solid rgba(255,255,255,0.15);">TOTAL</th>
+                    <th style="padding:9px 10px;text-align:center;color:#fbbf24;font-size:11px;font-weight:800;">ACHIEVEMENT %</th>
+                  </tr>
+                </thead>
+                <tbody id="plVendorPerfBody" style="background:transparent;"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="plannerDetailFooter" style="padding:9px 18px;font-size:11px;color:var(--text-3);border-top:1px solid rgba(200,215,240,0.2);"></div>
+      </div>
+    </div>
+
+    <div class="mid-grid">
+      <!-- Daily Activity -->
+      <div id="dailyActivityCard" style="background:linear-gradient(160deg,#fff 55%,#ede9fe 100%);border:1px solid #e2e8f0;overflow:hidden;position:relative;box-shadow:0 1px 6px rgba(0,0,0,0.07);transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div style="height:3px;background:#6366f1;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(59,130,246,0.6),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+        <div style="padding:12px 16px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;">
+          <span id="dailyActivityTitle" style="font-size:12px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:6px;"><span class="live-dot"></span>Troughput</span>
+          <div style="font-size:9px;font-weight:700;color:#94a3b8;letter-spacing:0.05em;">ACTUAL vs FORECAST</div>
+        </div>
+        <div id="dailyActivityChartWrap" style="padding:8px 12px 4px;height:320px;position:relative;overflow:hidden;">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Persentase Progres -->
+      <div id="persentaseCard" style="background:linear-gradient(160deg,#fff 55%,#fce7f3 100%);border:1px solid #e2e8f0;overflow:hidden;position:relative;box-shadow:0 1px 6px rgba(0,0,0,0.07);transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.07)'">
+        <div style="height:3px;background:#ec4899;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent);animation:cardBeam 2.7s ease-in-out infinite;"></div></div>
+        <div style="padding:12px 16px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;">
+          <span style="font-size:12px;font-weight:800;color:#1e293b;">📊 Persentase Progres Daily AHI</span>
+          <div class="card-more">⋯</div>
+        </div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-wrap"><canvas id="donutChart"></canvas><div class="donut-center" style="display:none;"><div class="total" id="donutTotal">0%</div><div class="total-label">Daily</div></div></div>
+          <div class="donut-legend">
+            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#16a34a"></div>Inbound</div><div class="donut-legend-val" id="donutInboundVal">0%</div></div>
+            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#8b5cf6"></div>Storing</div><div class="donut-legend-val" id="donutStoringVal">0%</div></div>
+            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#d97706"></div>Outbound</div><div class="donut-legend-val" id="donutOutboundVal">0%</div></div>
+            <div class="donut-legend-item"><div class="donut-legend-left"><div class="donut-legend-dot" style="background:#e2e8f0"></div>Belum Selesai</div><div class="donut-legend-val" id="donutBelumVal">100%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- TABEL LPPBDO -->
+    <div id="lppbdoSection" style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:0;">
+      <div style="height:3px;background:linear-gradient(90deg,#f97316,#7f1d1d,#94a3b8);flex-shrink:0;"></div>
+      <div style="padding:14px 20px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:32px;height:32px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:15px;">📋</div>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#1e293b;letter-spacing:0.02em;">LPPBDO — Internal Cause</div>
+            <div style="font-size:9.5px;color:#94a3b8;">Bulan Ini</div>
+          </div>
+        </div>
+        <span id="lppbdoStatus" style="font-size:11px;color:#94a3b8;font-weight:600;">Memuat...</span>
+      </div>
+      <div style="display:flex;gap:0;">
+        <!-- Tabel -->
+        <div style="flex:1;overflow-x:auto;min-width:0;display:flex;flex-direction:column;">
+          <table id="lppbdoTable" style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px;">
+            <thead id="lppbdoHead"></thead>
+            <tbody id="lppbdoBody"></tbody>
+          </table>
+
+        <!-- Teks dekoratif bawah tabel -->
+        <div style="padding:12px 20px;border-top:1px dashed #e2e8f0;background:linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);text-align:center;">
+          <div style="font-size:13px;font-weight:900;color:#1e293b;letter-spacing:0.08em;text-transform:uppercase;">History %tage LPPBDO DC AHI Sidoarjo</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:4px;justify-content:center;">
+            <div style="height:1px;width:40px;background:linear-gradient(90deg,transparent,#dc2626);"></div>
+            <div style="font-size:10px;font-weight:600;color:#dc2626;letter-spacing:0.12em;text-transform:uppercase;">Cause By Internal DC</div>
+            <div style="height:1px;width:40px;background:linear-gradient(90deg,#dc2626,transparent);"></div>
+          </div>
+        </div>
+        <!-- Summary Chart -->
+        <div style="width:300px;flex-shrink:0;border-left:1px solid #e2e8f0;padding:14px 14px 10px;display:flex;flex-direction:column;align-self:stretch;">
+          <div style="font-size:11px;font-weight:800;color:#1e293b;margin-bottom:8px;text-align:center;">Avg % per Kategori</div>
+          <div id="lppbdoChartWrap" style="flex:1;min-height:160px;"></div>
+          <div id="lppbdoMtd" style="margin-top:10px;text-align:center;border-top:1px solid #f1f5f9;padding-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <!-- TABEL INBOUND + OUTBOUND TAB -->
+      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="height:4px;background:linear-gradient(90deg,#2563eb,#059669,#d97706);position:relative;overflow:hidden;flex-shrink:0;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(59,130,246,0.6),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+        <div style="padding:14px 20px 0;border-bottom:1px solid #f1f5f9;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="live-dot"></span>
+              <span style="font-size:13px;font-weight:800;color:#1e293b;">Data Hari Ini</span>
+            </div>
+            <span id="dashTableCount" style="font-size:11px;color:#94a3b8;font-weight:600;">Memuat...</span>
+          </div>
+          <div style="display:flex;gap:0;">
+            <button id="tabBtnInbound" onclick="switchDashTab('inbound')" style="padding:8px 18px;font-size:12px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid #2563eb;background:none;cursor:pointer;color:#2563eb;transition:all 0.2s;">📦 Inbound</button>
+            <button id="tabBtnStoring" onclick="switchDashTab('storing')" style="padding:8px 18px;font-size:12px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:#94a3b8;transition:all 0.2s;">🏗️ Storing</button>
+            <button id="tabBtnOutbound" onclick="switchDashTab('outbound')" style="padding:8px 18px;font-size:12px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:#94a3b8;transition:all 0.2s;">🚚 Outbound</button>
+          </div>
+        </div>
+        <!-- INBOUND TABLE -->
+        <div id="tableInboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;background:#ffffff;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#1e293b;position:sticky;top:0;z-index:2;"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO LC</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO POLISI</th><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">EKSPEDISI</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TYPE</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;">CHECK IN</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">STUFFING</th><th style="padding:8px 10px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">HIT/MISS</th></tr></thead>
+          <tbody id="dashInboundBody" style="background:#ffffff;"><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody></table>
+        </div>
+        <!-- STORING TABLE -->
+        <div id="tableStoringWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;display:none;">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead>
+              <tr style="background:#1e293b;">
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">No</th>
+                <th rowspan="2" style="padding:7px 8px;font-size:10px;font-weight:700;color:#94a3b8;">No LC</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">Batch</th>
+                <th rowspan="2" style="padding:7px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Tujuan</th>
+                <th rowspan="2" style="padding:7px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Tipe Armada</th>
+                <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">Kap.</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;border-bottom:1px solid rgba(37,99,235,0.3);">RELEASE</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;border-bottom:1px solid rgba(139,92,246,0.3);">ASTOR</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;border-bottom:1px solid rgba(22,163,74,0.3);">PICKED</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#f87171;border-bottom:1px solid rgba(239,68,68,0.3);">SISA</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#34d399;border-bottom:1px solid rgba(16,185,129,0.3);">PENCAPAIAN PICKING</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;border-bottom:1px solid rgba(245,158,11,0.3);">SISA 99%</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#c4b5fd;border-bottom:1px solid rgba(99,102,241,0.3);">STAGED DS</th>
+                <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;border-bottom:1px solid rgba(59,130,246,0.3);">PENCAPAIAN DS</th>
+                <th colspan="1" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fde68a;border-bottom:1px solid rgba(234,179,8,0.3);">% KAP</th>
+                <th colspan="1" style="text-align:center;background:rgba(245,158,11,0.1);color:#f59e0b">SISA 99%</th>
+                <th colspan="2" style="text-align:center;background:rgba(99,102,241,0.1);color:#6366f1">STAGED DS</th>
+                <th colspan="2" style="text-align:center;background:rgba(59,130,246,0.1);color:#3b82f6">PENCAPAIAN DS</th>
+                <th colspan="1" style="text-align:center;background:rgba(234,179,8,0.1);color:#ca8a04">% KAP</th>
+              </tr>
+              <tr style="background:#2d3748;">
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#c4b5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#f87171;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#34d399;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#34d399;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fbbf24;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#c4b5fd;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#c4b5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Case</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">Cbm</th>
+                <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#fde68a;">%</th>
+              </tr>
+            </thead>
+            <tbody id="dashStoringBody" style="background:#ffffff;"><tr><td colspan="20" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+        <!-- OUTBOUND TABLE -->
+        <div id="tableOutboundWrap" class="table-wrap" style="max-height:260px;overflow-y:auto;display:none;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#1e293b;"><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">No</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Penyelesaian</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Trans No</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;">%PC</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fb923c;">%STG</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;">%LD</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Shipping Line</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BU</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Carrier ID</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#22d3ee;">Stuffing Time</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">Jenis Armada</th><th style="padding:8px 8px;font-size:10px;font-weight:700;color:#94a3b8;">No Pol</th><th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#a78bfa;">Status</th></tr></thead>
+            <tbody id="dashOutboundBody" style="background:#ffffff;"><tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;">
+        <div class="card-header"><span class="card-title"><span class="live-dot"></span>Discussion</span><div class="card-more" onclick="go('discussion')" title="Buka penuh">↗</div></div>
+        <div class="disc-body" style="flex:1;">
+          <div class="disc-messages" id="miniDiscMsg" style="height:168px;"></div>
+          <div class="disc-footer">
+            <input class="disc-input" id="miniDiscIn" type="text" placeholder="Ketik pesan...">
+            <button class="disc-send" id="miniDiscBtn">➤</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;">
+        <div class="card-header"><span class="card-title">🤖 AI Support</span><div class="card-more">⋯</div></div>
+        <div class="ai-body" style="flex:1;">
+          <div class="ai-messages" id="aiMsg" style="height:168px;">
+            <div class="ai-bubble bot">Halo! Saya AI asisten WMS kamu. Ada yang bisa saya bantu?</div>
+            <div class="ai-typing" id="aiTyping"><span></span><span></span><span></span></div>
+          </div>
+          <div class="ai-footer">
+            <input class="ai-input" id="aiIn" type="text" placeholder="Ask something...">
+            <button class="ai-send" id="aiBtn">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANNER -->
+  <div class="iframe-page" id="page-planner">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📋 Planner</span><span class="iframe-sub">Rencana Operasional</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrPlanner','planner')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabPlanner" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldPlanner"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Planner Dashboard...</span></div><div class="iframe-error" id="errPlanner"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabPlanner" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrPlanner" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="iframe-page" id="page-inventory">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📊 Inventory</span><span class="iframe-sub">Manajemen Stok</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrInventory','inventory')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabInventory" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldInventory"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Inventory Dashboard...</span></div><div class="iframe-error" id="errInventory"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Dashboard memblokir embed. Gunakan tombol Tab Baru.</div><a class="btn-sm btn-primary" id="errTabInventory" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrInventory" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
+
+  <!-- INBOUND -->
+  <div class="iframe-page" id="page-inbound">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📦 Inbound</span><span class="iframe-sub">Dashboard Inbound</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrInbound','inbound')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabInbound" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldInbound"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Inbound Dashboard...</span></div><div class="iframe-error" id="errInbound"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabInbound" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrInbound" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
+
+  <!-- STORING -->
+  <div class="iframe-page" id="page-storing">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">🏗️ Storing</span><span class="iframe-sub">Dashboard Storing</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrStoring','storing')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabStoring" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldStoring"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Storing Dashboard...</span></div><div class="iframe-error" id="errStoring"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabStoring" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrStoring" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
+
+  <!-- GA -->
+  <div class="iframe-page" id="page-ga">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">🏢 GA</span><span class="iframe-sub">Dashboard General Affairs</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrGa','ga')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabGa" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldGa"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat GA Dashboard...</span></div><div class="iframe-error" id="errGa"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabGa" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrGa" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
+
+  <!-- HR -->
+  <div class="page" id="page-hr"><div class="soon-screen"><div class="si">👥</div><h2>HR Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
+
+  <!-- OUTBOUND -->
+  <div class="iframe-page" id="page-outbound">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">🚚 Outbound</span><span class="iframe-sub">Dashboard Outbound</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrOutbound','outbound')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabOutbound" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldOutbound"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Outbound Dashboard...</span></div><div class="iframe-error" id="errOutbound"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabOutbound" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrOutbound" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
+
+  <!-- ANALYST -->
+  <div class="iframe-page" id="page-analyst">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">📈 Analyst</span><span class="iframe-sub">Dashboard Analitik Operasional</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrAnalyst','analyst')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabAnalyst" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldAnalyst"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Analyst Dashboard...</span></div><div class="iframe-error" id="errAnalyst"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabAnalyst" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrAnalyst" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
+
+  <!-- DISCUSSION ROOM -->
+  <div class="page" id="page-discussion">
+    <div class="page-header">
+      <div class="page-title-wrap"><h1>💬 Discussion Room</h1><p>Komunikasi real-time tim gudang AHI Sidoarjo</p></div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="online-badge"><span class="online-dot"></span><span id="onlineCount">1 online</span></div>
+        <div class="date-chip">📅 <span id="todayDate2">—</span></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 240px;gap:18px;max-width:1000px;">
+      <div class="card" style="display:flex;flex-direction:column;">
+        <div class="card-header"><span class="card-title"><span class="live-dot"></span>Live Chat</span><div style="font-size:11px;color:var(--text-3);font-weight:600" id="discStatus">Menghubungkan...</div></div>
+        <div class="disc-body">
+          <div class="disc-messages" id="fullDiscMsg" style="height:480px;"></div>
+          <div class="disc-footer">
+            <input class="disc-input" id="fullDiscIn" type="text" placeholder="Ketik pesan lalu Enter...">
+            <button class="disc-send" id="fullDiscBtn">➤</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;">
+        <div class="card-header"><span class="card-title">🟢 Sedang Online</span><span style="font-size:11px;color:var(--text-3);font-weight:700" id="onlineCountDisc">0 user</span></div>
+        <div id="onlineList" style="padding:12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;"><div style="text-align:center;color:var(--text-3);font-size:12px;padding:20px 0">Memuat...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI PAGE -->
+  <div class="page" id="page-ai">
+    <div class="page-header"><div class="page-title-wrap"><h1>🤖 AI Support</h1><p>Asisten AI untuk operasional warehouse</p></div></div>
+    <div class="page-wide-card">
+      <div class="card" style="display:flex;flex-direction:column;">
+        <div class="ai-body">
+          <div class="ai-messages" id="aiMsg2" style="height:440px;">
+            <div class="ai-bubble bot">Halo! Saya AI asisten WMS AHI Sidoarjo. Ada yang bisa saya bantu hari ini?</div>
+            <div class="ai-typing" id="aiTyping2"><span></span><span></span><span></span></div>
+          </div>
+          <div class="ai-footer">
+            <input class="ai-input" id="aiIn2" type="text" placeholder="Tanyakan sesuatu tentang operasional warehouse...">
+            <button class="ai-send" id="aiBtn2">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- NOTIFIKASI DROPDOWN -->
+<div id="notifPanel" style="display:none;position:fixed;top:70px;right:16px;width:340px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border:1px solid rgba(200,215,240,0.6);border-radius:16px;box-shadow:0 8px 32px rgba(99,120,167,0.18);z-index:999;overflow:hidden;">
+  <div style="padding:14px 18px;border-bottom:1px solid rgba(200,215,240,0.4);display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:14px;font-weight:800;color:#0f172a">🔔 Notifikasi</span>
+    <button onclick="clearNotifs()" style="font-size:11px;color:#2563eb;border:none;background:none;cursor:pointer;font-weight:600">Tandai semua dibaca</button>
+  </div>
+  <div id="notifList" style="max-height:340px;overflow-y:auto;padding:8px 0;"><div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px">Belum ada notifikasi</div></div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="profile-overlay hidden" id="profileOverlay">
+  <div class="profile-card">
+    <button class="profile-close" id="profileCloseBtn">✕</button>
+    <div class="profile-ava-big" id="profileAvaBig">?</div>
+    <div class="profile-name-show" id="profileNameShow">—</div>
+    <div class="profile-role" id="profileJabatan">—</div>
+    <div class="profile-field"><label>NIP</label><input type="text" id="profileNipShow" disabled style="opacity:0.6;cursor:not-allowed;background:var(--bg);"></div>
+    <label class="profile-color-label">Warna Avatar</label>
+    <div class="profile-colors" id="profileColorOpts">
+      <div class="color-opt" style="background:linear-gradient(145deg,#3b82f6,#1d4ed8)" data-pidx="0"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#ec4899,#db2777)" data-pidx="1"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#06b6d4,#0891b2)" data-pidx="2"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#10b981,#059669)" data-pidx="3"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#f59e0b,#d97706)" data-pidx="4"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#8b5cf6,#7c3aed)" data-pidx="5"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#ef4444,#dc2626)" data-pidx="6"></div>
+      <div class="color-opt" style="background:linear-gradient(145deg,#64748b,#475569)" data-pidx="7"></div>
+    </div>
+    <button class="profile-save" id="profileSaveBtn">Simpan Warna Avatar</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+<script>
+// KPI card beam - 1x per hover
+function initKpiBeams() {
+  var ids = ['inboundStatCard','storingStatCard','outboundStatCard','invControlCard','plannerStatCard'];
+  ids.forEach(function(id) {
+    var card = document.getElementById(id);
+    if (!card || card._beamInited) return;
+    card._beamInited = true;
+    card.addEventListener('mouseenter', function() {
+      var beam = this.querySelector('.kpi-beam-2') || this.querySelector('.planner-beam');
+      if (!beam) return;
+      beam.style.transition = 'none';
+      beam.style.left = '-100%';
+      setTimeout(function() {
+        beam.style.transition = 'left 1.2s ease';
+        beam.style.left = '160%';
+      }, 30);
     });
+    card.addEventListener('mouseleave', function() {
+      var beam = this.querySelector('.kpi-beam-2') || this.querySelector('.planner-beam');
+      if (beam) { beam.style.transition = 'none'; beam.style.left = '-100%'; }
+    });
+  });
 }
+document.addEventListener('DOMContentLoaded', function() {
+  initKpiBeams();
+  setTimeout(initKpiBeams, 500);
+  setTimeout(initKpiBeams, 2000);
+});
+</script>
 
-function closeHistoryModal() {
-  document.getElementById('historyModal').style.display = 'none';
-}
 
-// ── Reset Diskusi ─────────────────────────────────────────────
-function confirmResetDiskusi() {
-  settingsOpen = false;
-  document.getElementById('settingsPanel').classList.remove('open');
-  const modal = document.getElementById('resetDiscModal');
-  modal.style.display = 'flex';
-}
+<!-- HISTORY LOGIN MODAL -->
+<div id="historyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.4);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 32px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.15);position:relative;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-size:16px;font-weight:900;color:#0a0f1e;">🕐 History Login</div>
+      <button onclick="closeHistoryModal()" style="width:32px;height:32px;border-radius:50%;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:16px;color:#94a3b8;">✕</button>
+    </div>
+    <div id="historyLoginList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;">
+      <div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>
+    </div>
+  </div>
+</div>
 
-function closeResetDiscModal() {
-  document.getElementById('resetDiscModal').style.display = 'none';
-}
+<!-- CONFIRM RESET DISKUSI MODAL -->
+<div id="resetDiscModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.4);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:32px;width:400px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,0.15);text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">🗑️</div>
+    <div style="font-size:18px;font-weight:900;color:#0a0f1e;margin-bottom:8px;">Reset Diskusi?</div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:24px;line-height:1.6;">Semua pesan di Discussion akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button onclick="closeResetDiscModal()" style="padding:10px 24px;border-radius:10px;border:1px solid #e2e8f0;background:#f8fafc;font-size:13px;font-weight:700;cursor:pointer;color:#475569;">Batal</button>
+      <button onclick="doResetDiskusi()" style="padding:10px 24px;border-radius:10px;border:none;background:linear-gradient(145deg,#dc2626,#b91c1c);font-size:13px;font-weight:700;cursor:pointer;color:#fff;box-shadow:0 4px 12px rgba(220,38,38,0.3);">Ya, Hapus Semua</button>
+    </div>
+  </div>
+</div>
 
-function doResetDiskusi() {
-  if (!db) return;
-  if (!ADMIN_NIPS.includes(String(me.nip))) {
-    alert('Hanya admin yang bisa reset diskusi!');
-    return;
-  }
-  db.ref(CHAT_PATH).remove().then(() => {
-    closeResetDiscModal();
-    // Notif sukses
-    const notif = document.createElement('div');
-    notif.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;background:#16a34a;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(22,163,74,0.3);animation:slideIn 0.3s ease;';
-    notif.textContent = '✅ Diskusi berhasil direset!';
-    document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 3000);
-  }).catch(e => alert('Gagal reset: ' + e.message));
-}
+</body>
+</html>
