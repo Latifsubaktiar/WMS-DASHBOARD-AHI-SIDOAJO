@@ -146,7 +146,7 @@ function doLogin() {
 function saveLoginHistory() {
   if (!me.nip || !me.name) return;
   try {
-    const url = GAS_USER_URL + '?action=saveLoginHistory' +
+    const url = GAS_DASHBOARD_URL + '?action=saveLoginHistory' +
       '&nip='     + encodeURIComponent(me.nip) +
       '&name='    + encodeURIComponent(me.name) +
       '&jabatan=' + encodeURIComponent(me.jabatan||'');
@@ -2622,7 +2622,7 @@ function openHistoryLogin() {
   const list = document.getElementById('historyLoginList');
   list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>';
   if (!db) { list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Firebase tidak tersedia</div>'; return; }
-  fetch(GAS_USER_URL + '?action=getLoginHistory')
+  fetch(GAS_DASHBOARD_URL + '?action=getLoginHistory')
     .then(r => r.json())
     .then(data => {
       if (!data.ok || !data.entries.length) {
