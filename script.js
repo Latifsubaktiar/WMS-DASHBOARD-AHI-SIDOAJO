@@ -79,6 +79,8 @@ function initFirebase() {
     onlineRef = db.ref(ONLINE_PATH);
     fbReady = true;
     console.log('✅ Firebase connected!');
+    // Simpan history login setelah Firebase ready
+    if (me && me.nip) setTimeout(saveLoginHistory, 500);
   } catch(e) { console.error('Firebase init error:', e); }
 }
 initFirebase();
