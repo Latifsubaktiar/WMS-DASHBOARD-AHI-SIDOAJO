@@ -66,7 +66,6 @@ let db = null, chatRef = null, onlineRef = null;
 let settingsOpen = false;
 let notifList = [], notifOpen = false, lastSeenTs = 0;
 const CHAT_PATH     = 'wms_ahi_chat/messages';
-const HISTORY_PATH  = 'wms_ahi_chat/login_history';
 const ADMIN_NIPS    = ['182126', '098592'];
 const ONLINE_PATH = 'wms_ahi_chat/online';
 
@@ -79,8 +78,6 @@ function initFirebase() {
     onlineRef = db.ref(ONLINE_PATH);
     fbReady = true;
     console.log('✅ Firebase connected!');
-    // Simpan history login setelah Firebase ready
-    if (me && me.nip) setTimeout(saveLoginHistory, 500);
   } catch(e) { console.error('Firebase init error:', e); }
 }
 initFirebase();
@@ -147,22 +144,13 @@ function doLogin() {
   applyLogin();
 }
 function saveLoginHistory() {
-  if (!me.nip) return;
-  if (!db) return; // kalau Firebase belum ready, skip
+  if (!me.nip || !me.name) return;
   try {
-    const now = new Date();
-    const timeStr = now.toLocaleString('id-ID', {
-      timeZone: 'Asia/Jakarta',
-      day:'2-digit', month:'short', year:'numeric',
-      hour:'2-digit', minute:'2-digit', second:'2-digit'
-    });
-    db.ref(HISTORY_PATH).push({
-      nip      : me.nip,
-      name     : me.name,
-      jabatan  : me.jabatan,
-      time     : timeStr,
-      timestamp: Date.now()
-    });
+    const url = GAS_USER_URL + '?action=saveLoginHistory' +
+      '&nip='     + encodeURIComponent(me.nip) +
+      '&name='    + encodeURIComponent(me.name) +
+      '&jabatan=' + encodeURIComponent(me.jabatan||'');
+    fetch(url).catch(e => console.warn('saveLoginHistory error:', e));
   } catch(e) { console.warn('saveLoginHistory error:', e); }
 }
 
@@ -2634,36 +2622,26 @@ function openHistoryLogin() {
   const list = document.getElementById('historyLoginList');
   list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>';
   if (!db) { list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Firebase tidak tersedia</div>'; return; }
-  db.ref(HISTORY_PATH).once('value', snap => {
-    const all = [];
-    snap.forEach(child => all.push(child.val()));
-    // Sort by timestamp descending
-    all.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
-    // Deduplikasi - ambil 1 login terbaru per NIP per hari
-    const seen = new Set();
-    const entries = [];
-    all.forEach(e => {
-      const dayKey = (e.nip||'') + '_' + (e.time||'').split(',')[0];
-      if (!seen.has(dayKey)) {
-        seen.add(dayKey);
-        entries.push(e);
+  fetch(GAS_USER_URL + '?action=getLoginHistory')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok || !data.entries.length) {
+        list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Belum ada history login</div>';
+        return;
       }
+      list.innerHTML = data.entries.map((e,i) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${i%2===0?'#f8fafc':'#fff'};border-radius:10px;border:1px solid #f1f5f9;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">${(e.name||'?').slice(0,2).toUpperCase()}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:800;color:#0f172a;">${e.name||'—'}</div>
+            <div style="font-size:11px;color:#64748b;">${e.jabatan||'—'} · NIP ${e.nip||'—'}</div>
+          </div>
+          <div style="font-size:11px;color:#94a3b8;text-align:right;flex-shrink:0;">${e.time||'—'}</div>
+        </div>`).join('');
+    })
+    .catch(() => {
+      list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Gagal memuat history</div>';
     });
-    const show = entries.slice(0, 50);
-    if (!show.length) {
-      list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Belum ada history login</div>';
-      return;
-    }
-    list.innerHTML = show.map((e,i) => `
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${i%2===0?'#f8fafc':'#fff'};border-radius:10px;border:1px solid #f1f5f9;">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">${(e.name||'?').slice(0,2).toUpperCase()}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:800;color:#0f172a;">${e.name||'—'}</div>
-          <div style="font-size:11px;color:#64748b;">${e.jabatan||'—'} · NIP ${e.nip||'—'}</div>
-        </div>
-        <div style="font-size:11px;color:#94a3b8;text-align:right;flex-shrink:0;">${e.time||'—'}</div>
-      </div>`).join('');
-  });
 }
 
 function closeHistoryModal() {
