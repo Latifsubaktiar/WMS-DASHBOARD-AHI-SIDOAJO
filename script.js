@@ -2400,9 +2400,9 @@ async function fetchDailyActivity(){
       plugins:[troughputPlugin]
     });
 
-    // Legend manual — kanan atas (posisi absolut)
+    // Legend manual — atas chart
     const legendDiv = document.createElement('div');
-    legendDiv.style.cssText = 'position:absolute;top:6px;right:8px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:480px;background:rgba(255,255,255,0.85);backdrop-filter:blur(4px);border:1px solid #e2e8f0;border-radius:6px;padding:5px 10px;font-size:9.5px;font-weight:600;color:#475569;z-index:10;';
+    legendDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;padding:0 4px 6px;font-size:10px;font-weight:600;color:#475569;';
     legendDiv.innerHTML = `
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.inbound.bar};border-radius:2px;display:inline-block;"></span>Inbound</span>
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.outbound.bar};border-radius:2px;display:inline-block;"></span>Outbound</span>
@@ -2410,7 +2410,7 @@ async function fetchDailyActivity(){
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:${C.occupancy};border-radius:50%;display:inline-block;"></span>Occupancy (%)</span>
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;display:inline-block;border-top:2px dashed ${C.capacity};"></span>Capacity</span>
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;display:inline-block;border-top:2px dashed ${C.forecast};"></span>Forecast Out</span>`;
-    wrap.appendChild(legendDiv);
+    wrap.insertBefore(legendDiv, canvas);
 
   } catch(e) {
     console.error('Troughput error:', e);
