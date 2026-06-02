@@ -146,8 +146,7 @@ function doLogin() {
 }
 function saveLoginHistory() {
   if (!me.nip) return;
-  // Kalau db belum ready, retry setelah 2 detik
-  if (!db) { setTimeout(saveLoginHistory, 2000); return; }
+  if (!db) return; // kalau Firebase belum ready, skip
   try {
     const now = new Date();
     const timeStr = now.toLocaleString('id-ID', {
@@ -2634,10 +2633,20 @@ function openHistoryLogin() {
   list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>';
   if (!db) { list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Firebase tidak tersedia</div>'; return; }
   db.ref(HISTORY_PATH).once('value', snap => {
+    const all = [];
+    snap.forEach(child => all.push(child.val()));
+    // Sort by timestamp descending
+    all.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+    // Deduplikasi - ambil 1 login terbaru per NIP per hari
+    const seen = new Set();
     const entries = [];
-    snap.forEach(child => entries.push(child.val()));
-    // Sort by timestamp descending (terbaru dulu)
-    entries.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+    all.forEach(e => {
+      const dayKey = (e.nip||'') + '_' + (e.time||'').split(',')[0];
+      if (!seen.has(dayKey)) {
+        seen.add(dayKey);
+        entries.push(e);
+      }
+    });
     const show = entries.slice(0, 50);
     if (!show.length) {
       list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Belum ada history login</div>';
