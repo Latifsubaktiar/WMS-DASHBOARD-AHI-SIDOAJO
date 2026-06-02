@@ -302,7 +302,7 @@ function toggleOutboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgr1=document.getElementById('lppbdoGrid'); if(lgr1) lgr1.style.display='';
+    const lgr1=document.getElementById('lppbdoGrid'); if(lgr1) lgr1.style.display='grid';
     lineOutboundLoaded = false;
     switchOutboundTab('data');
   }
@@ -338,7 +338,7 @@ function toggleInventoryPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
 
     setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
@@ -751,7 +751,7 @@ function toggleStoringPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
 
     setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
@@ -1022,7 +1022,7 @@ function toggleInboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
 
     setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
@@ -2532,7 +2532,7 @@ function togglePlannerPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='';
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
 
     setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
