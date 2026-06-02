@@ -2024,9 +2024,9 @@ function renderLppbdo(dates, rows) {
 
   // Warna per baris ikut spreadsheet
   const rowColors = [
-    { bg: '#fef2f2', text: '#991b1b', bold: false }, // RUSAK     - merah muda
-    { bg: '#fef9c3', text: '#854d0e', bold: false }, // selisih   - kuning
-    { bg: '#f0fdf4', text: '#166534', bold: false }, // Sparepart - hijau muda
+    { bg: '#fff3e0', text: '#b45309', bold: false }, // RUSAK     - orange
+    { bg: '#3b0000', text: '#fca5a5', bold: false }, // selisih   - maroon gelap
+    { bg: '#ffffff', text: '#1e293b', bold: false }, // Sparepart - putih
     { bg: '#1e293b', text: '#ffffff', bold: true  }, // TOTAL     - gelap
   ];
 
@@ -2059,6 +2059,103 @@ function renderLppbdo(dates, rows) {
 
   const el = document.getElementById('lppbdoStatus');
   if (el) el.textContent = `${validDates.length} hari`;
+
+  // ── Summary Chart (3D-style bar) ──
+  renderLppbdoChart(rows);
+}
+
+function renderLppbdoChart(rows) {
+  const wrap = document.getElementById('lppbdoChartWrap');
+  if (!wrap) return;
+
+  // Hitung average per kategori (skip null, skip 0)
+  const avgOf = (values) => {
+    const valid = values.filter(v => v !== null && v !== undefined && v !== 0);
+    if (!valid.length) return 0;
+    return valid.reduce((a,b) => a+b, 0) / valid.length;
+  };
+
+  const labels   = rows.slice(0,3).map(r => r.kategori.replace('% LPPBDO ','').replace('% ',''));
+  const avgs     = rows.slice(0,3).map(r => parseFloat((avgOf(r.values)*100).toFixed(3)));
+  const colors   = ['#f97316','#7f1d1d','#94a3b8'];
+  const shadows  = ['rgba(249,115,22,0.35)','rgba(127,29,29,0.35)','rgba(148,163,184,0.35)'];
+
+  // 3D effect plugin
+  const bar3dPlugin = {
+    id: 'bar3d',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        meta.data.forEach((bar, i) => {
+          const {x, y, width, height, base} = bar.getProps(['x','y','width','height','base']);
+          const depth = 8;
+          const col   = colors[i] || '#888';
+          // Top face
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(x - width/2,     y);
+          ctx.lineTo(x - width/2 + depth, y - depth);
+          ctx.lineTo(x + width/2 + depth, y - depth);
+          ctx.lineTo(x + width/2,     y);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(255,255,255,0.25)';
+          ctx.fill();
+          // Right face
+          ctx.beginPath();
+          ctx.moveTo(x + width/2,     y);
+          ctx.lineTo(x + width/2 + depth, y - depth);
+          ctx.lineTo(x + width/2 + depth, base - depth);
+          ctx.lineTo(x + width/2,     base);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(0,0,0,0.18)';
+          ctx.fill();
+          ctx.restore();
+        });
+      });
+    }
+  };
+
+  wrap.innerHTML = '<canvas id="lppbdoChart" style="width:100%;height:100%;"></canvas>';
+  const ctx = document.getElementById('lppbdoChart').getContext('2d');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: avgs,
+        backgroundColor: colors,
+        borderRadius: 2,
+        borderSkipped: false,
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => ` Avg: ${c.parsed.y.toFixed(3)}%`
+          }
+        },
+        datalabels: {
+          anchor: 'end', align: 'top',
+          color: ctx2 => colors[ctx2.dataIndex],
+          font: { weight: '800', size: 10 },
+          formatter: v => v.toFixed(3) + '%'
+        }
+      },
+      scales: {
+        x: { grid: { display:false }, ticks: { font:{size:9,weight:'700'}, color:'#475569' }, border:{display:false} },
+        y: { beginAtZero: true, grid: { color:'rgba(0,0,0,0.05)' }, ticks: { callback: v => v+'%', font:{size:9}, color:'#94a3b8' }, border:{display:false} }
+      },
+      animation: { duration: 600 }
+    },
+    plugins: [bar3dPlugin]
+  });
 }
 
 // ══════════════════════════════════════
@@ -2137,11 +2234,10 @@ async function fetchDailyActivity(){
       floatBox.style.cssText = 'display:inline-block;';
       floatBox.innerHTML = `
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-
           <table style="border-collapse:collapse;font-size:10px;width:100%;">
             <thead>
               <tr>
-                <th style="padding:3px 8px;background:#1e293b;color:#fff;font-size:7.5px;font-weight:700;text-align:center;min-width:55px;"></th>
+                <th style="padding:3px 8px;background:#1e293b;color:#fff;font-size:7.5px;font-weight:700;text-align:center;min-width:80px;"></th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Inbound</th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Demand In</th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Outbound</th>
@@ -2171,6 +2267,34 @@ async function fetchDailyActivity(){
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.inboundPct)}</td>
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
+              </tr>
+              <tr>
+                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">Inventory</td>
+                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.inventoryForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.inventoryActual)}</td>
+                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
+                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
+              </tr>
+              <tr style="background:#f8fafc;">
+                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#7c3aed;border:1px solid #e2e8f0;">Occupancy (%)</td>
+                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${a.occupancyForecast||'—'}%</td>
+                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#7c3aed;border:1px solid #e2e8f0;">${a.occupancyActual||'—'}%</td>
+                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
+                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
+              </tr>
+              <tr>
+                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#475569;border:1px solid #e2e8f0;background:#fff;">Capacity</td>
+                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.capacityForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#0f172a;border:1px solid #e2e8f0;">${fN(a.capacityActual)}</td>
+                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
+                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
+              </tr>
+              <tr style="background:#f8fafc;">
+                <td style="padding:3px 6px;font-size:8px;font-weight:800;color:#2563eb;border:1px solid #e2e8f0;">Forecast Out</td>
+                <td style="padding:3px 6px;text-align:center;color:#334155;font-size:9px;font-weight:600;border:1px solid #e2e8f0;">${fN(a.forecastOBForecast)}</td>
+                <td style="padding:3px 6px;text-align:center;font-size:11px;font-weight:900;color:#2563eb;border:1px solid #e2e8f0;">${fN(a.forecastOBActual)}</td>
+                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
+                <td colspan="2" style="padding:3px 6px;text-align:center;color:#94a3b8;font-size:8px;border:1px solid #e2e8f0;">—</td>
               </tr>
             </tbody>
           </table>
