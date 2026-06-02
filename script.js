@@ -2035,17 +2035,20 @@ function renderLppbdo(dates, rows) {
   const thStyle  = 'padding:7px 10px;text-align:center;font-size:10px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;';
   const thFirst  = 'padding:7px 12px;text-align:left;font-size:10px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:200px;';
 
+  // Filter kolom AVERAGE dari header (tampilkan hanya tanggal)
+  const dateCols = validDates.filter(x => !/average/i.test(x.d));
+
   head.innerHTML = `<tr>
     <th style="${thFirst}">Kategori</th>
     <th style="${thStyle}">UOM</th>
-    ${validDates.map(x => `<th style="${thStyle}">${x.d}</th>`).join('')}
+    ${dateCols.map(x => `<th style="${thStyle}">${x.d}</th>`).join('')}
   </tr>`;
 
   body.innerHTML = rows.map((row, ri) => {
     const c = rowColors[ri] || rowColors[0];
     const tdBase  = `padding:6px 10px;text-align:center;border:1px solid #e2e8f0;font-size:10.5px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'500'};`;
     const tdFirst = `padding:6px 12px;text-align:left;border:1px solid #e2e8f0;font-size:10.5px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'600'};white-space:nowrap;`;
-    const cells = validDates.map(x => {
+    const cells = dateCols.map(x => {
       const val = row.values[x.i];
       const display = (val === null || val === undefined) ? '' : (val * 100).toFixed(2) + '%';
       return `<td style="${tdBase}">${display}</td>`;
@@ -2070,8 +2073,9 @@ function renderLppbdoChart(rows) {
 
   // Hitung average per kategori (skip null, skip 0)
   const labels   = rows.slice(0,3).map(r => r.kategori.replace('% LPPBDO ','').replace('% ',''));
-  // Pakai kolom AVERAGE langsung dari sheet (kolom AH), sudah dalam % (misal 0.0011 = 0.11%)
-  const avgs     = rows.slice(0,3).map(r => r.average !== null ? parseFloat((r.average*100).toFixed(4)) : 0);
+  // Pakai kolom AVERAGE langsung dari sheet (kolom AH)
+  console.log('LPPBDO rows average:', rows.map(r => ({k: r.kategori, avg: r.average})));
+  const avgs     = rows.slice(0,3).map(r => (r.average !== null && r.average !== undefined) ? parseFloat((r.average*100).toFixed(4)) : 0);
   const colors   = ['#f97316','#7f1d1d','#94a3b8'];
   const shadows  = ['rgba(249,115,22,0.35)','rgba(127,29,29,0.35)','rgba(148,163,184,0.35)'];
 
