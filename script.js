@@ -2633,7 +2633,7 @@ function openHistoryLogin() {
   const list = document.getElementById('historyLoginList');
   list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>';
   if (!db) { list.innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Firebase tidak tersedia</div>'; return; }
-  db.ref(HISTORY_PATH).orderByChild('timestamp').limitToLast(50).once('value', snap => {
+  db.ref(HISTORY_PATH).limitToLast(50).once('value', snap => {
     const entries = [];
     snap.forEach(child => entries.unshift(child.val()));
     if (!entries.length) {
