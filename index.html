@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -1226,7 +1226,7 @@
     </div>
     <!-- TABEL LPPBDO -->
     <div id="lppbdoSection" style="background:#fff;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:16px;">
-      <div style="height:3px;background:linear-gradient(90deg,#dc2626,#f59e0b,#16a34a);flex-shrink:0;"></div>
+      <div style="height:3px;background:linear-gradient(90deg,#f97316,#7f1d1d,#94a3b8);flex-shrink:0;"></div>
       <div style="padding:14px 20px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;">
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="width:32px;height:32px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:15px;">📋</div>
@@ -1237,11 +1237,24 @@
         </div>
         <span id="lppbdoStatus" style="font-size:11px;color:#94a3b8;font-weight:600;">Memuat...</span>
       </div>
-      <div style="overflow-x:auto;padding:0;">
-        <table id="lppbdoTable" style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px;">
-          <thead id="lppbdoHead"></thead>
-          <tbody id="lppbdoBody"></tbody>
-        </table>
+      <div style="display:flex;gap:0;">
+        <!-- Tabel -->
+        <div style="flex:1;overflow-x:auto;min-width:0;">
+          <table id="lppbdoTable" style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px;">
+            <thead id="lppbdoHead"></thead>
+            <tbody id="lppbdoBody"></tbody>
+          </table>
+        </div>
+        <!-- Summary Chart -->
+        <div style="width:220px;flex-shrink:0;border-left:1px solid #e2e8f0;padding:12px 10px 8px;display:flex;flex-direction:column;">
+          <div style="font-size:10px;font-weight:800;color:#1e293b;margin-bottom:4px;text-align:center;">Avg % per Kategori</div>
+          <div id="lppbdoChartWrap" style="flex:1;min-height:140px;"></div>
+          <div style="display:flex;flex-direction:column;gap:3px;margin-top:6px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:9px;color:#475569;"><span style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;"></span>RUSAK</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:9px;color:#475569;"><span style="width:10px;height:10px;border-radius:2px;background:#7f1d1d;display:inline-block;"></span>Selisih</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:9px;color:#475569;"><span style="width:10px;height:10px;border-radius:2px;background:#94a3b8;display:inline-block;"></span>Sparepart</div>
+          </div>
+        </div>
       </div>
     </div>
 
