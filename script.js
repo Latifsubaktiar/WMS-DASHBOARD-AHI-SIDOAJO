@@ -2066,6 +2066,19 @@ function renderLppbdo(dates, rows) {
   const el = document.getElementById('lppbdoStatus');
   if (el) el.textContent = `${validDates.length} hari`;
 
+  // MTD summary
+  const mtdEl = document.getElementById('lppbdoMtd');
+  if (mtdEl) {
+    const now = new Date();
+    const bulan = now.toLocaleString('id-ID', {month:'long', year:'numeric'});
+    const totalRow = rows.find(r => r.kategori.includes('TOTAL'));
+    const totalAvg = totalRow && totalRow.average !== null ? (totalRow.average * 100).toFixed(2) : '0.00';
+    mtdEl.innerHTML = `
+      <div style="font-size:9px;color:#94a3b8;font-weight:600;margin-bottom:2px;">MTD ${bulan}</div>
+      <div style="font-size:20px;font-weight:900;color:#dc2626;">${totalAvg}%</div>
+      <div style="font-size:9px;color:#64748b;">% Total LPPBDO</div>`;
+  }
+
   // ── Summary Chart (3D-style bar) ──
   renderLppbdoChart(rows);
 }
