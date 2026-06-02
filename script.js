@@ -196,6 +196,7 @@ function applyLogin() {
   startChat();
   const overlay = document.getElementById('loginOverlay');
   overlay.style.opacity='0'; overlay.style.transition='opacity 0.3s ease';
+  setTimeout(saveLoginHistory, 1500); // simpan history setelah Firebase ready
   setTimeout(()=>overlay.classList.add('hidden'),300);
   setTimeout(updateSettingsUser,350);
 }
