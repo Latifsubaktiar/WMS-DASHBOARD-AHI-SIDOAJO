@@ -294,7 +294,7 @@ function toggleOutboundPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const lg1=document.getElementById('lppbdoGrid'); if(lg1) lg1.style.display='none';
+    const sgOut=document.querySelector('.stats-grid'); if(sgOut) sgOut.style.display='none';
     fetchOutboundPanel();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
@@ -302,7 +302,7 @@ function toggleOutboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgr1=document.getElementById('lppbdoGrid'); if(lgr1) lgr1.style.display='grid';
+    const sgOutR=document.querySelector('.stats-grid'); if(sgOutR) sgOutR.style.display='';
     lineOutboundLoaded = false;
     switchOutboundTab('data');
   }
@@ -330,7 +330,7 @@ function toggleInventoryPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const lg2=document.getElementById('lppbdoGrid'); if(lg2) lg2.style.display='none';
+    const sgInv=document.querySelector('.stats-grid'); if(sgInv) sgInv.style.display='none';
     if (!inventoryDetailLoaded) fetchInventoryDetail();
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
@@ -338,9 +338,8 @@ function toggleInventoryPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
-
-    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
+    const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
+  }
 }
 
 async function fetchOutboundPanel() {
@@ -743,7 +742,7 @@ function toggleStoringPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const lg3=document.getElementById('lppbdoGrid'); if(lg3) lg3.style.display='none';
+    const sgStr=document.querySelector('.stats-grid'); if(sgStr) sgStr.style.display='none';
     if (!storingLoaded) fetchStoringToday();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
@@ -751,9 +750,8 @@ function toggleStoringPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
-
-    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
+    const sgStrR=document.querySelector('.stats-grid'); if(sgStrR) sgStrR.style.display='';
+  }
 }
 
 async function fetchStoringStatCard() {
@@ -1013,7 +1011,7 @@ function toggleInboundPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const lg4=document.getElementById('lppbdoGrid'); if(lg4) lg4.style.display='none';
+    const sgInb=document.querySelector('.stats-grid'); if(sgInb) sgInb.style.display='none';
     renderPanelInboundTable(window._inboundRows || []);
     fetchInlineProses();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
@@ -1022,9 +1020,8 @@ function toggleInboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
-
-    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
+    const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
+  }
 }
 
 function switchPanelTab(tab) {
@@ -1334,20 +1331,18 @@ let dashInboundChart=null, dashOutboundChart=null;
 
 function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
   const pct=total>0?Math.round((selesai/total)*100):0;
-  const _si=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  _si('dashInboundPct',pct+'%');
-  _si('inboundPctBadge',pct+'% Selesai');
-  _si('piInSelesai',selesai+' truck');
-  _si('piInProses',proses+' truck');
-  _si('piInAntri',antri+' truck');
-  _si('piInBelum',belum+' truck');
-  _si('piInHitMiss',hit+' HIT / '+miss+' MISS');
+  document.getElementById('dashInboundPct').textContent=pct+'%';
+  document.getElementById('inboundPctBadge').textContent=pct+'% Selesai';
+  document.getElementById('piInSelesai').textContent=selesai+' truck';
+  document.getElementById('piInProses').textContent=proses+' truck';
+  const piAntri=document.getElementById('piInAntri'); if(piAntri) piAntri.textContent=antri+' truck';
+  document.getElementById('piInBelum').textContent=belum+' truck';
+  document.getElementById('piInHitMiss').textContent=hit+' HIT / '+miss+' MISS';
   const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
   if(dashInboundChart) dashInboundChart.destroy();
-  const cvIn=document.getElementById('dashInboundChart'); if(!cvIn) return;
-  dashInboundChart=new Chart(cvIn.getContext('2d'),{
+  dashInboundChart=new Chart(document.getElementById('dashInboundChart').getContext('2d'),{
     type:'doughnut',
-    data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#2563eb','#06b6d4','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
+    data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} truck`}}}}
   });
 }
@@ -1355,18 +1350,17 @@ function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
 function renderDashOutboundChart(total,selesai,proses,antri,belum,hit,miss) {
   proses=proses||0; antri=antri||0; belum=belum||0; hit=hit||0; miss=miss||0;
   const pct=total>0?Math.round((selesai/total)*100):0;
-  const _so=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  _so('dashOutboundPct',pct+'%');
-  _so('outboundPctBadge',pct+'% Selesai');
-  _so('piOutSelesai',selesai+' armada');
-  _so('piOutProses',proses+' armada');
-  _so('piOutAntri',antri+' armada');
-  _so('piOutBelum',belum+' armada');
-  _so('piOutHitMiss',hit+' HIT / '+miss+' MISS');
+  document.getElementById('dashOutboundPct').textContent=pct+'%';
+  document.getElementById('outboundPctBadge').textContent=pct+'% Selesai';
+  document.getElementById('piOutSelesai').textContent=selesai+' armada';
+  const elP=document.getElementById('piOutProses'),elA=document.getElementById('piOutAntri'),elHM=document.getElementById('piOutHitMiss');
+  if(elP) elP.textContent=proses+' armada';
+  if(elA) elA.textContent=antri+' armada';
+  document.getElementById('piOutBelum').textContent=belum+' armada';
+  if(elHM) elHM.textContent=hit+' HIT / '+miss+' MISS';
   const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
   if(dashOutboundChart) dashOutboundChart.destroy();
-  const cvOut=document.getElementById('dashOutboundChart'); if(!cvOut) return;
-  dashOutboundChart=new Chart(cvOut.getContext('2d'),{
+  dashOutboundChart=new Chart(document.getElementById('dashOutboundChart').getContext('2d'),{
     type:'doughnut',
     data:{labels:['Selesai','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} armada`}}}}
@@ -1415,7 +1409,7 @@ async function fetchDashboardStats() {
       const sb2=document.getElementById('inbStatBelum'); if(sb2) sb2.textContent=belum;
       // Pie chart
       const inPct = total>0 ? Math.round(selesai/total*100) : 0;
-      _makeSVGStatChart('inboundStatChart', inPct, '#2563eb');
+      _makeSVGStatChart('inboundStatChart', inPct, '#16a34a');
       const inBar = document.querySelector('#inboundStatCard .stat-bar-fill');
       const inFoot = document.querySelector('#inboundStatCard .stat-foot-val');
       if(inBar) setTimeout(()=>inBar.style.width=inPct+'%',300);
@@ -1794,8 +1788,7 @@ async function fetchInventoryAccuracy() {
     const card   = document.getElementById('invControlCard');
     const icon   = document.getElementById('invControlIcon');
 
-    if (!valEl) return; // Element belum ada (belum diklik)
-    window._invAccuracyData = data; // Simpan untuk dipakai saat klik
+    if (!valEl) return;
 
     // Update value
     valEl.textContent = pct.toFixed(2) + '%';
@@ -1824,7 +1817,7 @@ async function fetchInventoryAccuracy() {
     if (icon)   icon.style.background = iconBg;
 
     // Pie chart Progress CC - ambil dari window._invData jika sudah ada, fallback ke data.summary
-    const invS = (window._invData && window._invData.summary) ? window._invData.summary : (data.summary || {});
+    const invS = (window._invData && window._invData.summary) ? window._invData.summary : data.summary;
     const rawCcPct = String(invS.pctCcTotal||'0').replace('%','').trim();
     const ccPct = Math.round(parseFloat(rawCcPct)||0);
     _makeSVGStatChart('invStatChart', ccPct, color);
@@ -2014,169 +2007,6 @@ async function fetchInventoryValue(){
 
 fetchDashboardStats();
 setInterval(fetchDashboardStats,5*60*1000);
-fetchLppbdo();
-
-// ══════════════════════════════════════════════════════════════
-//  LPPBDO TABLE
-// ══════════════════════════════════════════════════════════════
-async function fetchLppbdo() {
-  try {
-    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getLppbdo');
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error);
-    renderLppbdo(json.dates, json.rows);
-  } catch(e) {
-    const el = document.getElementById('lppbdoStatus');
-    if (el) el.textContent = 'Gagal memuat';
-    console.warn('LPPBDO error:', e);
-  }
-}
-
-function renderLppbdo(dates, rows) {
-  const head = document.getElementById('lppbdoHead');
-  const body = document.getElementById('lppbdoBody');
-  if (!head || !body) return;
-
-  // Warna per baris ikut spreadsheet
-  const rowColors = [
-    { bg: '#fff3e0', text: '#b45309', bold: false }, // RUSAK     - orange
-    { bg: '#3b0000', text: '#fca5a5', bold: false }, // selisih   - maroon gelap
-    { bg: '#ffffff', text: '#1e293b', bold: false }, // Sparepart - putih
-    { bg: '#1e293b', text: '#ffffff', bold: true  }, // TOTAL     - gelap
-  ];
-
-  const validDates = dates.map((d, i) => ({ d, i })).filter(x => x.d);
-
-  const thStyle  = 'padding:9px 12px;text-align:center;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;';
-  const thFirst  = 'padding:9px 16px;text-align:left;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:220px;position:sticky;left:0;z-index:2;';
-
-  // Filter kolom AVERAGE dari header (tampilkan hanya tanggal)
-  const dateCols = validDates.filter(x => !/average/i.test(x.d));
-
-  head.innerHTML = `<tr>
-    <th style="${thFirst}">Kategori</th>
-    <th style="${thStyle}">UOM</th>
-    ${dateCols.map(x => `<th style="${thStyle}">${x.d}</th>`).join('')}
-  </tr>`;
-
-  body.innerHTML = rows.map((row, ri) => {
-    const c = rowColors[ri] || rowColors[0];
-    const tdBase  = `padding:8px 12px;text-align:center;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'500'};`;
-    const tdFirst = `padding:8px 16px;text-align:left;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'700'};white-space:nowrap;position:sticky;left:0;z-index:1;`;
-    const cells = dateCols.map(x => {
-      const val = row.values[x.i];
-      const display = (val === null || val === undefined) ? '' : (val * 100).toFixed(2) + '%';
-      return `<td style="${tdBase}">${display}</td>`;
-    }).join('');
-    return `<tr>
-      <td style="${tdFirst}">${row.kategori}</td>
-      <td style="${tdBase}">${row.uom}</td>
-      ${cells}
-    </tr>`;
-  }).join('');
-
-  const el = document.getElementById('lppbdoStatus');
-  if (el) el.textContent = `${validDates.length} hari`;
-
-  // MTD summary
-  const totalRow = rows.find(r => r.kategori.includes('TOTAL'));
-  const totalAvg = totalRow && totalRow.average !== null ? (totalRow.average * 100).toFixed(2) : '0.00';
-  const totalEl = document.getElementById('lppbdoTotalAvg');
-  if (totalEl) totalEl.innerHTML = `<div style="font-size:18px;font-weight:900;color:#dc2626;">${totalAvg}%</div>`;
-
-  // ── Summary Chart (3D-style bar) ──
-  renderLppbdoChart(rows);
-}
-
-function renderLppbdoChart(rows) {
-  const wrap = document.getElementById('lppbdoChartWrap');
-  if (!wrap) return;
-
-  // Hitung average per kategori (skip null, skip 0)
-  const labels   = rows.slice(0,3).map(r => r.kategori.replace('% LPPBDO ','').replace('% ',''));
-  // Pakai kolom AVERAGE langsung dari sheet (kolom AH)
-  console.log('LPPBDO rows average:', rows.map(r => ({k: r.kategori, avg: r.average})));
-  const avgs     = rows.slice(0,3).map(r => (r.average !== null && r.average !== undefined) ? parseFloat((r.average*100).toFixed(2)) : 0);
-  const colors   = ['#f97316','#7f1d1d','#94a3b8'];
-  const shadows  = ['rgba(249,115,22,0.35)','rgba(127,29,29,0.35)','rgba(148,163,184,0.35)'];
-
-  // 3D effect plugin
-  const bar3dPlugin = {
-    id: 'bar3d',
-    afterDatasetsDraw(chart) {
-      const {ctx} = chart;
-      chart.data.datasets.forEach((ds, di) => {
-        const meta = chart.getDatasetMeta(di);
-        meta.data.forEach((bar, i) => {
-          const {x, y, width, height, base} = bar.getProps(['x','y','width','height','base']);
-          const depth = 8;
-          const col   = colors[i] || '#888';
-          // Top face
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(x - width/2,     y);
-          ctx.lineTo(x - width/2 + depth, y - depth);
-          ctx.lineTo(x + width/2 + depth, y - depth);
-          ctx.lineTo(x + width/2,     y);
-          ctx.closePath();
-          ctx.fillStyle = 'rgba(255,255,255,0.25)';
-          ctx.fill();
-          // Right face
-          ctx.beginPath();
-          ctx.moveTo(x + width/2,     y);
-          ctx.lineTo(x + width/2 + depth, y - depth);
-          ctx.lineTo(x + width/2 + depth, base - depth);
-          ctx.lineTo(x + width/2,     base);
-          ctx.closePath();
-          ctx.fillStyle = 'rgba(0,0,0,0.18)';
-          ctx.fill();
-          ctx.restore();
-        });
-      });
-    }
-  };
-
-  wrap.innerHTML = '<canvas id="lppbdoChart" style="width:100%;height:100%;"></canvas>';
-  const ctx = document.getElementById('lppbdoChart').getContext('2d');
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data: avgs,
-        backgroundColor: colors,
-        borderRadius: 2,
-        borderSkipped: false,
-        borderWidth: 0,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: c => ` Avg: ${c.parsed.y.toFixed(2)}%`
-          }
-        },
-        datalabels: {
-          anchor: 'end', align: 'top',
-          color: ctx2 => colors[ctx2.dataIndex],
-          font: { weight: '800', size: 10 },
-          formatter: v => v.toFixed(2) + '%'
-        }
-      },
-      scales: {
-        x: { grid: { display:false }, ticks: { font:{size:9,weight:'700'}, color:'#475569' }, border:{display:false} },
-        y: { beginAtZero: true, grid: { color:'rgba(0,0,0,0.05)' }, ticks: { callback: v => v+'%', font:{size:9}, color:'#94a3b8' }, border:{display:false} }
-      },
-      animation: { duration: 600 }
-    },
-    plugins: [bar3dPlugin]
-  });
-}
 
 // ══════════════════════════════════════
 //  CHARTS — DAILY ACTIVITY
@@ -2254,10 +2084,11 @@ async function fetchDailyActivity(){
       floatBox.style.cssText = 'display:inline-block;';
       floatBox.innerHTML = `
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
           <table style="border-collapse:collapse;font-size:10px;width:100%;">
             <thead>
               <tr>
-                <th style="padding:3px 8px;background:#1e293b;color:#fff;font-size:7.5px;font-weight:700;text-align:center;min-width:80px;"></th>
+                <th style="padding:3px 8px;background:#1e293b;color:#fff;font-size:7.5px;font-weight:700;text-align:center;min-width:55px;"></th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Inbound</th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Demand In</th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Outbound</th>
@@ -2288,7 +2119,6 @@ async function fetchDailyActivity(){
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
               </tr>
-
             </tbody>
           </table>
         </div>`;
@@ -2393,17 +2223,17 @@ async function fetchDailyActivity(){
       plugins:[troughputPlugin]
     });
 
-    // Legend manual — atas chart
+    // Legend manual
     const legendDiv = document.createElement('div');
-    legendDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;padding:0 4px 6px;font-size:10px;font-weight:600;color:#475569;';
+    legendDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:4px 0 0;font-size:10px;font-weight:600;color:#475569;';
     legendDiv.innerHTML = `
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.inbound.bar};border-radius:2px;display:inline-block;"></span>Inbound</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.outbound.bar};border-radius:2px;display:inline-block;"></span>Outbound</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.inventory.bar};border-radius:2px;display:inline-block;"></span>Inventory</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.inbound.bar};border-radius:2px;display:inline-block;"></span>Inbound (CBM)</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.outbound.bar};border-radius:2px;display:inline-block;"></span>Outbound (CBM)</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.inventory.bar};border-radius:2px;display:inline-block;"></span>Inventory (CBM)</span>
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:${C.occupancy};border-radius:50%;display:inline-block;"></span>Occupancy (%)</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;display:inline-block;border-top:2px dashed ${C.capacity};"></span>Capacity</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;display:inline-block;border-top:2px dashed ${C.forecast};"></span>Forecast Out</span>`;
-    wrap.insertBefore(legendDiv, canvas);
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;background:${C.capacity};display:inline-block;border-top:2px dashed ${C.capacity};"></span>Capacity</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;background:${C.forecast};display:inline-block;border-top:2px dashed ${C.forecast};"></span>Forecast Out</span>`;
+    wrap.appendChild(legendDiv);
 
   } catch(e) {
     console.error('Troughput error:', e);
@@ -2524,7 +2354,7 @@ function togglePlannerPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const lg5=document.getElementById('lppbdoGrid'); if(lg5) lg5.style.display='none';
+    const sgPl=document.querySelector('.stats-grid'); if(sgPl) sgPl.style.display='none';
     fetchPlannerDetail();
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
@@ -2532,9 +2362,8 @@ function togglePlannerPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
-
-    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
+    const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
+  }
 }
 
 fetchDailyActivity();
