@@ -900,7 +900,158 @@ function renderStoringKPI(rows, s) {
   }).join('');
 }
 
+
+function renderStoringKPI(rows, s) {
+  let kpiRow = document.getElementById('storingKpiRow');
+  if (!kpiRow) {
+    const panel = document.getElementById('storingDetailPanel');
+    if (!panel) return;
+    const card = panel.querySelector('.card');
+    if (!card) return;
+    kpiRow = document.createElement('div');
+    kpiRow.id = 'storingKpiRow';
+    kpiRow.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.2);';
+    card.insertBefore(kpiRow, card.children[1]);
+  }
+
+  const num = n => Math.round(n||0).toLocaleString('id-ID');
+  const totalLc  = new Set(rows.map(r=>r.noLc)).size;
+  const relCase  = s.sumRelease || 0;
+  const pickCase = s.sumPicked  || 0;
+  const stgCase  = s.sumStaged  || 0;
+  const sisaCase = s.sumSisa    || 0;
+  const pickPct  = relCase>0 ? Math.round(pickCase/relCase*100) : 0;
+  const stgPct   = relCase>0 ? Math.round(stgCase/relCase*100)  : 0;
+  const sisaPct  = relCase>0 ? Math.round(sisaCase/relCase*100) : 0;
+
+  // warna pastel per card persis foto 1
+  const kpis = [
+    { label:'Total LC',      val:totalLc,      sub:'Semua · CID',          badge:'Visible', badgeStyle:'background:rgba(99,102,241,0.15);color:#6366f1;border:1px solid rgba(99,102,241,0.3);', valColor:'#6366f1', grad:'linear-gradient(135deg,#ede9fe 0%,#f5f3ff 100%)', border:'2px solid rgba(99,102,241,0.25)', foot:'DATA AKTIF',    footVal:'LIVE',      footColor:'#16a34a', bar:100,     barColor:'#6366f1' },
+    { label:'Release CID',   val:num(relCase),  sub:'Baseline total proses', badge:'100%',   badgeStyle:'background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);', valColor:'#f59e0b', grad:'linear-gradient(135deg,#fef3c7 0%,#fffbeb 100%)', border:'2px solid rgba(245,158,11,0.25)', foot:'TARGET AWAL',   footVal:'100%',      footColor:'#f59e0b', bar:100,     barColor:'#f59e0b' },
+    { label:'Picked CID',    val:num(pickCase), sub:pickPct+'% dari release', badge:pickPct+'%', badgeStyle:'background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);', valColor:'#10b981', grad:'linear-gradient(135deg,#d1fae5 0%,#ecfdf5 100%)', border:'2px solid rgba(16,185,129,0.25)', foot:'PROGRESS PICK', footVal:pickPct+'%', footColor:'#10b981', bar:pickPct, barColor:'#10b981' },
+    { label:'Staged CID',    val:num(stgCase),  sub:stgPct+'% dari picked',  badge:stgPct+'%',  badgeStyle:'background:rgba(236,72,153,0.15);color:#ec4899;border:1px solid rgba(236,72,153,0.3);', valColor:'#ec4899', grad:'linear-gradient(135deg,#fce7f3 0%,#fdf2f8 100%)', border:'2px solid rgba(236,72,153,0.25)', foot:'READY TO LOAD', footVal:stgPct+'%',  footColor:'#ec4899', bar:stgPct,  barColor:'#ec4899' },
+    { label:'Sisa CID',      val:num(sisaCase), sub:sisaPct+'% outstanding', badge:sisaPct+'%', badgeStyle:'background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);',  valColor:'#ef4444', grad:'linear-gradient(135deg,#fee2e2 0%,#fef2f2 100%)', border:'2px solid rgba(239,68,68,0.25)',   foot:'BELUM PICKED',  footVal:sisaPct+'%', footColor:'#ef4444', bar:sisaPct, barColor:'#ef4444' },
+    { label:'Completion Rate',val:pickPct+'%',  sub:'Release → Picked',      badge:'Semua',     badgeStyle:'background:rgba(37,99,235,0.15);color:#2563eb;border:1px solid rgba(37,99,235,0.3);',  valColor:'#2563eb', grad:'linear-gradient(135deg,#dbeafe 0%,#eff6ff 100%)', border:'2px solid rgba(37,99,235,0.25)',   foot:'EFEKTIVITAS',   footVal:pickPct+'%', footColor:'#2563eb', bar:pickPct, barColor:'#2563eb' },
+  ];
+
+  kpiRow.innerHTML = kpis.map(k => `
+    <div style="background:${k.grad};border:${k.border};border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;flex-direction:column;">
+      <div style="padding:14px 16px 0;flex:1;display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div style="font-size:9.5px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;">${k.label}</div>
+          <span style="font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px;${k.badgeStyle}">${k.badge}</span>
+        </div>
+        <div style="font-size:30px;font-weight:900;color:${k.valColor};letter-spacing:-1.5px;line-height:1;margin-bottom:4px;">${k.val}</div>
+        <div style="font-size:10px;color:#94a3b8;flex:1;margin-bottom:10px;">${k.sub}</div>
+        <div style="height:5px;background:rgba(0,0,0,0.08);border-radius:10px;overflow:hidden;">
+          <div style="width:${Math.min(k.bar,100)}%;height:100%;background:${k.barColor};border-radius:10px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 16px;border-top:1px solid rgba(0,0,0,0.06);margin-top:10px;font-size:9px;">
+        <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">${k.foot}</span>
+        <span style="font-weight:900;color:${k.footColor};">${k.footVal}</span>
+      </div>
+    </div>`).join('');
+}
+
 function renderStoringBatchCards(rows) {
+  const grid = document.getElementById('storingBatchGrid');
+  if (!grid || !rows || !rows.length) return;
+
+  const batches = {};
+  rows.forEach(r => {
+    const b = String(r.batch||'').trim() || '?';
+    if (!batches[b]) batches[b] = { noLc:new Set(), releaseCase:0, pickedCase:0, stagedCase:0, sisaCase:0 };
+    batches[b].noLc.add(r.noLc);
+    batches[b].releaseCase += parseFloat(r.releaseCase)||0;
+    batches[b].pickedCase  += parseFloat(r.pickedCase)||0;
+    batches[b].stagedCase  += parseFloat(r.stagedCase)||0;
+    batches[b].sisaCase    += parseFloat(r.sisaCase)||0;
+  });
+
+  const batchList = Object.entries(batches).sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}));
+  const count = batchList.length;
+  grid.style.gridTemplateColumns = `repeat(${Math.min(count,4)},1fr)`;
+
+  // Warna per batch persis foto 1
+  const colors = [
+    { grad:'linear-gradient(135deg,#ede9fe 0%,#f5f3ff 100%)', border:'2px solid rgba(99,102,241,0.3)',  accent:'#6366f1', numBg:'#6366f1',  ring:'#6366f1' },
+    { grad:'linear-gradient(135deg,#d1fae5 0%,#ecfdf5 100%)', border:'2px solid rgba(16,185,129,0.3)', accent:'#10b981', numBg:'#10b981', ring:'#10b981' },
+    { grad:'linear-gradient(135deg,#fef3c7 0%,#fffbeb 100%)', border:'2px solid rgba(245,158,11,0.3)', accent:'#f59e0b', numBg:'#f59e0b', ring:'#f59e0b' },
+    { grad:'linear-gradient(135deg,#f3e8ff 0%,#faf5ff 100%)', border:'2px solid rgba(168,85,247,0.3)', accent:'#a855f7', numBg:'#a855f7', ring:'#a855f7' },
+  ];
+
+  const makeSVGDonut = (pct, color) => {
+    const r=26,cx=32,cy=32,circ=2*Math.PI*r;
+    const dash=Math.min(pct,100)/100*circ;
+    return `<svg width="60" height="60" viewBox="0 0 64 64">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="7"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+        stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
+        stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+      <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="900" fill="${color}">${pct}%</text>
+    </svg>`;
+  };
+
+  grid.innerHTML = batchList.map(([batchNum, d], i) => {
+    const col = colors[i % colors.length];
+    const pickPct  = d.releaseCase>0 ? Math.round(d.pickedCase/d.releaseCase*100)  : 0;
+    const stagePct = d.releaseCase>0 ? Math.round(d.stagedCase/d.releaseCase*100)  : 0;
+    const lcCount  = d.noLc.size;
+    const num = n => Math.round(n).toLocaleString('id-ID');
+
+    return `<div style="background:${col.grad};border:${col.border};border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07);position:relative;">
+      <div style="padding:14px 16px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:10px;background:${col.numBg};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;box-shadow:0 4px 10px ${col.numBg}66;">${batchNum}</div>
+            <div>
+              <div style="font-size:13px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
+              <div style="font-size:9.5px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
+            </div>
+          </div>
+          ${makeSVGDonut(pickPct, col.ring)}
+        </div>
+        <!-- 4 mini boxes RELEASE PICKED STAGED SISA -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px;">
+          <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px;border:1px solid rgba(0,0,0,0.06);">
+            <div style="font-size:7.5px;font-weight:700;color:#f59e0b;text-transform:uppercase;margin-bottom:2px;">RELEASE</div>
+            <div style="font-size:15px;font-weight:900;color:#f59e0b;line-height:1.1;">${num(d.releaseCase)}</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px;border:1px solid rgba(0,0,0,0.06);">
+            <div style="font-size:7.5px;font-weight:700;color:#10b981;text-transform:uppercase;margin-bottom:2px;">PICKED</div>
+            <div style="font-size:15px;font-weight:900;color:#10b981;line-height:1.1;">${num(d.pickedCase)}</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px;border:1px solid rgba(0,0,0,0.06);">
+            <div style="font-size:7.5px;font-weight:700;color:#ec4899;text-transform:uppercase;margin-bottom:2px;">STAGED</div>
+            <div style="font-size:15px;font-weight:900;color:#ec4899;line-height:1.1;">${num(d.stagedCase)}</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px;border:1px solid rgba(0,0,0,0.06);">
+            <div style="font-size:7.5px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:2px;">SISA</div>
+            <div style="font-size:15px;font-weight:900;color:#ef4444;line-height:1.1;">${num(d.sisaCase)}</div>
+          </div>
+        </div>
+        <!-- Pick Rate bar -->
+        <div style="display:flex;justify-content:space-between;font-size:9.5px;font-weight:700;color:#64748b;margin-bottom:4px;">
+          <span>Pick Rate</span><span style="color:${col.accent};">${pickPct}%</span>
+        </div>
+        <div style="height:5px;background:rgba(0,0,0,0.08);border-radius:10px;margin-bottom:8px;">
+          <div style="width:${pickPct}%;height:100%;background:${col.accent};border-radius:10px;transition:width 1s;"></div>
+        </div>
+        <!-- Stage Rate bar -->
+        <div style="display:flex;justify-content:space-between;font-size:9.5px;font-weight:700;color:#64748b;margin-bottom:4px;">
+          <span>Stage Rate</span><span style="color:${col.accent};">${stagePct}%</span>
+        </div>
+        <div style="height:5px;background:rgba(0,0,0,0.08);border-radius:10px;margin-bottom:14px;">
+          <div style="width:${stagePct}%;height:100%;background:${col.accent};border-radius:10px;transition:width 1s;"></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+
   const grid = document.getElementById('storingBatchGrid');
   if (!grid || !rows || !rows.length) return;
 
@@ -916,72 +1067,7 @@ function renderStoringBatchCards(rows) {
     batches[b].sisaCase    += parseFloat(r.sisaCase)||0;
   });
 
-  const batchList = Object.entries(batches).sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}));
-  const count = batchList.length;
 
-  // Adjust grid columns dynamically
-  grid.style.gridTemplateColumns = `repeat(${Math.min(count,4)},1fr)`;
-
-  const colors = [
-    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
-    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
-    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
-    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
-  ];
-
-  grid.innerHTML = batchList.map(([batchNum, d], i) => {
-    const col = colors[i % colors.length];
-    const pickPct = d.releaseCase>0 ? Math.round(d.pickedCase/d.releaseCase*100) : 0;
-    const stagePct = d.releaseCase>0 ? Math.round(d.stagedCase/d.releaseCase*100) : 0;
-    const lcCount = d.noLc.size;
-    const num = n => Math.round(n).toLocaleString('id-ID');
-
-    return `<div style="background:linear-gradient(160deg,#fff 55%,${col.tint} 100%);border:1px solid #e2e8f0;box-shadow:0 1px 6px rgba(0,0,0,0.06);position:relative;overflow:hidden;">
-      <div style="height:3px;background:${col.stripe};position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.3),transparent);animation:cardBeam ${3+i*0.4}s ease-in-out infinite;"></div></div>
-      <div style="padding:12px 14px 0;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:28px;height:28px;background:${col.accent};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;">${batchNum}</div>
-            <div>
-              <div style="font-size:12px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
-              <div style="font-size:9px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
-            </div>
-          </div>
-          <div style="font-size:11px;font-weight:800;color:${col.accent};">${pickPct}%</div>
-        </div>
-        <!-- Mini KPI boxes -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
-          <div style="background:#fff;border:1px solid rgba(245,158,11,0.3);padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#d97706;text-transform:uppercase;">RELEASE</div>
-            <div style="font-size:14px;font-weight:900;color:#d97706;line-height:1.2;">${num(d.releaseCase)}</div>
-          </div>
-          <div style="background:#fff;border:1px solid rgba(16,185,129,0.3);padding:4px 7px;">
-            <div style="font-size:7.5px;font-weight:700;color:#059669;text-transform:uppercase;">PICKED</div>
-            <div style="font-size:14px;font-weight:900;color:#059669;line-height:1.2;">${num(d.pickedCase)}</div>
-          </div>
-          <div style="background:#fff;border:1px solid rgba(236,72,153,0.3);padding:4px 7px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4s ease-in-out infinite;pointer-events:none;"></div>
-            <div style="font-size:7.5px;font-weight:700;color:#db2777;text-transform:uppercase;">STAGED</div>
-            <div style="font-size:14px;font-weight:900;color:#db2777;line-height:1.2;">${num(d.stagedCase)}</div>
-          </div>
-          <div style="background:#fff;border:1px solid rgba(239,68,68,0.3);padding:4px 7px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4.5s ease-in-out infinite;pointer-events:none;"></div>
-            <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">SISA</div>
-            <div style="font-size:14px;font-weight:900;color:#dc2626;line-height:1.2;">${num(d.sisaCase)}</div>
-          </div>
-        </div>
-        <!-- Pick Rate bar -->
-        <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px;">
-          <span>Pick Rate</span><span style="color:${col.accent};">${pickPct}%</span>
-        </div>
-        <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:6px;"><div style="height:100%;background:${col.accent};width:${pickPct}%;transition:width 1s;"></div></div>
-        <!-- Stage Rate bar -->
-        <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px;">
-          <span>Stage Rate</span><span style="color:#ec4899;">${stagePct}%</span>
-        </div>
-        <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:12px;"><div style="height:100%;background:#ec4899;width:${stagePct}%;transition:width 1s;"></div></div>
-      </div>
-    </div>`;
-  }).join('');
-}
 
 function renderStoringTable(rows) {
   const tbody = document.getElementById('storingTableBody');
