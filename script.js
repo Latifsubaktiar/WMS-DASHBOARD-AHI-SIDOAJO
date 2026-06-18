@@ -824,6 +824,7 @@ function renderStoringPanel(data) {
   const p3 = s.avgKapasitas;
 
   renderStoringTable(data.data);
+  renderStoringKPI(data.data, s);
   renderStoringBatchCards(data.data);
 
   // Beam kilat pink otomatis loop seperti Inbound panel
@@ -839,6 +840,64 @@ function renderStoringPanel(data) {
       card.appendChild(b);
     });
   },300);
+}
+
+
+function renderStoringKPI(rows, s) {
+  // Hitung total
+  const totalLc      = rows.length;
+  const totalRelease = s.sumRelease || 0;
+  const totalPicked  = rows.reduce((a,r)=>a+(parseFloat(r.pickedCase)||0),0);
+  const totalStaged  = rows.reduce((a,r)=>a+(parseFloat(r.stagedCase)||0),0);
+  const totalSisa    = rows.reduce((a,r)=>a+(parseFloat(r.sisaCase)||0),0);
+  const completionPct= totalRelease>0 ? Math.round((totalPicked/totalRelease)*100) : 0;
+  const releasePct   = 100;
+  const pickedPct    = totalRelease>0 ? Math.round((totalPicked/totalRelease)*100) : 0;
+  const stagedPct    = totalPicked>0  ? Math.round((totalStaged/totalPicked)*100)  : 0;
+  const sisaPct      = totalRelease>0 ? Math.round((totalSisa/totalRelease)*100)   : 0;
+
+  const num = n => Math.round(n).toLocaleString('id-ID');
+
+  const kpis = [
+    { label:'Total LC',       val: totalLc,             sub:'Semua · CID',         pct: null,          badge:'Visible', badgeColor:'#6366f1',  color:'#6366f1',  bg:'rgba(99,102,241,0.08)',  border:'rgba(99,102,241,0.2)',  foot:'DATA AKTIF',    footVal:'LIVE',       footColor:'#6366f1' },
+    { label:'Release CID',    val: num(totalRelease),   sub:'Baseline total proses',pct: releasePct,    badge:'100%',    badgeColor:'#f59e0b',  color:'#f59e0b',  bg:'rgba(245,158,11,0.08)',  border:'rgba(245,158,11,0.2)',  foot:'TARGET AWAL',   footVal:'100%',       footColor:'#f59e0b' },
+    { label:'Picked CID',     val: num(totalPicked),    sub:`${pickedPct}% dari release`, pct: pickedPct, badge:`${pickedPct}%`, badgeColor:'#10b981', color:'#10b981', bg:'rgba(16,185,129,0.08)', border:'rgba(16,185,129,0.2)', foot:'PROGRESS PICK', footVal:`${pickedPct}%`, footColor:'#10b981' },
+    { label:'Staged CID',     val: num(totalStaged),    sub:`${stagedPct}% dari picked`, pct: stagedPct, badge:`${stagedPct}%`, badgeColor:'#ec4899', color:'#ec4899', bg:'rgba(236,72,153,0.08)', border:'rgba(236,72,153,0.2)', foot:'READY TO LOAD', footVal:`${stagedPct}%`, footColor:'#ec4899' },
+    { label:'Sisa CID',       val: num(totalSisa),      sub:`${sisaPct}% outstanding`, pct: sisaPct,    badge:`${sisaPct}%`,   badgeColor:'#ef4444', color:'#ef4444',  bg:'rgba(239,68,68,0.08)',   border:'rgba(239,68,68,0.2)',   foot:'BELUM PICKED',  footVal:`${sisaPct}%`,  footColor:'#ef4444' },
+    { label:'Completion Rate',val: completionPct+'%',   sub:'Release → Picked',     pct: completionPct, badge:'Semua',  badgeColor:'#06b6d4',  color:'#06b6d4',  bg:'rgba(6,182,212,0.08)',   border:'rgba(6,182,212,0.2)',   foot:'EFEKTIVITAS',   footVal:`${completionPct}%`, footColor:'#06b6d4' },
+  ];
+
+  // Cari atau buat wrapper KPI
+  let kpiWrap = document.getElementById('storingKpiRow');
+  if (!kpiWrap) {
+    kpiWrap = document.createElement('div');
+    kpiWrap.id = 'storingKpiRow';
+    kpiWrap.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);';
+    const batchWrap = document.querySelector('#storingDetailPanel [style*="Pencapaian per Batch"]')
+      || document.querySelector('#storingDetailPanel .card > div:nth-child(3)');
+    const panel = document.querySelector('#storingDetailPanel .card');
+    if (panel) {
+      // Sisipkan sebelum batch grid section
+      const batchSection = document.getElementById('storingBatchGrid')?.closest('div[style*="padding:14px 20px"]');
+      if (batchSection) panel.insertBefore(kpiWrap, batchSection);
+      else panel.insertBefore(kpiWrap, panel.children[1]);
+    }
+  }
+
+  kpiWrap.innerHTML = kpis.map(k => {
+    const barW = k.pct !== null ? Math.min(k.pct, 100) : 100;
+    return `<div style="background:${k.bg};border:1px solid ${k.border};padding:14px 16px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;right:0;padding:4px 10px;background:${k.badgeColor};font-size:9px;font-weight:800;color:#fff;letter-spacing:0.05em;">${k.badge}</div>
+      <div style="font-size:26px;font-weight:900;color:${k.color};letter-spacing:-1px;line-height:1;margin-bottom:4px;">${k.val}</div>
+      <div style="font-size:11px;font-weight:800;color:#1e293b;margin-bottom:2px;">${k.label}</div>
+      <div style="font-size:10px;color:#94a3b8;margin-bottom:10px;">${k.sub}</div>
+      <div style="height:3px;background:rgba(0,0,0,0.06);margin-bottom:6px;"><div style="height:100%;background:${k.color};width:${barW}%;transition:width 1s;"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;">
+        <span style="color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">${k.foot}</span>
+        <span style="color:${k.footColor};font-weight:900;">${k.footVal}</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderStoringBatchCards(rows) {
