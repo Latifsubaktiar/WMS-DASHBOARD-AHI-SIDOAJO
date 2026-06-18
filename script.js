@@ -876,7 +876,7 @@ function renderStoringKPI(rows, s) {
   ];
 
   kpiRow.innerHTML = kpis.map(k => `
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;flex-direction:column;">
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;flex-direction:column;">
       <div style="padding:14px 16px 0;flex:1;display:flex;flex-direction:column;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">${k.label}</div>
@@ -941,12 +941,12 @@ function renderStoringBatchCards(rows) {
     const lcCount  = d.noLc.size;
     const num = n => Math.round(n).toLocaleString('id-ID');
 
-    return `<div style="background:${col.bg};border:1.5px solid ${col.border};border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
+    return `<div style="background:${col.bg};border:1.5px solid ${col.border};border-radius:0;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
       <div style="padding:16px 16px 0;">
         <!-- Header: nomor batch + nama + donut -->
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
           <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:34px;height:34px;border-radius:10px;background:${col.numBg};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;box-shadow:0 4px 10px ${col.numBg}55;">${batchNum}</div>
+            <div style="width:34px;height:34px;border-radius:0;background:${col.numBg};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;box-shadow:0 4px 10px ${col.numBg}55;">${batchNum}</div>
             <div>
               <div style="font-size:14px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
               <div style="font-size:9.5px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
