@@ -294,7 +294,7 @@ function toggleOutboundPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const sgOut=document.querySelector('.stats-grid'); if(sgOut) sgOut.style.display='none';
+    const lg1=document.getElementById('lppbdoGrid'); if(lg1) lg1.style.display='none';
     fetchOutboundPanel();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
@@ -302,7 +302,7 @@ function toggleOutboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const sgOutR=document.querySelector('.stats-grid'); if(sgOutR) sgOutR.style.display='';
+    const lgr1=document.getElementById('lppbdoGrid'); if(lgr1) lgr1.style.display='grid';
     lineOutboundLoaded = false;
     switchOutboundTab('data');
   }
@@ -330,7 +330,7 @@ function toggleInventoryPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const sgInv=document.querySelector('.stats-grid'); if(sgInv) sgInv.style.display='none';
+    const lg2=document.getElementById('lppbdoGrid'); if(lg2) lg2.style.display='none';
     if (!inventoryDetailLoaded) fetchInventoryDetail();
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
@@ -338,8 +338,9 @@ function toggleInventoryPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
-  }
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
+
+    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
 
 async function fetchOutboundPanel() {
@@ -742,7 +743,7 @@ function toggleStoringPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const sgStr=document.querySelector('.stats-grid'); if(sgStr) sgStr.style.display='none';
+    const lg3=document.getElementById('lppbdoGrid'); if(lg3) lg3.style.display='none';
     if (!storingLoaded) fetchStoringToday();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
@@ -750,8 +751,9 @@ function toggleStoringPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const sgStrR=document.querySelector('.stats-grid'); if(sgStrR) sgStrR.style.display='';
-  }
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
+
+    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
 
 async function fetchStoringStatCard() {
@@ -824,7 +826,6 @@ function renderStoringPanel(data) {
   const p3 = s.avgKapasitas;
 
   renderStoringTable(data.data);
-  renderStoringKPI(data.data, s);
   renderStoringBatchCards(data.data);
 
   // Beam kilat pink otomatis loop seperti Inbound panel
@@ -842,63 +843,11 @@ function renderStoringPanel(data) {
   },300);
 }
 
-
-function renderStoringKPI(rows, s) {
-  let kpiRow = document.getElementById('storingKpiRow');
-  if (!kpiRow) {
-    const panel = document.getElementById('storingDetailPanel');
-    if (!panel) return;
-    const card = panel.querySelector('.card');
-    if (!card) return;
-    kpiRow = document.createElement('div');
-    kpiRow.id = 'storingKpiRow';
-    kpiRow.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.2);background:#f0f4f8;';
-    card.insertBefore(kpiRow, card.children[1]);
-  }
-
-  const num = n => Math.round(n||0).toLocaleString('id-ID');
-  const totalLc  = new Set(rows.map(r=>r.noLc)).size;
-  const relCase  = s.sumRelease || 0;
-  const pickCase = s.sumPicked  || 0;
-  const stgCase  = s.sumStaged  || 0;
-  const sisaCase = s.sumSisa    || 0;
-  const pickPct  = relCase>0 ? Math.round(pickCase/relCase*100) : 0;
-  const stgPct   = relCase>0 ? Math.round(stgCase/relCase*100)  : 0;
-  const sisaPct  = relCase>0 ? Math.round(sisaCase/relCase*100) : 0;
-
-  const kpis = [
-    { label:'Total LC',       val:totalLc,       sub:'Semua · CID',           badge:'Visible',    badgeBg:'#e0e7ff', badgeColor:'#6366f1', valColor:'#6366f1', foot:'DATA AKTIF',    footVal:'LIVE',      footColor:'#16a34a', bar:100,     barColor:'#6366f1', icon:'🗒️' },
-    { label:'Release CID',    val:num(relCase),   sub:'Baseline total proses',  badge:'100%',       badgeBg:'#fef3c7', badgeColor:'#f59e0b', valColor:'#f59e0b', foot:'TARGET AWAL',   footVal:'100%',      footColor:'#f59e0b', bar:100,     barColor:'#f59e0b', icon:'📦' },
-    { label:'Picked CID',     val:num(pickCase),  sub:pickPct+'% dari release', badge:pickPct+'%',  badgeBg:'#d1fae5', badgeColor:'#10b981', valColor:'#10b981', foot:'PROGRESS PICK', footVal:pickPct+'%', footColor:'#10b981', bar:pickPct, barColor:'#10b981', icon:'✅' },
-    { label:'Staged CID',     val:num(stgCase),   sub:stgPct+'% dari picked',   badge:stgPct+'%',   badgeBg:'#fce7f3', badgeColor:'#ec4899', valColor:'#ec4899', foot:'READY TO LOAD', footVal:stgPct+'%',  footColor:'#ec4899', bar:stgPct,  barColor:'#ec4899', icon:'🚛' },
-    { label:'Sisa CID',       val:num(sisaCase),  sub:sisaPct+'% outstanding',  badge:sisaPct+'%',  badgeBg:'#fee2e2', badgeColor:'#ef4444', valColor:'#ef4444', foot:'BELUM PICKED',  footVal:sisaPct+'%', footColor:'#ef4444', bar:sisaPct, barColor:'#ef4444', icon:'⏳' },
-    { label:'Completion Rate',val:pickPct+'%',    sub:'Release → Picked',       badge:'Semua',      badgeBg:'#dbeafe', badgeColor:'#2563eb', valColor:'#2563eb', foot:'EFEKTIVITAS',   footVal:pickPct+'%', footColor:'#2563eb', bar:pickPct, barColor:'#2563eb', icon:'🎯' },
-  ];
-
-  kpiRow.innerHTML = kpis.map(k => `
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;flex-direction:column;">
-      <div style="padding:14px 16px 0;flex:1;display:flex;flex-direction:column;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">${k.label}</div>
-          <span style="font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;background:${k.badgeBg};color:${k.badgeColor};">${k.badge}</span>
-        </div>
-        <div style="font-size:32px;font-weight:900;color:${k.valColor};letter-spacing:-1.5px;line-height:1;margin-bottom:4px;">${k.val}</div>
-        <div style="font-size:10.5px;color:#94a3b8;flex:1;margin-bottom:12px;">${k.sub}</div>
-        <div style="height:4px;background:#f1f5f9;border-radius:10px;overflow:hidden;">
-          <div style="width:${Math.min(k.bar,100)}%;height:100%;background:${k.barColor};border-radius:10px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);"></div>
-        </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:8px 16px;margin-top:8px;font-size:9.5px;border-top:1px solid #f1f5f9;">
-        <span style="color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${k.foot}</span>
-        <span style="font-weight:900;color:${k.footColor};">${k.footVal}</span>
-      </div>
-    </div>`).join('');
-}
-
 function renderStoringBatchCards(rows) {
   const grid = document.getElementById('storingBatchGrid');
   if (!grid || !rows || !rows.length) return;
 
+  // Group by batch
   const batches = {};
   rows.forEach(r => {
     const b = String(r.batch||'').trim() || '?';
@@ -912,81 +861,66 @@ function renderStoringBatchCards(rows) {
 
   const batchList = Object.entries(batches).sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}));
   const count = batchList.length;
+
+  // Adjust grid columns dynamically
   grid.style.gridTemplateColumns = `repeat(${Math.min(count,4)},1fr)`;
 
-  // Warna PERSIS foto: Batch1=ungu, Batch2=hijau, Batch3=kuning, Batch4=ungu muda
   const colors = [
-    { bg:'#f5f3ff', border:'#c4b5fd', accent:'#6366f1', numBg:'#6366f1', ring:'#6366f1', pickBar:'#6366f1', stgBar:'#a5b4fc' },
-    { bg:'#f0fdf4', border:'#6ee7b7', accent:'#10b981', numBg:'#10b981', ring:'#10b981', pickBar:'#10b981', stgBar:'#6ee7b7' },
-    { bg:'#fffbeb', border:'#fcd34d', accent:'#f59e0b', numBg:'#f59e0b', ring:'#f59e0b', pickBar:'#f59e0b', stgBar:'#fde68a' },
-    { bg:'#faf5ff', border:'#d8b4fe', accent:'#a855f7', numBg:'#a855f7', ring:'#a855f7', pickBar:'#a855f7', stgBar:'#d8b4fe' },
+    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
+    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
+    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
+    { tint:'#fce7f3', border:'rgba(236,72,153,0.25)', accent:'#ec4899', stripe:'#ec4899' },
   ];
 
-  const makeSVGDonut = (pct, color) => {
-    const r=26,cx=32,cy=32,circ=2*Math.PI*r;
-    const dash=Math.min(pct,100)/100*circ;
-    return `<svg width="58" height="58" viewBox="0 0 64 64">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="7"/>
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
-        stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
-        stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-      <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="900" fill="${color}">${pct}%</text>
-    </svg>`;
-  };
-
   grid.innerHTML = batchList.map(([batchNum, d], i) => {
-    const col      = colors[i % colors.length];
-    const pickPct  = d.releaseCase>0 ? Math.round(d.pickedCase/d.releaseCase*100)  : 0;
-    const stagePct = d.releaseCase>0 ? Math.round(d.stagedCase/d.releaseCase*100)  : 0;
-    const lcCount  = d.noLc.size;
+    const col = colors[i % colors.length];
+    const pickPct = d.releaseCase>0 ? Math.round(d.pickedCase/d.releaseCase*100) : 0;
+    const stagePct = d.releaseCase>0 ? Math.round(d.stagedCase/d.releaseCase*100) : 0;
+    const lcCount = d.noLc.size;
     const num = n => Math.round(n).toLocaleString('id-ID');
 
-    return `<div style="background:${col.bg};border:1.5px solid ${col.border};border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-      <div style="padding:16px 16px 0;">
-        <!-- Header: nomor batch + nama + donut -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:34px;height:34px;border-radius:10px;background:${col.numBg};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;box-shadow:0 4px 10px ${col.numBg}55;">${batchNum}</div>
+    return `<div style="background:linear-gradient(160deg,#fff 55%,${col.tint} 100%);border:1px solid #e2e8f0;box-shadow:0 1px 6px rgba(0,0,0,0.06);position:relative;overflow:hidden;">
+      <div style="height:3px;background:${col.stripe};position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.3),transparent);animation:cardBeam ${3+i*0.4}s ease-in-out infinite;"></div></div>
+      <div style="padding:12px 14px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;background:${col.accent};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;">${batchNum}</div>
             <div>
-              <div style="font-size:14px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
-              <div style="font-size:9.5px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
+              <div style="font-size:12px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
+              <div style="font-size:9px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
             </div>
           </div>
-          ${makeSVGDonut(pickPct, col.ring)}
+          <div style="font-size:11px;font-weight:800;color:${col.accent};">${pickPct}%</div>
         </div>
-        <!-- 4 boxes horizontal: RELEASE PICKED STAGED SISA -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
-          <div>
-            <div style="font-size:8px;font-weight:700;color:#f59e0b;text-transform:uppercase;margin-bottom:3px;">RELEASE</div>
-            <div style="font-size:16px;font-weight:900;color:#f59e0b;line-height:1;">${num(d.releaseCase)}</div>
+        <!-- Mini KPI boxes -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+          <div style="background:#fff;border:1px solid rgba(245,158,11,0.3);padding:4px 7px;">
+            <div style="font-size:7.5px;font-weight:700;color:#d97706;text-transform:uppercase;">RELEASE</div>
+            <div style="font-size:14px;font-weight:900;color:#d97706;line-height:1.2;">${num(d.releaseCase)}</div>
           </div>
-          <div>
-            <div style="font-size:8px;font-weight:700;color:#10b981;text-transform:uppercase;margin-bottom:3px;">PICKED</div>
-            <div style="font-size:16px;font-weight:900;color:#10b981;line-height:1;">${num(d.pickedCase)}</div>
+          <div style="background:#fff;border:1px solid rgba(16,185,129,0.3);padding:4px 7px;">
+            <div style="font-size:7.5px;font-weight:700;color:#059669;text-transform:uppercase;">PICKED</div>
+            <div style="font-size:14px;font-weight:900;color:#059669;line-height:1.2;">${num(d.pickedCase)}</div>
           </div>
-          <div>
-            <div style="font-size:8px;font-weight:700;color:#ec4899;text-transform:uppercase;margin-bottom:3px;">STAGED</div>
-            <div style="font-size:16px;font-weight:900;color:#ec4899;line-height:1;">${num(d.stagedCase)}</div>
+          <div style="background:#fff;border:1px solid rgba(236,72,153,0.3);padding:4px 7px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4s ease-in-out infinite;pointer-events:none;"></div>
+            <div style="font-size:7.5px;font-weight:700;color:#db2777;text-transform:uppercase;">STAGED</div>
+            <div style="font-size:14px;font-weight:900;color:#db2777;line-height:1.2;">${num(d.stagedCase)}</div>
           </div>
-          <div>
-            <div style="font-size:8px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:3px;">SISA</div>
-            <div style="font-size:16px;font-weight:900;color:#ef4444;line-height:1;">${num(d.sisaCase)}</div>
+          <div style="background:#fff;border:1px solid rgba(239,68,68,0.3);padding:4px 7px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(236,72,153,0.25),transparent);transform:skewX(-15deg);animation:kpiBodyBeam 4.5s ease-in-out infinite;pointer-events:none;"></div>
+            <div style="font-size:7.5px;font-weight:700;color:#dc2626;text-transform:uppercase;">SISA</div>
+            <div style="font-size:14px;font-weight:900;color:#dc2626;line-height:1.2;">${num(d.sisaCase)}</div>
           </div>
         </div>
-        <!-- Pick Rate -->
-        <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#64748b;margin-bottom:4px;">
+        <!-- Pick Rate bar -->
+        <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px;">
           <span>Pick Rate</span><span style="color:${col.accent};">${pickPct}%</span>
         </div>
-        <div style="height:5px;background:#e5e7eb;border-radius:10px;margin-bottom:10px;">
-          <div style="width:${pickPct}%;height:100%;background:${col.pickBar};border-radius:10px;transition:width 1s;"></div>
+        <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:6px;"><div style="height:100%;background:${col.accent};width:${pickPct}%;transition:width 1s;"></div></div>
+        <!-- Stage Rate bar -->
+        <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#64748b;margin-bottom:3px;">
+          <span>Stage Rate</span><span style="color:#ec4899;">${stagePct}%</span>
         </div>
-        <!-- Stage Rate -->
-        <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#64748b;margin-bottom:4px;">
-          <span>Stage Rate</span><span style="color:${col.accent};">${stagePct}%</span>
-        </div>
-        <div style="height:5px;background:#e5e7eb;border-radius:10px;margin-bottom:16px;">
-          <div style="width:${stagePct}%;height:100%;background:${col.stgBar};border-radius:10px;transition:width 1s;"></div>
-        </div>
+        <div style="height:4px;background:rgba(0,0,0,0.06);margin-bottom:12px;"><div style="height:100%;background:#ec4899;width:${stagePct}%;transition:width 1s;"></div></div>
       </div>
     </div>`;
   }).join('');
@@ -1079,7 +1013,7 @@ function toggleInboundPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const sgInb=document.querySelector('.stats-grid'); if(sgInb) sgInb.style.display='none';
+    const lg4=document.getElementById('lppbdoGrid'); if(lg4) lg4.style.display='none';
     renderPanelInboundTable(window._inboundRows || []);
     fetchInlineProses();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
@@ -1088,8 +1022,9 @@ function toggleInboundPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
-  }
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
+
+    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
 
 function switchPanelTab(tab) {
@@ -1399,18 +1334,20 @@ let dashInboundChart=null, dashOutboundChart=null;
 
 function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
   const pct=total>0?Math.round((selesai/total)*100):0;
-  document.getElementById('dashInboundPct').textContent=pct+'%';
-  document.getElementById('inboundPctBadge').textContent=pct+'% Selesai';
-  document.getElementById('piInSelesai').textContent=selesai+' truck';
-  document.getElementById('piInProses').textContent=proses+' truck';
-  const piAntri=document.getElementById('piInAntri'); if(piAntri) piAntri.textContent=antri+' truck';
-  document.getElementById('piInBelum').textContent=belum+' truck';
-  document.getElementById('piInHitMiss').textContent=hit+' HIT / '+miss+' MISS';
+  const _si=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  _si('dashInboundPct',pct+'%');
+  _si('inboundPctBadge',pct+'% Selesai');
+  _si('piInSelesai',selesai+' truck');
+  _si('piInProses',proses+' truck');
+  _si('piInAntri',antri+' truck');
+  _si('piInBelum',belum+' truck');
+  _si('piInHitMiss',hit+' HIT / '+miss+' MISS');
   const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
   if(dashInboundChart) dashInboundChart.destroy();
-  dashInboundChart=new Chart(document.getElementById('dashInboundChart').getContext('2d'),{
+  const cvIn=document.getElementById('dashInboundChart'); if(!cvIn) return;
+  dashInboundChart=new Chart(cvIn.getContext('2d'),{
     type:'doughnut',
-    data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
+    data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#2563eb','#06b6d4','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} truck`}}}}
   });
 }
@@ -1418,17 +1355,18 @@ function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
 function renderDashOutboundChart(total,selesai,proses,antri,belum,hit,miss) {
   proses=proses||0; antri=antri||0; belum=belum||0; hit=hit||0; miss=miss||0;
   const pct=total>0?Math.round((selesai/total)*100):0;
-  document.getElementById('dashOutboundPct').textContent=pct+'%';
-  document.getElementById('outboundPctBadge').textContent=pct+'% Selesai';
-  document.getElementById('piOutSelesai').textContent=selesai+' armada';
-  const elP=document.getElementById('piOutProses'),elA=document.getElementById('piOutAntri'),elHM=document.getElementById('piOutHitMiss');
-  if(elP) elP.textContent=proses+' armada';
-  if(elA) elA.textContent=antri+' armada';
-  document.getElementById('piOutBelum').textContent=belum+' armada';
-  if(elHM) elHM.textContent=hit+' HIT / '+miss+' MISS';
+  const _so=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  _so('dashOutboundPct',pct+'%');
+  _so('outboundPctBadge',pct+'% Selesai');
+  _so('piOutSelesai',selesai+' armada');
+  _so('piOutProses',proses+' armada');
+  _so('piOutAntri',antri+' armada');
+  _so('piOutBelum',belum+' armada');
+  _so('piOutHitMiss',hit+' HIT / '+miss+' MISS');
   const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
   if(dashOutboundChart) dashOutboundChart.destroy();
-  dashOutboundChart=new Chart(document.getElementById('dashOutboundChart').getContext('2d'),{
+  const cvOut=document.getElementById('dashOutboundChart'); if(!cvOut) return;
+  dashOutboundChart=new Chart(cvOut.getContext('2d'),{
     type:'doughnut',
     data:{labels:['Selesai','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} armada`}}}}
@@ -1477,7 +1415,7 @@ async function fetchDashboardStats() {
       const sb2=document.getElementById('inbStatBelum'); if(sb2) sb2.textContent=belum;
       // Pie chart
       const inPct = total>0 ? Math.round(selesai/total*100) : 0;
-      _makeSVGStatChart('inboundStatChart', inPct, '#16a34a');
+      _makeSVGStatChart('inboundStatChart', inPct, '#2563eb');
       const inBar = document.querySelector('#inboundStatCard .stat-bar-fill');
       const inFoot = document.querySelector('#inboundStatCard .stat-foot-val');
       if(inBar) setTimeout(()=>inBar.style.width=inPct+'%',300);
@@ -1856,7 +1794,8 @@ async function fetchInventoryAccuracy() {
     const card   = document.getElementById('invControlCard');
     const icon   = document.getElementById('invControlIcon');
 
-    if (!valEl) return;
+    if (!valEl) return; // Element belum ada (belum diklik)
+    window._invAccuracyData = data; // Simpan untuk dipakai saat klik
 
     // Update value
     valEl.textContent = pct.toFixed(2) + '%';
@@ -1885,7 +1824,7 @@ async function fetchInventoryAccuracy() {
     if (icon)   icon.style.background = iconBg;
 
     // Pie chart Progress CC - ambil dari window._invData jika sudah ada, fallback ke data.summary
-    const invS = (window._invData && window._invData.summary) ? window._invData.summary : data.summary;
+    const invS = (window._invData && window._invData.summary) ? window._invData.summary : (data.summary || {});
     const rawCcPct = String(invS.pctCcTotal||'0').replace('%','').trim();
     const ccPct = Math.round(parseFloat(rawCcPct)||0);
     _makeSVGStatChart('invStatChart', ccPct, color);
@@ -2075,6 +2014,169 @@ async function fetchInventoryValue(){
 
 fetchDashboardStats();
 setInterval(fetchDashboardStats,5*60*1000);
+fetchLppbdo();
+
+// ══════════════════════════════════════════════════════════════
+//  LPPBDO TABLE
+// ══════════════════════════════════════════════════════════════
+async function fetchLppbdo() {
+  try {
+    const res  = await fetch(GAS_DASHBOARD_URL + '?action=getLppbdo');
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    renderLppbdo(json.dates, json.rows);
+  } catch(e) {
+    const el = document.getElementById('lppbdoStatus');
+    if (el) el.textContent = 'Gagal memuat';
+    console.warn('LPPBDO error:', e);
+  }
+}
+
+function renderLppbdo(dates, rows) {
+  const head = document.getElementById('lppbdoHead');
+  const body = document.getElementById('lppbdoBody');
+  if (!head || !body) return;
+
+  // Warna per baris ikut spreadsheet
+  const rowColors = [
+    { bg: '#fff3e0', text: '#b45309', bold: false }, // RUSAK     - orange
+    { bg: '#3b0000', text: '#fca5a5', bold: false }, // selisih   - maroon gelap
+    { bg: '#ffffff', text: '#1e293b', bold: false }, // Sparepart - putih
+    { bg: '#1e293b', text: '#ffffff', bold: true  }, // TOTAL     - gelap
+  ];
+
+  const validDates = dates.map((d, i) => ({ d, i })).filter(x => x.d);
+
+  const thStyle  = 'padding:9px 12px;text-align:center;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;';
+  const thFirst  = 'padding:9px 16px;text-align:left;font-size:11.5px;font-weight:700;background:#1e293b;color:#fff;white-space:nowrap;border:1px solid #334155;min-width:220px;position:sticky;left:0;z-index:2;';
+
+  // Filter kolom AVERAGE dari header (tampilkan hanya tanggal)
+  const dateCols = validDates.filter(x => !/average/i.test(x.d));
+
+  head.innerHTML = `<tr>
+    <th style="${thFirst}">Kategori</th>
+    <th style="${thStyle}">UOM</th>
+    ${dateCols.map(x => `<th style="${thStyle}">${x.d}</th>`).join('')}
+  </tr>`;
+
+  body.innerHTML = rows.map((row, ri) => {
+    const c = rowColors[ri] || rowColors[0];
+    const tdBase  = `padding:8px 12px;text-align:center;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'500'};`;
+    const tdFirst = `padding:8px 16px;text-align:left;border:1px solid #e2e8f0;font-size:12px;background:${c.bg};color:${c.text};font-weight:${c.bold?'800':'700'};white-space:nowrap;position:sticky;left:0;z-index:1;`;
+    const cells = dateCols.map(x => {
+      const val = row.values[x.i];
+      const display = (val === null || val === undefined) ? '' : (val * 100).toFixed(2) + '%';
+      return `<td style="${tdBase}">${display}</td>`;
+    }).join('');
+    return `<tr>
+      <td style="${tdFirst}">${row.kategori}</td>
+      <td style="${tdBase}">${row.uom}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  const el = document.getElementById('lppbdoStatus');
+  if (el) el.textContent = `${validDates.length} hari`;
+
+  // MTD summary
+  const totalRow = rows.find(r => r.kategori.includes('TOTAL'));
+  const totalAvg = totalRow && totalRow.average !== null ? (totalRow.average * 100).toFixed(2) : '0.00';
+  const totalEl = document.getElementById('lppbdoTotalAvg');
+  if (totalEl) totalEl.innerHTML = `<div style="font-size:18px;font-weight:900;color:#dc2626;">${totalAvg}%</div>`;
+
+  // ── Summary Chart (3D-style bar) ──
+  renderLppbdoChart(rows);
+}
+
+function renderLppbdoChart(rows) {
+  const wrap = document.getElementById('lppbdoChartWrap');
+  if (!wrap) return;
+
+  // Hitung average per kategori (skip null, skip 0)
+  const labels   = rows.slice(0,3).map(r => r.kategori.replace('% LPPBDO ','').replace('% ',''));
+  // Pakai kolom AVERAGE langsung dari sheet (kolom AH)
+  console.log('LPPBDO rows average:', rows.map(r => ({k: r.kategori, avg: r.average})));
+  const avgs     = rows.slice(0,3).map(r => (r.average !== null && r.average !== undefined) ? parseFloat((r.average*100).toFixed(2)) : 0);
+  const colors   = ['#f97316','#7f1d1d','#94a3b8'];
+  const shadows  = ['rgba(249,115,22,0.35)','rgba(127,29,29,0.35)','rgba(148,163,184,0.35)'];
+
+  // 3D effect plugin
+  const bar3dPlugin = {
+    id: 'bar3d',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        meta.data.forEach((bar, i) => {
+          const {x, y, width, height, base} = bar.getProps(['x','y','width','height','base']);
+          const depth = 8;
+          const col   = colors[i] || '#888';
+          // Top face
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(x - width/2,     y);
+          ctx.lineTo(x - width/2 + depth, y - depth);
+          ctx.lineTo(x + width/2 + depth, y - depth);
+          ctx.lineTo(x + width/2,     y);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(255,255,255,0.25)';
+          ctx.fill();
+          // Right face
+          ctx.beginPath();
+          ctx.moveTo(x + width/2,     y);
+          ctx.lineTo(x + width/2 + depth, y - depth);
+          ctx.lineTo(x + width/2 + depth, base - depth);
+          ctx.lineTo(x + width/2,     base);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(0,0,0,0.18)';
+          ctx.fill();
+          ctx.restore();
+        });
+      });
+    }
+  };
+
+  wrap.innerHTML = '<canvas id="lppbdoChart" style="width:100%;height:100%;"></canvas>';
+  const ctx = document.getElementById('lppbdoChart').getContext('2d');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: avgs,
+        backgroundColor: colors,
+        borderRadius: 2,
+        borderSkipped: false,
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => ` Avg: ${c.parsed.y.toFixed(2)}%`
+          }
+        },
+        datalabels: {
+          anchor: 'end', align: 'top',
+          color: ctx2 => colors[ctx2.dataIndex],
+          font: { weight: '800', size: 10 },
+          formatter: v => v.toFixed(2) + '%'
+        }
+      },
+      scales: {
+        x: { grid: { display:false }, ticks: { font:{size:9,weight:'700'}, color:'#475569' }, border:{display:false} },
+        y: { beginAtZero: true, grid: { color:'rgba(0,0,0,0.05)' }, ticks: { callback: v => v+'%', font:{size:9}, color:'#94a3b8' }, border:{display:false} }
+      },
+      animation: { duration: 600 }
+    },
+    plugins: [bar3dPlugin]
+  });
+}
 
 // ══════════════════════════════════════
 //  CHARTS — DAILY ACTIVITY
@@ -2152,11 +2254,10 @@ async function fetchDailyActivity(){
       floatBox.style.cssText = 'display:inline-block;';
       floatBox.innerHTML = `
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-
           <table style="border-collapse:collapse;font-size:10px;width:100%;">
             <thead>
               <tr>
-                <th style="padding:3px 8px;background:#1e293b;color:#fff;font-size:7.5px;font-weight:700;text-align:center;min-width:55px;"></th>
+                <th style="padding:3px 8px;background:#1e293b;color:#fff;font-size:7.5px;font-weight:700;text-align:center;min-width:80px;"></th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Inbound</th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Demand In</th>
                 <th colspan="2" style="padding:3px 8px;background:#dc2626;color:#fff;font-size:7.5px;font-weight:800;text-align:center;border-left:1px solid rgba(255,255,255,.2);">Outbound</th>
@@ -2187,6 +2288,7 @@ async function fetchDailyActivity(){
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.demandPct)}</td>
                 <td colspan="2" style="padding:3px 5px;text-align:center;border:1px solid #e2e8f0;">${akb(a.outboundPct)}</td>
               </tr>
+
             </tbody>
           </table>
         </div>`;
@@ -2291,17 +2393,17 @@ async function fetchDailyActivity(){
       plugins:[troughputPlugin]
     });
 
-    // Legend manual
+    // Legend manual — atas chart
     const legendDiv = document.createElement('div');
-    legendDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;padding:4px 0 0;font-size:10px;font-weight:600;color:#475569;';
+    legendDiv.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;padding:0 4px 6px;font-size:10px;font-weight:600;color:#475569;';
     legendDiv.innerHTML = `
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.inbound.bar};border-radius:2px;display:inline-block;"></span>Inbound (CBM)</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.outbound.bar};border-radius:2px;display:inline-block;"></span>Outbound (CBM)</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:${C.inventory.bar};border-radius:2px;display:inline-block;"></span>Inventory (CBM)</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.inbound.bar};border-radius:2px;display:inline-block;"></span>Inbound</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.outbound.bar};border-radius:2px;display:inline-block;"></span>Outbound</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:11px;height:11px;background:${C.inventory.bar};border-radius:2px;display:inline-block;"></span>Inventory</span>
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:${C.occupancy};border-radius:50%;display:inline-block;"></span>Occupancy (%)</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;background:${C.capacity};display:inline-block;border-top:2px dashed ${C.capacity};"></span>Capacity</span>
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;background:${C.forecast};display:inline-block;border-top:2px dashed ${C.forecast};"></span>Forecast Out</span>`;
-    wrap.appendChild(legendDiv);
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;display:inline-block;border-top:2px dashed ${C.capacity};"></span>Capacity</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:18px;height:2px;display:inline-block;border-top:2px dashed ${C.forecast};"></span>Forecast Out</span>`;
+    wrap.insertBefore(legendDiv, canvas);
 
   } catch(e) {
     console.error('Troughput error:', e);
@@ -2422,7 +2524,7 @@ function togglePlannerPanel() {
     if (midGrid)     midGrid.style.display     = 'none';
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
-    const sgPl=document.querySelector('.stats-grid'); if(sgPl) sgPl.style.display='none';
+    const lg5=document.getElementById('lppbdoGrid'); if(lg5) lg5.style.display='none';
     fetchPlannerDetail();
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
@@ -2430,8 +2532,9 @@ function togglePlannerPanel() {
     if (midGrid)     midGrid.style.display     = '';
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
-    const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
-  }
+    const lgX=document.getElementById('lppbdoGrid'); if(lgX) lgX.style.display='grid';
+
+    setTimeout(()=>{ const c=document.getElementById('lppbdoChart'); if(c){ const chart=Chart.getChart(c); if(chart) chart.resize(); } },100);  }
 }
 
 fetchDailyActivity();
