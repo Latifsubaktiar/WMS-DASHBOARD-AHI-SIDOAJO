@@ -875,34 +875,33 @@ function renderStoringKPI(rows, s) {
   const sisaPct  = relCase>0 ? (Math.round(sisaCase/relCase*10000)/100) : 0;
 
   const kpis = [
-    { label:'Total LC',       val:totalLc,       sub:'Semua · CID',           badge:'Visible',    badgeBg:'#e0e7ff', badgeColor:'#6366f1', valColor:'#6366f1', foot:'DATA AKTIF',    footVal:'LIVE',      footColor:'#16a34a', bar:100,     barColor:'#6366f1', icon:'🗒️' },
-    { label:'Release CID',    val:num(relCase),   sub:'Baseline total proses',  badge:'100%',       badgeBg:'#fef3c7', badgeColor:'#f59e0b', valColor:'#f59e0b', foot:'TARGET AWAL',   footVal:'100%',      footColor:'#f59e0b', bar:100,     barColor:'#f59e0b', icon:'📦' },
-    { label:'Picked CID',     val:num(pickCase),  sub:pickPct+'% dari release', badge:pickPct+'%',  badgeBg:'#d1fae5', badgeColor:'#10b981', valColor:'#10b981', foot:'PROGRESS PICK', footVal:pickPct+'%', footColor:'#10b981', bar:pickPct, barColor:'#10b981', icon:'✅' },
-    { label:'Staged CID',     val:num(stgCase),   sub:stgPct+'% dari picked',   badge:stgPct+'%',   badgeBg:'#fce7f3', badgeColor:'#ec4899', valColor:'#ec4899', foot:'READY TO LOAD', footVal:stgPct+'%',  footColor:'#ec4899', bar:stgPct,  barColor:'#ec4899', icon:'🚛' },
-    { label:'Sisa CID',       val:num(sisaCase),  sub:sisaPct+'% outstanding',  badge:sisaPct+'%',  badgeBg:'#fee2e2', badgeColor:'#ef4444', valColor:'#ef4444', foot:'BELUM PICKED',  footVal:sisaPct+'%', footColor:'#ef4444', bar:sisaPct, barColor:'#ef4444', icon:'⏳' },
-    { label:'Completion Rate',val:pickPct+'%',    sub:'Release → Picked',       badge:'Semua',      badgeBg:'#dbeafe', badgeColor:'#2563eb', valColor:'#2563eb', foot:'EFEKTIVITAS',   footVal:pickPct+'%', footColor:'#2563eb', bar:pickPct, barColor:'#2563eb', icon:'🎯' },
+    { label:'Total LC',       val:totalLc,       sub:'Semua · CID',           badge:'Visible',    accent:'#6366f1', icon:'🗒️', bar:100,      foot:'DATA AKTIF',    footVal:'LIVE' },
+    { label:'Release CID',    val:num(relCase),   sub:'Baseline total proses',  badge:'100%',       accent:'#2563eb', icon:'📦', bar:100,      foot:'TARGET AWAL',   footVal:'100%' },
+    { label:'Picked CID',     val:num(pickCase),  sub:pickPct+'% dari release', badge:pickPct+'%',  accent:'#0891b2', icon:'✅', bar:pickPct,  foot:'PROGRESS PICK', footVal:pickPct+'%' },
+    { label:'Staged CID',     val:num(stgCase),   sub:stgPct+'% dari picked',   badge:stgPct+'%',   accent:'#475569', icon:'🚛', bar:stgPct,   foot:'READY TO LOAD', footVal:stgPct+'%' },
+    { label:'Sisa CID',       val:num(sisaCase),  sub:sisaPct+'% outstanding',  badge:sisaPct+'%',  accent:'#dc2626', icon:'⏳', bar:sisaPct,  foot:'BELUM PICKED',  footVal:sisaPct+'%' },
+    { label:'Completion Rate',val:pickPct+'%',    sub:'Release → Picked',       badge:'Semua',      accent:'#1e293b', icon:'🎯', bar:pickPct,  foot:'EFEKTIVITAS',   footVal:pickPct+'%' },
   ];
 
   kpiRow.innerHTML = kpis.map(k => `
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);display:flex;flex-direction:column;">
+    <div style="background:linear-gradient(160deg,#ffffff 0%,${k.accent}08 100%);border:1px solid #e5e7eb;border-left:3px solid ${k.accent};border-radius:0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);display:flex;flex-direction:column;">
       <div style="padding:14px 16px 0;flex:1;display:flex;flex-direction:column;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">${k.label}</div>
-          <span style="font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;background:${k.badgeBg};color:${k.badgeColor};">${k.badge}</span>
+          <span style="font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;background:#f1f5f9;color:${k.accent};border:1px solid #e2e8f0;">${k.badge}</span>
         </div>
-        <div style="font-size:32px;font-weight:900;color:${k.valColor};letter-spacing:-1.5px;line-height:1;margin-bottom:4px;">${k.val}</div>
+        <div style="font-size:32px;font-weight:900;color:#1e293b;letter-spacing:-1.5px;line-height:1;margin-bottom:4px;">${k.val}</div>
         <div style="font-size:10.5px;color:#94a3b8;flex:1;margin-bottom:12px;">${k.sub}</div>
         <div style="height:4px;background:#f1f5f9;border-radius:10px;overflow:hidden;">
-          <div style="width:${Math.min(k.bar,100)}%;height:100%;background:${k.barColor};border-radius:10px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);"></div>
+          <div style="width:${Math.min(k.bar,100)}%;height:100%;background:${k.accent};border-radius:10px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);"></div>
         </div>
       </div>
       <div style="display:flex;justify-content:space-between;padding:8px 16px;margin-top:8px;font-size:9.5px;border-top:1px solid #f1f5f9;">
         <span style="color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">${k.foot}</span>
-        <span style="font-weight:900;color:${k.footColor};">${k.footVal}</span>
+        <span style="font-weight:900;color:${k.accent};">${k.footVal}</span>
       </div>
     </div>`).join('');
 }
-
 function renderStoringBatchCards(rows) {
   const grid = document.getElementById('storingBatchGrid');
   if (!grid || !rows || !rows.length) return;
@@ -922,12 +921,12 @@ function renderStoringBatchCards(rows) {
   const count = batchList.length;
   grid.style.gridTemplateColumns = `repeat(${Math.min(count,4)},1fr)`;
 
-  // Warna PERSIS foto: Batch1=ungu, Batch2=hijau, Batch3=kuning, Batch4=ungu muda
+  // Warna elegan — satu aksen warna per batch, background netral
   const colors = [
-    { bg:'#f5f3ff', border:'#c4b5fd', accent:'#6366f1', numBg:'#6366f1', ring:'#6366f1', pickBar:'#6366f1', stgBar:'#a5b4fc' },
-    { bg:'#f0fdf4', border:'#6ee7b7', accent:'#10b981', numBg:'#10b981', ring:'#10b981', pickBar:'#10b981', stgBar:'#6ee7b7' },
-    { bg:'#fffbeb', border:'#fcd34d', accent:'#f59e0b', numBg:'#f59e0b', ring:'#f59e0b', pickBar:'#f59e0b', stgBar:'#fde68a' },
-    { bg:'#faf5ff', border:'#d8b4fe', accent:'#a855f7', numBg:'#a855f7', ring:'#a855f7', pickBar:'#a855f7', stgBar:'#d8b4fe' },
+    { accent:'#6366f1', numBg:'#6366f1', ring:'#6366f1', pickBar:'#6366f1', stgBar:'#94a3b8' },
+    { accent:'#0891b2', numBg:'#0891b2', ring:'#0891b2', pickBar:'#0891b2', stgBar:'#94a3b8' },
+    { accent:'#d97706', numBg:'#d97706', ring:'#d97706', pickBar:'#d97706', stgBar:'#94a3b8' },
+    { accent:'#475569', numBg:'#475569', ring:'#475569', pickBar:'#475569', stgBar:'#94a3b8' },
   ];
 
   const makeSVGDonut = (pct, color) => {
@@ -965,20 +964,20 @@ function renderStoringBatchCards(rows) {
         <!-- 4 boxes horizontal: RELEASE PICKED STAGED SISA -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
           <div>
-            <div style="font-size:8px;font-weight:700;color:#f59e0b;text-transform:uppercase;margin-bottom:3px;">RELEASE</div>
-            <div style="font-size:16px;font-weight:900;color:#f59e0b;line-height:1;">${num(d.releaseCase)}</div>
+            <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">RELEASE</div>
+            <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.releaseCase)}</div>
           </div>
           <div>
-            <div style="font-size:8px;font-weight:700;color:#10b981;text-transform:uppercase;margin-bottom:3px;">PICKED</div>
-            <div style="font-size:16px;font-weight:900;color:#10b981;line-height:1;">${num(d.pickedCase)}</div>
+            <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">PICKED</div>
+            <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.pickedCase)}</div>
           </div>
           <div>
-            <div style="font-size:8px;font-weight:700;color:#ec4899;text-transform:uppercase;margin-bottom:3px;">STAGED</div>
-            <div style="font-size:16px;font-weight:900;color:#ec4899;line-height:1;">${num(d.stagedCase)}</div>
+            <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">STAGED</div>
+            <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.stagedCase)}</div>
           </div>
           <div>
-            <div style="font-size:8px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:3px;">SISA</div>
-            <div style="font-size:16px;font-weight:900;color:#ef4444;line-height:1;">${num(d.sisaCase)}</div>
+            <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">SISA</div>
+            <div style="font-size:16px;font-weight:900;color:${d.sisaCase>0?'#dc2626':'#1e293b'};line-height:1;">${num(d.sisaCase)}</div>
           </div>
         </div>
         <!-- Pick Rate -->
