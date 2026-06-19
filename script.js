@@ -941,7 +941,7 @@ function renderStoringBatchCards(rows) {
     const lcCount  = d.noLc.size;
     const num = n => Math.round(n).toLocaleString('id-ID');
 
-    return `<div style="background:${col.bg};border:1.5px solid ${col.border};border-radius:0;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
+    return `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid ${col.accent};border-radius:0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
       <div style="padding:16px 16px 0;">
         <!-- Header: nomor batch + nama + donut -->
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
