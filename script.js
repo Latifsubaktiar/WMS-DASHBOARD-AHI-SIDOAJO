@@ -803,6 +803,14 @@ function renderStoringPanel(data) {
   const s = data.summary;
   const isDark = document.body.classList.contains('dark');
 
+  // Matikan efek hover (naik+scale) khusus card panel Storing
+  if (!document.getElementById('storingNoHoverStyle')) {
+    const st = document.createElement('style');
+    st.id = 'storingNoHoverStyle';
+    st.textContent = '#storingDetailPanel.card:hover, #storingDetailPanel .card:hover { transform:none !important; }';
+    document.head.appendChild(st);
+  }
+
   document.getElementById('storingSubtitle').textContent = `Total: ${s.total} LC/PO | Release: ${s.sumRelease.toLocaleString()} Case`;
   document.getElementById('storingFooter').textContent = s.total + ' LC/PO terdaftar';
 
