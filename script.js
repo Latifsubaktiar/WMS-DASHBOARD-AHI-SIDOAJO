@@ -852,7 +852,7 @@ function renderStoringKPI(rows, s) {
     if (!card) return;
     kpiRow = document.createElement('div');
     kpiRow.id = 'storingKpiRow';
-    kpiRow.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.2);background:#f0f4f8;';
+    kpiRow.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:16px 20px;border-bottom:1px solid rgba(200,215,240,0.2);';
     card.insertBefore(kpiRow, card.children[1]);
   }
 
