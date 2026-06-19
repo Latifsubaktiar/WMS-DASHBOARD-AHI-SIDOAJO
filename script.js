@@ -862,9 +862,9 @@ function renderStoringKPI(rows, s) {
   const pickCase = s.sumPicked  || 0;
   const stgCase  = s.sumStaged  || 0;
   const sisaCase = s.sumSisa    || 0;
-  const pickPct  = relCase>0 ? Math.round(pickCase/relCase*100) : 0;
-  const stgPct   = relCase>0 ? Math.round(stgCase/relCase*100)  : 0;
-  const sisaPct  = relCase>0 ? Math.round(sisaCase/relCase*100) : 0;
+  const pickPct  = relCase>0 ? (Math.round(pickCase/relCase*10000)/100) : 0;
+  const stgPct   = relCase>0 ? (Math.round(stgCase/relCase*10000)/100)  : 0;
+  const sisaPct  = relCase>0 ? (Math.round(sisaCase/relCase*10000)/100) : 0;
 
   const kpis = [
     { label:'Total LC',       val:totalLc,       sub:'Semua · CID',           badge:'Visible',    badgeBg:'#e0e7ff', badgeColor:'#6366f1', valColor:'#6366f1', foot:'DATA AKTIF',    footVal:'LIVE',      footColor:'#16a34a', bar:100,     barColor:'#6366f1', icon:'🗒️' },
@@ -930,14 +930,14 @@ function renderStoringBatchCards(rows) {
       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
         stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
         stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-      <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="900" fill="${color}">${pct}%</text>
+      <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="900" fill="${color}">${Math.round(pct)}%</text>
     </svg>`;
   };
 
   grid.innerHTML = batchList.map(([batchNum, d], i) => {
     const col      = colors[i % colors.length];
-    const pickPct  = d.releaseCase>0 ? Math.round(d.pickedCase/d.releaseCase*100)  : 0;
-    const stagePct = d.releaseCase>0 ? Math.round(d.stagedCase/d.releaseCase*100)  : 0;
+    const pickPct  = d.releaseCase>0 ? (Math.round(d.pickedCase/d.releaseCase*10000)/100)  : 0;
+    const stagePct = d.releaseCase>0 ? (Math.round(d.stagedCase/d.releaseCase*10000)/100)  : 0;
     const lcCount  = d.noLc.size;
     const num = n => Math.round(n).toLocaleString('id-ID');
 
