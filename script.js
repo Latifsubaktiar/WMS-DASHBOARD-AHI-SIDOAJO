@@ -854,20 +854,30 @@ function renderStoringPanel(data) {
   renderStoringKPI(data.data, s);
   renderStoringBatchCards(data.data);
 
-  // Hitung tinggi section "Pencapaian per Batch" secara dinamis,
-  // lalu pasang sebagai sticky offset (top) untuk header tabel storing
-  setTimeout(() => {
+  // Sticky offset header tabel — pakai ResizeObserver agar selalu akurat
+  // setiap kali ukuran section batch berubah (responsive, data reload, dll)
+  function syncStoringStickyOffset() {
     const batchSection = document.getElementById('storingBatchSection');
     const theadRows = document.querySelectorAll('#storingTable thead tr');
-    if (batchSection && theadRows.length) {
-      const h = Math.ceil(batchSection.getBoundingClientRect().height);
-      theadRows[0].style.top = h + 'px';
-      if (theadRows[1]) {
-        const h2 = Math.ceil(theadRows[0].getBoundingClientRect().height);
-        theadRows[1].style.top = (h + h2) + 'px';
-      }
+    if (!batchSection || !theadRows.length) return;
+    const h = Math.ceil(batchSection.getBoundingClientRect().height);
+    theadRows[0].style.top = h + 'px';
+    if (theadRows[1]) {
+      const h2 = Math.ceil(theadRows[0].getBoundingClientRect().height);
+      theadRows[1].style.top = (h + h2) + 'px';
     }
-  }, 400);
+  }
+  syncStoringStickyOffset();
+  requestAnimationFrame(syncStoringStickyOffset);
+  setTimeout(syncStoringStickyOffset, 100);
+  setTimeout(syncStoringStickyOffset, 500);
+  if (!window._storingResizeObs) {
+    const batchSectionEl = document.getElementById('storingBatchSection');
+    if (batchSectionEl && typeof ResizeObserver !== 'undefined') {
+      window._storingResizeObs = new ResizeObserver(() => syncStoringStickyOffset());
+      window._storingResizeObs.observe(batchSectionEl);
+    }
+  }
 
   // Beam kilat — HANYA untuk KPI cards di atas, batch cards tidak diberi efek
   setTimeout(()=>{
