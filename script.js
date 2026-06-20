@@ -935,7 +935,7 @@ function renderStoringBatchCards(rows) {
     const r=26,cx=32,cy=32,circ=2*Math.PI*r;
     const dash=Math.min(pct,100)/100*circ;
     return `<svg width="58" height="58" viewBox="0 0 64 64">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#334155" stroke-width="7"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="7"/>
       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
         stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
         stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
@@ -950,14 +950,14 @@ function renderStoringBatchCards(rows) {
     const lcCount  = d.noLc.size;
     const num = n => Math.round(n).toLocaleString('id-ID');
 
-    return `<div style="background:#1e293b;border:1px solid #334155;border-left:4px solid ${col.accent};border-radius:0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.2);">
+    return `<div style="background:#ffffff;border:1px solid #e5e7eb;border-left:4px solid ${col.accent};border-radius:0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
       <div style="padding:16px 16px 0;">
         <!-- Header: nomor batch + nama + donut -->
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
           <div style="display:flex;align-items:center;gap:10px;">
             <div style="width:34px;height:34px;border-radius:0;background:${col.numBg};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;box-shadow:0 4px 10px ${col.numBg}55;">${batchNum}</div>
             <div>
-              <div style="font-size:14px;font-weight:900;color:#f1f5f9;">Batch ${batchNum}</div>
+              <div style="font-size:14px;font-weight:900;color:#1e293b;">Batch ${batchNum}</div>
               <div style="font-size:9.5px;color:#94a3b8;">${lcCount} LC · Semua · CID</div>
             </div>
           </div>
@@ -967,33 +967,33 @@ function renderStoringBatchCards(rows) {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
           <div>
             <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">RELEASE</div>
-            <div style="font-size:16px;font-weight:900;color:#f1f5f9;line-height:1;">${num(d.releaseCase)}</div>
+            <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.releaseCase)}</div>
           </div>
           <div>
             <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">PICKED</div>
-            <div style="font-size:16px;font-weight:900;color:#f1f5f9;line-height:1;">${num(d.pickedCase)}</div>
+            <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.pickedCase)}</div>
           </div>
           <div>
             <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">STAGED</div>
-            <div style="font-size:16px;font-weight:900;color:#f1f5f9;line-height:1;">${num(d.stagedCase)}</div>
+            <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.stagedCase)}</div>
           </div>
           <div>
             <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">SISA</div>
-            <div style="font-size:16px;font-weight:900;color:${d.sisaCase>0?'#f87171':'#f1f5f9'};line-height:1;">${num(d.sisaCase)}</div>
+            <div style="font-size:16px;font-weight:900;color:${d.sisaCase>0?'#dc2626':'#1e293b'};line-height:1;">${num(d.sisaCase)}</div>
           </div>
         </div>
         <!-- Pick Rate -->
-        <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#64748b;margin-bottom:4px;">
           <span>Pick Rate</span><span style="color:${col.accent};">${pickPct}%</span>
         </div>
-        <div style="height:5px;background:#334155;border-radius:10px;margin-bottom:10px;">
+        <div style="height:5px;background:#f1f5f9;border-radius:10px;margin-bottom:10px;">
           <div style="width:${pickPct}%;height:100%;background:${col.pickBar};border-radius:10px;transition:width 1s;"></div>
         </div>
         <!-- Stage Rate -->
-        <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#64748b;margin-bottom:4px;">
           <span>Stage Rate</span><span style="color:${col.accent};">${stagePct}%</span>
         </div>
-        <div style="height:5px;background:#334155;border-radius:10px;margin-bottom:16px;">
+        <div style="height:5px;background:#f1f5f9;border-radius:10px;margin-bottom:16px;">
           <div style="width:${stagePct}%;height:100%;background:${col.stgBar};border-radius:10px;transition:width 1s;"></div>
         </div>
       </div>
