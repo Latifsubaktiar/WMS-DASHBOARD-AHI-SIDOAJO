@@ -854,6 +854,18 @@ function renderStoringPanel(data) {
   renderStoringKPI(data.data, s);
   renderStoringBatchCards(data.data);
 
+  // Hitung tinggi section "Pencapaian per Batch" secara dinamis,
+  // lalu pasang sebagai sticky offset (top) untuk header tabel storing
+  setTimeout(() => {
+    const batchSection = document.getElementById('storingBatchGrid')?.closest('div[style*="position:sticky"]');
+    const theadRows = document.querySelectorAll('#storingTable thead tr');
+    if (batchSection && theadRows.length) {
+      const h = batchSection.offsetHeight;
+      theadRows[0].style.top = h + 'px';
+      if (theadRows[1]) theadRows[1].style.top = (h + 32) + 'px';
+    }
+  }, 150);
+
   // Beam kilat — HANYA untuk KPI cards di atas, batch cards tidak diberi efek
   setTimeout(()=>{
     const speeds = ['3s','3.4s','3.8s','3.2s','3.6s','4s'];
