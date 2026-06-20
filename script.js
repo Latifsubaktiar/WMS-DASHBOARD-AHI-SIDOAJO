@@ -913,7 +913,7 @@ function renderStoringKPI(rows, s) {
         <div style="font-size:32px;font-weight:900;color:#1e293b;letter-spacing:-1.5px;line-height:1;margin-bottom:4px;">${k.val}</div>
         <div style="font-size:10.5px;color:#94a3b8;margin-bottom:10px;">${k.sub}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px;">
-          ${k.mini.map(m => `<div style="background:${m.c}14;border:1px solid ${m.c}33;padding:5px 7px;"><div style="font-size:7.5px;font-weight:800;color:${m.c};text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">${m.l}</div><div style="font-size:14px;font-weight:900;color:${m.c};line-height:1;">${m.v}</div></div>`).join('')}
+          ${k.mini.map(m => `<div style="background:${m.c}26;border:1.5px solid ${m.c}80;padding:5px 7px;"><div style="font-size:7.5px;font-weight:800;color:${m.c};text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">${m.l}</div><div style="font-size:14px;font-weight:900;color:${m.c};line-height:1;">${m.v}</div></div>`).join('')}
         </div>
         <div style="height:4px;background:#f1f5f9;border-radius:10px;overflow:hidden;">
           <div style="width:${Math.min(k.bar,100)}%;height:100%;background:${k.accent};border-radius:10px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);"></div>
@@ -947,10 +947,10 @@ function renderStoringBatchCards(rows) {
   // Semua batch warna biru, background gelap tema dashboard
   const BLUE = '#2563eb';
   const colors = [
-    { accent:BLUE, numBg:BLUE, ring:BLUE, pickBar:BLUE, stgBar:'#64748b' },
-    { accent:BLUE, numBg:BLUE, ring:BLUE, pickBar:BLUE, stgBar:'#64748b' },
-    { accent:BLUE, numBg:BLUE, ring:BLUE, pickBar:BLUE, stgBar:'#64748b' },
-    { accent:BLUE, numBg:BLUE, ring:BLUE, pickBar:BLUE, stgBar:'#64748b' },
+    { accent:BLUE, numBg:BLUE, ring:BLUE, pickBar:BLUE, stgBar:'#0891b2' },
+    { accent:BLUE, numBg:BLUE, ring:BLUE, pickBar:BLUE, stgBar:'#0891b2' },
+    { accent:BLUE, numBg:BLUE, ring:BLUE, pickBar:BLUE, stgBar:'#0891b2' },
+    { accent:BLUE, numBg:BLUE, ring:BLUE, pickBar:BLUE, stgBar:'#0891b2' },
   ];
 
   const makeSVGDonut = (pct, color) => {
@@ -987,19 +987,19 @@ function renderStoringBatchCards(rows) {
         </div>
         <!-- 4 boxes horizontal: RELEASE PICKED STAGED SISA -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
-          <div style="background:#f1f5f9;border-left:3px solid #a78bfa;padding:6px 8px;">
+          <div style="background:#f1f5f9;border-left:4px solid #7c3aed;padding:6px 8px;">
             <div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:3px;">RELEASE</div>
             <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.releaseCase)}</div>
           </div>
-          <div style="background:#f1f5f9;border-left:3px solid #38bdf8;padding:6px 8px;">
+          <div style="background:#f1f5f9;border-left:4px solid #0284c7;padding:6px 8px;">
             <div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:3px;">PICKED</div>
             <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.pickedCase)}</div>
           </div>
-          <div style="background:#f1f5f9;border-left:3px solid #f472b6;padding:6px 8px;">
+          <div style="background:#f1f5f9;border-left:4px solid #db2777;padding:6px 8px;">
             <div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:3px;">STAGED</div>
             <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.stagedCase)}</div>
           </div>
-          <div style="background:#f1f5f9;border-left:3px solid #fb923c;padding:6px 8px;">
+          <div style="background:#f1f5f9;border-left:4px solid #ea580c;padding:6px 8px;">
             <div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:3px;">SISA</div>
             <div style="font-size:16px;font-weight:900;color:${d.sisaCase>0?'#dc2626':'#1e293b'};line-height:1;">${num(d.sisaCase)}</div>
           </div>
