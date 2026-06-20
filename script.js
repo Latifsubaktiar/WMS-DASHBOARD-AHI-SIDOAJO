@@ -974,20 +974,20 @@ function renderStoringBatchCards(rows) {
         </div>
         <!-- 4 boxes horizontal: RELEASE PICKED STAGED SISA -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
-          <div>
-            <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">RELEASE</div>
+          <div style="background:#f1f5f9;border-left:3px solid #a78bfa;padding:6px 8px;">
+            <div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:3px;">RELEASE</div>
             <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.releaseCase)}</div>
           </div>
-          <div>
-            <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">PICKED</div>
+          <div style="background:#f1f5f9;border-left:3px solid #38bdf8;padding:6px 8px;">
+            <div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:3px;">PICKED</div>
             <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.pickedCase)}</div>
           </div>
-          <div>
-            <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">STAGED</div>
+          <div style="background:#f1f5f9;border-left:3px solid #f472b6;padding:6px 8px;">
+            <div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:3px;">STAGED</div>
             <div style="font-size:16px;font-weight:900;color:#1e293b;line-height:1;">${num(d.stagedCase)}</div>
           </div>
-          <div>
-            <div style="font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">SISA</div>
+          <div style="background:#f1f5f9;border-left:3px solid #fb923c;padding:6px 8px;">
+            <div style="font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:3px;">SISA</div>
             <div style="font-size:16px;font-weight:900;color:${d.sisaCase>0?'#dc2626':'#1e293b'};line-height:1;">${num(d.sisaCase)}</div>
           </div>
         </div>
