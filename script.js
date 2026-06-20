@@ -854,31 +854,6 @@ function renderStoringPanel(data) {
   renderStoringKPI(data.data, s);
   renderStoringBatchCards(data.data);
 
-  // Sticky offset header tabel agar nempel pas di bawah section batch yang freeze
-  function syncStoringStickyOffset() {
-    const batchSection = document.getElementById('storingBatchSection');
-    const theadRows = document.querySelectorAll('#storingTable thead tr');
-    if (!batchSection || !theadRows.length) return;
-    const h = Math.ceil(batchSection.getBoundingClientRect().height);
-    theadRows[0].style.top = h + 'px';
-    if (theadRows[1]) {
-      const h2 = Math.ceil(theadRows[0].getBoundingClientRect().height);
-      theadRows[1].style.top = (h + h2) + 'px';
-    }
-  }
-  syncStoringStickyOffset();
-  requestAnimationFrame(syncStoringStickyOffset);
-  setTimeout(syncStoringStickyOffset, 100);
-  setTimeout(syncStoringStickyOffset, 400);
-  setTimeout(syncStoringStickyOffset, 800);
-  if (!window._storingResizeObs) {
-    const batchSectionEl = document.getElementById('storingBatchSection');
-    if (batchSectionEl && typeof ResizeObserver !== 'undefined') {
-      window._storingResizeObs = new ResizeObserver(() => syncStoringStickyOffset());
-      window._storingResizeObs.observe(batchSectionEl);
-    }
-  }
-
   // Beam kilat — HANYA untuk KPI cards di atas, batch cards tidak diberi efek
   setTimeout(()=>{
     const speeds = ['3s','3.4s','3.8s','3.2s','3.6s','4s'];
@@ -1096,8 +1071,11 @@ function renderStoringTable(rows) {
   };
 
   tbody.innerHTML = rows.map((r,i) => {
-    const rowBg = i % 2 === 0 ? (isDarkS?'#0f172a':'#ffffff') : (isDarkS?'#1a2332':'#f8fafc');
-    return `<tr style="background:${rowBg};border-bottom:1px solid ${isDarkS?'#1e293b':'#f1f5f9'};transition:background 0.15s;" onmouseover="this.style.background='${isDarkS?'#1e2a3f':'#eff6ff'}'" onmouseout="this.style.background='${rowBg}'">
+    const batchNum = parseInt(r.batch) || 0;
+    const batchCol = BATCH_COL[batchNum] || '#64748b';
+    const rowBg = isDarkS ? `${batchCol}1a` : `${batchCol}0d`;
+    const rowBgHover = isDarkS ? `${batchCol}30` : `${batchCol}1f`;
+    return `<tr style="background:${rowBg};border-bottom:1px solid ${isDarkS?'#1e293b':'#f1f5f9'};border-left:3px solid ${batchCol}55;transition:background 0.15s;" onmouseover="this.style.background='${rowBgHover}'" onmouseout="this.style.background='${rowBg}'">
     <td style="${ct}padding:10px 8px;">${i+1}</td>
     <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:${txS};padding:10px 8px;">${escHtml(r.noLc)}</td>
     <td style="text-align:center;padding:10px 8px;">${batchBadge(r.batch)}</td>
