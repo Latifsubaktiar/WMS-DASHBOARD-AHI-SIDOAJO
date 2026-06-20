@@ -854,8 +854,7 @@ function renderStoringPanel(data) {
   renderStoringKPI(data.data, s);
   renderStoringBatchCards(data.data);
 
-  // Sticky offset header tabel — pakai ResizeObserver agar selalu akurat
-  // setiap kali ukuran section batch berubah (responsive, data reload, dll)
+  // Sticky offset header tabel agar nempel pas di bawah section batch yang freeze
   function syncStoringStickyOffset() {
     const batchSection = document.getElementById('storingBatchSection');
     const theadRows = document.querySelectorAll('#storingTable thead tr');
@@ -870,7 +869,8 @@ function renderStoringPanel(data) {
   syncStoringStickyOffset();
   requestAnimationFrame(syncStoringStickyOffset);
   setTimeout(syncStoringStickyOffset, 100);
-  setTimeout(syncStoringStickyOffset, 500);
+  setTimeout(syncStoringStickyOffset, 400);
+  setTimeout(syncStoringStickyOffset, 800);
   if (!window._storingResizeObs) {
     const batchSectionEl = document.getElementById('storingBatchSection');
     if (batchSectionEl && typeof ResizeObserver !== 'undefined') {
