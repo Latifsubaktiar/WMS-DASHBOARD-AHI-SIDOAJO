@@ -1037,58 +1037,62 @@ function renderStoringTable(rows) {
     return;
   }
 
-  const batchStyle = (batch) => {
-    const b = parseInt(batch) || 0;
-    switch(b) {
-      case 2: return { bg:'rgba(234,179,8,0.22)',  border:'4px solid rgba(234,179,8,1)' };
-      case 3: return { bg:'rgba(34,197,94,0.20)',  border:'4px solid rgba(34,197,94,1)' };
-      case 4: return { bg:'rgba(59,130,246,0.20)', border:'4px solid rgba(59,130,246,1)' };
-      default:return { bg:'',                       border:'' };
-    }
+  const BATCH_COL = {
+    1: '#6366f1', 2: '#10b981', 3: '#f59e0b', 4: '#a855f7', 5: '#0891b2'
   };
 
   const isDarkS=document.body.classList.contains('dark');
-  const txS=isDarkS?'#f0f4ff':'#0a0f1e';
+  const txS=isDarkS?'#f0f4ff':'#1e293b';
   const ct = `text-align:center;font-size:11px;font-weight:600;color:${txS};`;
   const cn = `text-align:center;font-size:11px;font-family:"JetBrains Mono",monospace;font-weight:600;color:${txS};`;
   const num = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toLocaleString() : '—';
   const dec = (v) => (v!==undefined&&v!==null&&!isNaN(Number(v))&&v!=='') ? Number(v).toFixed(2) : '—';
 
-  const pBar = (pct) => {
+  // Badge BATCH bulat premium
+  const batchBadge = (batch) => {
+    const b = parseInt(batch) || 0;
+    const col = BATCH_COL[b] || '#64748b';
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 8px;border-radius:20px;background:${col};color:#fff;font-weight:900;font-size:11px;box-shadow:0 2px 6px ${col}55;">${b}</span>`;
+  };
+
+  // Progress bar pill premium (label kiri, bar+pct kanan)
+  const pBar = (pct, labelTxt) => {
     const n = parseInt(pct) || 0;
-    const col = n>=80?'#15803d':n>=50?'#b45309':'#b91c1c';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-      <div style="width:52px;height:6px;background:rgba(0,0,0,0.12);border-radius:3px;">
-        <div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div>
+    const col = n>=95?'#16a34a':n>=70?'#f59e0b':'#dc2626';
+    return `<div style="display:flex;flex-direction:column;gap:3px;min-width:78px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:8px;font-weight:800;color:${col};text-transform:uppercase;letter-spacing:0.04em;">${labelTxt}</span>
+        <span style="font-size:10px;font-weight:900;color:${col};">${n}%</span>
       </div>
-      <span style="font-size:10px;font-weight:900;color:${col}">${pct||'0%'}</span>
+      <div style="width:100%;height:6px;background:#e5e7eb;border-radius:10px;overflow:hidden;">
+        <div style="width:${Math.min(n,100)}%;height:100%;background:linear-gradient(90deg,${col},${col}cc);border-radius:10px;transition:width 0.8s;"></div>
+      </div>
     </div>`;
   };
 
   tbody.innerHTML = rows.map((r,i) => {
-    const bs = batchStyle(r.batch);
-    const trStyle = `background:${bs.bg};${bs.border?'border-left:'+bs.border:''}`;
-    return `<tr style="${trStyle}">
-    <td style="${ct}">${i+1}</td>
-    <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:${txS}">${escHtml(r.noLc)}</td>
-    <td style="${ct}font-weight:900;font-size:12px">${escHtml(r.batch)}</td>
-    <td style="font-size:11px;font-weight:600;color:${txS};max-width:150px;text-align:center">${escHtml(r.tujuan)}</td>
-    <td style="${ct}">${escHtml(r.tipeArmada)}</td>
-    <td style="${cn}">${num(r.kapasitas)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.10)">${num(r.releaseCase)}</td>
-    <td style="${cn}background:rgba(37,99,235,0.10)">${dec(r.releaseCbm)}</td>
-    <td style="${cn}background:rgba(139,92,246,0.10)">${dec(r.astorCbm)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.10)">${num(r.pickedCase)}</td>
-    <td style="${cn}background:rgba(22,163,74,0.10)">${dec(r.pickedCbm)}</td>
-    <td style="${cn}background:rgba(239,68,68,0.10);color:${r.sisaCase>0?'#b91c1c':'#15803d'};font-weight:900">${num(r.sisaCase)}</td>
-    <td style="background:rgba(16,185,129,0.10);${ct}">${pBar(r.pctPicking)}</td>
-    <td style="${cn}background:rgba(16,185,129,0.10)">${dec(r.pencPickCbm)}</td>
-    <td style="${cn}background:rgba(245,158,11,0.10);color:${r.sisaPick99>0?'#b45309':'#15803d'};font-weight:900">${num(r.sisaPick99)}</td>
-    <td style="${cn}background:rgba(99,102,241,0.10)">${num(r.stagedCase)}</td>
-    <td style="${cn}background:rgba(99,102,241,0.10)">${dec(r.stagedCbm)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.10)">${num(r.pencDsCase)}</td>
-    <td style="${cn}background:rgba(59,130,246,0.10)">${dec(r.pencDsCbm)}</td>
-    <td style="background:rgba(234,179,8,0.10);${ct}">${pBar(r.pctKapasitas)}</td>
+    const rowBg = i % 2 === 0 ? (isDarkS?'#0f172a':'#ffffff') : (isDarkS?'#1a2332':'#f8fafc');
+    return `<tr style="background:${rowBg};border-bottom:1px solid ${isDarkS?'#1e293b':'#f1f5f9'};transition:background 0.15s;" onmouseover="this.style.background='${isDarkS?'#1e2a3f':'#eff6ff'}'" onmouseout="this.style.background='${rowBg}'">
+    <td style="${ct}padding:10px 8px;">${i+1}</td>
+    <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:${txS};padding:10px 8px;">${escHtml(r.noLc)}</td>
+    <td style="text-align:center;padding:10px 8px;">${batchBadge(r.batch)}</td>
+    <td style="font-size:11px;font-weight:600;color:${txS};max-width:150px;text-align:center;padding:10px 8px;">${escHtml(r.tujuan)}</td>
+    <td style="${ct}padding:10px 8px;">${escHtml(r.tipeArmada)}</td>
+    <td style="${cn}padding:10px 8px;">${num(r.kapasitas)}</td>
+    <td style="${cn}padding:10px 8px;">${num(r.releaseCase)}</td>
+    <td style="${cn}padding:10px 8px;">${dec(r.releaseCbm)}</td>
+    <td style="${cn}padding:10px 8px;">${dec(r.astorCbm)}</td>
+    <td style="${cn}padding:10px 8px;">${num(r.pickedCase)}</td>
+    <td style="${cn}padding:10px 8px;">${dec(r.pickedCbm)}</td>
+    <td style="${cn}padding:10px 8px;color:${r.sisaCase>0?'#dc2626':'#16a34a'};font-weight:900;">${num(r.sisaCase)}</td>
+    <td style="padding:10px 8px;">${pBar(r.pctPicking, 'PICK')}</td>
+    <td style="${cn}padding:10px 8px;">${dec(r.pencPickCbm)}</td>
+    <td style="${cn}padding:10px 8px;color:${r.sisaPick99>0?'#d97706':'#16a34a'};font-weight:900;">${num(r.sisaPick99)}</td>
+    <td style="${cn}padding:10px 8px;">${num(r.stagedCase)}</td>
+    <td style="${cn}padding:10px 8px;">${dec(r.stagedCbm)}</td>
+    <td style="${cn}padding:10px 8px;">${num(r.pencDsCase)}</td>
+    <td style="${cn}padding:10px 8px;">${dec(r.pencDsCbm)}</td>
+    <td style="padding:10px 8px;">${pBar(r.pctKapasitas, 'KAP')}</td>
   </tr>`;
   }).join('');
 }
