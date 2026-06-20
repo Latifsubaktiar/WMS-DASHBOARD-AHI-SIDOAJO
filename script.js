@@ -857,14 +857,17 @@ function renderStoringPanel(data) {
   // Hitung tinggi section "Pencapaian per Batch" secara dinamis,
   // lalu pasang sebagai sticky offset (top) untuk header tabel storing
   setTimeout(() => {
-    const batchSection = document.getElementById('storingBatchGrid')?.closest('div[style*="position:sticky"]');
+    const batchSection = document.getElementById('storingBatchSection');
     const theadRows = document.querySelectorAll('#storingTable thead tr');
     if (batchSection && theadRows.length) {
-      const h = batchSection.offsetHeight;
+      const h = Math.ceil(batchSection.getBoundingClientRect().height);
       theadRows[0].style.top = h + 'px';
-      if (theadRows[1]) theadRows[1].style.top = (h + 32) + 'px';
+      if (theadRows[1]) {
+        const h2 = Math.ceil(theadRows[0].getBoundingClientRect().height);
+        theadRows[1].style.top = (h + h2) + 'px';
+      }
     }
-  }, 150);
+  }, 400);
 
   // Beam kilat — HANYA untuk KPI cards di atas, batch cards tidak diberi efek
   setTimeout(()=>{
