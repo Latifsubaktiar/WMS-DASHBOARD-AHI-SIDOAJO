@@ -804,21 +804,24 @@ function renderStoringPanel(data) {
   const isDark = document.body.classList.contains('dark');
 
   // Matikan efek hover (naik+scale) di seluruh panel Storing, KECUALI KPI cards & Batch cards
-  if (!document.getElementById('storingNoHoverStyle')) {
-    const st = document.createElement('style');
-    st.id = 'storingNoHoverStyle';
+  {
+    let st = document.getElementById('storingNoHoverStyle');
+    if (!st) {
+      st = document.createElement('style');
+      st.id = 'storingNoHoverStyle';
+      document.head.appendChild(st);
+    }
     st.textContent = `
       #storingDetailPanel.card:hover, #storingDetailPanel .card:hover { transform:none !important; }
       #storingKpiRow > div { transition: transform 0.2s, box-shadow 0.2s; }
       #storingKpiRow > div:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
       #storingBatchGrid > div { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s; }
-      #storingBatchGrid > div:hover { transform: translateY(-5px); }
-      #storingBatchGrid > div:nth-child(4n+1):hover { box-shadow: 0 10px 28px rgba(99,102,241,0.35); }
-      #storingBatchGrid > div:nth-child(4n+2):hover { box-shadow: 0 10px 28px rgba(16,185,129,0.35); }
-      #storingBatchGrid > div:nth-child(4n+3):hover { box-shadow: 0 10px 28px rgba(245,158,11,0.35); }
-      #storingBatchGrid > div:nth-child(4n+4):hover { box-shadow: 0 10px 28px rgba(168,85,247,0.35); }
+      #storingBatchGrid > div:hover { transform: translateY(-5px) !important; }
+      #storingBatchGrid > div:nth-child(4n+1):hover { box-shadow: 0 10px 28px rgba(99,102,241,0.45) !important; }
+      #storingBatchGrid > div:nth-child(4n+2):hover { box-shadow: 0 10px 28px rgba(16,185,129,0.45) !important; }
+      #storingBatchGrid > div:nth-child(4n+3):hover { box-shadow: 0 10px 28px rgba(245,158,11,0.45) !important; }
+      #storingBatchGrid > div:nth-child(4n+4):hover { box-shadow: 0 10px 28px rgba(168,85,247,0.45) !important; }
     `;
-    document.head.appendChild(st);
   }
 
   document.getElementById('storingSubtitle').textContent = `Total: ${s.total} LC/PO | Release: ${s.sumRelease.toLocaleString()} Case`;
