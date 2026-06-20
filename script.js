@@ -1467,16 +1467,18 @@ let dashInboundChart=null, dashOutboundChart=null;
 
 function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
   const pct=total>0?Math.round((selesai/total)*100):0;
-  document.getElementById('dashInboundPct').textContent=pct+'%';
-  document.getElementById('inboundPctBadge').textContent=pct+'% Selesai';
-  document.getElementById('piInSelesai').textContent=selesai+' truck';
-  document.getElementById('piInProses').textContent=proses+' truck';
-  const piAntri=document.getElementById('piInAntri'); if(piAntri) piAntri.textContent=antri+' truck';
-  document.getElementById('piInBelum').textContent=belum+' truck';
-  document.getElementById('piInHitMiss').textContent=hit+' HIT / '+miss+' MISS';
+  const _e=(id)=>document.getElementById(id);
+  if(_e('dashInboundPct')) _e('dashInboundPct').textContent=pct+'%';
+  if(_e('inboundPctBadge')) _e('inboundPctBadge').textContent=pct+'% Selesai';
+  if(_e('piInSelesai')) _e('piInSelesai').textContent=selesai+' truck';
+  if(_e('piInProses')) _e('piInProses').textContent=proses+' truck';
+  const piAntri=_e('piInAntri'); if(piAntri) piAntri.textContent=antri+' truck';
+  if(_e('piInBelum')) _e('piInBelum').textContent=belum+' truck';
+  if(_e('piInHitMiss')) _e('piInHitMiss').textContent=hit+' HIT / '+miss+' MISS';
   const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
   if(dashInboundChart) dashInboundChart.destroy();
-  dashInboundChart=new Chart(document.getElementById('dashInboundChart').getContext('2d'),{
+  const cvIn=_e('dashInboundChart'); if(!cvIn) return;
+  dashInboundChart=new Chart(cvIn.getContext('2d'),{
     type:'doughnut',
     data:{labels:['Selesai Unloading','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} truck`}}}}
@@ -1486,17 +1488,19 @@ function renderDashInboundChart(total,selesai,proses,antri,belum,hit,miss) {
 function renderDashOutboundChart(total,selesai,proses,antri,belum,hit,miss) {
   proses=proses||0; antri=antri||0; belum=belum||0; hit=hit||0; miss=miss||0;
   const pct=total>0?Math.round((selesai/total)*100):0;
-  document.getElementById('dashOutboundPct').textContent=pct+'%';
-  document.getElementById('outboundPctBadge').textContent=pct+'% Selesai';
-  document.getElementById('piOutSelesai').textContent=selesai+' armada';
-  const elP=document.getElementById('piOutProses'),elA=document.getElementById('piOutAntri'),elHM=document.getElementById('piOutHitMiss');
+  const _eo=(id)=>document.getElementById(id);
+  if(_eo('dashOutboundPct')) _eo('dashOutboundPct').textContent=pct+'%';
+  if(_eo('outboundPctBadge')) _eo('outboundPctBadge').textContent=pct+'% Selesai';
+  if(_eo('piOutSelesai')) _eo('piOutSelesai').textContent=selesai+' armada';
+  const elP=_eo('piOutProses'),elA=_eo('piOutAntri'),elHM=_eo('piOutHitMiss');
   if(elP) elP.textContent=proses+' armada';
   if(elA) elA.textContent=antri+' armada';
-  document.getElementById('piOutBelum').textContent=belum+' armada';
+  if(_eo('piOutBelum')) _eo('piOutBelum').textContent=belum+' armada';
   if(elHM) elHM.textContent=hit+' HIT / '+miss+' MISS';
   const isDark=document.body.classList.contains('dark'), border=isDark?'#161b22':'#ffffff';
   if(dashOutboundChart) dashOutboundChart.destroy();
-  dashOutboundChart=new Chart(document.getElementById('dashOutboundChart').getContext('2d'),{
+  const cvOut=_eo('dashOutboundChart'); if(!cvOut) return;
+  dashOutboundChart=new Chart(cvOut.getContext('2d'),{
     type:'doughnut',
     data:{labels:['Selesai','Proses','Antri','Belum Datang'],datasets:[{data:[selesai,proses,antri,belum],backgroundColor:['#16a34a','#2563eb','#f59e0b','#dc2626'],borderColor:border,borderWidth:3,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'rgba(22,27,34,0.95)':'rgba(17,24,39,0.9)',titleColor:'#fff',bodyColor:'rgba(255,255,255,0.8)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,padding:10,cornerRadius:10,callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw} armada`}}}}
