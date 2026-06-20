@@ -295,6 +295,7 @@ function toggleOutboundPanel() {
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
     const sgOut=document.querySelector('.stats-grid'); if(sgOut) sgOut.style.display='none';
+    const lgOut=document.getElementById('lppbdoGrid'); if(lgOut) lgOut.style.display='none';
     fetchOutboundPanel();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
@@ -303,6 +304,7 @@ function toggleOutboundPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const sgOutR=document.querySelector('.stats-grid'); if(sgOutR) sgOutR.style.display='';
+    const lgOutR=document.getElementById('lppbdoGrid'); if(lgOutR) lgOutR.style.display='grid';
     lineOutboundLoaded = false;
     switchOutboundTab('data');
   }
@@ -331,6 +333,7 @@ function toggleInventoryPanel() {
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
     const sgInv=document.querySelector('.stats-grid'); if(sgInv) sgInv.style.display='none';
+    const lgInv=document.getElementById('lppbdoGrid'); if(lgInv) lgInv.style.display='none';
     if (!inventoryDetailLoaded) fetchInventoryDetail();
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
@@ -339,6 +342,7 @@ function toggleInventoryPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
+    const lgR=document.getElementById('lppbdoGrid'); if(lgR) lgR.style.display='grid';
   }
 }
 
@@ -743,6 +747,7 @@ function toggleStoringPanel() {
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
     const sgStr=document.querySelector('.stats-grid'); if(sgStr) sgStr.style.display='none';
+    const lgStr=document.getElementById('lppbdoGrid'); if(lgStr) lgStr.style.display='none';
     if (!storingLoaded) fetchStoringToday();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
   } else {
@@ -751,6 +756,7 @@ function toggleStoringPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const sgStrR=document.querySelector('.stats-grid'); if(sgStrR) sgStrR.style.display='';
+    const lgStrR=document.getElementById('lppbdoGrid'); if(lgStrR) lgStrR.style.display='grid';
   }
 }
 
@@ -1111,6 +1117,7 @@ function toggleInboundPanel() {
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
     const sgInb=document.querySelector('.stats-grid'); if(sgInb) sgInb.style.display='none';
+    const lgInb=document.getElementById('lppbdoGrid'); if(lgInb) lgInb.style.display='none';
     renderPanelInboundTable(window._inboundRows || []);
     fetchInlineProses();
     setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),100);
@@ -1120,6 +1127,7 @@ function toggleInboundPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
+    const lgR=document.getElementById('lppbdoGrid'); if(lgR) lgR.style.display='grid';
   }
 }
 
@@ -2454,6 +2462,7 @@ function togglePlannerPanel() {
     if (progressRow) progressRow.style.display = 'none';
     if (bottomGrid)  bottomGrid.style.display  = 'none';
     const sgPl=document.querySelector('.stats-grid'); if(sgPl) sgPl.style.display='none';
+    const lgPl=document.getElementById('lppbdoGrid'); if(lgPl) lgPl.style.display='none';
     fetchPlannerDetail();
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
@@ -2462,6 +2471,7 @@ function togglePlannerPanel() {
     if (progressRow) progressRow.style.display = '';
     if (bottomGrid)  bottomGrid.style.display  = '';
     const sgR=document.querySelector('.stats-grid'); if(sgR) sgR.style.display='';
+    const lgR=document.getElementById('lppbdoGrid'); if(lgR) lgR.style.display='grid';
   }
 }
 
