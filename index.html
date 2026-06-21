@@ -545,9 +545,87 @@
           </div>
         </div>
 
+        <!-- OUTBOUND TODAY KPI CARDS -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);background:rgba(255,255,255,0.4);">
+
+          <!-- 1. TOTAL LOAD (Orange) -->
+          <div id="outKpiTotalLoad" style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#d97706;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(217,119,6,0.8),transparent);animation:cardBeam 2s ease-in-out infinite;"></div></div>
+            <div style="padding:10px 12px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="width:24px;height:24px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:4px;border-radius:3px;font-weight:900;color:#d97706;">1</div>
+              <div id="outKpiTotalLoadVal" style="font-size:22px;font-weight:900;color:#d97706;letter-spacing:-0.5px;line-height:1;margin-bottom:2px;">—</div>
+              <div style="font-size:10px;font-weight:700;color:#1e293b;margin-bottom:6px;">Total Load</div>
+              <div id="chartOutKpiTotalLoad" style="width:52px;height:52px;margin-top:auto;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:5px 10px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:8px;">
+              <span style="color:#94a3b8;font-weight:700;">TOTAL</span>
+              <span id="footOutKpiTotalLoad" style="font-weight:900;color:#d97706;">—</span>
+            </div>
+          </div>
+
+          <!-- 2. BELUM DATANG (Red) -->
+          <div id="outKpiBelum" style="background:linear-gradient(160deg,#fff 55%,#fee2e2 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#dc2626;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(220,38,38,0.8),transparent);animation:cardBeam 2.3s ease-in-out infinite;"></div></div>
+            <div style="padding:10px 12px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="width:24px;height:24px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:4px;border-radius:3px;font-weight:900;color:#dc2626;">2</div>
+              <div id="outKpiBelumVal" style="font-size:22px;font-weight:900;color:#dc2626;letter-spacing:-0.5px;line-height:1;margin-bottom:2px;">—</div>
+              <div style="font-size:10px;font-weight:700;color:#1e293b;margin-bottom:6px;">Belum Datang</div>
+              <div id="chartOutKpiBelum" style="width:52px;height:52px;margin-top:auto;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:5px 10px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:8px;">
+              <span style="color:#94a3b8;font-weight:700;">BELUM</span>
+              <span id="footOutKpiBelum" style="font-weight:900;color:#dc2626;">—</span>
+            </div>
+          </div>
+
+          <!-- 3. ANTRI (Yellow) -->
+          <div id="outKpiAntri" style="background:linear-gradient(160deg,#fff 55%,#fef08a 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#eab308;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(234,179,8,0.8),transparent);animation:cardBeam 2.6s ease-in-out infinite;"></div></div>
+            <div style="padding:10px 12px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="width:24px;height:24px;background:#fef08a;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:4px;border-radius:3px;font-weight:900;color:#eab308;">3</div>
+              <div id="outKpiAntriVal" style="font-size:22px;font-weight:900;color:#eab308;letter-spacing:-0.5px;line-height:1;margin-bottom:2px;">—</div>
+              <div style="font-size:10px;font-weight:700;color:#1e293b;margin-bottom:6px;">Antri</div>
+              <div id="chartOutKpiAntri" style="width:52px;height:52px;margin-top:auto;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:5px 10px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:8px;">
+              <span style="color:#94a3b8;font-weight:700;">ANTRI</span>
+              <span id="footOutKpiAntri" style="font-weight:900;color:#eab308;">—</span>
+            </div>
+          </div>
+
+          <!-- 4. PROSES (Blue) -->
+          <div id="outKpiProses" style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.8),transparent);animation:cardBeam 2.9s ease-in-out infinite;"></div></div>
+            <div style="padding:10px 12px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="width:24px;height:24px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:4px;border-radius:3px;font-weight:900;color:#2563eb;">4</div>
+              <div id="outKpiProsesVal" style="font-size:22px;font-weight:900;color:#2563eb;letter-spacing:-0.5px;line-height:1;margin-bottom:2px;">—</div>
+              <div style="font-size:10px;font-weight:700;color:#1e293b;margin-bottom:6px;">Proses</div>
+              <div id="chartOutKpiProses" style="width:52px;height:52px;margin-top:auto;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:5px 10px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:8px;">
+              <span style="color:#94a3b8;font-weight:700;">PROSES</span>
+              <span id="footOutKpiProses" style="font-weight:900;color:#2563eb;">—</span>
+            </div>
+          </div>
+
+          <!-- 5. SELESAI (Green) -->
+          <div id="outKpiSelesai" style="background:linear-gradient(160deg,#fff 55%,#dcfce7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
+            <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(22,163,74,0.8),transparent);animation:cardBeam 3.2s ease-in-out infinite;"></div></div>
+            <div style="padding:10px 12px 0;flex:1;display:flex;flex-direction:column;">
+              <div style="width:24px;height:24px;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:4px;border-radius:3px;font-weight:900;color:#16a34a;">5</div>
+              <div id="outKpiSelesaiVal" style="font-size:22px;font-weight:900;color:#16a34a;letter-spacing:-0.5px;line-height:1;margin-bottom:2px;">—</div>
+              <div style="font-size:10px;font-weight:700;color:#1e293b;margin-bottom:6px;">Selesai</div>
+              <div id="chartOutKpiSelesai" style="width:52px;height:52px;margin-top:auto;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:5px 10px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:8px;">
+              <span style="color:#94a3b8;font-weight:700;">SELESAI</span>
+              <span id="footOutKpiSelesai" style="font-weight:900;color:#16a34a;">—</span>
+            </div>
+          </div>
+
+        </div>
+
         <!-- TABS -->
-        <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,215,240,0.3);padding:0 20px;">
-          <button id="outTabData" onclick="switchOutboundTab('data')" style="padding:10px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid var(--accent);background:none;cursor:pointer;color:var(--accent);transition:all 0.2s;">📋 Data Outbound</button>
           <button id="outTabLine" onclick="switchOutboundTab('line')" style="padding:10px 20px;font-size:12.5px;font-weight:700;font-family:inherit;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;color:var(--text-3);transition:all 0.2s;">📊 Line Outbound</button>
         </div>
 
