@@ -1063,7 +1063,7 @@ function renderStoringTable(rows) {
   // Progress bar pill premium (label kiri, bar+pct kanan)
   const pBar = (pct, labelTxt) => {
     const n = parseFloat(pct) || 0;
-    const col = n>=95?'#16a34a':n>=70?'#f59e0b':'#dc2626';
+    const col = n>=100?'#16a34a':'#dc2626';
     const display = Number.isInteger(n) ? n : n.toFixed(1);
     return `<div style="display:flex;flex-direction:column;gap:3px;min-width:78px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
