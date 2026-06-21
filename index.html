@@ -406,27 +406,40 @@
           <!-- TABLE HEADER ONLY (mimics table via CSS display:table) -->
           <div id="storingHeaderWrap" style="overflow-x:auto;background:#1e293b;margin-top:10px;">
             <table style="width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;">
+              <colgroup>
+                <col style="width:36px;"><col style="width:110px;"><col style="width:60px;"><col style="width:140px;">
+                <col style="width:90px;"><col style="width:48px;"><col style="width:60px;"><col style="width:60px;">
+                <col style="width:60px;"><col style="width:60px;"><col style="width:60px;"><col style="width:60px;">
+                <col style="width:100px;"><col style="width:70px;"><col style="width:60px;"><col style="width:60px;">
+                <col style="width:60px;"><col style="width:60px;"><col style="width:100px;">
+              </colgroup>
               <thead>
                 <tr style="background:#1e293b;">
-                  <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;width:36px;">NO</th>
-                  <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;width:110px;">NO LC</th>
-                  <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;width:60px;">BATCH</th>
-                  <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;width:140px;">TUJUAN</th>
-                  <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;width:90px;">TIPE ARMADA</th>
-                  <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;width:48px;">KAP.</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;width:60px;">REL CASE</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;width:60px;">REL CBM</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#c4b5fd;width:60px;">ASTOR</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;width:60px;">PICK CASE</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;width:60px;">PICK CBM</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#f87171;width:60px;">SISA</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#34d399;width:100px;">PENCAPAIAN PICKING</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;width:70px;">SISA 99%</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#a5b4fc;width:60px;">STG CASE</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#a5b4fc;width:60px;">STG CBM</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;width:60px;">DS CASE</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;width:60px;">DS CBM</th>
-                  <th style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fde68a;width:100px;">% KAP</th>
+                  <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;">NO</th>
+                  <th rowspan="2" style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">NO LC</th>
+                  <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">BATCH</th>
+                  <th rowspan="2" style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;">TUJUAN</th>
+                  <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">TIPE ARMADA</th>
+                  <th rowspan="2" style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;">KAP.</th>
+                  <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#60a5fa;border-bottom:1px solid rgba(37,99,235,0.3);">RELEASE</th>
+                  <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#c4b5fd;">ASTOR</th>
+                  <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#4ade80;border-bottom:1px solid rgba(22,163,74,0.3);">PICKED</th>
+                  <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#f87171;">SISA</th>
+                  <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#34d399;">PENCAPAIAN PICKING</th>
+                  <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fbbf24;">SISA 99%</th>
+                  <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#a5b4fc;border-bottom:1px solid rgba(99,102,241,0.3);">STAGED DS</th>
+                  <th colspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#93c5fd;border-bottom:1px solid rgba(59,130,246,0.3);">PENCAPAIAN DS</th>
+                  <th rowspan="2" style="padding:7px 8px;text-align:center;font-size:10px;font-weight:700;color:#fde68a;">% KAP</th>
+                </tr>
+                <tr style="background:#2d3748;">
+                  <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">CASE</th>
+                  <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">CBM</th>
+                  <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">CASE</th>
+                  <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#4ade80;">CBM</th>
+                  <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#a5b4fc;">CASE</th>
+                  <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#a5b4fc;">CBM</th>
+                  <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">CASE</th>
+                  <th style="padding:6px 8px;text-align:center;font-size:9.5px;font-weight:700;color:#93c5fd;">CBM</th>
                 </tr>
               </thead>
             </table>
@@ -436,6 +449,13 @@
         <!-- TABLE BODY (scroll biasa, header asli disembunyikan agar tidak duplikat) -->
         <div style="overflow-x:auto;background:#fff;">
           <table id="storingTable" style="width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;">
+            <colgroup>
+              <col style="width:36px;"><col style="width:110px;"><col style="width:60px;"><col style="width:140px;">
+              <col style="width:90px;"><col style="width:48px;"><col style="width:60px;"><col style="width:60px;">
+              <col style="width:60px;"><col style="width:60px;"><col style="width:60px;"><col style="width:60px;">
+              <col style="width:100px;"><col style="width:70px;"><col style="width:60px;"><col style="width:60px;">
+              <col style="width:60px;"><col style="width:60px;"><col style="width:100px;">
+            </colgroup>
             <thead style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">
               <tr id="storingTheadMain" style="background:#1e293b;">
                 <th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:700;color:#94a3b8;white-space:nowrap;width:36px;">NO</th>
