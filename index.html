@@ -448,102 +448,77 @@
         </div>
 
         <!-- KPI CARDS -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
+<!-- KPI CARDS - 6 ITEMS (TOTAL LC, SELESAI, PROSES, OPEN, ANTRI, BELUM DATANG) -->
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);">
 
-          <!-- Status Armada -->
-          <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
-            <div style="height:3px;background:#d97706;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
-            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <div style="width:30px;height:30px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;">🚚</div>
-                <div id="chartOutStatus" style="width:64px;height:64px;flex-shrink:0;"></div>
-              </div>
-              <div id="pctOutSelesai" style="font-size:28px;font-weight:900;color:#d97706;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
-              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:6px;">Status Armada</div>
-              <!-- Mini boxes -->
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
-                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:4px 6px;">
-                  <div style="font-size:8px;font-weight:700;color:#16a34a;text-transform:uppercase;">Selesai</div>
-                  <div id="outMiniSelesai" style="font-size:16px;font-weight:900;color:#16a34a;line-height:1;">0</div>
-                </div>
-                <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:4px 6px;">
-                  <div style="font-size:8px;font-weight:700;color:#2563eb;text-transform:uppercase;">Proses</div>
-                  <div id="outMiniProses" style="font-size:16px;font-weight:900;color:#2563eb;line-height:1;">0</div>
-                </div>
-                <div style="background:#fffbeb;border:1px solid #fde68a;padding:4px 6px;">
-                  <div style="font-size:8px;font-weight:700;color:#d97706;text-transform:uppercase;">Antri</div>
-                  <div id="outMiniAntri" style="font-size:16px;font-weight:900;color:#d97706;line-height:1;">0</div>
-                </div>
-                <div style="background:#fef2f2;border:1px solid #fecaca;padding:4px 6px;">
-                  <div style="font-size:8px;font-weight:700;color:#dc2626;text-transform:uppercase;">Belum</div>
-                  <div id="outMiniBelum" style="font-size:16px;font-weight:900;color:#dc2626;line-height:1;">0</div>
-                </div>
-              </div>
-              <div style="height:3px;background:rgba(0,0,0,0.06);"><div id="barOutStatus" style="height:100%;background:#d97706;width:0%;transition:width 1s;"></div></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
-              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">STATUS</span>
-              <span id="footOutStatus" style="font-weight:900;color:#d97706;">—</span>
-            </div>
-          </div>
+  <!-- TOTAL LC -->
+  <div style="background:linear-gradient(160deg,#fff 55%,#eff6ff 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;border-radius:12px;">
+    <div style="height:3px;background:#0ea5e9;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(6,182,212,0.6),transparent);animation:cardBeam 3s ease-in-out infinite;"></div></div>
+    <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+      <div style="width:28px;height:28px;background:#cffafe;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:6px;border-radius:8px;">📦</div>
+      <div id="kpiTotalLc" style="font-size:26px;font-weight:900;color:#0284c7;letter-spacing:-1px;line-height:1;margin-bottom:3px;">0</div>
+      <div style="font-size:11px;font-weight:700;color:#1e293b;">TOTAL LC</div>
+    </div>
+    <div style="height:2px;background:rgba(0,0,0,0.04);margin-top:8px;"><div id="barTotalLc" style="height:100%;background:#0284c7;width:100%;"></div></div>
+  </div>
 
-          <!-- % PC Picking -->
-          <div style="background:linear-gradient(160deg,#fff 55%,#d1fae5 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
-            <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 3.5s ease-in-out infinite;"></div></div>
-            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <div style="width:30px;height:30px;background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:15px;">📦</div>
-                <div id="chartOutPc" style="width:64px;height:64px;flex-shrink:0;"></div>
-              </div>
-              <div id="pctOutPc" style="font-size:28px;font-weight:900;color:#16a34a;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
-              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% PC (Picking)</div>
-              <div id="infoOutPc" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Picking</div>
-              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutPc" style="height:100%;background:#16a34a;width:0%;transition:width 1s;"></div></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
-              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %PC</span>
-              <span id="footOutPc" style="font-weight:900;color:#16a34a;">—</span>
-            </div>
-          </div>
+  <!-- SELESAI -->
+  <div style="background:linear-gradient(160deg,#fff 55%,#dcfce7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;border-radius:12px;">
+    <div style="height:3px;background:#16a34a;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(22,163,74,0.6),transparent);animation:cardBeam 3.2s ease-in-out infinite;"></div></div>
+    <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+      <div style="width:28px;height:28px;background:#bbf7d0;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:6px;border-radius:8px;">✅</div>
+      <div id="kpiSelesai" style="font-size:26px;font-weight:900;color:#16a34a;letter-spacing:-1px;line-height:1;margin-bottom:3px;">0</div>
+      <div style="font-size:11px;font-weight:700;color:#1e293b;">SELESAI</div>
+    </div>
+    <div style="height:2px;background:rgba(0,0,0,0.04);margin-top:8px;"><div id="barSelesai" style="height:100%;background:#16a34a;width:0%;"></div></div>
+  </div>
 
-          <!-- % STG Staging -->
-          <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
-            <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 4s ease-in-out infinite;"></div></div>
-            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <div style="width:30px;height:30px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:15px;">🚛</div>
-                <div id="chartOutStg" style="width:64px;height:64px;flex-shrink:0;"></div>
-              </div>
-              <div id="pctOutStg" style="font-size:28px;font-weight:900;color:#2563eb;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
-              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% STG (Staging)</div>
-              <div id="infoOutStg" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Staging</div>
-              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutStg" style="height:100%;background:#2563eb;width:0%;transition:width 1s;"></div></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
-              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %STG</span>
-              <span id="footOutStg" style="font-weight:900;color:#2563eb;">—</span>
-            </div>
-          </div>
+  <!-- PROSES -->
+  <div style="background:linear-gradient(160deg,#fff 55%,#fef3c7 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;border-radius:12px;">
+    <div style="height:3px;background:#f59e0b;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 3.4s ease-in-out infinite;"></div></div>
+    <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+      <div style="width:28px;height:28px;background:#fde68a;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:6px;border-radius:8px;">⚙️</div>
+      <div id="kpiProses" style="font-size:26px;font-weight:900;color:#f59e0b;letter-spacing:-1px;line-height:1;margin-bottom:3px;">0</div>
+      <div style="font-size:11px;font-weight:700;color:#1e293b;">PROSES</div>
+    </div>
+    <div style="height:2px;background:rgba(0,0,0,0.04);margin-top:8px;"><div id="barProses" style="height:100%;background:#f59e0b;width:0%;"></div></div>
+  </div>
 
-          <!-- % LD Loading -->
-          <div style="background:linear-gradient(160deg,#fff 55%,#fce7f3 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;position:relative;">
-            <div style="height:3px;background:#ec4899;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);animation:cardBeam 4.5s ease-in-out infinite;"></div></div>
-            <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                <div style="width:30px;height:30px;background:#fce7f3;display:flex;align-items:center;justify-content:center;font-size:15px;">🎯</div>
-                <div id="chartOutLd" style="width:64px;height:64px;flex-shrink:0;"></div>
-              </div>
-              <div id="pctOutLd" style="font-size:28px;font-weight:900;color:#ec4899;letter-spacing:-1px;line-height:1;margin-bottom:4px;">—</div>
-              <div style="font-size:12px;font-weight:900;color:#1e293b;margin-bottom:2px;">% LD (Loading)</div>
-              <div id="infoOutLd" style="font-size:10px;color:#94a3b8;flex:1;">Rata-rata % Loading</div>
-              <div style="height:3px;background:rgba(0,0,0,0.06);margin-top:10px;"><div id="barOutLd" style="height:100%;background:#ec4899;width:0%;transition:width 1s;"></div></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f8fafc;border-top:1px solid #f1f5f9;font-size:9px;">
-              <span style="color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">AVG %LD</span>
-              <span id="footOutLd" style="font-weight:900;color:#ec4899;">—</span>
-            </div>
-          </div>
-        </div>
+  <!-- OPEN -->
+  <div style="background:linear-gradient(160deg,#fff 55%,#dbeafe 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;border-radius:12px;">
+    <div style="height:3px;background:#2563eb;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(37,99,235,0.6),transparent);animation:cardBeam 3.6s ease-in-out infinite;"></div></div>
+    <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+      <div style="width:28px;height:28px;background:#bfdbfe;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:6px;border-radius:8px;">📂</div>
+      <div id="kpiOpen" style="font-size:26px;font-weight:900;color:#2563eb;letter-spacing:-1px;line-height:1;margin-bottom:3px;">0</div>
+      <div style="font-size:11px;font-weight:700;color:#1e293b;">OPEN</div>
+    </div>
+    <div style="height:2px;background:rgba(0,0,0,0.04);margin-top:8px;"><div id="barOpen" style="height:100%;background:#2563eb;width:0%;"></div></div>
+  </div>
+
+  <!-- ANTRI -->
+  <div style="background:linear-gradient(160deg,#fff 55%,#fed7aa 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;border-radius:12px;">
+    <div style="height:3px;background:#d97706;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(217,119,6,0.6),transparent);animation:cardBeam 3.8s ease-in-out infinite;"></div></div>
+    <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+      <div style="width:28px;height:28px;background:#fed7aa;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:6px;border-radius:8px;">⏳</div>
+      <div id="kpiAntri" style="font-size:26px;font-weight:900;color:#d97706;letter-spacing:-1px;line-height:1;margin-bottom:3px;">0</div>
+      <div style="font-size:11px;font-weight:700;color:#1e293b;">ANTRI</div>
+    </div>
+    <div style="height:2px;background:rgba(0,0,0,0.04);margin-top:8px;"><div id="barAntri" style="height:100%;background:#d97706;width:0%;"></div></div>
+  </div>
+
+  <!-- BELUM DATANG -->
+  <div style="background:linear-gradient(160deg,#fff 55%,#fee2e2 100%);border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.06);display:flex;flex-direction:column;border-radius:12px;">
+    <div style="height:3px;background:#dc2626;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(220,38,38,0.6),transparent);animation:cardBeam 4s ease-in-out infinite;"></div></div>
+    <div style="padding:12px 14px 0;flex:1;display:flex;flex-direction:column;">
+      <div style="width:28px;height:28px;background:#fecaca;display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:6px;border-radius:8px;">🔴</div>
+      <div id="kpiBelumDtg" style="font-size:26px;font-weight:900;color:#dc2626;letter-spacing:-1px;line-height:1;margin-bottom:3px;">0</div>
+      <div style="font-size:11px;font-weight:700;color:#1e293b;">BELUM DATANG</div>
+    </div>
+    <div style="height:2px;background:rgba(0,0,0,0.04);margin-top:8px;"><div id="barBelumDtg" style="height:100%;background:#dc2626;width:0%;"></div></div>
+  </div>
+
+</div>
+
 
         <!-- TABS -->
         <div style="display:flex;gap:0;border-bottom:1px solid rgba(200,215,240,0.3);padding:0 20px;">
