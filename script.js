@@ -388,6 +388,10 @@ async function loadOutboundTodayKPI() {
     makeSVGKpi('chartOutKpiTotalLoad', pctTotal, '#d97706');
     const footTotalLoad = document.getElementById('footOutKpiTotalLoad');
     if (footTotalLoad) footTotalLoad.textContent = pctTotal + '%';
+    const box1TotalLoad = document.getElementById('box1TotalLoad');
+    if (box1TotalLoad) box1TotalLoad.textContent = totalLoad;
+    const box2TotalLoad = document.getElementById('box2TotalLoad');
+    if (box2TotalLoad) box2TotalLoad.textContent = pctTotal + '%';
 
     // 2. Belum Datang (Red)
     const elBelum = document.getElementById('outKpiBelumVal');
@@ -395,6 +399,10 @@ async function loadOutboundTodayKPI() {
     makeSVGKpi('chartOutKpiBelum', pctBelum, '#dc2626');
     const footBelum = document.getElementById('footOutKpiBelum');
     if (footBelum) footBelum.textContent = pctBelum + '%';
+    const box1Belum = document.getElementById('box1Belum');
+    if (box1Belum) box1Belum.textContent = totalLoad;
+    const box2Belum = document.getElementById('box2Belum');
+    if (box2Belum) box2Belum.textContent = pctBelum + '%';
 
     // 3. Antri (Yellow)
     const elAntri = document.getElementById('outKpiAntriVal');
@@ -402,6 +410,10 @@ async function loadOutboundTodayKPI() {
     makeSVGKpi('chartOutKpiAntri', pctAntri, '#eab308');
     const footAntri = document.getElementById('footOutKpiAntri');
     if (footAntri) footAntri.textContent = pctAntri + '%';
+    const box1Antri = document.getElementById('box1Antri');
+    if (box1Antri) box1Antri.textContent = belum;
+    const box2Antri = document.getElementById('box2Antri');
+    if (box2Antri) box2Antri.textContent = pctAntri + '%';
 
     // 4. Proses (Blue)
     const elProses = document.getElementById('outKpiProsesVal');
@@ -409,6 +421,10 @@ async function loadOutboundTodayKPI() {
     makeSVGKpi('chartOutKpiProses', pctProses, '#2563eb');
     const footProses = document.getElementById('footOutKpiProses');
     if (footProses) footProses.textContent = pctProses + '%';
+    const box1Proses = document.getElementById('box1Proses');
+    if (box1Proses) box1Proses.textContent = antri;
+    const box2Proses = document.getElementById('box2Proses');
+    if (box2Proses) box2Proses.textContent = pctProses + '%';
 
     // 5. Selesai (Green)
     const elSelesai = document.getElementById('outKpiSelesaiVal');
@@ -416,6 +432,10 @@ async function loadOutboundTodayKPI() {
     makeSVGKpi('chartOutKpiSelesai', pctSelesai, '#16a34a');
     const footSelesai = document.getElementById('footOutKpiSelesai');
     if (footSelesai) footSelesai.textContent = pctSelesai + '%';
+    const box1Selesai = document.getElementById('box1Selesai');
+    if (box1Selesai) box1Selesai.textContent = selesai;
+    const box2Selesai = document.getElementById('box2Selesai');
+    if (box2Selesai) box2Selesai.textContent = pctSelesai + '%';
 
   } catch (e) {
     console.error('Error loading Outbound Today KPI:', e);
