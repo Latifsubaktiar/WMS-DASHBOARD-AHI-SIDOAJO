@@ -1103,37 +1103,6 @@ function renderStoringTable(rows) {
     <td style="padding:10px 8px;">${pBar(r.pctKapasitas, 'KAP')}</td>
   </tr>`;
   }).join('');
-
-  // Sync lebar kolom header sticky (storingHeaderWrap) dengan body tabel (storingTable)
-  setTimeout(syncStoringHeaderWidths, 50);
-  setTimeout(syncStoringHeaderWidths, 300);
-  window.addEventListener('resize', syncStoringHeaderWidths);
-}
-
-function syncStoringHeaderWidths() {
-  const headerTable = document.querySelector('#storingHeaderWrap table');
-  const bodyTable = document.getElementById('storingTable');
-  if (!headerTable || !bodyTable) return;
-  const bodyRow = bodyTable.querySelector('tbody tr');
-  const headerCells = headerTable.querySelectorAll('thead tr:last-child th, thead tr:only-child th');
-  if (!bodyRow) return;
-  const bodyCells = bodyRow.querySelectorAll('td');
-  if (headerCells.length !== bodyCells.length) return;
-  headerCells.forEach((th, i) => {
-    const w = bodyCells[i].getBoundingClientRect().width;
-    th.style.width = w + 'px';
-  });
-
-  // Sync scroll horizontal: header dan body harus geser bareng
-  if (!window._storingScrollSynced) {
-    const headerWrap = document.getElementById('storingHeaderWrap');
-    const bodyWrap = document.getElementById('storingBodyWrap');
-    if (headerWrap && bodyWrap) {
-      bodyWrap.addEventListener('scroll', () => { headerWrap.scrollLeft = bodyWrap.scrollLeft; });
-      headerWrap.addEventListener('scroll', () => { bodyWrap.scrollLeft = headerWrap.scrollLeft; });
-      window._storingScrollSynced = true;
-    }
-  }
 }
 
 // ══════════════════════════════════════
