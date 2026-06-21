@@ -1062,12 +1062,13 @@ function renderStoringTable(rows) {
 
   // Progress bar pill premium (label kiri, bar+pct kanan)
   const pBar = (pct, labelTxt) => {
-    const n = parseInt(pct) || 0;
+    const n = parseFloat(pct) || 0;
     const col = n>=95?'#16a34a':n>=70?'#f59e0b':'#dc2626';
+    const display = Number.isInteger(n) ? n : n.toFixed(1);
     return `<div style="display:flex;flex-direction:column;gap:3px;min-width:78px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:8px;font-weight:800;color:${col};text-transform:uppercase;letter-spacing:0.04em;">${labelTxt}</span>
-        <span style="font-size:10px;font-weight:900;color:${col};">${n}%</span>
+        <span style="font-size:10px;font-weight:900;color:${col};">${display}%</span>
       </div>
       <div style="width:100%;height:6px;background:#e5e7eb;border-radius:10px;overflow:hidden;">
         <div style="width:${Math.min(n,100)}%;height:100%;background:linear-gradient(90deg,${col},${col}cc);border-radius:10px;transition:width 0.8s;"></div>
@@ -1094,12 +1095,8 @@ function renderStoringTable(rows) {
     <td style="${cn}padding:10px 8px;">${dec(r.pickedCbm)}</td>
     <td style="${cn}padding:10px 8px;color:${r.sisaCase>0?'#dc2626':'#16a34a'};font-weight:900;">${num(r.sisaCase)}</td>
     <td style="padding:10px 8px;">${pBar(r.pctPicking, 'PICK')}</td>
-    <td style="${cn}padding:10px 8px;">${dec(r.pencPickCbm)}</td>
-    <td style="${cn}padding:10px 8px;color:${r.sisaPick99>0?'#d97706':'#16a34a'};font-weight:900;">${num(r.sisaPick99)}</td>
     <td style="${cn}padding:10px 8px;">${num(r.stagedCase)}</td>
     <td style="${cn}padding:10px 8px;">${dec(r.stagedCbm)}</td>
-    <td style="${cn}padding:10px 8px;">${num(r.pencDsCase)}</td>
-    <td style="${cn}padding:10px 8px;">${dec(r.pencDsCbm)}</td>
     <td style="padding:10px 8px;">${pBar(r.pctKapasitas, 'KAP')}</td>
   </tr>`;
   }).join('');
