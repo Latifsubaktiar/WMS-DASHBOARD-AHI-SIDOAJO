@@ -1084,7 +1084,7 @@ function renderStoringTable(rows) {
     <td style="${ct}padding:10px 8px;">${i+1}</td>
     <td style="font-weight:800;font-size:11px;font-family:'JetBrains Mono',monospace;text-align:center;color:${txS};padding:10px 8px;">${escHtml(r.noLc)}</td>
     <td style="text-align:center;padding:10px 8px;">${batchBadge(r.batch)}</td>
-    <td style="font-size:11px;font-weight:600;color:${txS};max-width:150px;text-align:center;padding:10px 8px;">${escHtml(r.tujuan)}</td>
+    <td style="font-size:11px;font-weight:600;color:${txS};text-align:center;padding:10px 8px;word-wrap:break-word;">${escHtml(r.tujuan)}</td>
     <td style="${ct}padding:10px 8px;">${escHtml(r.tipeArmada)}</td>
     <td style="${cn}padding:10px 8px;">${num(r.kapasitas)}</td>
     <td style="${cn}padding:10px 8px;">${num(r.releaseCase)}</td>
@@ -1123,6 +1123,17 @@ function syncStoringHeaderWidths() {
     const w = bodyCells[i].getBoundingClientRect().width;
     th.style.width = w + 'px';
   });
+
+  // Sync scroll horizontal: header dan body harus geser bareng
+  if (!window._storingScrollSynced) {
+    const headerWrap = document.getElementById('storingHeaderWrap');
+    const bodyWrap = document.getElementById('storingBodyWrap');
+    if (headerWrap && bodyWrap) {
+      bodyWrap.addEventListener('scroll', () => { headerWrap.scrollLeft = bodyWrap.scrollLeft; });
+      headerWrap.addEventListener('scroll', () => { bodyWrap.scrollLeft = headerWrap.scrollLeft; });
+      window._storingScrollSynced = true;
+    }
+  }
 }
 
 // ══════════════════════════════════════
