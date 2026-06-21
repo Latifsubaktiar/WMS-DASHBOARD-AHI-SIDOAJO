@@ -476,34 +476,6 @@ async function fetchOutboundPanel() {
       </svg>`;
     };
 
-    // Status Armada card
-    document.getElementById('pctOutSelesai').textContent = pctSel + '%';
-    document.getElementById('footOutStatus').textContent = pctSel + '%';
-    document.getElementById('outMiniSelesai').textContent = selesai;
-    document.getElementById('outMiniProses').textContent  = proses;
-    document.getElementById('outMiniAntri').textContent   = antri;
-    document.getElementById('outMiniBelum').textContent   = belum;
-    makeSVGOut('chartOutStatus', pctSel, '#d97706');
-    const bo=document.getElementById('barOutStatus'); if(bo) setTimeout(()=>bo.style.width=Math.min(pctSel,100)+'%',300);
-
-    // % PC
-    document.getElementById('pctOutPc').textContent  = avgPc + '%';
-    document.getElementById('footOutPc').textContent = avgPc + '%';
-    makeSVGOut('chartOutPc', avgPc, '#16a34a');
-    const bp=document.getElementById('barOutPc'); if(bp) setTimeout(()=>bp.style.width=Math.min(avgPc,100)+'%',300);
-
-    // % STG
-    document.getElementById('pctOutStg').textContent = avgStg + '%';
-    document.getElementById('footOutStg').textContent= avgStg + '%';
-    makeSVGOut('chartOutStg', avgStg, '#2563eb');
-    const bs=document.getElementById('barOutStg'); if(bs) setTimeout(()=>bs.style.width=Math.min(avgStg,100)+'%',300);
-
-    // % LD
-    document.getElementById('pctOutLd').textContent  = avgLd + '%';
-    document.getElementById('footOutLd').textContent = avgLd + '%';
-    makeSVGOut('chartOutLd', avgLd, '#ec4899');
-    const bl=document.getElementById('barOutLd'); if(bl) setTimeout(()=>bl.style.width=Math.min(avgLd,100)+'%',300);
-
     renderOutboundPanelTable(rows);
 
     // Full-body beam amber otomatis loop
