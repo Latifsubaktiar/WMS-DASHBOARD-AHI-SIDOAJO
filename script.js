@@ -854,6 +854,32 @@ function renderStoringPanel(data) {
   renderStoringKPI(data.data, s);
   renderStoringBatchCards(data.data);
 
+  // Sticky offset header tabel — nempel pas di bawah section "Pencapaian per Batch"
+  function syncStoringStickyOffset() {
+    const batchSection = document.getElementById('storingBatchSection');
+    const theadMain = document.getElementById('storingTheadMain');
+    const theadSub  = document.getElementById('storingTheadSub');
+    if (!batchSection || !theadMain) return;
+    const h = Math.ceil(batchSection.getBoundingClientRect().height);
+    theadMain.style.top = h + 'px';
+    if (theadSub) {
+      const hMain = Math.ceil(theadMain.getBoundingClientRect().height);
+      theadSub.style.top = (h + hMain) + 'px';
+    }
+  }
+  syncStoringStickyOffset();
+  requestAnimationFrame(syncStoringStickyOffset);
+  setTimeout(syncStoringStickyOffset, 100);
+  setTimeout(syncStoringStickyOffset, 400);
+  setTimeout(syncStoringStickyOffset, 800);
+  if (!window._storingResizeObs) {
+    const batchSectionEl = document.getElementById('storingBatchSection');
+    if (batchSectionEl && typeof ResizeObserver !== 'undefined') {
+      window._storingResizeObs = new ResizeObserver(() => syncStoringStickyOffset());
+      window._storingResizeObs.observe(batchSectionEl);
+    }
+  }
+
   // Beam kilat — sequential satu per satu dari Total LC sampai Completion Rate, lalu ulang
   setTimeout(()=>{
     const cards = document.querySelectorAll('#storingKpiRow > div');
