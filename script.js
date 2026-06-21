@@ -854,14 +854,19 @@ function renderStoringPanel(data) {
   renderStoringKPI(data.data, s);
   renderStoringBatchCards(data.data);
 
-  // Beam kilat — HANYA untuk KPI cards di atas, batch cards tidak diberi efek
+  // Beam kilat — sequential satu per satu dari Total LC sampai Completion Rate, lalu ulang
   setTimeout(()=>{
-    const speeds = ['3s','3.4s','3.8s','3.2s','3.6s','4s'];
-    document.querySelectorAll('#storingKpiRow > div').forEach((card,i)=>{
+    const cards = document.querySelectorAll('#storingKpiRow > div');
+    const beamDuration = 0.9;          // durasi 1 kilat nyala (detik)
+    const gapBetween   = 0.3;          // jeda antar card (detik)
+    const stepTime     = beamDuration + gapBetween;
+    const totalCycle   = stepTime * cards.length; // total durasi 1 putaran penuh
+    cards.forEach((card,i)=>{
       if(card.querySelector('.store-beam')) return;
       const b=document.createElement('div');
       b.className='store-beam';
-      b.style.cssText=`position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.15),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:kpiBodyBeam ${speeds[i]||'3.5s'} ease-in-out infinite;`;
+      const delay = i * stepTime;
+      b.style.cssText=`position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(153,27,27,0.22),transparent);transform:skewX(-15deg);pointer-events:none;z-index:10;animation:storingKpiBeamSeq ${totalCycle}s linear ${delay}s infinite;`;
       card.style.position='relative';
       card.style.overflow='hidden';
       card.appendChild(b);
