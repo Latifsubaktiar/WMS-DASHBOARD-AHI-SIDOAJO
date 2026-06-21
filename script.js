@@ -820,7 +820,7 @@ function renderStoringPanel(data) {
     st.textContent = `
       #storingDetailPanel.card:hover, #storingDetailPanel .card:hover { transform:none !important; }
       #storingKpiRow > div { transition: transform 0.2s, box-shadow 0.2s; }
-      #storingKpiRow > div:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+      #storingKpiRow > div:hover { transform: translateY(-3px) !important; box-shadow: 0 10px 26px rgba(153,27,27,0.4) !important; }
       #storingBatchGrid > div { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s; }
       #storingBatchGrid > div:hover { transform: translateY(-5px) !important; }
       #storingBatchGrid > div:nth-child(4n+1):hover { box-shadow: 0 10px 28px rgba(99,102,241,0.45) !important; }
