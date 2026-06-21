@@ -896,17 +896,17 @@ function renderStoringKPI(rows, s) {
   const RED = '#991b1b';
   const kpis = [
     { label:'Total LC',       val:totalLc,       sub:'Semua · CID',           badge:'Visible',    accent:RED, icon:'🗒️', bar:100,      foot:'DATA AKTIF',    footVal:'LIVE',
-      mini:[ {l:'LC',v:totalLc,c:'#16a34a'}, {l:'BATCH',v:4,c:'#2563eb'} ] },
+      mini:[ {l:'LC',v:totalLc,c:'#2563eb'}, {l:'BATCH',v:4,c:'#2563eb'} ] },
     { label:'Release CID',    val:num(relCase),   sub:'Baseline total proses',  badge:'100%',       accent:RED, icon:'📦', bar:100,      foot:'TARGET AWAL',   footVal:'100%',
-      mini:[ {l:'CASE',v:num(relCase),c:'#16a34a'}, {l:'TARGET',v:'100%',c:'#2563eb'} ] },
+      mini:[ {l:'CASE',v:num(relCase),c:'#2563eb'}, {l:'TARGET',v:'100%',c:'#2563eb'} ] },
     { label:'Picked CID',     val:num(pickCase),  sub:pickPct+'% dari release', badge:pickPct+'%',  accent:RED, icon:'✅', bar:pickPct,  foot:'PROGRESS PICK', footVal:pickPct+'%',
-      mini:[ {l:'PICKED',v:num(pickCase),c:'#16a34a'}, {l:'SISA',v:num(relCase-pickCase),c:'#dc2626'} ] },
+      mini:[ {l:'PICKED',v:num(pickCase),c:'#2563eb'}, {l:'SISA',v:num(relCase-pickCase),c:'#dc2626'} ] },
     { label:'Staged CID',     val:num(stgCase),   sub:stgPct+'% dari picked',   badge:stgPct+'%',   accent:RED, icon:'🚛', bar:stgPct,   foot:'READY TO LOAD', footVal:stgPct+'%',
-      mini:[ {l:'STAGED',v:num(stgCase),c:'#16a34a'}, {l:'SISA',v:num(pickCase-stgCase),c:'#dc2626'} ] },
+      mini:[ {l:'STAGED',v:num(stgCase),c:'#2563eb'}, {l:'SISA',v:num(pickCase-stgCase),c:'#dc2626'} ] },
     { label:'Sisa CID',       val:num(sisaCase),  sub:sisaPct+'% outstanding',  badge:sisaPct+'%',  accent:RED, icon:'⏳', bar:sisaPct,  foot:'BELUM PICKED',  footVal:sisaPct+'%',
-      mini:[ {l:'SISA',v:num(sisaCase),c:'#dc2626'}, {l:'TARGET',v:'0',c:'#16a34a'} ] },
+      mini:[ {l:'SISA',v:num(sisaCase),c:'#dc2626'}, {l:'TARGET',v:'0',c:'#2563eb'} ] },
     { label:'Completion Rate',val:pickPct+'%',    sub:'Release → Picked',       badge:'Semua',      accent:RED, icon:'🎯', bar:pickPct,  foot:'EFEKTIVITAS',   footVal:pickPct+'%',
-      mini:[ {l:'TERCAPAI',v:pickPct+'%',c:'#16a34a'}, {l:'TARGET',v:'100%',c:'#2563eb'} ] },
+      mini:[ {l:'TERCAPAI',v:pickPct+'%',c:'#2563eb'}, {l:'TARGET',v:'100%',c:'#2563eb'} ] },
   ];
 
   kpiRow.innerHTML = kpis.map(k => `
@@ -919,7 +919,7 @@ function renderStoringKPI(rows, s) {
         <div style="font-size:32px;font-weight:900;color:#1e293b;letter-spacing:-1.5px;line-height:1;margin-bottom:4px;">${k.val}</div>
         <div style="font-size:10.5px;color:#94a3b8;margin-bottom:10px;">${k.sub}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px;">
-          ${k.mini.map(m => `<div style="background:${m.c}26;border:1.5px solid ${m.c}80;padding:5px 7px;"><div style="font-size:7.5px;font-weight:800;color:${m.c};text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">${m.l}</div><div style="font-size:14px;font-weight:900;color:${m.c};line-height:1;">${m.v}</div></div>`).join('')}
+          ${k.mini.map(m => `<div style="background:#f1f5f9;border-left:3px solid ${m.c};padding:5px 7px;"><div style="font-size:7.5px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">${m.l}</div><div style="font-size:14px;font-weight:900;color:#1e293b;line-height:1;">${m.v}</div></div>`).join('')}
         </div>
         <div style="height:4px;background:#f1f5f9;border-radius:10px;overflow:hidden;">
           <div style="width:${Math.min(k.bar,100)}%;height:100%;background:${k.accent};border-radius:10px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);"></div>
