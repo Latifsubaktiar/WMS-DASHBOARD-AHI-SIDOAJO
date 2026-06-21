@@ -362,15 +362,15 @@ async function loadOutboundTodayKPI() {
     const makeSVGKpi = (elId, pct, color) => {
       const el = document.getElementById(elId);
       if (!el) return;
-      const r = 18, cx = 26, cy = 26, circ = 2 * Math.PI * r;
+      const r = 26, cx = 32, cy = 32, circ = 2 * Math.PI * r;
       const dash = Math.min(pct, 100) / 100 * circ;
       const bg = isDark ? '#334155' : '#e2e8f0';
-      el.innerHTML = `<svg width="52" height="52" viewBox="0 0 52 52">
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="5"/>
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="5"
+      el.innerHTML = `<svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="7"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
           stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
           stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
-        <text x="${cx}" y="${cy+0.5}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="900" fill="${color}">${pct}%</text>
+        <text x="${cx}" y="${cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="900" fill="${color}">${pct}%</text>
       </svg>`;
     };
 
