@@ -2815,7 +2815,7 @@ function doResetDiskusi() {
 
 async function loadOutboundData() {
   try {
-    const response = await fetch(getScriptUrl() + '?action=getOutbound');
+    const response = await fetch(GAS_DASHBOARD_URL + '?action=getOutbound');
     const data = await response.json();
     
     if (!data.ok && data.error) {
@@ -2871,76 +2871,4 @@ async function loadOutboundData() {
     console.error('Error loading outbound:', err);
     document.getElementById('outboundPanelSubtitle').textContent = '⚠️ Failed to load data';
   }
-}
-
-async function loadOutboundDetail() {
-  try {
-    const response = await fetch(getScriptUrl() + '?action=getOutboundDetail');
-    const data = await response.json();
-    
-    if (!data.ok || !data.data) return;
-
-    const tbody = document.getElementById('outboundPanelBody');
-    tbody.innerHTML = '';
-
-    data.data.forEach((row, idx) => {
-      const tr = document.createElement('tr');
-      tr.style.borderBottom = '1px solid #f1f5f9';
-      
-      let statusColor = '#94a3b8', statusBg = '#f1f5f9';
-      if (row.status === 'SELESAI') {
-        statusColor = '#16a34a';
-        statusBg = '#dcfce7';
-      } else if (row.status === 'PROSES') {
-        statusColor = '#f59e0b';
-        statusBg = '#fef3c7';
-      } else if (row.status === 'ANTRI') {
-        statusColor = '#d97706';
-        statusBg = '#fed7aa';
-      } else if (row.status === 'BELUM DATANG') {
-        statusColor = '#dc2626';
-        statusBg = '#fee2e2';
-      }
-
-      tr.innerHTML = `
-        <td style="padding:10px 8px;text-align:center;font-size:11px;font-weight:600;color:#94a3b8;">${idx + 1}</td>
-        <td style="padding:10px 10px;text-align:left;font-size:11px;color:#1e293b;font-weight:600;">${row.tanggal || '—'}</td>
-        <td style="padding:10px 10px;text-align:left;font-size:11px;color:#1e293b;font-weight:600;">${row.noLc || '—'}</td>
-        <td style="padding:10px 10px;text-align:left;font-size:11px;color:#1e293b;">${row.armada || '—'}</td>
-        <td style="padding:10px 10px;text-align:left;font-size:11px;color:#1e293b;">${row.area || '—'}</td>
-        <td style="padding:10px 10px;text-align:left;font-size:11px;color:#1e293b;">${row.noPol || '—'}</td>
-        <td style="padding:10px 10px;text-align:left;font-size:11px;color:#94a3b8;">${row.checkIn || '—'}</td>
-        <td style="padding:10px 10px;text-align:left;font-size:11px;color:#94a3b8;">${row.open || '—'}</td>
-        <td style="padding:10px 10px;text-align:left;font-size:11px;color:#94a3b8;">${row.close || '—'}</td>
-        <td style="padding:10px 10px;text-align:center;">
-          <span style="background:${statusBg};color:${statusColor};padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;">${row.status || 'UNKNOWN'}</span>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    if (data.count === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:#94a3b8;">No data available</td></tr>';
-    }
-
-  } catch(err) {
-    console.error('Error loading outbound detail:', err);
-  }
-}
-
-// Load outbound data when panel is opened
-function toggleOutboundPanel() {
-  const panel = document.getElementById('outboundDetailPanel');
-  if (panel.style.display === 'none') {
-    panel.style.display = 'block';
-    loadOutboundData();
-  } else {
-    panel.style.display = 'none';
-  }
-}
-
-// Call loadOutboundData periodically
-function startOutboundAutoRefresh() {
-  loadOutboundData();
-  setInterval(loadOutboundData, 30000); // Refresh every 30 seconds
 }
