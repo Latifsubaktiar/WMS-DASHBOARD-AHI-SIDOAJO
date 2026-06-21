@@ -447,74 +447,82 @@
           <button onclick="toggleOutboundPanel()" style="border:1px solid var(--border-2);background:var(--bg);padding:5px 14px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;">✕ Tutup</button>
         </div>
 
-        <!-- OUTBOUND TODAY KPI CARDS -->
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);background:#fff;">
-
-          <!-- 1. TOTAL LOAD (Orange) -->
-          <div id="outKpiTotalLoad" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #d97706;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(217,119,6,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
-            <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-              <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Total Load</div>
-              <div id="outKpiTotalLoadVal" style="font-size:24px;font-weight:900;color:#d97706;line-height:1;margin-bottom:6px;">—</div>
-              <div id="chartOutKpiTotalLoad" style="width:48px;height:48px;"></div>
-            </div>
-            <div style="background:#f1f5f9;padding:8px 12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
-              <span style="color:#64748b;font-weight:700;">TOTAL</span>
-              <span id="footOutKpiTotalLoad" style="font-weight:900;color:#d97706;">—</span>
-            </div>
+        <!-- OUTBOUND TODAY KPI CARDS + CHARTS -->
+        <div style="display:flex;flex-direction:column;padding:14px 20px;border-bottom:1px solid rgba(200,215,240,0.2);background:#fff;position:relative;">
+          
+          <!-- CHARTS AREA (Top Right) -->
+          <div style="position:absolute;top:14px;right:20px;display:flex;gap:12px;align-items:flex-start;">
+            <div id="chartOutKpiTotalLoad" style="width:72px;height:72px;"></div>
+            <div id="chartOutKpiBelum" style="width:72px;height:72px;"></div>
+            <div id="chartOutKpiAntri" style="width:72px;height:72px;"></div>
+            <div id="chartOutKpiProses" style="width:72px;height:72px;"></div>
+            <div id="chartOutKpiSelesai" style="width:72px;height:72px;"></div>
           </div>
 
-          <!-- 2. BELUM DATANG (Red) -->
-          <div id="outKpiBelum" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #dc2626;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(220,38,38,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
-            <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-              <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Belum Datang</div>
-              <div id="outKpiBelumVal" style="font-size:24px;font-weight:900;color:#dc2626;line-height:1;margin-bottom:6px;">—</div>
-              <div id="chartOutKpiBelum" style="width:48px;height:48px;"></div>
-            </div>
-            <div style="background:#f1f5f9;padding:8px 12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
-              <span style="color:#64748b;font-weight:700;">BELUM</span>
-              <span id="footOutKpiBelum" style="font-weight:900;color:#dc2626;">—</span>
-            </div>
-          </div>
+          <!-- KPI CARDS (Bottom) -->
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:90px;">
 
-          <!-- 3. ANTRI (Yellow) -->
-          <div id="outKpiAntri" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #eab308;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(234,179,8,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
-            <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-              <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Antri</div>
-              <div id="outKpiAntriVal" style="font-size:24px;font-weight:900;color:#eab308;line-height:1;margin-bottom:6px;">—</div>
-              <div id="chartOutKpiAntri" style="width:48px;height:48px;"></div>
+            <!-- 1. TOTAL LOAD (Orange) -->
+            <div id="outKpiTotalLoad" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #d97706;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(217,119,6,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+              <div style="padding:14px 14px 10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Total Load</div>
+                <div id="outKpiTotalLoadVal" style="font-size:32px;font-weight:900;color:#d97706;line-height:1;margin-bottom:4px;">—</div>
+              </div>
+              <div style="background:#f1f5f9;padding:10px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
+                <span style="color:#64748b;font-weight:700;">TOTAL</span>
+                <span id="footOutKpiTotalLoad" style="font-weight:900;color:#d97706;font-size:11px;">—</span>
+              </div>
             </div>
-            <div style="background:#f1f5f9;padding:8px 12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
-              <span style="color:#64748b;font-weight:700;">ANTRI</span>
-              <span id="footOutKpiAntri" style="font-weight:900;color:#eab308;">—</span>
-            </div>
-          </div>
 
-          <!-- 4. PROSES (Blue) -->
-          <div id="outKpiProses" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #2563eb;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(37,99,235,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
-            <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-              <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Proses</div>
-              <div id="outKpiProsesVal" style="font-size:24px;font-weight:900;color:#2563eb;line-height:1;margin-bottom:6px;">—</div>
-              <div id="chartOutKpiProses" style="width:48px;height:48px;"></div>
+            <!-- 2. BELUM DATANG (Red) -->
+            <div id="outKpiBelum" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #dc2626;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(220,38,38,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+              <div style="padding:14px 14px 10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Belum Datang</div>
+                <div id="outKpiBelumVal" style="font-size:32px;font-weight:900;color:#dc2626;line-height:1;margin-bottom:4px;">—</div>
+              </div>
+              <div style="background:#f1f5f9;padding:10px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
+                <span style="color:#64748b;font-weight:700;">BELUM</span>
+                <span id="footOutKpiBelum" style="font-weight:900;color:#dc2626;font-size:11px;">—</span>
+              </div>
             </div>
-            <div style="background:#f1f5f9;padding:8px 12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
-              <span style="color:#64748b;font-weight:700;">PROSES</span>
-              <span id="footOutKpiProses" style="font-weight:900;color:#2563eb;">—</span>
-            </div>
-          </div>
 
-          <!-- 5. SELESAI (Green) -->
-          <div id="outKpiSelesai" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #16a34a;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(22,163,74,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
-            <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-              <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Selesai</div>
-              <div id="outKpiSelesaiVal" style="font-size:24px;font-weight:900;color:#16a34a;line-height:1;margin-bottom:6px;">—</div>
-              <div id="chartOutKpiSelesai" style="width:48px;height:48px;"></div>
+            <!-- 3. ANTRI (Yellow) -->
+            <div id="outKpiAntri" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #eab308;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(234,179,8,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+              <div style="padding:14px 14px 10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Antri</div>
+                <div id="outKpiAntriVal" style="font-size:32px;font-weight:900;color:#eab308;line-height:1;margin-bottom:4px;">—</div>
+              </div>
+              <div style="background:#f1f5f9;padding:10px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
+                <span style="color:#64748b;font-weight:700;">ANTRI</span>
+                <span id="footOutKpiAntri" style="font-weight:900;color:#eab308;font-size:11px;">—</span>
+              </div>
             </div>
-            <div style="background:#f1f5f9;padding:8px 12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
-              <span style="color:#64748b;font-weight:700;">SELESAI</span>
-              <span id="footOutKpiSelesai" style="font-weight:900;color:#16a34a;">—</span>
-            </div>
-          </div>
 
+            <!-- 4. PROSES (Blue) -->
+            <div id="outKpiProses" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #2563eb;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(37,99,235,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+              <div style="padding:14px 14px 10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Proses</div>
+                <div id="outKpiProsesVal" style="font-size:32px;font-weight:900;color:#2563eb;line-height:1;margin-bottom:4px;">—</div>
+              </div>
+              <div style="background:#f1f5f9;padding:10px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
+                <span style="color:#64748b;font-weight:700;">PROSES</span>
+                <span id="footOutKpiProses" style="font-weight:900;color:#2563eb;font-size:11px;">—</span>
+              </div>
+            </div>
+
+            <!-- 5. SELESAI (Green) -->
+            <div id="outKpiSelesai" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #16a34a;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 10px 28px rgba(22,163,74,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+              <div style="padding:14px 14px 10px;flex:1;display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Selesai</div>
+                <div id="outKpiSelesaiVal" style="font-size:32px;font-weight:900;color:#16a34a;line-height:1;margin-bottom:4px;">—</div>
+              </div>
+              <div style="background:#f1f5f9;padding:10px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:8px;">
+                <span style="color:#64748b;font-weight:700;">SELESAI</span>
+                <span id="footOutKpiSelesai" style="font-weight:900;color:#16a34a;font-size:11px;">—</span>
+              </div>
+            </div>
+
+          </div>
         </div>
 
         <!-- TABS -->
