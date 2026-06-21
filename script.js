@@ -346,12 +346,92 @@ function toggleInventoryPanel() {
   }
 }
 
+// ══════════════════════════════════════
+//  OUTBOUND TODAY KPI LOADER
+// ══════════════════════════════════════
+async function loadOutboundTodayKPI() {
+  try {
+    const res = await fetch(GAS_DASHBOARD_URL + '?action=getOutboundTodayKPI');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Gagal load KPI');
+
+    const { totalLoad, selesai, proses, antri, belum } = data;
+    const isDark = document.body.classList.contains('dark');
+
+    // Helper: Buat SVG donut chart
+    const makeSVGKpi = (elId, pct, color) => {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      const r = 18, cx = 26, cy = 26, circ = 2 * Math.PI * r;
+      const dash = Math.min(pct, 100) / 100 * circ;
+      const bg = isDark ? '#334155' : '#e2e8f0';
+      el.innerHTML = `<svg width="52" height="52" viewBox="0 0 52 52">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${bg}" stroke-width="5"/>
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="5"
+          stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}"
+          stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+        <text x="${cx}" y="${cy+0.5}" text-anchor="middle" dominant-baseline="middle" font-size="9" font-weight="900" fill="${color}">${pct}%</text>
+      </svg>`;
+    };
+
+    // Calculate percentages
+    const pctTotal = 100;
+    const pctSelesai = totalLoad > 0 ? Math.round((selesai / totalLoad) * 100) : 0;
+    const pctBelum = totalLoad > 0 ? Math.round((belum / totalLoad) * 100) : 0;
+    const pctAntri = totalLoad > 0 ? Math.round((antri / totalLoad) * 100) : 0;
+    const pctProses = totalLoad > 0 ? Math.round((proses / totalLoad) * 100) : 0;
+
+    // Update KPI Cards
+    // 1. Total Load (Orange)
+    const elTotalLoad = document.getElementById('outKpiTotalLoadVal');
+    if (elTotalLoad) elTotalLoad.textContent = totalLoad;
+    makeSVGKpi('chartOutKpiTotalLoad', pctTotal, '#d97706');
+    const footTotalLoad = document.getElementById('footOutKpiTotalLoad');
+    if (footTotalLoad) footTotalLoad.textContent = pctTotal + '%';
+
+    // 2. Belum Datang (Red)
+    const elBelum = document.getElementById('outKpiBelumVal');
+    if (elBelum) elBelum.textContent = belum;
+    makeSVGKpi('chartOutKpiBelum', pctBelum, '#dc2626');
+    const footBelum = document.getElementById('footOutKpiBelum');
+    if (footBelum) footBelum.textContent = pctBelum + '%';
+
+    // 3. Antri (Yellow)
+    const elAntri = document.getElementById('outKpiAntriVal');
+    if (elAntri) elAntri.textContent = antri;
+    makeSVGKpi('chartOutKpiAntri', pctAntri, '#eab308');
+    const footAntri = document.getElementById('footOutKpiAntri');
+    if (footAntri) footAntri.textContent = pctAntri + '%';
+
+    // 4. Proses (Blue)
+    const elProses = document.getElementById('outKpiProsesVal');
+    if (elProses) elProses.textContent = proses;
+    makeSVGKpi('chartOutKpiProses', pctProses, '#2563eb');
+    const footProses = document.getElementById('footOutKpiProses');
+    if (footProses) footProses.textContent = pctProses + '%';
+
+    // 5. Selesai (Green)
+    const elSelesai = document.getElementById('outKpiSelesaiVal');
+    if (elSelesai) elSelesai.textContent = selesai;
+    makeSVGKpi('chartOutKpiSelesai', pctSelesai, '#16a34a');
+    const footSelesai = document.getElementById('footOutKpiSelesai');
+    if (footSelesai) footSelesai.textContent = pctSelesai + '%';
+
+  } catch (e) {
+    console.error('Error loading Outbound Today KPI:', e);
+  }
+}
+
 async function fetchOutboundPanel() {
   const tbody   = document.getElementById('outboundPanelBody');
   const summary = document.getElementById('outboundPanelSummary');
   const footer  = document.getElementById('outboundPanelFooter');
   const sub     = document.getElementById('outboundPanelSubtitle');
   if (!tbody) return;
+  
+  // Load Outbound Today KPI first
+  await loadOutboundTodayKPI();
+  
   tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data outbound...</td></tr>';
   try {
     const res  = await fetch(GAS_DASHBOARD_URL + '?action=getOutboundDetail');
