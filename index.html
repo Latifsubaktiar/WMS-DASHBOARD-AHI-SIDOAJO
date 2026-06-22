@@ -117,14 +117,11 @@
 }
     /* Blue Beam Animation - Left to Right */
     @keyframes beamSweep {
-      0% {
-        box-shadow: inset -600px 0 25px -40px rgba(37, 99, 235, 0.2);
+      0%, 100% {
+        box-shadow: inset -600px 0 20px -45px rgba(37, 99, 235, 0.15);
       }
       50% {
-        box-shadow: inset 0 0 25px -40px rgba(37, 99, 235, 0.2);
-      }
-      100% {
-        box-shadow: inset 600px 0 25px -40px rgba(37, 99, 235, 0.2);
+        box-shadow: inset 0 0 20px -45px rgba(37, 99, 235, 0.15);
       }
     }
     .beam-animated {
@@ -495,7 +492,7 @@
           </div>
 
           <!-- 2. BELUM DATANG (Red) -->
-          <div id="outKpiBelum" class="beam-animated" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #dc2626;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);animation-delay:1.5s;" onmouseover="this.style.boxShadow='0 10px 28px rgba(220,38,38,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+          <div id="outKpiBelum" class="beam-animated" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #dc2626;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);animation-delay:2s;" onmouseover="this.style.boxShadow='0 10px 28px rgba(220,38,38,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 12px 8px;border-bottom:1px solid #f1f5f9;">
               <div>
                 <div style="font-size:13px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Belum Datang</div>
@@ -523,7 +520,7 @@
           </div>
 
           <!-- 3. ANTRI (Yellow) -->
-          <div id="outKpiAntri" class="beam-animated" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #eab308;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);animation-delay:3s;" onmouseover="this.style.boxShadow='0 10px 28px rgba(234,179,8,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+          <div id="outKpiAntri" class="beam-animated" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #eab308;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);animation-delay:4s;" onmouseover="this.style.boxShadow='0 10px 28px rgba(234,179,8,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 12px 8px;border-bottom:1px solid #f1f5f9;">
               <div>
                 <div style="font-size:13px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Antri</div>
@@ -551,7 +548,7 @@
           </div>
 
           <!-- 4. PROSES (Blue) -->
-          <div id="outKpiProses" class="beam-animated" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #2563eb;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);animation-delay:4.5s;" onmouseover="this.style.boxShadow='0 10px 28px rgba(37,99,235,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+          <div id="outKpiProses" class="beam-animated" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #2563eb;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);animation-delay:8s;" onmouseover="this.style.boxShadow='0 10px 28px rgba(37,99,235,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 12px 8px;border-bottom:1px solid #f1f5f9;">
               <div>
                 <div style="font-size:13px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Proses</div>
@@ -579,7 +576,7 @@
           </div>
 
           <!-- 5. SELESAI (Green) -->
-          <div id="outKpiSelesai" class="beam-animated" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #16a34a;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);animation-delay:6s;" onmouseover="this.style.boxShadow='0 10px 28px rgba(22,163,74,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+          <div id="outKpiSelesai" class="beam-animated" style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid #16a34a;display:flex;flex-direction:column;overflow:hidden;transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.05);animation-delay:8s;" onmouseover="this.style.boxShadow='0 10px 28px rgba(22,163,74,0.45)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 12px 8px;border-bottom:1px solid #f1f5f9;">
               <div>
                 <div style="font-size:13px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Selesai</div>
