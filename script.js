@@ -534,6 +534,37 @@ async function loadCBMSummary() {
   }
 }
 
+async function loadDeliveryPerformance() {
+  try {
+    console.log('🚚 loadDeliveryPerformance started...');
+    const res = await fetch(GAS_DASHBOARD_URL + '?action=getDeliveryPerformance');
+    const data = await res.json();
+    console.log('🚚 Delivery Performance Response:', data);
+    if (!data.ok) {
+      console.warn('❌ Delivery Performance data error:', data.error);
+      return;
+    }
+    
+    // Update On Time percentage
+    const onTimeEl = document.querySelector('[style*="On Time"]');
+    const onTimePercentEl = document.querySelector('[style*="On Time"] + div');
+    if (onTimePercentEl) {
+      onTimePercentEl.textContent = data.onTimePercent + '%';
+      console.log('✅ Updated On Time to', data.onTimePercent, '%');
+    }
+    
+    // Update Over SLA percentage
+    const overSlaEl = document.querySelector('[style*="Over SLA"]');
+    const overSlaPercentEl = document.querySelector('[style*="Over SLA"] + div');
+    if (overSlaPercentEl) {
+      overSlaPercentEl.textContent = data.overSlaPercent + '%';
+      console.log('✅ Updated Over SLA to', data.overSlaPercent, '%');
+    }
+  } catch(e) {
+    console.error('❌ loadDeliveryPerformance error:', e);
+  }
+}
+
 
 async function fetchOutboundPanel() {
   const tbody   = document.getElementById('outboundPanelBody');
@@ -2154,12 +2185,14 @@ loadOutboundTodayKPI();
 
 // Load CBM Summary data
 loadCBMSummary();
+loadDeliveryPerformance();
 
 // Retry inventory accuracy after delay jika API lambat
 // Load CBM data with delay to ensure elements exist
 setTimeout(() => {
   console.log('🔄 Calling loadCBMSummary from setTimeout...');
   loadCBMSummary();
+  loadDeliveryPerformance();
 }, 500);
 
 // Retry inventory accuracy after delay jika API lambat
