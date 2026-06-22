@@ -354,6 +354,7 @@ async function loadOutboundTodayKPI() {
   try {
     const res = await fetch(GAS_DASHBOARD_URL + '?action=getOutboundTodayKPI');
     const data = await res.json();
+    console.log('🔍 Outbound KPI Response:', data); // DEBUG
     if (!data.ok) throw new Error(data.error || 'Gagal load KPI');
 
     const { totalLoad, selesai, proses, antri, belum } = data;
@@ -2068,6 +2069,9 @@ async function fetchInventoryValue(){
 
 fetchDashboardStats();
 setInterval(fetchDashboardStats,5*60*1000);
+
+// Load Outbound KPI cards on page load
+loadOutboundTodayKPI();
 
 // Retry inventory accuracy after delay jika API lambat
 setTimeout(() => {
