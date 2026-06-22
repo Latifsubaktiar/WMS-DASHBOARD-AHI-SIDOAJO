@@ -635,17 +635,17 @@
               <!-- TARGET CBM -->
               <div style="background:#f0fdf4;border:2px solid #10b981;border-radius:12px;padding:16px;text-align:center;">
                 <div style="font-size:11px;font-weight:800;color:#059669;text-transform:uppercase;margin-bottom:8px;">Target CBM</div>
-                <div style="font-size:28px;font-weight:900;color:#10b981;">411.38</div>
+                <div id="cbmTargetValue" style="font-size:28px;font-weight:900;color:#10b981;">411.38</div>
                 <div style="font-size:9px;color:#64748b;margin-top:4px;">m³</div>
               </div>
               
               <!-- PENCAPAIAN CBM -->
               <div style="background:#f0fdf4;border:2px solid #10b981;border-radius:12px;padding:16px;text-align:center;">
                 <div style="font-size:11px;font-weight:800;color:#059669;text-transform:uppercase;margin-bottom:8px;">Pencapaian CBM</div>
-                <div style="font-size:28px;font-weight:900;color:#10b981;">186.38</div>
+                <div id="cbmPencapaianValue" style="font-size:28px;font-weight:900;color:#10b981;">186.38</div>
                 <div style="font-size:9px;color:#64748b;margin-top:4px;">m³</div>
                 <div style="height:6px;background:#e0f2fe;border-radius:3px;margin-top:8px;overflow:hidden;">
-                  <div style="height:100%;background:#10b981;width:45%;"></div>
+                  <div id="cbmProgressBar" style="height:100%;background:#10b981;width:45%;"></div>
                 </div>
               </div>
             </div>
@@ -653,13 +653,13 @@
             <!-- Detail Info -->
             <div style="background:#f0fdf4;border:2px solid #10b981;border-radius:12px;padding:12px;font-size:12px;line-height:1.6;">
               <div style="color:#059669;font-weight:700;margin-bottom:6px;">Rencana Muatan CBM:</div>
-              <div style="color:#000;font-weight:600;">411.38 m³</div>
+              <div style="color:#000;font-weight:600;"><span id="cbmRencanaValue">411.38</span> m³</div>
               
               <div style="color:#059669;font-weight:700;margin-top:8px;margin-bottom:6px;">Terealisasi (CLOSE/OUT):</div>
-              <div style="color:#000;font-weight:600;">186.38 m³</div>
+              <div style="color:#000;font-weight:600;"><span id="cbmTerealisasiValue">186.38</span> m³</div>
               
               <div style="color:#ef4444;font-weight:700;margin-top:8px;margin-bottom:6px;">Belum Realisasi:</div>
-              <div style="color:#ef4444;font-weight:600;">225.00 m³</div>
+              <div style="color:#ef4444;font-weight:600;"><span id="cbmBelumValue">225.00</span> m³</div>
             </div>
 
             <!-- Bar Chart -->
