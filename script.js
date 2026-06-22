@@ -2068,6 +2068,14 @@ async function fetchInventoryValue(){
 fetchDashboardStats();
 setInterval(fetchDashboardStats,5*60*1000);
 
+// Retry inventory accuracy after delay jika API lambat
+setTimeout(() => {
+  const il=document.getElementById('invStatLokasi');
+  if (il && il.textContent === '0') {
+    fetchInventoryAccuracy(); // Retry if still 0
+  }
+}, 2000);
+
 // ══════════════════════════════════════
 //  CHARTS — DAILY ACTIVITY
 // ══════════════════════════════════════
