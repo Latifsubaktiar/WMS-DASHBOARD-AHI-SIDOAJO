@@ -454,14 +454,14 @@ async function loadOutboundTodayKPI() {
 }
 
 async function fetchOutboundPanel() {
-  const tbody   = document.getElementById('outboundPanelBody');
+  // Load Outbound Today KPI first
+  await loadOutboundTodayKPI();
+  
+  // Table removed - only KPI loading needed
   const summary = document.getElementById('outboundPanelSummary');
   const footer  = document.getElementById('outboundPanelFooter');
   const sub     = document.getElementById('outboundPanelSubtitle');
   if (!tbody) return;
-  
-  // Load Outbound Today KPI first
-  await loadOutboundTodayKPI();
   
   tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-3)">Memuat data outbound...</td></tr>';
   try {
@@ -507,7 +507,7 @@ async function fetchOutboundPanel() {
       </svg>`;
     };
 
-    renderOutboundPanelTable(rows);
+
 
     // Full-body beam amber otomatis loop
     // Show Reset Diskusi hanya untuk admin
