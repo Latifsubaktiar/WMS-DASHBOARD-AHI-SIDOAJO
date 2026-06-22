@@ -636,30 +636,29 @@
               <div style="background:#fff;border:none;border-left:4px solid #10b981;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);" onmouseover="this.style.boxShadow='0 10px 28px rgba(16,185,129,0.35)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
                 <div style="font-size:11px;font-weight:800;color:#059669;text-transform:uppercase;margin-bottom:8px;">Target CBM</div>
                 <div id="cbmTargetValue" style="font-size:28px;font-weight:900;color:#10b981;">411.38</div>
-                <div style="font-size:9px;color:#64748b;margin-top:4px;">m³</div>
               </div>
               
               <!-- PENCAPAIAN CBM -->
               <div style="background:#fff;border:none;border-left:4px solid #10b981;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);" onmouseover="this.style.boxShadow='0 10px 28px rgba(16,185,129,0.35)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
                 <div style="font-size:11px;font-weight:800;color:#059669;text-transform:uppercase;margin-bottom:8px;">Pencapaian CBM</div>
                 <div id="cbmPencapaianValue" style="font-size:28px;font-weight:900;color:#10b981;">186.38</div>
-                <div style="font-size:9px;color:#64748b;margin-top:4px;">m³</div>
-                <div style="height:6px;background:#e0f2fe;border-radius:3px;margin-top:8px;overflow:hidden;">
+                <div id="cbmPercentage" style="font-size:20px;font-weight:900;color:#10b981;margin-top:4px;">88%</div>
+                <div style="height:8px;background:#e0f2fe;border-radius:4px;margin-top:12px;overflow:hidden;">
                   <div id="cbmProgressBar" style="height:100%;background:#10b981;width:45%;"></div>
                 </div>
               </div>
             </div>
 
             <!-- Detail Info -->
-            <div style="background:#fff;border:none;border-left:4px solid #10b981;padding:12px;font-size:12px;line-height:1.6;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);" onmouseover="this.style.boxShadow='0 10px 28px rgba(16,185,129,0.35)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
-              <div style="color:#059669;font-weight:700;margin-bottom:6px;">Rencana Muatan CBM:</div>
-              <div style="color:#000;font-weight:600;"><span id="cbmRencanaValue">411.38</span> m³</div>
+            <div style="background:#fff;border:none;border-left:4px solid #10b981;padding:12px;font-size:14px;line-height:1.8;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);" onmouseover="this.style.boxShadow='0 10px 28px rgba(16,185,129,0.35)';this.style.transform='translateY(-5px)';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)';this.style.transform='';">
+              <div style="color:#059669;font-weight:700;margin-bottom:8px;">Rencana Muatan CBM:</div>
+              <div style="color:#000;font-weight:600;font-size:15px;"><span id="cbmRencanaValue">411.38</span></div>
               
-              <div style="color:#059669;font-weight:700;margin-top:8px;margin-bottom:6px;">Terealisasi (CLOSE/OUT):</div>
-              <div style="color:#000;font-weight:600;"><span id="cbmTerealisasiValue">186.38</span> m³</div>
+              <div style="color:#059669;font-weight:700;margin-top:12px;margin-bottom:8px;">Terealisasi (CLOSE/OUT):</div>
+              <div style="color:#000;font-weight:600;font-size:15px;"><span id="cbmTerealisasiValue">186.38</span></div>
               
-              <div style="color:#ef4444;font-weight:700;margin-top:8px;margin-bottom:6px;">Belum Realisasi:</div>
-              <div style="color:#ef4444;font-weight:600;"><span id="cbmBelumValue">225.00</span> m³</div>
+              <div style="color:#ef4444;font-weight:700;margin-top:12px;margin-bottom:8px;">Belum Realisasi:</div>
+              <div style="color:#ef4444;font-weight:600;font-size:15px;"><span id="cbmBelumValue">225.00</span></div>
             </div>
 
             <!-- Bar Chart -->
