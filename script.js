@@ -458,10 +458,12 @@ async function loadOutboundTodayKPI() {
 
 async function loadCBMSummary() {
   try {
+    console.log('📦 loadCBMSummary started...');
     const res = await fetch(GAS_DASHBOARD_URL + '?action=getCBMSummary');
     const data = await res.json();
+    console.log('📦 CBM Response:', data);
     if (!data.ok) {
-      console.warn('CBM data error:', data.error);
+      console.warn('❌ CBM data error:', data.error);
       return;
     }
     
