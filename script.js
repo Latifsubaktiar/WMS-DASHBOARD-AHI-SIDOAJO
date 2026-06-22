@@ -354,7 +354,6 @@ async function loadOutboundTodayKPI() {
   try {
     const res = await fetch(GAS_DASHBOARD_URL + '?action=getOutboundTodayKPI');
     const data = await res.json();
-    console.log('🔍 Outbound KPI Response:', data); // DEBUG
     if (!data.ok) throw new Error(data.error || 'Gagal load KPI');
 
     const { totalLoad, selesai, proses, antri, belum } = data;
@@ -455,6 +454,48 @@ async function loadOutboundTodayKPI() {
     console.error('Error loading Outbound Today KPI:', e);
   }
 }
+
+
+async function loadCBMSummary() {
+  try {
+    const res = await fetch(GAS_DASHBOARD_URL + '?action=getCBMSummary');
+    const data = await res.json();
+    if (!data.ok) {
+      console.warn('CBM data error:', data.error);
+      return;
+    }
+    
+    // Update TARGET CBM card
+    const targetCbmEl = document.getElementById('cbmTargetValue');
+    if (targetCbmEl) targetCbmEl.textContent = data.targetCbm.toFixed(2);
+    
+    // Update PENCAPAIAN CBM card
+    const pencapaianCbmEl = document.getElementById('cbmPencapaianValue');
+    if (pencapaianCbmEl) pencapaianCbmEl.textContent = data.pencapaianCbm.toFixed(2);
+    
+    // Update Rencana Muatan CBM
+    const rencanaEl = document.getElementById('cbmRencanaValue');
+    if (rencanaEl) rencanaEl.textContent = data.targetCbm.toFixed(2);
+    
+    // Update Terealisasi CBM
+    const terealisasiEl = document.getElementById('cbmTerealisasiValue');
+    if (terealisasiEl) terealisasiEl.textContent = data.pencapaianCbm.toFixed(2);
+    
+    // Update Belum Realisasi
+    const belumEl = document.getElementById('cbmBelumValue');
+    if (belumEl) belumEl.textContent = data.belumRealisasi.toFixed(2);
+    
+    // Update progress bar
+    const progressBar = document.getElementById('cbmProgressBar');
+    if (progressBar && data.targetCbm > 0) {
+      const pct = Math.round((data.pencapaianCbm / data.targetCbm) * 100);
+      progressBar.style.width = Math.min(pct, 100) + '%';
+    }
+  } catch(e) {
+    console.error('❌ loadCBMSummary error:', e);
+  }
+}
+
 
 async function fetchOutboundPanel() {
   const tbody   = document.getElementById('outboundPanelBody');
@@ -2072,6 +2113,7 @@ setInterval(fetchDashboardStats,5*60*1000);
 
 // Load Outbound KPI cards on page load
 loadOutboundTodayKPI();
+loadCBMSummary();
 
 // Retry inventory accuracy after delay jika API lambat
 setTimeout(() => {
