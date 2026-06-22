@@ -513,11 +513,9 @@ async function loadCBMSummary() {
       console.log('✅ Updated cbmBelumValue to', data.belumRealisasi.toFixed(2));
     }
     
-    // Update progress bar & percentage & gauge
+    // Update progress bar & percentage
     const progressBar = document.getElementById('cbmProgressBar');
     const percentageEl = document.getElementById('cbmPercentage');
-    const needle = document.getElementById('needle');
-    const gaugePercentage = document.getElementById('gaugePercentage');
     console.log('🔍 cbmProgressBar element:', progressBar);
     console.log('🔍 cbmPercentage element:', percentageEl);
     if (data.targetCbm > 0) {
@@ -529,16 +527,6 @@ async function loadCBMSummary() {
       if (percentageEl) {
         percentageEl.textContent = pct + '%';
         console.log('✅ Updated percentage to', pct, '%');
-      }
-      // Update gauge needle
-      if (needle) {
-        const angle = (pct / 100) * 180 - 90;
-        needle.style.transform = `rotate(${angle}deg)`;
-        console.log('✅ Updated gauge needle to', angle, 'degrees');
-      }
-      if (gaugePercentage) {
-        gaugePercentage.textContent = pct + '%';
-        console.log('✅ Updated gauge percentage to', pct, '%');
       }
     }
   } catch(e) {
