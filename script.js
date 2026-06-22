@@ -306,7 +306,6 @@ function toggleOutboundPanel() {
     const sgOutR=document.querySelector('.stats-grid'); if(sgOutR) sgOutR.style.display='';
     const lgOutR=document.getElementById('lppbdoGrid'); if(lgOutR) lgOutR.style.display='grid';
     lineOutboundLoaded = false;
-    switchOutboundTab('data');
   }
 }
 
