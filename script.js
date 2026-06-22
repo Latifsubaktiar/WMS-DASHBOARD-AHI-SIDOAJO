@@ -545,25 +545,57 @@ async function loadDeliveryPerformance() {
       return;
     }
     
-    // Update On Time percentage
-    const onTimeEl = document.getElementById('deliveryPerfOnTime');
-    if (onTimeEl) {
-      onTimeEl.textContent = data.onTimePercent + '%';
-      console.log('✅ Updated On Time to', data.onTimePercent, '%');
-    }
+    const onTimePercent = data.onTimePercent;
+    const onTimeCount = data.onTimeCount;
+    const overSlaCount = data.overSlaCount;
+    const totalCount = data.totalCount;
+    const overSlaPercent = 100 - onTimePercent;
     
-    // Update Over SLA percentage
-    const overSlaEl = document.getElementById('deliveryPerfOverSla');
-    if (overSlaEl) {
-      overSlaEl.textContent = data.overSlaPercent + '%';
-      console.log('✅ Updated Over SLA to', data.overSlaPercent, '%');
-    }
-
-    // Update center circle percentage (total On Time)
+    // Update pie chart center percentage
     const perfPctEl = document.getElementById('deliveryPerfPercentage');
     if (perfPctEl) {
-      perfPctEl.textContent = data.onTimePercent + '%';
-      console.log('✅ Updated delivery performance percentage to', data.onTimePercent, '%');
+      perfPctEl.textContent = onTimePercent + '%';
+      console.log('✅ Updated chart percentage to', onTimePercent, '%');
+    }
+    
+    // Update total delivery count
+    const totalEl = document.getElementById('deliveryTotalCount');
+    if (totalEl) {
+      totalEl.textContent = totalCount;
+      console.log('✅ Updated total count to', totalCount);
+    }
+    
+    // Update On Time Rate
+    const onTimeRateEl = document.getElementById('deliveryOnTimeRateValue');
+    if (onTimeRateEl) {
+      onTimeRateEl.textContent = (onTimePercent).toFixed(1) + '%';
+      console.log('✅ Updated On Time Rate to', onTimePercent.toFixed(1), '%');
+    }
+    
+    // Update On Time count and percentage
+    const onTimeCountEl = document.getElementById('deliveryOnTimeCount');
+    if (onTimeCountEl) {
+      onTimeCountEl.textContent = onTimeCount;
+      console.log('✅ Updated On Time count to', onTimeCount);
+    }
+    
+    const onTimePercentEl = document.getElementById('deliveryOnTimePercent');
+    if (onTimePercentEl) {
+      onTimePercentEl.textContent = (onTimePercent).toFixed(1) + '%';
+      console.log('✅ Updated On Time percent to', onTimePercent.toFixed(1), '%');
+    }
+    
+    // Update Over SLA count and percentage
+    const overSlaCountEl = document.getElementById('deliveryOverSlaCount');
+    if (overSlaCountEl) {
+      overSlaCountEl.textContent = overSlaCount;
+      console.log('✅ Updated Over SLA count to', overSlaCount);
+    }
+    
+    const overSlaPercentEl = document.getElementById('deliveryOverSlaPercent');
+    if (overSlaPercentEl) {
+      overSlaPercentEl.textContent = (overSlaPercent).toFixed(1) + '%';
+      console.log('✅ Updated Over SLA percent to', overSlaPercent.toFixed(1), '%');
     }
   } catch(e) {
     console.error('❌ loadDeliveryPerformance error:', e);
