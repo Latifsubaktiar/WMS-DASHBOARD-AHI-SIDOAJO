@@ -546,19 +546,24 @@ async function loadDeliveryPerformance() {
     }
     
     // Update On Time percentage
-    const onTimeEl = document.querySelector('[style*="On Time"]');
-    const onTimePercentEl = document.querySelector('[style*="On Time"] + div');
-    if (onTimePercentEl) {
-      onTimePercentEl.textContent = data.onTimePercent + '%';
+    const onTimeEl = document.getElementById('deliveryPerfOnTime');
+    if (onTimeEl) {
+      onTimeEl.textContent = data.onTimePercent + '%';
       console.log('✅ Updated On Time to', data.onTimePercent, '%');
     }
     
     // Update Over SLA percentage
-    const overSlaEl = document.querySelector('[style*="Over SLA"]');
-    const overSlaPercentEl = document.querySelector('[style*="Over SLA"] + div');
-    if (overSlaPercentEl) {
-      overSlaPercentEl.textContent = data.overSlaPercent + '%';
+    const overSlaEl = document.getElementById('deliveryPerfOverSla');
+    if (overSlaEl) {
+      overSlaEl.textContent = data.overSlaPercent + '%';
       console.log('✅ Updated Over SLA to', data.overSlaPercent, '%');
+    }
+
+    // Update center circle percentage (total On Time)
+    const perfPctEl = document.getElementById('deliveryPerfPercentage');
+    if (perfPctEl) {
+      perfPctEl.textContent = data.onTimePercent + '%';
+      console.log('✅ Updated delivery performance percentage to', data.onTimePercent, '%');
     }
   } catch(e) {
     console.error('❌ loadDeliveryPerformance error:', e);
