@@ -1877,12 +1877,12 @@ async function fetchInventoryAccuracy() {
     if (icon)   icon.style.background = iconBg;
 
     // Pie chart Progress CC - ambil dari window._invData jika sudah ada, fallback ke data.summary
-    const invS = (window._invData && window._invData.summary) ? window._invData.summary : data.summary;
+    const invS = (window._invData && window._invData.summary) ? window._invData.summary : (data.summary || {});
     const rawCcPct = String(invS.pctCcTotal||'0').replace('%','').trim();
     const ccPct = Math.round(parseFloat(rawCcPct)||0);
     _makeSVGStatChart('invStatChart', ccPct, color);
 
-    // Mini boxes - dari invS
+    // Mini boxes - dari invS (dengan default values)
     const il=document.getElementById('invStatLokasi'); if(il) il.textContent=Number(invS.totalLokasi||0).toLocaleString('id-ID');
     const ic=document.getElementById('invStatCC');     if(ic) ic.textContent=Number(invS.totalCc||0).toLocaleString('id-ID');
     const ih=document.getElementById('invStatHit');    if(ih) ih.textContent=Number(invS.totalHit||0).toLocaleString('id-ID');
