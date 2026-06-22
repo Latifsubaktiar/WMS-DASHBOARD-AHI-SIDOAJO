@@ -2115,7 +2115,16 @@ setInterval(fetchDashboardStats,5*60*1000);
 
 // Load Outbound KPI cards on page load
 loadOutboundTodayKPI();
+
+// Load CBM Summary data
 loadCBMSummary();
+
+// Retry inventory accuracy after delay jika API lambat
+// Load CBM data with delay to ensure elements exist
+setTimeout(() => {
+  console.log('🔄 Calling loadCBMSummary from setTimeout...');
+  loadCBMSummary();
+}, 500);
 
 // Retry inventory accuracy after delay jika API lambat
 setTimeout(() => {
