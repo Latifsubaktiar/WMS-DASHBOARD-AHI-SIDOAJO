@@ -306,7 +306,7 @@ function toggleOutboundPanel() {
     const sgOutR=document.querySelector('.stats-grid'); if(sgOutR) sgOutR.style.display='';
     const lgOutR=document.getElementById('lppbdoGrid'); if(lgOutR) lgOutR.style.display='grid';
     lineOutboundLoaded = false;
-    switchOutboundTab('data');
+    // switchOutboundTab removed
   }
 }
 
@@ -508,7 +508,7 @@ async function fetchOutboundPanel() {
       </svg>`;
     };
 
-    renderOutboundPanelTable(rows);
+    // renderOutboundPanelTable removed
 
     // Full-body beam amber otomatis loop
     // Show Reset Diskusi hanya untuk admin
@@ -529,73 +529,6 @@ async function fetchOutboundPanel() {
   } catch(e) {
     if(tbody) tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--red)">Gagal: ${e.message}</td></tr>`;
   }
-}
-
-function switchOutboundTab(tab) {
-  const wData = document.getElementById('outWrapData');
-  const bData = document.getElementById('outTabData');
-  if (tab === 'data') {
-    if(wData) wData.style.display = '';
-    if(bData) { bData.style.color='var(--accent)'; bData.style.borderBottom='2px solid var(--accent)'; }
-  }
-}
-
-function renderOutboundPanelTable(rows) {
-  const tbody = document.getElementById('outboundPanelBody'); if(!tbody) return;
-  if (!rows||!rows.length) { tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada data</td></tr>'; return; }
-
-  const shiftStyle = (penyelesaian) => {
-    const m = String(penyelesaian||'').match(/SHIFT\s*(\d+)/i);
-    const n = m ? parseInt(m[1]) : 1;
-    switch(n) {
-      case 2: return { bg:'rgba(234,179,8,0.22)',  border:'4px solid rgba(234,179,8,1)' };
-      case 3: return { bg:'rgba(34,197,94,0.20)',  border:'4px solid rgba(34,197,94,1)' };
-      case 4: return { bg:'rgba(59,130,246,0.20)', border:'4px solid rgba(59,130,246,1)' };
-      default:return { bg:'',                       border:'' };
-    }
-  };
-
-  const isDarkO=document.body.classList.contains('dark');
-  const txO=isDarkO?'#f0f4ff':'#0a0f1e';
-  const cn = `text-align:center;font-size:12px;font-family:"JetBrains Mono",monospace;font-weight:600;color:${txO};`;
-  const c  = `font-size:12px;font-weight:600;color:${txO};`;
-
-  const pBar = (v) => {
-    const pct=parseFloat(String(v||'0').replace('%',''))||0;
-    const n=pct>1?Math.round(pct):Math.round(pct*100);
-    const col=n>=80?'#15803d':n>=50?'#b45309':'#b91c1c';
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:44px;height:5px;background:rgba(0,0,0,0.12);border-radius:3px;"><div style="width:${Math.min(n,100)}%;height:100%;background:${col};border-radius:3px;"></div></div><span style="font-size:10px;font-weight:900;color:${col}">${n}%</span></div>`;
-  };
-  const statusBadge = (s) => {
-    const u=String(s||'').toUpperCase();
-    if(u.includes('KELUAR DC')||u.includes('KELUAR')) return `<span class="badge badge-green">✅ ${s}</span>`;
-    if(u.includes('SELESAI'))  return `<span class="badge badge-green">✅ ${s}</span>`;
-    if(u.includes('TERLAMBAT'))return `<span class="badge badge-red">⚠️ ${s}</span>`;
-    if(u.includes('PROSES')||u.includes('LOADING')) return `<span class="badge badge-blue">⏳ ${s}</span>`;
-    if(u.includes('ANTRI'))    return `<span class="badge badge-orange" style="display:inline-flex;align-items:center;gap:4px;">🕐 ${s}</span>`;
-    if(u.includes('BELUM'))    return `<span class="badge badge-red">🔴 ${s}</span>`;
-    return `<span style="color:var(--text-3);font-size:12px">${s||'—'}</span>`;
-  };
-
-  tbody.innerHTML = rows.map((r,i) => {
-    const ss = shiftStyle(r.penyelesaian);
-    const trStyle = `background:${ss.bg};${ss.border?'border-left:'+ss.border:''}`;
-    return `<tr style="${trStyle}">
-    <td style="${cn}">${i+1}</td>
-    <td style="${c}font-weight:800">${r.penyelesaian||'—'}</td>
-    <td style="font-weight:800;font-size:12px;font-family:'JetBrains Mono',monospace;color:${txO}">${escHtml(r.transno||'—')}</td>
-    <td style="background:rgba(21,128,61,0.12)">${pBar(r.ppc)}</td>
-    <td style="background:rgba(29,78,216,0.12)">${pBar(r.pstg)}</td>
-    <td style="background:rgba(180,83,9,0.12)">${pBar(r.pld)}</td>
-    <td style="${c}">${escHtml(r.shippingline||'—')}</td>
-    <td style="${cn}">${escHtml(r.bu||'—')}</td>
-    <td style="${cn}">${escHtml(r.carrierId||'—')}</td>
-    <td style="${cn}">${r.stuffingTime||'—'}</td>
-    <td style="${c}">${escHtml(r.jenisArmada||'—')}</td>
-    <td style="${cn}">${escHtml(r.nopol||'—')}</td>
-    <td style="text-align:center">${statusBadge(r.status)}</td>
-  </tr>`;
-  }).join('');
 }
 
 // ══════════════════════════════════════
@@ -710,7 +643,7 @@ async function prepareSlide(idx){
     case 4:
       closeAll('outbound');
       if(!outboundPanelOpen){outboundPanelOpen=true;const p=document.getElementById('outboundDetailPanel');if(p)p.style.display='block';hideG();await fetchOutboundPanel();}
-      switchOutboundTab('data');break;
+      // switchOutboundTab removedbreak;
     case 5:switchOutboundTab('line');await fetchLineOutbound();break;
   }
 }
