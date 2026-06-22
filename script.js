@@ -469,29 +469,59 @@ async function loadCBMSummary() {
     
     // Update TARGET CBM card
     const targetCbmEl = document.getElementById('cbmTargetValue');
-    if (targetCbmEl) targetCbmEl.textContent = data.targetCbm.toFixed(2);
+    console.log('🔍 cbmTargetValue element:', targetCbmEl);
+    if (targetCbmEl) {
+      targetCbmEl.textContent = data.targetCbm.toFixed(2);
+      console.log('✅ Updated cbmTargetValue to', data.targetCbm.toFixed(2));
+    }
     
     // Update PENCAPAIAN CBM card
     const pencapaianCbmEl = document.getElementById('cbmPencapaianValue');
-    if (pencapaianCbmEl) pencapaianCbmEl.textContent = data.pencapaianCbm.toFixed(2);
+    console.log('🔍 cbmPencapaianValue element:', pencapaianCbmEl);
+    if (pencapaianCbmEl) {
+      pencapaianCbmEl.textContent = data.pencapaianCbm.toFixed(2);
+      console.log('✅ Updated cbmPencapaianValue to', data.pencapaianCbm.toFixed(2));
+    }
     
     // Update Rencana Muatan CBM
     const rencanaEl = document.getElementById('cbmRencanaValue');
-    if (rencanaEl) rencanaEl.textContent = data.targetCbm.toFixed(2);
+    console.log('🔍 cbmRencanaValue element:', rencanaEl);
+    if (rencanaEl) {
+      rencanaEl.textContent = data.targetCbm.toFixed(2);
+      console.log('✅ Updated cbmRencanaValue to', data.targetCbm.toFixed(2));
+    }
     
     // Update Terealisasi CBM
     const terealisasiEl = document.getElementById('cbmTerealisasiValue');
-    if (terealisasiEl) terealisasiEl.textContent = data.pencapaianCbm.toFixed(2);
+    console.log('🔍 cbmTerealisasiValue element:', terealisasiEl);
+    if (terealisasiEl) {
+      terealisasiEl.textContent = data.pencapaianCbm.toFixed(2);
+      console.log('✅ Updated cbmTerealisasiValue to', data.pencapaianCbm.toFixed(2));
+    }
     
     // Update Belum Realisasi
     const belumEl = document.getElementById('cbmBelumValue');
-    if (belumEl) belumEl.textContent = data.belumRealisasi.toFixed(2);
+    console.log('🔍 cbmBelumValue element:', belumEl);
+    if (belumEl) {
+      belumEl.textContent = data.belumRealisasi.toFixed(2);
+      console.log('✅ Updated cbmBelumValue to', data.belumRealisasi.toFixed(2));
+    }
     
-    // Update progress bar
+    // Update progress bar & percentage
     const progressBar = document.getElementById('cbmProgressBar');
-    if (progressBar && data.targetCbm > 0) {
+    const percentageEl = document.getElementById('cbmPercentage');
+    console.log('🔍 cbmProgressBar element:', progressBar);
+    console.log('🔍 cbmPercentage element:', percentageEl);
+    if (data.targetCbm > 0) {
       const pct = Math.round((data.pencapaianCbm / data.targetCbm) * 100);
-      progressBar.style.width = Math.min(pct, 100) + '%';
+      if (progressBar) {
+        progressBar.style.width = Math.min(pct, 100) + '%';
+        console.log('✅ Updated progress bar to', pct, '%');
+      }
+      if (percentageEl) {
+        percentageEl.textContent = pct + '%';
+        console.log('✅ Updated percentage to', pct, '%');
+      }
     }
   } catch(e) {
     console.error('❌ loadCBMSummary error:', e);
