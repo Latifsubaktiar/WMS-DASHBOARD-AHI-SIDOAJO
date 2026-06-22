@@ -335,6 +335,7 @@ function toggleInventoryPanel() {
     const sgInv=document.querySelector('.stats-grid'); if(sgInv) sgInv.style.display='none';
     const lgInv=document.getElementById('lppbdoGrid'); if(lgInv) lgInv.style.display='none';
     if (!inventoryDetailLoaded) fetchInventoryDetail();
+    fetchInventoryAccuracy(); // Load stat card data saat klik!
     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   } else {
     panel.style.display = 'none';
