@@ -437,6 +437,18 @@ async function loadOutboundTodayKPI() {
     const box2Selesai = document.getElementById('box2Selesai');
     if (box2Selesai) box2Selesai.textContent = pctSelesai + '%';
 
+    // Update Progress Bars
+    const progTotalLoad = document.getElementById('progTotalLoad');
+    if (progTotalLoad) progTotalLoad.style.width = pctTotal + '%';
+    const progBelum = document.getElementById('progBelum');
+    if (progBelum) progBelum.style.width = pctBelum + '%';
+    const progAntri = document.getElementById('progAntri');
+    if (progAntri) progAntri.style.width = pctAntri + '%';
+    const progProses = document.getElementById('progProses');
+    if (progProses) progProses.style.width = pctProses + '%';
+    const progSelesai = document.getElementById('progSelesai');
+    if (progSelesai) progSelesai.style.width = pctSelesai + '%';
+
   } catch (e) {
     console.error('Error loading Outbound Today KPI:', e);
   }
