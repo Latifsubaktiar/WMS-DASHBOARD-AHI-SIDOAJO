@@ -516,10 +516,8 @@ async function loadCBMSummary() {
     // Update progress bar & percentage
     const progressBar = document.getElementById('cbmProgressBar');
     const percentageEl = document.getElementById('cbmPercentage');
-    const percentageDetailEl = document.getElementById('cbmPercentageDetail');
     console.log('🔍 cbmProgressBar element:', progressBar);
     console.log('🔍 cbmPercentage element:', percentageEl);
-    console.log('🔍 cbmPercentageDetail element:', percentageDetailEl);
     if (data.targetCbm > 0) {
       const pct = Math.round((data.pencapaianCbm / data.targetCbm) * 100);
       if (progressBar) {
@@ -529,10 +527,6 @@ async function loadCBMSummary() {
       if (percentageEl) {
         percentageEl.textContent = pct + '%';
         console.log('✅ Updated percentage to', pct, '%');
-      }
-      if (percentageDetailEl) {
-        percentageDetailEl.textContent = pct;
-        console.log('✅ Updated percentageDetail to', pct, '%');
       }
     }
   } catch(e) {
