@@ -281,123 +281,29 @@
 
   <!-- DASHBOARD -->
   <!-- PROFIL DC PAGE -->
-  <div class="page" id="page-profildc">
-
-    <!-- PAGE HEADER -->
-    <div class="page-header">
-      <div class="page-title-wrap">
-        <h1>&#127981; Profil DC</h1>
-        <p>Informasi operasional Distribution Center AHI Sidoarjo</p>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button class="pdc-ss-launch-btn" id="pdcSsBtnMain" onclick="pdcSsStart()">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          Slide Show
-        </button>
+    <div class="iframe-page" id="page-profildc">
+    <div class="iframe-bar">
+      <button class="iframe-back" onclick="goHome()">&#8592; Kembali</button>
+      <span class="iframe-title">&#127981; Profil DC</span>
+      <span class="iframe-sub">DC AHI Sidoarjo &mdash; Operational Suite</span>
+      <div class="iframe-actions">
+        <button class="btn-sm btn-outline" onclick="reloadIframe('ifrProfildc','profildc')">&#8634; Refresh</button>
+        <a class="btn-sm btn-primary" id="tabProfildc" href="https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbwdUoZgbkaJmfaHuNYIqxUaygZ6t64GS666eQ38fI5dVOIzIQBypvtp5oNpfFKOOnnR/exec" target="_blank">&#8599; Tab Baru</a>
       </div>
     </div>
-
-    <!-- HERO + METRICS -->
-    <div class="pdc-main-grid">
-      <div class="pdc-hero">
-        <div class="pdc-hero-img">
-          <div class="pdc-sky"></div>
-          <div class="pdc-grid-lines"></div>
-          <div class="pdc-b1"></div><div class="pdc-b2"></div><div class="pdc-b3"></div>
-          <div class="pdc-roof"></div><div class="pdc-gnd"></div><div class="pdc-ref"></div>
-          <div class="pdc-video-wrap" id="pdcHeroVideo" style="display:none">
-            <iframe id="pdcVideoFrame" src="" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-          </div>
-          <div class="pdc-live-badge"><span class="pdc-live-dot"></span>LIVE FEED</div>
-          <div class="pdc-hero-meta">
-            <h3>DC AHI Sidoarjo</h3>
-            <span>National Distribution Center</span>
-          </div>
-        </div>
+    <div class="iframe-container">
+      <div class="iframe-loading" id="ldProfildc">
+        <div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div>
+        <span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Profil DC...</span>
       </div>
-      <div class="pdc-metrics">
-        <div>
-          <div class="pdc-mb-lbl">Performance</div>
-          <div class="pdc-perf-grid">
-            <div class="pdc-pc" style="--pdc-ac:var(--pdc-red)"><div class="pdc-pc-gloss"></div><div class="pdc-pc-l">Occupancy DC</div><div class="pdc-pc-v" id="pdc-val-occ">&#8212;</div><div class="pdc-pc-base"></div></div>
-            <div class="pdc-pc" style="--pdc-ac:#22c55e"><div class="pdc-pc-gloss"></div><div class="pdc-pc-l">Accuracy</div><div class="pdc-pc-v" id="pdc-val-acc">&#8212;</div><div class="pdc-pc-base"></div></div>
-            <div class="pdc-pc" style="--pdc-ac:#22c55e"><div class="pdc-pc-gloss"></div><div class="pdc-pc-l">SLA Customer</div><div class="pdc-pc-v" id="pdc-val-slac">&#8212;</div><div class="pdc-pc-base"></div></div>
-            <div class="pdc-pc" style="--pdc-ac:#22c55e"><div class="pdc-pc-gloss"></div><div class="pdc-pc-l">SLA Store</div><div class="pdc-pc-v" id="pdc-val-slas">&#8212;</div><div class="pdc-pc-base"></div></div>
-          </div>
-        </div>
-        <div>
-          <div class="pdc-mb-lbl">Workload Volume</div>
-          <div class="pdc-wl-grid">
-            <div class="pdc-wc"><div class="pdc-wc-l">Inbound</div><div class="pdc-wc-v" style="color:#3B82F6" id="pdc-val-inb">&#8212;</div></div>
-            <div class="pdc-wc"><div class="pdc-wc-l">Outbound</div><div class="pdc-wc-v" style="color:#22c55e" id="pdc-val-out">&#8212;</div></div>
-          </div>
-        </div>
-        <div>
-          <div class="pdc-mb-lbl">Capacity <span style="color:var(--pdc-red);font-size:7px">CBM</span></div>
-          <div class="pdc-cap-grid">
-            <div class="pdc-cc"><div class="pdc-cc-l">Capacity</div><div class="pdc-cc-v" id="pdc-val-cap">&#8212;</div></div>
-            <div class="pdc-cc"><div class="pdc-cc-l">Inventory</div><div class="pdc-cc-v" id="pdc-val-inv">&#8212;</div></div>
-          </div>
-        </div>
-        <div>
-          <div class="pdc-mb-lbl">Fasilitas DC</div>
-          <div class="pdc-fac-grid">
-            <div class="pdc-fc"><div class="pdc-fc-v">2</div><div class="pdc-fc-l">Shift</div></div>
-            <div class="pdc-fc"><div class="pdc-fc-v">16 <span class="pdc-fc-sub">+1 FBI</span></div><div class="pdc-fc-l">Lorong</div></div>
-            <div class="pdc-fc"><div class="pdc-fc-v">15</div><div class="pdc-fc-l">Loading Dock</div></div>
-          </div>
-        </div>
+      <div class="iframe-error" id="errProfildc">
+        <div class="err-icon">&#9888;&#65039;</div>
+        <div class="err-title">Tidak dapat dimuat</div>
+        <div class="err-desc">Coba buka di tab baru.</div>
+        <a class="btn-sm btn-primary" id="errTabProfildc" href="https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbwdUoZgbkaJmfaHuNYIqxUaygZ6t64GS666eQ38fI5dVOIzIQBypvtp5oNpfFKOOnnR/exec" target="_blank" style="margin-top:8px">&#8599; Buka Tab Baru</a>
       </div>
+      <iframe id="ifrProfildc" src="about:blank" allow="fullscreen *"></iframe>
     </div>
-
-    <!-- AREA LORONG GRID -->
-    <div class="pdc-area-grid">
-      <div class="pdc-area-card">
-        <div class="pdc-area-head"><h4>Area 1</h4><div class="pdc-area-tot" id="pdc-tot-a1">&#8212;</div><span class="pdc-an">01</span></div>
-        <div class="pdc-col-hd"><span>Lorong</span><span>Akurasi</span><span>Occupancy</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 1</span><span class="pdc-ai-v" id="pdc-a1-akr-1">&#8212;</span><span class="pdc-ai-v" id="pdc-a1-occ-1">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 2</span><span class="pdc-ai-v" id="pdc-a1-akr-2">&#8212;</span><span class="pdc-ai-v" id="pdc-a1-occ-2">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 3</span><span class="pdc-ai-v" id="pdc-a1-akr-3">&#8212;</span><span class="pdc-ai-v" id="pdc-a1-occ-3">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 4</span><span class="pdc-ai-v" id="pdc-a1-akr-4">&#8212;</span><span class="pdc-ai-v" id="pdc-a1-occ-4">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 5</span><span class="pdc-ai-v" id="pdc-a1-akr-5">&#8212;</span><span class="pdc-ai-v" id="pdc-a1-occ-5">&#8212;</span></div>
-      </div>
-      <div class="pdc-area-card">
-        <div class="pdc-area-head"><h4>Area 2</h4><div class="pdc-area-tot" id="pdc-tot-a2">&#8212;</div><span class="pdc-an">02</span></div>
-        <div class="pdc-col-hd"><span>Lorong</span><span>Akurasi</span><span>Occupancy</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 6</span><span class="pdc-ai-v" id="pdc-a2-akr-6">&#8212;</span><span class="pdc-ai-v" id="pdc-a2-occ-6">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 7</span><span class="pdc-ai-v" id="pdc-a2-akr-7">&#8212;</span><span class="pdc-ai-v" id="pdc-a2-occ-7">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 8</span><span class="pdc-ai-v" id="pdc-a2-akr-8">&#8212;</span><span class="pdc-ai-v" id="pdc-a2-occ-8">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 9</span><span class="pdc-ai-v" id="pdc-a2-akr-9">&#8212;</span><span class="pdc-ai-v" id="pdc-a2-occ-9">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 10</span><span class="pdc-ai-v" id="pdc-a2-akr-10">&#8212;</span><span class="pdc-ai-v" id="pdc-a2-occ-10">&#8212;</span></div>
-      </div>
-      <div class="pdc-area-card">
-        <div class="pdc-area-head"><h4>Area 3</h4><div class="pdc-area-tot" id="pdc-tot-a3">&#8212;</div><span class="pdc-an">03</span></div>
-        <div class="pdc-col-hd"><span>Lorong</span><span>Akurasi</span><span>Occupancy</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 11</span><span class="pdc-ai-v" id="pdc-a3-akr-11">&#8212;</span><span class="pdc-ai-v" id="pdc-a3-occ-11">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 12</span><span class="pdc-ai-v" id="pdc-a3-akr-12">&#8212;</span><span class="pdc-ai-v" id="pdc-a3-occ-12">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 13</span><span class="pdc-ai-v" id="pdc-a3-akr-13">&#8212;</span><span class="pdc-ai-v" id="pdc-a3-occ-13">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 14</span><span class="pdc-ai-v" id="pdc-a3-akr-14">&#8212;</span><span class="pdc-ai-v" id="pdc-a3-occ-14">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 15</span><span class="pdc-ai-v" id="pdc-a3-akr-15">&#8212;</span><span class="pdc-ai-v" id="pdc-a3-occ-15">&#8212;</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 16</span><span class="pdc-ai-v" id="pdc-a3-akr-16">&#8212;</span><span class="pdc-ai-v" id="pdc-a3-occ-16">&#8212;</span></div>
-      </div>
-      <div class="pdc-area-card">
-        <div class="pdc-area-head"><h4>Chatime</h4><div class="pdc-area-tot" id="pdc-tot-act">&#8212;</div><span class="pdc-an">CT</span></div>
-        <div class="pdc-col-hd"><span>Lorong</span><span>Akurasi</span><span>Occupancy</span></div>
-        <div class="pdc-ai3"><span class="pdc-ai-n">Lorong 17</span><span class="pdc-ai-v" id="pdc-act-akr-17">&#8212;</span><span class="pdc-ai-v" id="pdc-act-occ-17">&#8212;</span></div>
-      </div>
-    </div>
-
-    <!-- SLIDESHOW BAR -->
-    <div class="pdc-ss-bar" id="pdcSsBar">
-      <button class="pdc-ss-ibtn" onclick="pdcSsPrev()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/></svg></button>
-      <button class="pdc-ss-ibtn" id="pdcSsPlayBtn" onclick="pdcSsToggle()"><svg viewBox="0 0 24 24" fill="currentColor" id="pdcSsPlayIc"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
-      <button class="pdc-ss-ibtn" onclick="pdcSsNext()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg></button>
-      <span class="pdc-ss-cnt" id="pdcSsCnt">1/2</span>
-      <div class="pdc-ss-dots" id="pdcSsDots"></div>
-      <button class="pdc-ss-ibtn" onclick="pdcSsStop()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    </div>
-    <div class="pdc-ss-prog" id="pdcSsProg"></div>
-
   </div>
 
   <div class="page active" id="page-dashboard">
