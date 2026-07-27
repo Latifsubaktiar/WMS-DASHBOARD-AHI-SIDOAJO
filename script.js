@@ -19,6 +19,7 @@ const GAS_USER_URL = 'https://script.google.com/macros/s/AKfycbxTVbfZUlgGGJL9YgO
 const GAS_DASHBOARD_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
 const URLS = {
+  profildc:  'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbwdUoZgbkaJmfaHuNYIqxUaygZ6t64GS666eQ38fI5dVOIzIQBypvtp5oNpfFKOOnnR/exec',
   planner:   'https://plannerazko.github.io/DashboardPlanning/',
   inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbwgrzzsmS8Nab4WhTLIOdFiknXfV4Ak-jE8Ewd9qBvR_uh93c2VBa3OInHAzbEI8HrdUw/exec',
   outbound:  'https://outboundazko.github.io/Monitoring-Loading/index.html',
@@ -27,7 +28,7 @@ const URLS = {
   ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
   hr:        null,
 };
-const IFRAME_PAGES   = ['inventory','outbound','planner','ga','analyst','storing','inbound'];
+const IFRAME_PAGES   = ['profildc','inventory','outbound','planner','ga','analyst','storing','inbound'];
 const GAS_AI_URL     = 'https://script.google.com/macros/s/AKfycbzphhWpNaHVnvJzRl2dO2g-JsUnLByOPvkYZWIKoN_XrfD42uF_m7sqPgNkhUCIQlEu/exec';
 
 const AVATAR_COLORS = [
