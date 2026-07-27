@@ -245,6 +245,7 @@
 <aside class="sidebar">
   <div class="nav-section">
     <div class="nav-label">Main</div>
+    <button class="nav-item" data-page="profildc"><span class="nav-icon">🏭</span>Profil DC</button>
     <button class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span>Dashboard</button>
   </div>
   <div class="nav-divider"></div>
@@ -279,6 +280,109 @@
 <main class="main" id="mainContent">
 
   <!-- DASHBOARD -->
+  <!-- PROFIL DC PAGE -->
+  <div class="page" id="page-profildc">
+    <div class="page-header">
+      <div class="page-title-wrap">
+        <h1>🏭 Profil DC</h1>
+        <p>Informasi Distribution Center AHI Sidoarjo</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+      <!-- Card Identitas DC -->
+      <div class="card" style="padding:24px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#1e40af);display:flex;align-items:center;justify-content:center;font-size:22px;">🏭</div>
+          <div>
+            <div style="font-size:16px;font-weight:900;color:var(--text);">DC AHI Sidoarjo</div>
+            <div style="font-size:12px;color:var(--text-3);">Kawan Lama Group</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-2);">
+            <span style="font-size:12px;color:var(--text-3);font-weight:600;">Nama DC</span>
+            <span style="font-size:12px;font-weight:800;color:var(--text);">Distribution Center AHI Sidoarjo</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-2);">
+            <span style="font-size:12px;color:var(--text-3);font-weight:600;">Kode DC</span>
+            <span style="font-size:12px;font-weight:800;color:var(--text);">DC-AHI-SDJ</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-2);">
+            <span style="font-size:12px;color:var(--text-3);font-weight:600;">Grup</span>
+            <span style="font-size:12px;font-weight:800;color:var(--text);">Kawan Lama Group</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-2);">
+            <span style="font-size:12px;color:var(--text-3);font-weight:600;">Lokasi</span>
+            <span style="font-size:12px;font-weight:800;color:var(--text);">Sidoarjo, Jawa Timur</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+            <span style="font-size:12px;color:var(--text-3);font-weight:600;">Status</span>
+            <span style="font-size:11px;font-weight:800;padding:3px 12px;border-radius:20px;background:rgba(22,163,74,0.12);color:#16a34a;border:1px solid rgba(22,163,74,0.3);">● Aktif</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Statistik DC -->
+      <div class="card" style="padding:24px;">
+        <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;">📊 Statistik Operasional</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(37,99,235,0.03));border:1px solid rgba(37,99,235,0.2);border-radius:12px;padding:14px;">
+            <div style="font-size:10px;font-weight:700;color:#2563eb;text-transform:uppercase;margin-bottom:4px;">Total Rak</div>
+            <div style="font-size:24px;font-weight:900;color:var(--text);">—</div>
+            <div style="font-size:10px;color:var(--text-3);">Lokasi storage</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(16,185,129,0.03));border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:14px;">
+            <div style="font-size:10px;font-weight:700;color:#10b981;text-transform:uppercase;margin-bottom:4px;">Kapasitas CBM</div>
+            <div style="font-size:24px;font-weight:900;color:var(--text);">—</div>
+            <div style="font-size:10px;color:var(--text-3);">Total kapasitas</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.03));border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:14px;">
+            <div style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;margin-bottom:4px;">Total SDM</div>
+            <div style="font-size:24px;font-weight:900;color:var(--text);">—</div>
+            <div style="font-size:10px;color:var(--text-3);">Karyawan aktif</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(168,85,247,0.03));border:1px solid rgba(168,85,247,0.2);border-radius:12px;padding:14px;">
+            <div style="font-size:10px;font-weight:700;color:#a855f7;text-transform:uppercase;margin-bottom:4px;">Principal</div>
+            <div style="font-size:24px;font-weight:900;color:var(--text);">—</div>
+            <div style="font-size:10px;color:var(--text-3);">Jumlah principal</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Struktur Organisasi -->
+    <div class="card" style="padding:24px;">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;">👥 Struktur Organisasi</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;">
+        <div style="text-align:center;padding:16px 12px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg);">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1e40af);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 10px;">👤</div>
+          <div style="font-size:11px;font-weight:800;color:var(--text);">—</div>
+          <div style="font-size:10px;color:var(--text-3);margin-top:3px;">DC Head</div>
+        </div>
+        <div style="text-align:center;padding:16px 12px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg);">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 10px;">👤</div>
+          <div style="font-size:11px;font-weight:800;color:var(--text);">—</div>
+          <div style="font-size:10px;color:var(--text-3);margin-top:3px;">Inbound</div>
+        </div>
+        <div style="text-align:center;padding:16px 12px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg);">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 10px;">👤</div>
+          <div style="font-size:11px;font-weight:800;color:var(--text);">—</div>
+          <div style="font-size:10px;color:var(--text-3);margin-top:3px;">Storing</div>
+        </div>
+        <div style="text-align:center;padding:16px 12px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg);">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#db2777);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 10px;">👤</div>
+          <div style="font-size:11px;font-weight:800;color:var(--text);">—</div>
+          <div style="font-size:10px;color:var(--text-3);margin-top:3px;">Outbound</div>
+        </div>
+        <div style="text-align:center;padding:16px 12px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg);">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 10px;">👤</div>
+          <div style="font-size:11px;font-weight:800;color:var(--text);">—</div>
+          <div style="font-size:10px;color:var(--text-3);margin-top:3px;">Inventory</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="page active" id="page-dashboard">
     <div class="page-header">
       <div class="page-title-wrap"><h1>Dashboard</h1><p>Ringkasan operasional hari ini — AHI Sidoarjo</p></div>
