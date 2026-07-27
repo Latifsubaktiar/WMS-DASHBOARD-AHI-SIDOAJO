@@ -1159,12 +1159,14 @@ body.dark #storingDetailPanel table thead tr:last-child th {
 
 /* ── PAGE WRAPPER ── */
 #page-profildc {
-  display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 18px;
   overflow-y: auto;
   height: 100%;
+}
+#page-profildc.active {
+  display: flex !important;
 }
 
 /* ── MAIN GRID (Hero + Metrics) ── */
@@ -1479,12 +1481,14 @@ body.dark #storingDetailPanel table thead tr:last-child th {
 
 /* ── PAGE WRAPPER ── */
 #page-profildc {
-  display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 18px;
   overflow-y: auto;
   height: 100%;
+}
+#page-profildc.active {
+  display: flex !important;
 }
 
 /* ── MAIN GRID (Hero + Metrics) ── */
