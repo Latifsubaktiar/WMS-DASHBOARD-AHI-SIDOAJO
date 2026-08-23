@@ -159,6 +159,10 @@ function applyLogin() {
   const av = document.getElementById('headerAvatar');
   av.textContent = me.initials; av.style.background = me.color.bg;
   document.getElementById('headerName').textContent = me.name;
+  const resetBtn = document.getElementById('resetDiscBtn');
+  if (resetBtn) resetBtn.style.display = ADMIN_NIPS.includes(String(me.nip)) ? '' : 'none';
+  const aiHistoryBtn = document.getElementById('aiHistoryBtn');
+  if (aiHistoryBtn) aiHistoryBtn.style.display = ADMIN_NIPS.includes(String(me.nip)) ? '' : 'none';
   if (fbReady && onlineRef) {
     const safeKey = me.name.replace(/[.#$/[\]\s]/g,'_');
     const myOnlineRef = onlineRef.child(safeKey);
@@ -659,13 +663,6 @@ async function fetchOutboundPanel() {
     };
 
     // renderOutboundPanelTable removed
-
-    // Full-body beam amber otomatis loop
-    // Show Reset Diskusi hanya untuk admin
-  const resetBtn = document.getElementById('resetDiscBtn');
-  if (resetBtn) resetBtn.style.display = ADMIN_NIPS.includes(String(me.nip)) ? '' : 'none';
-  const aiHistoryBtn = document.getElementById('aiHistoryBtn');
-  if (aiHistoryBtn) aiHistoryBtn.style.display = ADMIN_NIPS.includes(String(me.nip)) ? '' : 'none';
   setTimeout(()=>{
       const speeds=['3s','3.5s','4s','4.5s'];
       document.querySelectorAll('#outboundDetailPanel [style*="overflow:hidden;box-shadow"]').forEach((card,i)=>{
