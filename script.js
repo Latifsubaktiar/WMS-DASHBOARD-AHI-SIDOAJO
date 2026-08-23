@@ -664,6 +664,8 @@ async function fetchOutboundPanel() {
     // Show Reset Diskusi hanya untuk admin
   const resetBtn = document.getElementById('resetDiscBtn');
   if (resetBtn) resetBtn.style.display = ADMIN_NIPS.includes(String(me.nip)) ? '' : 'none';
+  const aiHistoryBtn = document.getElementById('aiHistoryBtn');
+  if (aiHistoryBtn) aiHistoryBtn.style.display = ADMIN_NIPS.includes(String(me.nip)) ? '' : 'none';
   setTimeout(()=>{
       const speeds=['3s','3.5s','4s','4.5s'];
       document.querySelectorAll('#outboundDetailPanel [style*="overflow:hidden;box-shadow"]').forEach((card,i)=>{
@@ -2520,7 +2522,7 @@ function setupAI(inId,btnId,msgsId,typingId){
   const inp=document.getElementById(inId),btn=document.getElementById(btnId),msgs=document.getElementById(msgsId),typing=document.getElementById(typingId);
   if(!inp||!btn||!msgs) return;
   function addBubble(text,type){const div=document.createElement('div');div.className=`ai-bubble ${type}`;div.style.whiteSpace='pre-wrap';div.textContent=text;if(typing&&msgs.contains(typing))msgs.insertBefore(div,typing);else msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
-  async function send(){const txt=inp.value.trim();if(!txt)return;addBubble(txt,'user');inp.value='';inp.disabled=true;btn.disabled=true;if(typing){typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;}try{const res=await fetch(GAS_AI_URL+'?action=aiAsk&q='+encodeURIComponent(txt));const data=await res.json();if(typing)typing.classList.remove('show');addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');}catch(e){if(typing)typing.classList.remove('show');addBubble('Maaf, terjadi kesalahan koneksi.','bot');}inp.disabled=false;btn.disabled=false;inp.focus();}
+  async function send(){const txt=inp.value.trim();if(!txt)return;addBubble(txt,'user');inp.value='';inp.disabled=true;btn.disabled=true;if(typing){typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;}try{const res=await fetch(GAS_AI_URL+'?action=aiAsk&q='+encodeURIComponent(txt)+'&nip='+encodeURIComponent(localStorage.getItem('wms_nip')||'')+'&name='+encodeURIComponent(localStorage.getItem('wms_name')||''));const data=await res.json();if(typing)typing.classList.remove('show');addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');}catch(e){if(typing)typing.classList.remove('show');addBubble('Maaf, terjadi kesalahan koneksi.','bot');}inp.disabled=false;btn.disabled=false;inp.focus();}
   btn.addEventListener('click',send);inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 }
 setupAI('aiIn','aiBtn','aiMsg','aiTyping');
@@ -2891,6 +2893,79 @@ function openHistoryLogin() {
 
 function closeHistoryModal() {
   document.getElementById('historyModal').style.display = 'none';
+}
+
+// ── History AI Support (khusus admin) ────────────────────────────
+let aiHistoryRaw = [];
+
+function openAIHistory() {
+  settingsOpen = false;
+  document.getElementById('settingsPanel').classList.remove('open');
+  const modal = document.getElementById('aiHistoryModal');
+  modal.style.display = 'flex';
+  document.getElementById('aiHistoryTitle').textContent = '🤖 History AI Support';
+  document.getElementById('aiHistoryList').innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Memuat...</div>';
+  const myNip = localStorage.getItem('wms_nip') || '';
+  fetch(GAS_AI_URL + '?action=aiLogs&nip=' + encodeURIComponent(myNip))
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) {
+        document.getElementById('aiHistoryList').innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">' + (data.error || 'Gagal memuat') + '</div>';
+        return;
+      }
+      aiHistoryRaw = data.logs || [];
+      renderAIHistoryDays();
+    })
+    .catch(() => {
+      document.getElementById('aiHistoryList').innerHTML = '<div style="text-align:center;color:#dc2626;font-size:13px;padding:20px;">Gagal memuat history</div>';
+    });
+}
+
+function renderAIHistoryDays() {
+  document.getElementById('aiHistoryTitle').textContent = '🤖 History AI Support';
+  const list = document.getElementById('aiHistoryList');
+  if (!aiHistoryRaw.length) {
+    list.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Belum ada history pemakaian</div>';
+    return;
+  }
+  const groups = {};
+  aiHistoryRaw.forEach(function (e) {
+    const day = (e.waktu || '').split(' ')[0] || 'Tidak diketahui';
+    if (!groups[day]) groups[day] = { entries: [], users: {} };
+    groups[day].entries.push(e);
+    groups[day].users[e.nip + '|' + e.nama] = true;
+  });
+  const days = Object.keys(groups).sort().reverse();
+  list.innerHTML = days.map(function (day, i) {
+    const userCount = Object.keys(groups[day].users).length;
+    return '<div onclick="showAIHistoryDetail(\'' + day + '\')" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 14px;background:' + (i % 2 === 0 ? '#f8fafc' : '#fff') + ';border-radius:10px;border:1px solid #f1f5f9;">' +
+      '<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🤖</div>' +
+      '<div style="flex:1;min-width:0;">' +
+      '<div style="font-size:13px;font-weight:800;color:#0f172a;">' + day + '</div>' +
+      '<div style="font-size:11px;color:#64748b;">' + userCount + ' user · ' + groups[day].entries.length + ' pertanyaan</div>' +
+      '</div><div style="font-size:14px;color:#94a3b8;">→</div></div>';
+  }).join('');
+}
+
+function showAIHistoryDetail(day) {
+  document.getElementById('aiHistoryTitle').innerHTML = '<span style="cursor:pointer;" onclick="renderAIHistoryDays()">←</span> ' + day;
+  const entries = aiHistoryRaw.filter(function (e) { return (e.waktu || '').split(' ')[0] === day; });
+  const list = document.getElementById('aiHistoryList');
+  list.innerHTML = entries.map(function (e, i) {
+    const jam = (e.waktu || '').split(' ')[1] || '';
+    return '<div style="padding:12px 14px;background:' + (i % 2 === 0 ? '#f8fafc' : '#fff') + ';border-radius:10px;border:1px solid #f1f5f9;">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+      '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;">' + (e.nama || '?').slice(0, 2).toUpperCase() + '</div>' +
+      '<div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:800;color:#0f172a;">' + (e.nama || '—') + ' <span style="font-weight:500;color:#94a3b8;">· NIP ' + (e.nip || '—') + '</span></div></div>' +
+      '<div style="font-size:10px;color:#94a3b8;">' + jam + '</div></div>' +
+      '<div style="font-size:12px;color:#334155;margin-bottom:4px;"><b>Tanya:</b> ' + (e.pertanyaan || '-') + '</div>' +
+      '<div style="font-size:11px;color:#64748b;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">Lihat jawaban ▾</div>' +
+      '<div style="display:none;font-size:11px;color:#64748b;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;">' + (e.jawaban || '-') + '</div></div>';
+  }).join('');
+}
+
+function closeAIHistoryModal() {
+  document.getElementById('aiHistoryModal').style.display = 'none';
 }
 
 // ── Reset Diskusi ─────────────────────────────────────────────
