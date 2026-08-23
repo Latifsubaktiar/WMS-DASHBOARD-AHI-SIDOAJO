@@ -2934,12 +2934,17 @@ function renderAIHistoryDays() {
   });
   const days = Object.keys(groups).sort().reverse();
   list.innerHTML = days.map(function (day, i) {
-    const userCount = Object.keys(groups[day].users).length;
+    const names = [];
+    Object.keys(groups[day].users).forEach(function (key) {
+      const nama = key.split('|')[1];
+      if (nama && names.indexOf(nama) === -1) names.push(nama);
+    });
+    const namesText = names.length ? names.join(', ') : 'Tidak diketahui';
     return '<div onclick="showAIHistoryDetail(\'' + day + '\')" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 14px;background:' + (i % 2 === 0 ? '#f8fafc' : '#fff') + ';border-radius:10px;border:1px solid #f1f5f9;">' +
       '<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🤖</div>' +
       '<div style="flex:1;min-width:0;">' +
       '<div style="font-size:13px;font-weight:800;color:#0f172a;">' + day + '</div>' +
-      '<div style="font-size:11px;color:#64748b;">' + userCount + ' user · ' + groups[day].entries.length + ' pertanyaan</div>' +
+      '<div style="font-size:11px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + namesText + ' · ' + groups[day].entries.length + ' pertanyaan</div>' +
       '</div><div style="font-size:14px;color:#94a3b8;">→</div></div>';
   }).join('');
 }
