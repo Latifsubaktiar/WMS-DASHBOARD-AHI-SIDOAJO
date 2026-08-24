@@ -2518,7 +2518,33 @@ function reloadIframe(frameId,key){const f=document.getElementById(frameId),url=
 function setupAI(inId,btnId,msgsId,typingId){
   const inp=document.getElementById(inId),btn=document.getElementById(btnId),msgs=document.getElementById(msgsId),typing=document.getElementById(typingId);
   if(!inp||!btn||!msgs) return;
-  function addBubble(text,type){const div=document.createElement('div');div.className=`ai-bubble ${type}`;div.style.whiteSpace='pre-wrap';div.textContent=text;if(typing&&msgs.contains(typing))msgs.insertBefore(div,typing);else msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
+  function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function renderAiMarkdown(text){
+    const lines = String(text).split('\n');
+    let html = '';
+    let inList = false;
+    lines.forEach(line=>{
+      const trimmed = line.trim();
+      const isBullet = /^[-*]\s+/.test(trimmed);
+      if(isBullet){
+        if(!inList){ html += '<ul style="margin:6px 0;padding-left:20px;">'; inList = true; }
+        let item = escapeHtml(trimmed.replace(/^[-*]\s+/, ''));
+        item = item.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html += '<li style="margin:2px 0;">' + item + '</li>';
+      } else {
+        if(inList){ html += '</ul>'; inList = false; }
+        if(trimmed === ''){ html += '<br>'; }
+        else {
+          let para = escapeHtml(line);
+          para = para.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+          html += '<div>' + para + '</div>';
+        }
+      }
+    });
+    if(inList) html += '</ul>';
+    return html;
+  }
+  function addBubble(text,type){const div=document.createElement('div');div.className=`ai-bubble ${type}`;div.style.whiteSpace='pre-wrap';if(type==='bot'){div.innerHTML=renderAiMarkdown(text);}else{div.textContent=text;}if(typing&&msgs.contains(typing))msgs.insertBefore(div,typing);else msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
   async function send(){const txt=inp.value.trim();if(!txt)return;addBubble(txt,'user');inp.value='';inp.disabled=true;btn.disabled=true;if(typing){typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;}try{const res=await fetch(GAS_AI_URL+'?action=aiAsk&q='+encodeURIComponent(txt)+'&nip='+encodeURIComponent(localStorage.getItem('wms_nip')||'')+'&name='+encodeURIComponent(localStorage.getItem('wms_name')||''));const data=await res.json();if(typing)typing.classList.remove('show');addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');}catch(e){if(typing)typing.classList.remove('show');addBubble('Maaf, terjadi kesalahan koneksi.','bot');}inp.disabled=false;btn.disabled=false;inp.focus();}
   btn.addEventListener('click',send);inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 }
