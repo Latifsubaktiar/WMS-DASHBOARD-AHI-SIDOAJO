@@ -2546,6 +2546,18 @@ function setupAI(inId,btnId,msgsId,typingId){
   }
   function addBubble(text,type){const div=document.createElement('div');div.className=`ai-bubble ${type}`;div.style.whiteSpace='pre-wrap';if(type==='bot'){div.innerHTML=renderAiMarkdown(text);}else{div.textContent=text;}if(typing&&msgs.contains(typing))msgs.insertBefore(div,typing);else msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
   let lastAiTool = ''; // topik AI Support terakhir, dipakai biar pertanyaan lanjutan tetap nyambung
+  // ── Muat riwayat chat milik user ini sendiri (biar ga hilang pas refresh) ──
+  (async function loadMyHistory(){
+    try{
+      const nip = localStorage.getItem('wms_nip')||'';
+      if(!nip) return;
+      const res = await fetch(GAS_AI_URL+'?action=myAiHistory&nip='+encodeURIComponent(nip));
+      const data = await res.json();
+      if(data.success && data.logs && data.logs.length){
+        data.logs.forEach(l=>{ addBubble(l.pertanyaan,'user'); addBubble(l.jawaban,'bot'); });
+      }
+    }catch(e){ /* diam saja kalau gagal, chat tetap bisa dipakai dari kosong */ }
+  })();
   async function send(){const txt=inp.value.trim();if(!txt)return;addBubble(txt,'user');inp.value='';inp.disabled=true;btn.disabled=true;if(typing){typing.classList.add('show');msgs.scrollTop=msgs.scrollHeight;}try{const res=await fetch(GAS_AI_URL+'?action=aiAsk&q='+encodeURIComponent(txt)+'&nip='+encodeURIComponent(localStorage.getItem('wms_nip')||'')+'&name='+encodeURIComponent(localStorage.getItem('wms_name')||'')+'&lastTool='+encodeURIComponent(lastAiTool));const data=await res.json();if(typing)typing.classList.remove('show');addBubble(data.answer||'Maaf, tidak ada jawaban.','bot');if(data.toolUsed)lastAiTool=data.toolUsed;}catch(e){if(typing)typing.classList.remove('show');addBubble('Maaf, terjadi kesalahan koneksi.','bot');}inp.disabled=false;btn.disabled=false;inp.focus();}
   btn.addEventListener('click',send);inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 }
