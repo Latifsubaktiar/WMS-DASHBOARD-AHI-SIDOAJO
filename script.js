@@ -2568,10 +2568,18 @@ function setupAI(inId,btnId,msgsId,typingId){
   }
   let lastAiTool = ''; // topik AI Support terakhir, dipakai biar pertanyaan lanjutan tetap nyambung
   // ── Muat riwayat chat milik user ini sendiri (biar ga hilang pas refresh) ──
+  // FIX: kalau NIP belum ke-detect pas fungsi ini pertama jalan (kejadian
+  // di login yang baru/fresh, race condition sama proses login), COBA
+  // ULANG beberapa kali dengan jeda, jangan langsung nyerah sekali coba.
   (async function loadMyHistory(){
+    let nip = '';
+    for(let attempt=0; attempt<8; attempt++){
+      nip = localStorage.getItem('wms_nip')||'';
+      if(nip) break;
+      await new Promise(r=>setTimeout(r,300)); // tunggu 300ms, coba lagi
+    }
+    if(!nip) return; // udah dicoba 8x (~2.4 detik), beneran ga ada NIP
     try{
-      const nip = localStorage.getItem('wms_nip')||'';
-      if(!nip) return;
       const res = await fetch(GAS_AI_URL+'?action=myAiHistory&nip='+encodeURIComponent(nip));
       const data = await res.json();
       if(data.success && data.logs && data.logs.length){
