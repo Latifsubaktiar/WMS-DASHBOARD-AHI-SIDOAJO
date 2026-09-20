@@ -27,8 +27,9 @@ const URLS = {
   inbound:   'https://script.google.com/macros/s/AKfycbyXFO0rz1pQeRzT8ZBk6v1AHxcbvw4iqsuYcFxLIa_f6Sj5XrDncYUVkkE5RwHj_TAYZA/exec', storing: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyBTR01ZrItlvxh1C83yxFs5B8lwK5t-a4kuKHir8s8a1SprmUA_6TsRkzDZpWOaBL9Ew/exec',
   ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
   hr:        'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyNQYijkh5bA5TBLY33OYgWxzyGlhKmqWs0qHowjBthmU1xO3nRA7mtHEbMa5Z-yOgt/exec',
+  mtc:       'https://ndckawanlamasidoarjo.github.io/MHEControlCenter/',
 };
-const IFRAME_PAGES   = ['profildc','inventory','outbound','planner','ga','analyst','storing','inbound','hr'];
+const IFRAME_PAGES   = ['profildc','inventory','outbound','planner','ga','analyst','storing','inbound','hr','mtc'];
 const GAS_AI_URL     = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
 const AVATAR_COLORS = [
