@@ -28,8 +28,9 @@ const URLS = {
   ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
   hr:        'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyNQYijkh5bA5TBLY33OYgWxzyGlhKmqWs0qHowjBthmU1xO3nRA7mtHEbMa5Z-yOgt/exec',
   mtc:       'https://ndckawanlamasidoarjo.github.io/MHEControlCenter/',
+  fbi:       'https://noviantoscm-dev.github.io/dashboard-utama/',
 };
-const IFRAME_PAGES   = ['profildc','inventory','outbound','planner','ga','analyst','storing','inbound','hr','mtc'];
+const IFRAME_PAGES   = ['profildc','inventory','outbound','planner','ga','analyst','storing','inbound','hr','mtc','fbi'];
 const GAS_AI_URL     = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
 const AVATAR_COLORS = [
