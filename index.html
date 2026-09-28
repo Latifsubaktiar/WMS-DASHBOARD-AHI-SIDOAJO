@@ -1572,12 +1572,31 @@
       #page-tools .tl-empty{padding:18px;font-size:13px;line-height:1.5;color:var(--text-3);text-align:center}
       #page-tools .tl-empty-err{color:var(--red)}
       @media (max-width:980px){#page-tools .tl-grid{grid-template-columns:1fr}}
-    </style>
+          #page-tools .tl-tabs{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap}
+      #page-tools .tl-tab{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:12px;border:1px solid var(--border-2);background:rgba(255,255,255,.6);color:var(--text-2);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s}
+      #page-tools .tl-tab:hover{background:var(--surface);color:var(--text)}
+      #page-tools .tl-tab.active{background:linear-gradient(145deg,var(--accent),var(--accent-dark));border-color:transparent;color:#fff;box-shadow:var(--shadow-btn)}
+      #page-tools .tl-tab-tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(122,154,188,.2);color:var(--text-3)}
+      #page-tools .tl-tab.active .tl-tab-tag{background:rgba(255,255,255,.22);color:#fff}
+      #page-tools .tl-frame-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--border-2)}
+      #page-tools .tl-frame-bar b{font-size:14px;color:var(--text)}
+      #page-tools .tl-frame-bar .tl-muted{display:block;margin-top:2px}
+      #page-tools .tl-frame-bar-btns{display:flex;gap:8px;flex-wrap:wrap}
+      #page-tools a.tl-btn{display:inline-flex;align-items:center;text-decoration:none}
+      #page-tools .tl-frame{display:block;width:100%;height:calc(100vh - 260px);min-height:700px;border:0;background:#ececea}
+      #page-tools .tl-frame-msg{margin:14px 18px}
+</style>
     <div class="page-header">
-      <div class="page-title-wrap"><h1>🛠️ Tools</h1><p>Alat bantu operasional — PPT laporan otomatis</p></div>
+      <div class="page-title-wrap"><h1>🛠️ Tools</h1><p>Alat bantu operasional — pembuat PPT laporan</p></div>
       <div class="date-chip">📅 <span id="tlDate">—</span></div>
     </div>
 
+    <div class="tl-tabs">
+      <button class="tl-tab active" id="tlTabPagi" onclick="toolsSwitchTab('pagi')">📄 PPT Laporan Pagi <span class="tl-tab-tag">Otomatis</span></button>
+      <button class="tl-tab" id="tlTabPimpinan" onclick="toolsSwitchTab('pimpinan')">🧑‍💼 PPT Pak Rudi, Pak Husni &amp; Pak Arson <span class="tl-tab-tag">Manual</span></button>
+    </div>
+
+    <div id="tlPanePagi">
     <div class="tl-grid">
       <div class="card">
         <div class="card-header"><span class="card-title">📄 PPT Laporan Pagi DC AHI Sidoarjo</span><span class="tl-pill tl-pill-wait" id="tlStatusPill">Memuat data…</span></div>
@@ -1612,6 +1631,21 @@
     <div class="card tl-block">
       <div class="card-header"><span class="card-title">🕘 Riwayat PPT</span><button class="tl-btn tl-btn-sm" onclick="toolsLoadHistory()">↺ Muat ulang</button></div>
       <div class="tl-body" id="tlHistory"><div class="tl-empty">Memuat riwayat…</div></div>
+    </div>
+    </div>
+
+    <div id="tlPanePimpinan" style="display:none">
+      <div class="card tl-block" style="padding:0;overflow:hidden">
+        <div class="tl-frame-bar">
+          <div><b>PPT untuk Pak Rudi, Pak Husni &amp; Pak Arson</b><span class="tl-muted">Isi form, klik kotak foto lalu Ctrl+V untuk paste gambar, lalu klik Download PPT. Cara pakainya sama seperti biasa.</span></div>
+          <div class="tl-frame-bar-btns">
+            <button class="tl-btn tl-btn-sm" onclick="toolsReloadPimpinan()">↺ Muat ulang</button>
+            <a class="tl-btn tl-btn-sm" href="ppt-pimpinan.html" target="_blank" rel="noopener">↗ Buka di tab baru</a>
+          </div>
+        </div>
+        <div class="tl-msg tl-frame-msg" id="tlPimpMsg"></div>
+        <iframe id="tlPimpFrame" class="tl-frame" title="PPT untuk Pimpinan" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+      </div>
     </div>
   </div>
 
