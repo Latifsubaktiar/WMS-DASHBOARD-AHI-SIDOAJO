@@ -265,7 +265,7 @@
   <div class="nav-section">
     <div class="nav-label">BU</div>
     <button class="nav-item" data-page="fbi"><span class="nav-icon">🏭</span>FBI<span class="nav-tag tag-green">Live</span></button>
-    <button class="nav-item" data-page="kls"><span class="nav-icon">🏭</span>KLS<span class="nav-tag tag-orange">Soon</span></button>
+    <button class="nav-item" data-page="kls"><span class="nav-icon">🏭</span>KLS<span class="nav-tag tag-green">Live</span></button>
   </div>
   <div class="nav-divider"></div>
   <div class="nav-section">
@@ -1504,7 +1504,10 @@
   </div>
 
   <!-- KLS -->
-  <div class="page" id="page-kls"><div class="soon-screen"><div class="si">🏭</div><h2>KLS Dashboard</h2><p>Sedang dalam pengembangan.</p><div class="soon-badge">🔧 Coming Soon</div></div></div>
+  <div class="iframe-page" id="page-kls">
+    <div class="iframe-bar"><button class="iframe-back" onclick="goHome()">← Kembali</button><span class="iframe-title">🏭 KLS</span><span class="iframe-sub">Dashboard Business Unit KLS</span><div class="iframe-actions"><button class="btn-sm btn-outline" onclick="reloadIframe('ifrKls','kls')">↺ Refresh</button><a class="btn-sm btn-primary" id="tabKls" href="#" target="_blank">↗ Tab Baru</a></div></div>
+    <div class="iframe-container"><div class="iframe-loading" id="ldKls"><div class="spin-wrap"><div class="spin"></div><div class="spin-inner"></div></div><span style="font-size:13px;color:var(--text-3);font-weight:600">Memuat Dashboard KLS...</span></div><div class="iframe-error" id="errKls"><div class="err-icon">⚠️</div><div class="err-title">Tidak dapat dimuat</div><div class="err-desc">Coba buka di tab baru.</div><a class="btn-sm btn-primary" id="errTabKls" href="#" target="_blank" style="margin-top:8px">↗ Buka Tab Baru</a></div><iframe id="ifrKls" src="about:blank" allow="fullscreen *"></iframe></div>
+  </div>
 
   <!-- OUTBOUND -->
   <div class="iframe-page" id="page-outbound">
