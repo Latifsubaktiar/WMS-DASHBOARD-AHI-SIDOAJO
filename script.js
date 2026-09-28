@@ -3702,3 +3702,42 @@ async function toolsGeneratePpt() {
     if (gen) gen.disabled = !toolsAllOk(toolsData);
   }
 }
+
+// ── TAB di halaman Tools: (1) PPT Laporan Pagi otomatis, (2) PPT untuk Pak Rudi, Pak Husni & Pak Arson (tool HTML lama, dipasang utuh lewat iframe) ──
+var TOOLS_PIMP_URL = 'ppt-pimpinan.html';
+var toolsTab = 'pagi';
+
+function toolsSwitchTab(name) {
+  toolsTab = name === 'pimpinan' ? 'pimpinan' : 'pagi';
+  const pagi = toolsEl('tlPanePagi'), pimp = toolsEl('tlPanePimpinan');
+  if (pagi) pagi.style.display = toolsTab === 'pagi' ? '' : 'none';
+  if (pimp) pimp.style.display = toolsTab === 'pimpinan' ? '' : 'none';
+  const t1 = toolsEl('tlTabPagi'), t2 = toolsEl('tlTabPimpinan');
+  if (t1) t1.classList.toggle('active', toolsTab === 'pagi');
+  if (t2) t2.classList.toggle('active', toolsTab === 'pimpinan');
+  if (toolsTab === 'pimpinan') toolsLoadPimpinan(false);
+}
+
+async function toolsLoadPimpinan(force) {
+  const fr = toolsEl('tlPimpFrame'), msg = toolsEl('tlPimpMsg');
+  if (!fr) return;
+  if (fr.dataset.loaded === '1' && !force) return;
+  try {
+    // cek dulu filenya ada (satu situs yang sama, jadi boleh); kalau belum di-upload, kasih petunjuk, bukan iframe kosong
+    const res = await fetch(TOOLS_PIMP_URL, { method: 'HEAD', cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (msg) { msg.className = 'tl-msg tl-frame-msg'; msg.textContent = ''; }
+    fr.style.display = '';
+    fr.src = TOOLS_PIMP_URL + (force ? '?v=' + Date.now() : '');
+    fr.dataset.loaded = '1';
+  } catch (e) {
+    fr.style.display = 'none';
+    if (msg) { msg.className = 'tl-msg tl-msg-err tl-frame-msg'; msg.textContent = 'Tool PPT untuk pimpinan belum bisa dimuat (' + e.message + '). Pastikan file ppt-pimpinan.html sudah di-upload ke repo GitHub, sejajar dengan index.html.'; }
+  }
+}
+
+function toolsReloadPimpinan() {
+  const fr = toolsEl('tlPimpFrame');
+  if (fr) fr.dataset.loaded = '0';
+  toolsLoadPimpinan(true);
+}
