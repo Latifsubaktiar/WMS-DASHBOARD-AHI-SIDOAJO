@@ -23,7 +23,7 @@ const URLS = {
   planner:   'https://plannerazko.github.io/DashboardPlanning/',
   inventory: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbwgrzzsmS8Nab4WhTLIOdFiknXfV4Ak-jE8Ewd9qBvR_uh93c2VBa3OInHAzbEI8HrdUw/exec',
   outbound:  'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbxj7b_WAVkKu8AmyyMVPQbvn7I1ycbbjpZCTVZ_EzUN/dev',
-  analyst:   'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzbsvn8Tiu3N3WGjBRbN_6-CsqAI9vTl2IxW1bsYi92Gk15Alzzk1JBvL4iyyvnL8nj/exec',
+  // analyst: (menu Analyst diganti Tools; alamat lama disimpan di sini kalau mau dipasang lagi) 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbzbsvn8Tiu3N3WGjBRbN_6-CsqAI9vTl2IxW1bsYi92Gk15Alzzk1JBvL4iyyvnL8nj/exec',
   inbound:   'https://script.google.com/macros/s/AKfycbyXFO0rz1pQeRzT8ZBk6v1AHxcbvw4iqsuYcFxLIa_f6Sj5XrDncYUVkkE5RwHj_TAYZA/exec', storing: 'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyBTR01ZrItlvxh1C83yxFs5B8lwK5t-a4kuKHir8s8a1SprmUA_6TsRkzDZpWOaBL9Ew/exec',
   ga:        'https://script.google.com/macros/s/AKfycbzAKPAl_-Bb36LP1qAXgK1DRaYqxz2GUP_4-sbkGHpkxdmzIU4BlaPBYhUvvi04EV7d/exec',
   hr:        'https://script.google.com/a/macros/kawanlamacorp.com/s/AKfycbyNQYijkh5bA5TBLY33OYgWxzyGlhKmqWs0qHowjBthmU1xO3nRA7mtHEbMa5Z-yOgt/exec',
@@ -31,7 +31,7 @@ const URLS = {
   fbi:       'https://noviantoscm-dev.github.io/dashboard-utama/',
   kls:       'https://plannerazko.github.io/logisaleskawanlama/',
 };
-const IFRAME_PAGES   = ['profildc','inventory','outbound','planner','ga','analyst','storing','inbound','hr','mtc','fbi','kls'];
+const IFRAME_PAGES   = ['profildc','inventory','outbound','planner','ga','storing','inbound','hr','mtc','fbi','kls'];
 const GAS_AI_URL     = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
 
 const AVATAR_COLORS = [
@@ -2500,6 +2500,7 @@ function go(p){
   document.querySelectorAll('.iframe-page').forEach(el=>{el.classList.remove('active');el.style.display='none';});
   if(IFRAME_PAGES.includes(p)){const pg=document.getElementById(`page-${p}`);if(pg){pg.style.display='flex';pg.classList.add('active');}loadIframe(p);}
   else{const pg=document.getElementById(`page-${p}`);if(pg)pg.classList.add('active');}
+  if(p==='tools'&&typeof initToolsPage==='function')initToolsPage();
 }
 function goHome(){go('dashboard');IFRAME_PAGES.forEach(k=>{const f=document.getElementById(`ifr${cap(k)}`);if(f)f.src='about:blank';});}
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
@@ -2625,7 +2626,7 @@ document.getElementById('profileOverlay').addEventListener('click',function(e){i
 document.addEventListener('click',function(e){const panel=document.getElementById('settingsPanel'),btn=document.getElementById('settingsBtn');if(settingsOpen&&panel&&btn&&!panel.contains(e.target)&&!btn.contains(e.target)){settingsOpen=false;panel.classList.remove('open');}});
 
 // ── SEARCH BAR ──
-const SEARCH_ITEMS=[{label:'Profil DC',page:'profildc',icon:'🏭',desc:'Informasi Distribution Center AHI Sidoarjo'},{label:'Dashboard',page:'dashboard',icon:'🏠',desc:'Halaman utama'},{label:'Planner',page:'planner',icon:'📋',desc:'Rencana Operasional'},{label:'Inbound',page:'inbound',icon:'📦',desc:'Dashboard Inbound'},{label:'Storing',page:'storing',icon:'🏗️',desc:'Dashboard Storing'},{label:'Outbound',page:'outbound',icon:'🚚',desc:'Dashboard Outbound'},{label:'Inventory',page:'inventory',icon:'📊',desc:'Manajemen Stok'},{label:'GA',page:'ga',icon:'🏢',desc:'General Affairs'},{label:'HR',page:'hr',icon:'👥',desc:'Human Resources'},{label:'Analyst',page:'analyst',icon:'📊',desc:'Dashboard Analitik Operasional'},{label:'Discussion',page:'discussion',icon:'💬',desc:'Discussion Room'},{label:'AI Support',page:'ai',icon:'🤖',desc:'Asisten AI Warehouse'}];
+const SEARCH_ITEMS=[{label:'Profil DC',page:'profildc',icon:'🏭',desc:'Informasi Distribution Center AHI Sidoarjo'},{label:'Dashboard',page:'dashboard',icon:'🏠',desc:'Halaman utama'},{label:'Planner',page:'planner',icon:'📋',desc:'Rencana Operasional'},{label:'Inbound',page:'inbound',icon:'📦',desc:'Dashboard Inbound'},{label:'Storing',page:'storing',icon:'🏗️',desc:'Dashboard Storing'},{label:'Outbound',page:'outbound',icon:'🚚',desc:'Dashboard Outbound'},{label:'Inventory',page:'inventory',icon:'📊',desc:'Manajemen Stok'},{label:'GA',page:'ga',icon:'🏢',desc:'General Affairs'},{label:'HR',page:'hr',icon:'👥',desc:'Human Resources'},{label:'Tools',page:'tools',icon:'🛠️',desc:'PPT Laporan Otomatis'},{label:'Discussion',page:'discussion',icon:'💬',desc:'Discussion Room'},{label:'AI Support',page:'ai',icon:'🤖',desc:'Asisten AI Warehouse'}];
 const searchInput=document.getElementById('searchInput'), searchDropdown=document.getElementById('searchDropdown');
 function renderSearch(query){if(!query.trim()){searchDropdown.style.display='none';return;}const q=query.toLowerCase(),results=SEARCH_ITEMS.filter(item=>item.label.toLowerCase().includes(q)||item.desc.toLowerCase().includes(q));if(!results.length){searchDropdown.innerHTML='<div style="padding:12px 14px;font-size:12.5px;color:var(--text-3);text-align:center;">Tidak ditemukan</div>';searchDropdown.style.display='block';return;}searchDropdown.innerHTML=results.map(item=>`<div class="search-item" data-page="${item.page}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:all 0.15s;"><div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);display:grid;place-items:center;font-size:16px;flex-shrink:0;border:1px solid var(--accent-mid);">${item.icon}</div><div><div style="font-size:13px;font-weight:700;color:var(--text);">${item.label}</div><div style="font-size:11px;color:var(--text-3);">${item.desc}</div></div><span style="margin-left:auto;font-size:10px;color:var(--text-3);">↵</span></div>`).join('');searchDropdown.style.display='block';searchDropdown.querySelectorAll('.search-item').forEach(el=>{el.addEventListener('mouseenter',()=>{el.style.background='var(--accent-light)';});el.addEventListener('mouseleave',()=>{el.style.background='none';});el.addEventListener('click',()=>{go(el.dataset.page);searchInput.value='';searchDropdown.style.display='none';});});}
 if(searchInput){searchInput.addEventListener('input',e=>renderSearch(e.target.value));searchInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const first=searchDropdown.querySelector('.search-item');if(first){go(first.dataset.page);searchInput.value='';searchDropdown.style.display='none';}}if(e.key==='Escape'){searchInput.value='';searchDropdown.style.display='none';}});}
@@ -3297,3 +3298,407 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === ' ')          { e.preventDefault(); pdcSsToggle(); }
   else if (e.key === 'Escape')     pdcSsStop();
 });
+
+// ═════════════════════════════════════════════════════════════════
+//  TOOLS — PPT LAPORAN OTOMATIS
+//  Halaman "Tools" di sidebar. Alurnya:
+//    1. ambil data dari Code.gs  (?action=getPptData)
+//    2. susun slide di browser pakai pptxgenjs (dimuat saat dibutuhkan)
+//    3. unduh .pptx  + catat di riwayat (disimpan di browser ini)
+//  Grafik/kartu/donut = objek PowerPoint asli (bisa diedit), bukan screenshot.
+// ═════════════════════════════════════════════════════════════════
+const TOOLS_PPTX_CDN = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+const TOOLS_JSZIP_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+const TOOLS_PARTS = [['profil', 'Profil DC'], ['inbound', 'Inbound'], ['storing', 'Storing'], ['outbound', 'Outbound'], ['inventory', 'Inventory'], ['planner', 'Planner SLA']];
+let toolsData = null;
+let toolsHistory = null;
+let toolsBusy = false;
+
+function toolsEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function toolsEl(id) { return document.getElementById(id); }
+
+function toolsLoadScript(url) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector('script[data-tools-src="' + url + '"]')) return resolve();
+    const sc = document.createElement('script');
+    sc.src = url; sc.dataset.toolsSrc = url;
+    sc.onload = () => resolve();
+    sc.onerror = () => { sc.remove(); reject(new Error('Gagal memuat pustaka (' + url.split('/').pop() + '). Cek koneksi internet.')); };
+    document.head.appendChild(sc);
+  });
+}
+
+function toolsMsg(type, text) {
+  const el = toolsEl('tlMsg'); if (!el) return;
+  el.className = 'tl-msg' + (text ? ' tl-msg-' + type : '');
+  el.textContent = text || '';
+}
+
+function toolsSetPill(kind, text) {
+  const el = toolsEl('tlStatusPill'); if (!el) return;
+  el.className = 'tl-pill tl-pill-' + kind; el.textContent = text;
+}
+
+function initToolsPage() {
+  const el = toolsEl('tlDate');
+  if (el) el.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  if (!toolsData) toolsRefreshData();
+  toolsLoadHistory();
+}
+
+function toolsAllOk(api) {
+  return !!api && TOOLS_PARTS.every(p => api[p[0]] && api[p[0]].ok !== false);
+}
+
+async function toolsFetchData() {
+  const res = await fetch(GAS_DASHBOARD_URL + '?action=getPptData&_=' + Date.now());
+  const json = await res.json();
+  if (!json || json.ok === false) throw new Error((json && json.error) || 'Respons dari server tidak valid');
+  return json;
+}
+
+async function toolsRefreshData() {
+  if (toolsBusy) return;
+  const gen = toolsEl('tlGenBtn'), ref = toolsEl('tlRefreshBtn');
+  if (gen) gen.disabled = true; if (ref) ref.disabled = true;
+  toolsSetPill('wait', 'Mengambil data…'); toolsMsg('', '');
+  try {
+    toolsData = await toolsFetchData();
+    toolsRenderData();
+  } catch (e) {
+    toolsData = null;
+    toolsRenderData();
+    toolsSetPill('err', 'Data gagal diambil');
+    toolsMsg('err', 'Data tidak bisa diambil: ' + e.message);
+  } finally {
+    if (ref) ref.disabled = false;
+  }
+}
+
+function toolsFmt(v) { return typeof v === 'number' ? v.toLocaleString('id-ID') : String(v == null || v === '' ? '-' : v); }
+function toolsPct1(v) { return (parseFloat(v) || 0).toFixed(1) + '%'; }
+
+function toolsRenderData() {
+  const src = toolsEl('tlSources'), kpi = toolsEl('tlKpis'), gen = toolsEl('tlGenBtn'), stamp = toolsEl('tlStamp');
+  if (!src || !kpi) return;
+  if (!toolsData) {
+    src.innerHTML = TOOLS_PARTS.map(p => '<span class="tl-src tl-src-off">– ' + p[1] + '</span>').join('');
+    kpi.innerHTML = '<div class="tl-empty">Belum ada data. Klik “Muat ulang data”.</div>';
+    if (stamp) stamp.textContent = '';
+    if (gen) gen.disabled = true;
+    return;
+  }
+  const d = toolsData;
+  src.innerHTML = TOOLS_PARTS.map(p => {
+    const part = d[p[0]]; const ok = part && part.ok !== false;
+    return '<span class="tl-src ' + (ok ? 'tl-src-ok' : 'tl-src-err') + '" title="' + toolsEsc(ok ? '' : (part && part.error) || 'tidak ada data') + '">' + (ok ? '✓ ' : '✕ ') + p[1] + '</span>';
+  }).join('');
+  const all = toolsAllOk(d);
+  if (all) {
+    const k = [
+      ['Inbound', toolsPct1(d.inbound.pct), d.inbound.totalToday + ' LC'],
+      ['Storing', toolsPct1(d.storing.pct), d.storing.totalLC + ' LC'],
+      ['Outbound', toolsPct1(d.outbound.pct), d.outbound.totalLC + ' LC'],
+      ['Rata-rata progres', d.rata != null ? d.rata.toFixed(1) + '%' : '-', 'Inbound+Storing+Outbound'],
+      ['Occupancy', toolsFmt(d.profil.performance && d.profil.performance.occupancy), 'Profil DC'],
+      ['Akurasi inventory', toolsFmt(d.inventory.akurasi), 'Cycle Count']
+    ];
+    kpi.innerHTML = k.map(x => '<div class="tl-kpi"><span>' + toolsEsc(x[0]) + '</span><b>' + toolsEsc(x[1]) + '</b><small>' + toolsEsc(x[2]) + '</small></div>').join('');
+    toolsSetPill('ok', 'Siap dibuat');
+  } else {
+    const bad = TOOLS_PARTS.filter(p => !(d[p[0]] && d[p[0]].ok !== false)).map(p => p[1]);
+    kpi.innerHTML = '<div class="tl-empty">Data belum lengkap. Bagian bermasalah: <b>' + toolsEsc(bad.join(', ')) + '</b>. PPT tidak dibuat supaya tidak ada angka kosong yang ikut terkirim.</div>';
+    toolsSetPill('err', 'Data belum lengkap');
+  }
+  if (stamp) stamp.textContent = 'Data diambil pukul ' + toolsEsc(d.jam || '-') + ' WIB';
+  if (gen) gen.disabled = !all;
+}
+
+// ── riwayat (dibaca dari sheet "PPT_Log" di server: otomatis + manual) ──
+function toolsFmtWaktu(w) {
+  const m = String(w || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if (!m) return String(w || '-');
+  const bln = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  return parseInt(m[3], 10) + ' ' + bln[parseInt(m[2], 10) - 1] + ' ' + m[1] + ', ' + m[4] + ':' + m[5];
+}
+
+async function toolsLoadHistory() {
+  const box = toolsEl('tlHistory');
+  if (box && !toolsHistory) box.innerHTML = '<div class="tl-empty">Memuat riwayat…</div>';
+  try {
+    const res = await fetch(GAS_DASHBOARD_URL + '?action=getPptHistory&limit=30&_=' + Date.now());
+    const json = await res.json();
+    if (!json || json.ok === false) throw new Error((json && json.error) || 'Respons dari server tidak valid');
+    toolsHistory = json.rows || [];
+    toolsRenderHistory();
+  } catch (e) {
+    toolsHistory = null;
+    if (box) box.innerHTML = '<div class="tl-empty tl-empty-err">Riwayat tidak bisa dimuat: ' + toolsEsc(e.message) + '</div>';
+    toolsRenderSchedule();
+  }
+}
+
+function toolsRenderHistory() {
+  const box = toolsEl('tlHistory'); if (!box) return;
+  const rows = toolsHistory || [];
+  toolsRenderSchedule();
+  if (!rows.length) { box.innerHTML = '<div class="tl-empty">Belum ada PPT yang tercatat. PPT yang dibuat otomatis (jadwal) maupun lewat tombol akan muncul di sini.</div>'; return; }
+  box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Status</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody>' +
+    rows.map(r => {
+      const auto = r.jenis === 'otomatis', ok = r.status === 'sukses';
+      const link = /^https:\/\//i.test(r.link || '') ? '<a class="tl-link" href="' + toolsEsc(r.link) + '" target="_blank" rel="noopener">Buka ↗</a>' : '<span class="tl-dash">–</span>';
+      const ket = [r.file ? '<b>' + toolsEsc(r.file) + '</b>' : '', r.slide ? toolsEsc(r.slide) : '', r.catatan ? toolsEsc(r.catatan) : '', r.oleh ? 'oleh ' + toolsEsc(r.oleh) : ''].filter(Boolean).join(' · ');
+      return '<tr><td class="tl-nowrap">' + toolsEsc(toolsFmtWaktu(r.waktu)) + '</td>' +
+        '<td><span class="tl-pill ' + (auto ? 'tl-pill-auto' : 'tl-pill-manual') + '">' + (auto ? 'Otomatis' : 'Manual') + '</span></td>' +
+        '<td><span class="tl-pill ' + (ok ? 'tl-pill-ok' : 'tl-pill-err') + '">' + (ok ? '✓ Sukses' : '✕ Gagal') + '</span></td>' +
+        '<td class="tl-ket">' + (ket || '<span class="tl-dash">–</span>') + '</td><td class="tl-nowrap">' + link + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+
+// kartu jadwal otomatis: status diambil dari riwayat (run otomatis terakhir), bukan tebakan
+function toolsRenderSchedule() {
+  const pill = toolsEl('tlSchedPill'), body = toolsEl('tlSchedBody'); if (!pill || !body) return;
+  const auto = (toolsHistory || []).filter(r => r.jenis === 'otomatis');
+  if (toolsHistory === null) { pill.className = 'tl-pill tl-pill-off'; pill.textContent = 'Tidak diketahui'; body.innerHTML = '<p class="tl-desc">Riwayat belum bisa dimuat, jadi status jadwal belum bisa dicek.</p>'; return; }
+  if (!auto.length) {
+    pill.className = 'tl-pill tl-pill-off'; pill.textContent = 'Belum aktif';
+    body.innerHTML = '<p class="tl-desc">Belum ada PPT otomatis yang tercatat. Begitu jadwal (mis. jam 06:00) berjalan, hasilnya muncul di riwayat ini.</p>';
+    return;
+  }
+  const last = auto[0], ok = last.status === 'sukses';
+  const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const wk = auto.filter(r => (r.tanggal || '') >= cutoff);
+  const okN = wk.filter(r => r.status === 'sukses').length;
+  pill.className = 'tl-pill ' + (ok ? 'tl-pill-ok' : 'tl-pill-err'); pill.textContent = ok ? 'Aktif' : 'Perlu dicek';
+  body.innerHTML = '<p class="tl-desc"><b>Terakhir berjalan:</b> ' + toolsEsc(toolsFmtWaktu(last.waktu)) + ' — ' + (ok ? 'berhasil' : 'GAGAL' + (last.catatan ? ' (' + toolsEsc(last.catatan) + ')' : '')) + '</p>' +
+    '<p class="tl-desc"><b>7 hari terakhir:</b> ' + okN + ' sukses, ' + (wk.length - okN) + ' gagal dari ' + wk.length + ' run.</p>';
+}
+
+// catat pembuatan PPT manual ke server (tidak menghalangi unduhan kalau gagal)
+async function toolsLogRun(status, file, slide, catatan) {
+  try {
+    const q = '?action=logPpt&status=' + encodeURIComponent(status) + '&file=' + encodeURIComponent(file || '') + '&slide=' + encodeURIComponent(slide || '') +
+      '&catatan=' + encodeURIComponent(catatan || '') + '&oleh=' + encodeURIComponent(localStorage.getItem('wms_name') || '');
+    await fetch(GAS_DASHBOARD_URL + q);
+  } catch (e) { console.warn('Gagal mencatat riwayat PPT:', e); }
+  toolsLoadHistory();
+}
+
+// ── pemetaan data server -> data slide ─────────────────────────────
+function toolsMapData(api) {
+  const withPct = v => {
+    const s = String(v == null ? '' : v).trim();
+    if (!s) return '-';
+    if (s.indexOf('%') >= 0) return s;
+    const n = parseFloat(s.replace(',', '.'));
+    if (!isNaN(n) && n >= 0 && n <= 1) return (n * 100).toFixed(2) + '%'; // pecahan (0.9767) -> 97.67%
+    return s + '%';
+  };
+  const pf = v => { const n = parseFloat(String(v).replace('%', '').replace(/\s/g, '').replace(',', '.')); return isNaN(n) ? 0 : n; };
+  const P = api.profil, perf = P.performance || {}, wl = P.workload || {}, cap = P.capacity || {}, at = P.areaTotal || {};
+  const inb = api.inbound, sto = api.storing, out = api.outbound, inv = api.inventory, pln = api.planner;
+  const pInb = parseFloat(inb.pct) || 0, pSto = parseFloat(sto.pct) || 0, pOut = parseFloat(out.pct) || 0;
+  return {
+    kapasitas: toolsFmt(cap.capacity), inventory: toolsFmt(cap.inventory), occupancy: withPct(perf.occupancy), accuracy: withPct(perf.accuracy),
+    slaStore: withPct(perf.slaStore), slaCust: withPct(perf.slaCustomer), workIn: toolsFmt(wl.inbound), workOut: toolsFmt(wl.outbound),
+    areas: [['Area 1', at.area1], ['Area 2', at.area2], ['Area 3', at.area3], ['Chatime', at.chatime]].map(a => [a[0], pf(withPct(a[1])), withPct(a[1])]),
+    slaGrw: withPct(pln.slaGrw), slaCustPlanner: withPct(pln.slaCust),
+    inb: { total: toolsFmt(inb.totalToday), fin: toolsFmt(inb.finish), pro: toolsFmt(inb.proses), blm: toolsFmt(inb.belum), pct: pInb },
+    sto: { total: toolsFmt(sto.totalLC), rel: toolsFmt(sto.release), pick: toolsFmt(sto.picked), stg: toolsFmt(sto.staged), sisa: toolsFmt(sto.sisa), pct: pSto },
+    out: { total: toolsFmt(out.totalLC), antri: toolsFmt(out.antri), blm: toolsFmt(out.belum), sel: toolsFmt(out.selesai), pct: pOut },
+    inv: { lok: toolsFmt(inv.lokasi), hit: toolsFmt(inv.hit), miss: toolsFmt(inv.miss), akurasi: withPct(inv.akurasi), cc: withPct(inv.pctCC) },
+    rata: api.rata != null ? api.rata : Math.round(((pInb + pSto + pOut) / 3) * 10) / 10,
+    jam: api.jam || ''
+  };
+}
+
+// latar gradien biru -> kuning -> oranye (seperti slide contoh)
+function toolsGradientBg() {
+  const c = document.createElement('canvas'); c.width = 1920; c.height = 1080;
+  const g = c.getContext('2d'); const grd = g.createLinearGradient(0, 0, 2060, 596);
+  grd.addColorStop(0, 'rgb(112,152,218)'); grd.addColorStop(0.5, 'rgb(250,206,104)'); grd.addColorStop(1, 'rgb(240,92,72)');
+  g.fillStyle = grd; g.fillRect(0, 0, 1920, 1080);
+  return c.toDataURL('image/png').replace(/^data:/, '');
+}
+
+// ── SLIDE 1: Profil DC + Daily Proses ──────────────────────────────
+function toolsBuildProfilDailySlide(pres, D, bgData) {
+  const FONT = 'Arial', RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF', NAVY = '1F3A8A';
+  const s = pres.addSlide();
+  s.background = { data: bgData };
+  s.addShape(pres.ShapeType.roundRect, { x: 0.25, y: 0.25, w: 12.83, h: 7.0, rectRadius: 0.1, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  const T = (text, o) => s.addText(text, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, o));
+
+  T('PROFIL DC AHI SIDOARJO', { x: 0.6, y: 0.42, w: 10, h: 0.55, fontSize: 30, bold: true, color: '111111' });
+  T('Overview of DC Profile & Operations Daily Reports', { x: 0.6, y: 0.98, w: 10, h: 0.4, fontSize: 18, italic: true, color: '222222' });
+  T('Profil Dc Sidoarjo', { x: 0.6, y: 1.5, w: 6.0, h: 0.35, fontSize: 16, bold: true, italic: true, color: 'A50F1E', align: 'center' });
+  T('Daily Proses today', { x: 6.85, y: 1.5, w: 6.0, h: 0.35, fontSize: 16, bold: true, italic: true, color: NAVY, align: 'center' });
+  s.addShape(pres.ShapeType.line, { x: 4.75, y: 1.68, w: 3.5, h: 0, line: { color: NAVY, width: 1.25, dashType: 'sysDot', endArrowType: 'triangle' } });
+
+  // panel gelap kiri: Profil DC
+  const LX = 0.6, PY = 2.0, PW = 6.0, PH = 2.75;
+  s.addShape(pres.ShapeType.roundRect, { x: LX, y: PY, w: PW, h: PH, rectRadius: 0.08, fill: { color: '0B0709' }, line: { color: '7A1420', width: 1 } });
+  T('DC PROFILE  ·  RINGKASAN UMUM', { x: LX + 0.17, y: PY + 0.1, w: 4, h: 0.2, fontSize: 8, bold: true, color: 'FF4D5E', charSpacing: 1 });
+  function card(x, y, w, h, o) {
+    s.addShape(pres.ShapeType.roundRect, { x: x, y: y, w: w, h: h, rectRadius: 0.05, fill: { color: o.bg }, line: { color: o.accent, width: 0.9 } });
+    T(o.label, { x: x + 0.08, y: y + 0.07, w: w - 0.16, h: 0.17, fontSize: 7, bold: true, color: 'B8B8C8' });
+    T(o.value, { x: x + 0.08, y: y + 0.24, w: w - 0.16, h: 0.4, fontSize: o.valueSize || 20, bold: true, color: o.valueColor || 'FFFFFF', fit: 'shrink' });
+    if (o.sub) T(o.sub, { x: x + 0.08, y: y + 0.66, w: w - 0.16, h: 0.3, fontSize: 7, color: 'C9C9D6' });
+    if (o.pct) T(o.pct, { x: x + 0.08, y: y + h - 0.24, w: w - 0.16, h: 0.18, fontSize: 10, bold: true, color: o.accent });
+  }
+  const kx = LX + 0.15, kw = 1.34, kg = 0.113, ky = PY + 0.38, kh = 0.86;
+  [['STORAGE CAPACITY', D.kapasitas, 'CBM'], ['INVENTORY', D.inventory, 'CBM'], ['OCCUPANCY', D.occupancy, 'terisi'], ['ACCURACY', D.accuracy, 'inventory']]
+    .forEach((c, i) => card(kx + i * (kw + kg), ky, kw, kh, { label: c[0], value: c[1], sub: c[2], accent: 'C81E32', bg: '160A0E', valueColor: 'FF5A6A' }));
+  const wy = ky + kh + 0.12;
+  card(kx, wy, 1.75, 0.6, { label: 'WORKLOAD INBOUND', value: D.workIn, accent: 'C81E32', bg: '160A0E', valueSize: 16 });
+  card(kx, wy + 0.68, 1.75, 0.6, { label: 'WORKLOAD OUTBOUND', value: D.workOut, accent: 'C81E32', bg: '160A0E', valueSize: 16 });
+  s.addShape(pres.ShapeType.roundRect, { x: kx + 1.88, y: wy, w: 3.82, h: 1.28, rectRadius: 0.05, fill: { color: '160A0E' }, line: { color: 'C81E32', width: 0.9 } });
+  T('PENCAPAIAN PER AREA (%)', { x: kx + 1.98, y: wy + 0.06, w: 3.6, h: 0.17, fontSize: 7, bold: true, color: 'B8B8C8' });
+  const areaVals = D.areas.map(a => a[1]);
+  const aMin = Math.max(0, Math.floor(Math.min.apply(null, areaVals) - 1)), aMax = Math.max.apply(null, areaVals) + 0.5;
+  s.addChart(pres.charts.BAR, [{ name: 'Pencapaian', labels: D.areas.map(a => a[0]), values: areaVals }], {
+    x: kx + 1.93, y: wy + 0.2, w: 3.72, h: 1.05, barDir: 'col', barGapWidthPct: 60, chartColors: ['FF3B4E'], showLegend: false, showTitle: false,
+    showValue: true, dataLabelPosition: 'outEnd', dataLabelFontSize: 8, dataLabelColor: 'FFFFFF', dataLabelFontFace: FONT, dataLabelFormatCode: '0.00',
+    catAxisLabelColor: 'D5D5E0', catAxisLabelFontSize: 8, catAxisLabelFontFace: FONT, valAxisHidden: true, valAxisMinVal: aMin, valAxisMaxVal: aMax,
+    valGridLine: { style: 'none' }, catGridLine: { style: 'none' }, catAxisLineShow: false,
+    plotArea: { fill: { color: '160A0E' } }, chartArea: { fill: { color: '160A0E' } }
+  });
+
+  // panel gelap kanan: Daily Proses
+  const RX = 6.85, NB = '0C1220';
+  s.addShape(pres.ShapeType.roundRect, { x: RX, y: PY, w: PW, h: PH, rectRadius: 0.08, fill: { color: '070A12' }, line: { color: '24356B', width: 1 } });
+  T('THROUGHPUT DASHBOARD  ·  RINGKASAN OPERASIONAL HARI INI', { x: RX + 0.17, y: PY + 0.1, w: 5.6, h: 0.2, fontSize: 8, bold: true, color: '7FA2FF', charSpacing: 1 });
+  const cw = 1.06, cg = 0.1, cx0 = RX + 0.15, cy0 = PY + 0.38, ch = 1.17;
+  [
+    { label: 'INBOUND', value: D.inb.total, sub: 'Selesai ' + D.inb.fin + ' · Proses ' + D.inb.pro + ' · Belum ' + D.inb.blm, pct: D.inb.pct.toFixed(1) + '%', accent: '3B82F6' },
+    { label: 'STORING', value: D.sto.total, sub: 'Picked ' + D.sto.pick + ' dari ' + D.sto.rel, pct: D.sto.pct.toFixed(1) + '%', accent: 'EF4444' },
+    { label: 'OUTBOUND', value: D.out.total, sub: 'Antri ' + D.out.antri + ' · Belum ' + D.out.blm + ' · Selesai ' + D.out.sel, pct: D.out.pct.toFixed(1) + '%', accent: 'F59E0B' },
+    { label: 'INDEX PLANNER', value: D.slaCustPlanner, sub: 'SLA GRW ' + D.slaGrw + ' · CUST ' + D.slaCustPlanner, pct: 'SLA', accent: '8B5CF6' },
+    { label: 'INVENTORY', value: D.inv.akurasi, sub: 'Hit ' + D.inv.hit + ' · Miss ' + D.inv.miss, pct: 'CC ' + D.inv.cc.replace('.00', ''), accent: '10B981', valueSize: 17 }
+  ].forEach((c, i) => card(cx0 + i * (cw + cg), cy0, cw, ch, { label: c.label, value: c.value, sub: c.sub, pct: c.pct, accent: c.accent, bg: NB, valueColor: c.accent, valueSize: c.valueSize || 22 }));
+  const dy = cy0 + ch + 0.1;
+  s.addShape(pres.ShapeType.roundRect, { x: cx0, y: dy, w: 5.7, h: 1.02, rectRadius: 0.05, fill: { color: NB }, line: { color: '24356B', width: 0.9 } });
+  s.addChart(pres.charts.DOUGHNUT, [{ name: 'Progres', labels: ['Inbound', 'Storing', 'Outbound'], values: [D.inb.pct, D.sto.pct, Math.max(D.out.pct, 0.0001)] }], {
+    x: cx0 + 0.04, y: dy + 0.04, w: 0.94, h: 0.94, holeSize: 68, chartColors: ['3B82F6', 'EF4444', 'F59E0B'],
+    showLegend: false, showTitle: false, showLabel: false, showValue: false, showPercent: false,
+    dataBorder: { pt: 1, color: NB }, plotArea: { fill: { color: NB } }, chartArea: { fill: { color: NB } }
+  });
+  [['Inbound', D.inb.pct, '3B82F6'], ['Storing', D.sto.pct, 'EF4444'], ['Outbound', D.out.pct, 'F59E0B']].forEach((r, i) => {
+    const ry = dy + 0.17 + i * 0.235;
+    s.addShape(pres.ShapeType.rect, { x: cx0 + 1.15, y: ry + 0.045, w: 0.09, h: 0.09, fill: { color: r[2] }, line: { color: r[2], width: 0 } });
+    T(r[0], { x: cx0 + 1.32, y: ry, w: 1.0, h: 0.18, fontSize: 9, color: 'E5E7EB' });
+    T(r[1].toFixed(1) + '%', { x: cx0 + 2.2, y: ry, w: 0.6, h: 0.18, fontSize: 9, bold: true, color: 'FFFFFF', align: 'right' });
+  });
+  T(D.rata.toFixed(1) + '%', { x: cx0 + 3.25, y: dy + 0.1, w: 2.4, h: 0.42, fontSize: 24, bold: true, color: 'FFFFFF' });
+  T('Rata-rata progres daily (Inbound, Storing, Outbound)', { x: cx0 + 3.25, y: dy + 0.54, w: 2.4, h: 0.2, fontSize: 6.5, color: 'B8C0D8' });
+  T([{ text: 'Target shift: ', options: { color: 'B8C0D8' } }, { text: 'Shift 1 70%', options: { color: '9DB8FF', bold: true } }, { text: '  ·  ', options: { color: 'B8C0D8' } }, { text: 'Shift 2 30%', options: { color: 'FFC266', bold: true } }],
+    { x: cx0 + 3.25, y: dy + 0.76, w: 2.4, h: 0.18, fontSize: 7.5 });
+
+  // teks highlight (disusun dari angka yang sama dengan kartu di atas)
+  const BY = 4.92, BH = 2.25, FS = 10.5;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => {
+    const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) }));
+    if (bullet) out.unshift({ text: '◆ ', options: { color: RED_LABEL, fontSize: 8 } });
+    out[out.length - 1].options.breakLine = true;
+    return out;
+  };
+  const A = D.areas.map(a => a[0] + ': ' + a[2]);
+  const left = [].concat(
+    para([{ text: 'Laporan Ringkasan Umum Profil DC AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 12, paraSpaceAfter: 4 } }]),
+    para([label('Kapasitas & Okupansi: '), { text: 'Occupancy sebesar ' }, val(D.occupancy), { text: ', dari total kapasitas ' }, val(D.kapasitas), { text: ' dengan inventory terisi ' }, val(D.inventory), { text: '.' }], true),
+    para([label('Akurasi & SLA: '), { text: 'Accuracy mencapai ' }, val(D.accuracy), { text: ', SLA Store ' }, val(D.slaStore), { text: ', dan SLA Customer ' }, val(D.slaCust), { text: '.' }], true),
+    para([label('Beban Kerja (Workload): '), { text: 'Inbound ' }, val(D.workIn), { text: ' dan Outbound ' }, val(D.workOut), { text: '.' }], true),
+    para([{ text: 'Pencapaian Per Area:', options: { bold: true } }]),
+    para([{ text: A[0] + '    |    ' + A[1] }]),
+    para([{ text: A[2] + '    |    ' + A[3] }]),
+    para([{ text: 'SLA Planner Kemarin: SLA GRW ' + D.slaGrw + ' dan SLA Customer ' + D.slaCustPlanner + '.', options: { bold: true, italic: true, color: BLUE_TXT } }])
+  );
+  T(left, { x: LX, y: BY, w: PW, h: BH, fontSize: FS, color: '111111', paraSpaceAfter: 3 });
+  const right = [].concat(
+    para([{ text: 'Laporan ringkasan progres operasional harian DC AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 12, paraSpaceAfter: 4 } }]),
+    para([label('Inbound Hari Ini: '), { text: 'Total ' + D.inb.total + ' LC (Selesai ' + D.inb.fin + ', Proses ' + D.inb.pro + ', Belum ' + D.inb.blm + '), pencapaian ' + D.inb.pct.toFixed(1) + '%.' }], true),
+    para([label('Storing: '), { text: 'Total ' + D.sto.total + ' LC, Release Case ' + D.sto.rel + ', Picked Case ' + D.sto.pick + ', Staged Case ' + D.sto.stg + ', Sisa ' + D.sto.sisa + ' Case, pencapaian ' + D.sto.pct.toFixed(1) + '%.' }], true),
+    para([label('Outbound Hari Ini: '), { text: 'Total ' + D.out.total + ' LC (Antri ' + D.out.antri + ', Belum Datang ' + D.out.blm + ', Selesai ' + D.out.sel + '), pencapaian ' + D.out.pct.toFixed(1) + '%.' }], true),
+    para([label('Cycle Count & Akurasi Inventory: '), { text: 'Total ' + D.inv.lok + ' lokasi (CC ' + D.inv.cc + '), Hit ' + D.inv.hit + ', Miss ' + D.inv.miss + ', Akurasi ' + D.inv.akurasi + '.' }], true),
+    para([label('SLA Planner: '), { text: 'SLA GRW ' + D.slaGrw + ' dan SLA Customer ' + D.slaCustPlanner + '.' }], true),
+    para([{ text: 'Untuk progres daily operasional di lapangan saat ini pukul ' + D.jam + ' WIB sebesar ' + D.rata.toFixed(1) + '%.', options: { bold: true, italic: true, color: BLUE_TXT } }])
+  );
+  T(right, { x: RX, y: BY, w: PW, h: BH, fontSize: FS, color: '111111', paraSpaceAfter: 3 });
+  s.addNotes('Dibuat otomatis dari data dashboard WMS AHI Sidoarjo pukul ' + D.jam + ' WIB. Kartu, grafik dan donut adalah objek PowerPoint asli (bisa diedit).');
+}
+
+// ◆ pada teks diberi indent gantung (baris yang membungkus rata di bawah teks, bukan di bawah ◆)
+async function toolsPostProcess(arrayBuffer) {
+  await toolsLoadScript(TOOLS_JSZIP_CDN);
+  const zip = await JSZip.loadAsync(arrayBuffer);
+  const f = zip.file('ppt/slides/slide1.xml');
+  if (f) {
+    const xml = await f.async('string');
+    const parts = xml.split('<a:p>');
+    for (let i = 1; i < parts.length; i++) {
+      const seg = parts[i], t = seg.indexOf('<a:t>');
+      if (t >= 0 && seg.indexOf('<a:t>◆ </a:t>', t) === t && seg.indexOf('indent="0" marL="0"') >= 0) {
+        parts[i] = seg.replace('indent="0" marL="0"', 'marL="171450" indent="-171450"');
+      }
+    }
+    zip.file('ppt/slides/slide1.xml', parts.join('<a:p>'));
+  }
+  return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+}
+
+function toolsDownloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+async function toolsGeneratePpt() {
+  if (toolsBusy) return;
+  toolsBusy = true;
+  const gen = toolsEl('tlGenBtn'), ref = toolsEl('tlRefreshBtn');
+  const setBtn = t => { if (gen) gen.textContent = t; };
+  if (gen) gen.disabled = true; if (ref) ref.disabled = true;
+  toolsMsg('', '');
+  try {
+    setBtn('⏳ Mengambil data terbaru…');
+    toolsData = await toolsFetchData();
+    toolsRenderData();
+    if (!toolsAllOk(toolsData)) throw new Error('Data belum lengkap, PPT tidak dibuat (lihat bagian "Data yang dipakai").');
+
+    setBtn('⏳ Menyusun slide…');
+    await toolsLoadScript(TOOLS_PPTX_CDN);
+    if (typeof PptxGenJS === 'undefined') throw new Error('Pustaka PPT tidak termuat.');
+    const D = toolsMapData(toolsData);
+    const pres = new PptxGenJS();
+    pres.layout = 'LAYOUT_WIDE';
+    pres.title = 'Laporan Pagi DC AHI Sidoarjo';
+    toolsBuildProfilDailySlide(pres, D, toolsGradientBg());
+
+    setBtn('⏳ Menyiapkan file…');
+    const now = new Date();
+    const p2 = n => String(n).padStart(2, '0');
+    const fileName = 'Laporan_Pagi_DC_AHI_Sidoarjo_' + now.getFullYear() + '-' + p2(now.getMonth() + 1) + '-' + p2(now.getDate()) + '_' + p2(now.getHours()) + p2(now.getMinutes()) + '.pptx';
+    let blob = null;
+    try {
+      const buf = await pres.write({ outputType: 'arraybuffer' });
+      blob = await toolsPostProcess(buf);
+    } catch (e) { console.warn('Post-proses PPT dilewati:', e); blob = null; }
+    if (blob) toolsDownloadBlob(blob, fileName); else await pres.writeFile({ fileName: fileName });
+
+    toolsSetPill('ok', 'PPT terunduh');
+    toolsMsg('ok', 'PPT berhasil dibuat: ' + fileName + ' (cek folder Download). Data pukul ' + D.jam + ' WIB.');
+    toolsLogRun('sukses', fileName, '1 slide', 'Rata-rata progres ' + D.rata.toFixed(1) + '% (data pukul ' + D.jam + ' WIB)');
+  } catch (e) {
+    toolsSetPill('err', 'Gagal membuat PPT');
+    toolsMsg('err', 'PPT gagal dibuat: ' + e.message);
+    toolsLogRun('gagal', '', '', e.message);
+  } finally {
+    toolsBusy = false;
+    setBtn('⬇️ Buat PPT sekarang');
+    if (ref) ref.disabled = false;
+    if (gen) gen.disabled = !toolsAllOk(toolsData);
+  }
+}
