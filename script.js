@@ -3531,20 +3531,37 @@ function toolsBlobToBase64(blob) {
  * Kalau upload gagal (mis. jaringan kantor blokir), PPT TETAP sudah terunduh
  * duluan (dipanggil setelah toolsDownloadBlob), jadi tidak menghalangi kerja.
  */
+/** POST lewat XMLHttpRequest (bukan fetch) — fetch() sering gagal "Failed to fetch"
+ * untuk POST lintas domain ke Apps Script (redirect internal Google tidak selalu
+ * cocok dengan pemeriksaan CORS versi fetch). XHR lebih tahan terhadap kasus ini. */
+function toolsXhrPost(url, bodyObj, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.timeout = timeoutMs || 60000;
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(JSON.parse(xhr.responseText)); } catch (e) { reject(new Error('Balasan server tidak valid (bukan JSON): ' + xhr.responseText.slice(0, 150))); }
+      } else { reject(new Error('HTTP ' + xhr.status + (xhr.statusText ? ' ' + xhr.statusText : ''))); }
+    };
+    xhr.onerror = () => reject(new Error('Gagal terhubung ke server (jaringan/CORS).'));
+    xhr.ontimeout = () => reject(new Error('Waktu unggah habis (lebih dari ' + Math.round((timeoutMs || 60000) / 1000) + ' detik).'));
+    xhr.send(JSON.stringify(bodyObj));
+  });
+}
+
 async function toolsUploadAndLog(blob, fileName, slide, catatan) {
   try {
     const base64 = await toolsBlobToBase64(blob);
-    const res = await fetch(GAS_DASHBOARD_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'uploadPpt', base64: base64, fileName: fileName, slide: slide || '', catatan: catatan || '', oleh: localStorage.getItem('wms_name') || '' })
-    });
-    const json = await res.json();
+    const json = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'uploadPpt', base64: base64, fileName: fileName, slide: slide || '', catatan: catatan || '', oleh: localStorage.getItem('wms_name') || '' }, 90000);
     if (!json || json.ok === false) throw new Error((json && json.error) || 'Upload ke Drive gagal');
     toolsLoadHistory();
     return json;
   } catch (e) {
-    console.warn('Upload PPT ke Drive gagal, dicatat sebagai riwayat tanpa preview:', e);
-    await toolsLogRun('sukses', fileName, slide, (catatan || '') + ' (preview tidak tersedia: gagal diunggah ke Drive \u2014 ' + e.message + ')');
+    console.warn('Upload PPT ke Drive gagal, dicatat sebagai riwayat tanpa preview. Detail:', e);
+    // pesan panjang (URL dokumentasi Google, dll) cukup di console, JANGAN di kolom Keterangan
+    const singkat = String(e.message || '').split('.')[0].split(/\s*\(https?:/)[0].trim().slice(0, 120);
+    await toolsLogRun('sukses', fileName, slide, (catatan || '') + ' \u2014 preview belum tersedia (' + (singkat || 'gagal diunggah ke Drive') + ')');
     return null;
   }
 }
