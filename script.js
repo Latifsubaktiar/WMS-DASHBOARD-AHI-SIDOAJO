@@ -3438,21 +3438,51 @@ async function toolsLoadHistory() {
   }
 }
 
+function toolsDriveFileId(url) {
+  const m = String(url || '').match(/\/file\/d\/([^/]+)/);
+  return m ? m[1] : null;
+}
+
 function toolsRenderHistory() {
   const box = toolsEl('tlHistory'); if (!box) return;
   const rows = toolsHistory || [];
   toolsRenderSchedule();
   if (!rows.length) { box.innerHTML = '<div class="tl-empty">Belum ada PPT yang tercatat. PPT yang dibuat otomatis (jadwal) maupun lewat tombol akan muncul di sini.</div>'; return; }
-  box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Status</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody>' +
-    rows.map(r => {
+  box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Status</th><th>Keterangan</th><th>Preview</th><th>Aksi</th></tr></thead><tbody>' +
+    rows.map((r, i) => {
       const auto = r.jenis === 'otomatis', ok = r.status === 'sukses';
+      const fid = toolsDriveFileId(r.link);
       const link = /^https:\/\//i.test(r.link || '') ? '<a class="tl-link" href="' + toolsEsc(r.link) + '" target="_blank" rel="noopener">Buka ↗</a>' : '<span class="tl-dash">–</span>';
+      const preview = fid ? '<button class="tl-btn tl-btn-sm" onclick="toolsOpenPreview(' + i + ')">▶ Preview</button>' : '<span class="tl-dash" title="Belum ada salinan yang bisa di-preview">–</span>';
       const ket = [r.file ? '<b>' + toolsEsc(r.file) + '</b>' : '', r.slide ? toolsEsc(r.slide) : '', r.catatan ? toolsEsc(r.catatan) : '', r.oleh ? 'oleh ' + toolsEsc(r.oleh) : ''].filter(Boolean).join(' · ');
       return '<tr><td class="tl-nowrap">' + toolsEsc(toolsFmtWaktu(r.waktu)) + '</td>' +
         '<td><span class="tl-pill ' + (auto ? 'tl-pill-auto' : 'tl-pill-manual') + '">' + (auto ? 'Otomatis' : 'Manual') + '</span></td>' +
         '<td><span class="tl-pill ' + (ok ? 'tl-pill-ok' : 'tl-pill-err') + '">' + (ok ? '✓ Sukses' : '✕ Gagal') + '</span></td>' +
-        '<td class="tl-ket">' + (ket || '<span class="tl-dash">–</span>') + '</td><td class="tl-nowrap">' + link + '</td></tr>';
+        '<td class="tl-ket">' + (ket || '<span class="tl-dash">–</span>') + '</td><td class="tl-nowrap">' + preview + '</td><td class="tl-nowrap">' + link + '</td></tr>';
     }).join('') + '</tbody></table></div>';
+}
+
+/** Buka modal preview Drive (iframe) untuk baris riwayat ke-i. Tidak perlu download. */
+function toolsOpenPreview(i) {
+  const r = (toolsHistory || [])[i]; if (!r) return;
+  const fid = toolsDriveFileId(r.link); if (!fid) return;
+  let modal = toolsEl('tlPreviewModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'tlPreviewModal';
+    modal.className = 'tl-modal-backdrop';
+    modal.innerHTML = '<div class="tl-modal"><div class="tl-modal-bar"><b id="tlPreviewTitle"></b><button class="tl-btn tl-btn-sm" onclick="toolsClosePreview()">✕ Tutup</button></div><iframe id="tlPreviewFrame" allow="fullscreen"></iframe></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) toolsClosePreview(); });
+  }
+  toolsEl('tlPreviewTitle').textContent = r.file || 'Preview PPT';
+  toolsEl('tlPreviewFrame').src = 'https://drive.google.com/file/d/' + fid + '/preview';
+  modal.style.display = 'flex';
+}
+function toolsClosePreview() {
+  const modal = toolsEl('tlPreviewModal'); if (!modal) return;
+  modal.style.display = 'none';
+  const fr = toolsEl('tlPreviewFrame'); if (fr) fr.src = 'about:blank';
 }
 
 // kartu jadwal otomatis: status diambil dari riwayat (run otomatis terakhir), bukan tebakan
@@ -3474,7 +3504,7 @@ function toolsRenderSchedule() {
     '<p class="tl-desc"><b>7 hari terakhir:</b> ' + okN + ' sukses, ' + (wk.length - okN) + ' gagal dari ' + wk.length + ' run.</p>';
 }
 
-// catat pembuatan PPT manual ke server (tidak menghalangi unduhan kalau gagal)
+// catat pembuatan PPT manual GAGAL ke server (dipakai kalau upload Drive tidak sempat/gagal dijalankan)
 async function toolsLogRun(status, file, slide, catatan) {
   try {
     const q = '?action=logPpt&status=' + encodeURIComponent(status) + '&file=' + encodeURIComponent(file || '') + '&slide=' + encodeURIComponent(slide || '') +
@@ -3482,6 +3512,41 @@ async function toolsLogRun(status, file, slide, catatan) {
     await fetch(GAS_DASHBOARD_URL + q);
   } catch (e) { console.warn('Gagal mencatat riwayat PPT:', e); }
   toolsLoadHistory();
+}
+
+/** Ubah Blob jadi base64 (dipakai buat upload PPT lewat POST). */
+function toolsBlobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] || '');
+    r.onerror = () => reject(new Error('Gagal membaca file PPT untuk diunggah.'));
+    r.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Unggah PPT (blob) ke Drive lewat POST, biar bisa di-PREVIEW dari Riwayat
+ * tanpa download. Server yang catat ke Riwayat (link-nya dijamin valid,
+ * bukan dari sini) — jadi di sini kita cuma kirim & baca hasilnya.
+ * Kalau upload gagal (mis. jaringan kantor blokir), PPT TETAP sudah terunduh
+ * duluan (dipanggil setelah toolsDownloadBlob), jadi tidak menghalangi kerja.
+ */
+async function toolsUploadAndLog(blob, fileName, slide, catatan) {
+  try {
+    const base64 = await toolsBlobToBase64(blob);
+    const res = await fetch(GAS_DASHBOARD_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'uploadPpt', base64: base64, fileName: fileName, slide: slide || '', catatan: catatan || '', oleh: localStorage.getItem('wms_name') || '' })
+    });
+    const json = await res.json();
+    if (!json || json.ok === false) throw new Error((json && json.error) || 'Upload ke Drive gagal');
+    toolsLoadHistory();
+    return json;
+  } catch (e) {
+    console.warn('Upload PPT ke Drive gagal, dicatat sebagai riwayat tanpa preview:', e);
+    await toolsLogRun('sukses', fileName, slide, (catatan || '') + ' (preview tidak tersedia: gagal diunggah ke Drive \u2014 ' + e.message + ')');
+    return null;
+  }
 }
 
 // ── pemetaan data server -> data slide ─────────────────────────────
@@ -3730,53 +3795,56 @@ function fmt2i(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
 function fmt2(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
 
-function buildOutstandingSlideV2(pres, o, bgData) {
+function buildOutstandingSlideV3(pres, o) {
   const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
   const s = pres.addSlide();
-  s.background = { data: bgData };
-  s.addShape(pres.ShapeType.roundRect, { x: 0.25, y: 0.25, w: 12.83, h: 7.0, rectRadius: 0.1, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  s.background = { color: 'FFFFFF' };
   const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
-  T('MONITORING OUTSTANDING', { x: 0.55, y: 0.4, w: 8, h: 0.45, fontSize: 22, bold: true, color: '111111' });
-  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.55, y: 0.8, w: 8, h: 0.26, fontSize: 11, italic: true, color: '333333' });
+  T('MONITORING OUTSTANDING', { x: 0.4, y: 0.28, w: 8, h: 0.45, fontSize: 22, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.68, w: 8, h: 0.26, fontSize: 11, italic: true, color: '333333' });
 
-  const LX = 0.55, PY = 1.15, PW = 9.15, PH = 5.95, DB = '0D0D0F';
-  s.addShape(pres.ShapeType.roundRect, { x: LX, y: PY, w: PW, h: PH, rectRadius: 0.06, fill: { color: DB }, line: { color: 'C81E32', width: 1 } });
-  T('\u26A0 MONITORING OUTSTANDING', { x: LX + 0.18, y: PY + 0.1, w: PW - 0.36, h: 0.2, fontSize: 9, bold: true, color: 'FF4D5E', charSpacing: 1 });
-
-  const cards = [['BACKLOG OUTSTANDING', o.backlogTotal, 'CBM total', 'FFFFFF'], ['BACKLOG SUDAH PLAN', o.sudahPlan, 'CBM', '34D399'], ['BACKLOG BELUM PLAN', o.belumPlan, 'CBM', 'FBBF24'], ['BACKLOG AGING 7 UP', o.aging7up, 'CBM', 'F87171'], ['ALLOCATION UNSUCCESSFUL', o.allocUnsuccessful, 'CBM', 'F87171']];
-  const cw = 1.72, cg = 0.09, cx0 = LX + 0.18, cy0 = PY + 0.36, ch = 0.85;
+  const LX = 0.4, PW = 9.15;
+  const cards = [['BACKLOG OUTSTANDING', o.backlogTotal, '111111', 'E5E7EB'], ['BACKLOG SUDAH PLAN', o.sudahPlan, '10B981', 'A7F3D0'], ['BACKLOG BELUM PLAN', o.belumPlan, 'D97706', 'FDE68A'], ['BACKLOG AGING 7 UP', o.aging7up, 'DC2626', 'FCA5A5'], ['ALLOCATION UNSUCCESSFUL', o.allocUnsuccessful, 'DC2626', 'FCA5A5']];
+  const cw = 1.72, cg = 0.09, cy0 = 1.05, ch = 0.85;
   cards.forEach((c, i) => {
-    s.addShape(pres.ShapeType.roundRect, { x: cx0 + i * (cw + cg), y: cy0, w: cw, h: ch, rectRadius: 0.05, fill: { color: '17171B' }, line: { color: '2A2A30', width: 0.75 } });
-    T(fmt2(c[1]), { x: cx0 + i * (cw + cg) + 0.08, y: cy0 + 0.1, w: cw - 0.16, h: 0.38, fontSize: 18, bold: true, color: c[3], fit: 'shrink' });
-    T(c[0], { x: cx0 + i * (cw + cg) + 0.08, y: cy0 + 0.52, w: cw - 0.16, h: 0.28, fontSize: 6, bold: true, color: '9CA3AF' });
+    s.addShape(pres.ShapeType.roundRect, { x: LX + i * (cw + cg), y: cy0, w: cw, h: ch, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: c[3], width: 1 } });
+    T(fmt2(c[1]), { x: LX + i * (cw + cg) + 0.08, y: cy0 + 0.1, w: cw - 0.16, h: 0.38, fontSize: 17, bold: true, color: c[2], fit: 'shrink' });
+    T(c[0], { x: LX + i * (cw + cg) + 0.08, y: cy0 + 0.52, w: cw - 0.16, h: 0.28, fontSize: 6, bold: true, color: '6B7280' });
   });
 
-  // ── Tabel 1: PLANNING PRIORITY ──
-  const t1y = cy0 + ch + 0.14;
-  T('\u26A0 PLANNING PRIORITY (AGING 4-7 & 7 UP)', { x: cx0, y: t1y, w: PW - 0.36, h: 0.18, fontSize: 7.5, bold: true, color: 'FBBF24' });
-  const t1rows = [[{ text: 'STOREBOOKING', options: hdrOpt('FBBF24') }, { text: 'SHIP TO', options: hdrOpt('FBBF24') }, { text: 'AGING 4-7', options: hdrOpt('FBBF24', 'right') }, { text: 'AGING 7 UP', options: hdrOpt('FBBF24', 'right') }, { text: 'TOTAL UNPLANNED', options: hdrOpt('FBBF24', 'right') }]];
-  (o.storeTable || []).forEach(r => t1rows.push([cellOpt(r.code), cellOpt(r.name, true), cellOpt(fmt2(r.aging4to7), false, 'right'), cellOpt(fmt2(r.aging7up), false, 'right'), cellOpt(fmt2(r.totalUnplanned), false, 'right', true)]));
-  s.addTable(t1rows, { x: cx0, y: t1y + 0.2, w: PW - 0.36, colW: [(PW - 0.36) * 0.14, (PW - 0.36) * 0.4, (PW - 0.36) * 0.15, (PW - 0.36) * 0.15, (PW - 0.36) * 0.16], border: { type: 'solid', color: '2A2A30', pt: 0.5 }, autoPage: false, rowH: 0.185, fill: { color: '17171B' } });
+  // ── Tabel 1: PLANNING PRIORITY (top 10, urut Total Unplanned terbesar) ──
+  const t1y = cy0 + ch + 0.16;
+  T('\u26A0\uFE0F PLANNING PRIORITY (AGING 4-7 & 7 UP) \u2014 Top 10 Total Unplanned Terbesar', { x: LX, y: t1y, w: PW, h: 0.18, fontSize: 8, bold: true, color: 'B45309' });
+  const hdr1 = c => ({ text: c, options: { bold: true, fontSize: 6.5, color: '374151', fill: { color: 'F3F4F6' }, align: 'left', valign: 'middle' } });
+  const hdr1r = c => ({ text: c, options: { bold: true, fontSize: 6.5, color: '374151', fill: { color: 'F3F4F6' }, align: 'right', valign: 'middle' } });
+  const t1rows = [[hdr1('STOREBOOKING'), hdr1('SHIP TO'), hdr1r('AGING 4-7'), hdr1r('AGING 7 UP'), hdr1r('TOTAL UNPLANNED')]];
+  const storeList = (o.storeTable || []).slice().sort((a, b) => b.totalUnplanned - a.totalUnplanned).slice(0, 10);
+  storeList.forEach((r, i) => {
+    const bg = i % 2 ? 'FAFAFA' : 'FFFFFF';
+    t1rows.push([cell1(r.code, bg), cell1(r.name, bg), cell1(fmt2(r.aging4to7), bg, 'right'), cell1(fmt2(r.aging7up), bg, 'right'), cell1(fmt2(r.totalUnplanned), bg, 'right', true)]);
+  });
+  s.addTable(t1rows, { x: LX, y: t1y + 0.2, w: PW, colW: [PW * 0.14, PW * 0.4, PW * 0.15, PW * 0.15, PW * 0.16], border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, rowH: 0.185 });
 
-  // ── Tabel 2: ORDER AGING BY AREA STORING ──
+  // ── Tabel 2: ORDER AGING BY AREA STORING (semua area) ──
   const t1h = 0.2 + t1rows.length * 0.185;
-  const t2y = t1y + t1h + 0.16;
-  T('\uD83D\uDCCA MONITORING ORDER AGING BY AREA STORING', { x: cx0, y: t2y, w: PW - 0.36, h: 0.18, fontSize: 7.5, bold: true, color: '7FA2FF' });
+  const t2y = t1y + t1h + 0.18;
+  T('\uD83D\uDCCA MONITORING ORDER AGING BY AREA STORING', { x: LX, y: t2y, w: PW, h: 0.18, fontSize: 8, bold: true, color: '1D4ED8' });
   const bl = o.bucketLabel || ['0 hari', '1-3 hari', '4-7 hari', '7 UP'];
-  const grpHdr = (label, color) => ({ text: label, options: { bold: true, fontSize: 5.5, color: '000000', fill: { color }, align: 'center', valign: 'middle' } });
+  const grpHdr = (label, bg) => ({ text: label, options: { bold: true, fontSize: 5.5, color: '111111', fill: { color: bg }, align: 'center', valign: 'middle' } });
   const t2rows = [
-    [{ text: '', options: { fill: { color: DB } } }, { text: '', options: { fill: { color: DB } } }, grpHdr('AGING SUDAH PLAN (CBM)', '34D399'), { text: '', options: { fill: { color: '34D399' } } }, { text: '', options: { fill: { color: '34D399' } } }, { text: '', options: { fill: { color: '34D399' } } }, grpHdr('AGING BELUM PLAN (CBM)', 'FBBF24'), { text: '', options: { fill: { color: 'FBBF24' } } }, { text: '', options: { fill: { color: 'FBBF24' } } }, { text: '', options: { fill: { color: 'FBBF24' } } }],
-    [{ text: 'AREA STORING', options: hdrOpt2('7FA2FF') }, { text: 'TOTAL', options: hdrOpt2('7FA2FF', 'right') }].concat(bl.map(b => ({ text: b, options: hdrOpt2('6EE7B7', 'right') }))).concat(bl.map(b => ({ text: b, options: hdrOpt2('FCD34D', 'right') })))
+    [{ text: '', options: { fill: { color: 'F3F4F6' } } }, { text: '', options: { fill: { color: 'F3F4F6' } } }, grpHdr('AGING SUDAH PLAN (CBM)', 'A7F3D0'), { text: '', options: { fill: { color: 'A7F3D0' } } }, { text: '', options: { fill: { color: 'A7F3D0' } } }, { text: '', options: { fill: { color: 'A7F3D0' } } }, grpHdr('AGING BELUM PLAN (CBM)', 'FDE68A'), { text: '', options: { fill: { color: 'FDE68A' } } }, { text: '', options: { fill: { color: 'FDE68A' } } }, { text: '', options: { fill: { color: 'FDE68A' } } }],
+    [hdr1('AREA STORING'), hdr1r('TOTAL')].concat(bl.map(b => ({ text: b, options: { bold: true, fontSize: 5.5, color: '065F46', fill: { color: 'D1FAE5' }, align: 'right', valign: 'middle' } }))).concat(bl.map(b => ({ text: b, options: { bold: true, fontSize: 5.5, color: '92400E', fill: { color: 'FEF3C7' }, align: 'right', valign: 'middle' } })))
   ];
-  (o.areaTable || []).forEach(a => {
-    t2rows.push([cellOpt(a.area, true), cellOpt(fmt2(a.total), false, 'right', true)].concat(a.sudah.map(v => cellOpt(fmt2(v), false, 'right'))).concat(a.belum.map(v => cellOpt(fmt2(v), false, 'right'))));
+  (o.areaTable || []).forEach((a, i) => {
+    const bg = i % 2 ? 'FAFAFA' : 'FFFFFF';
+    t2rows.push([cell1(a.area, bg, 'left', true), cell1(fmt2(a.total), bg, 'right', true)].concat(a.sudah.map(v => cell1(fmt2(v), bg, 'right'))).concat(a.belum.map(v => cell1(fmt2(v), bg, 'right'))));
   });
-  if (o.areaGrandTotal) { const g = o.areaGrandTotal; t2rows.push([cellOpt('GRAND TOTAL', true, 'left', true, 'FEE2E2'), cellOpt(fmt2(g.total), false, 'right', true, 'FEE2E2')].concat(g.sudah.map(v => cellOpt(fmt2(v), false, 'right', false, 'FEE2E2'))).concat(g.belum.map(v => cellOpt(fmt2(v), false, 'right', false, 'FEE2E2')))); }
-  const colW2 = [(PW - 0.36) * 0.16, (PW - 0.36) * 0.1].concat(new Array(8).fill((PW - 0.36) * 0.0925));
-  s.addTable(t2rows, { x: cx0, y: t2y + 0.2, w: PW - 0.36, colW: colW2, border: { type: 'solid', color: '2A2A30', pt: 0.5 }, autoPage: false, rowH: 0.19 });
+  if (o.areaGrandTotal) { const g = o.areaGrandTotal; t2rows.push([cell1('GRAND TOTAL', 'FEE2E2', 'left', true), cell1(fmt2(g.total), 'FEE2E2', 'right', true)].concat(g.sudah.map(v => cell1(fmt2(v), 'FEE2E2', 'right'))).concat(g.belum.map(v => cell1(fmt2(v), 'FEE2E2', 'right')))); }
+  const colW2 = [PW * 0.16, PW * 0.1].concat(new Array(8).fill(PW * 0.0925));
+  s.addTable(t2rows, { x: LX, y: t2y + 0.2, w: PW, colW: colW2, border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, rowH: 0.19 });
 
-  // ── teks laporan kanan (ringkasan, sama seperti sebelumnya) ──
-  const RX = LX + PW + 0.2, RW = W - RX - 0.4;
+  // ── teks laporan kanan ──
+  const RX = LX + PW + 0.25, RW = W - RX - 0.35;
   const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
   const val = t => ({ text: t, options: { bold: true } });
   const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 7 } }); out[out.length - 1].options.breakLine = true; return out; };
@@ -3793,11 +3861,9 @@ function buildOutstandingSlideV2(pres, o, bgData) {
   right.push(...para([{ text: 'Ringkasan Order Aging by Area Storing', options: { bold: true, fontSize: 9, paraSpaceAfter: 3 } }]));
   if (o.topAgingArea) right.push(...para([label('Area Order >7 Hari Terbesar: '), val(o.topAgingArea.area), { text: ' sebesar ' + fmt2(o.topAgingArea.cbm) + ' CBM (' + o.topAgingArea.pctOfArea.toFixed(1) + '% dari volume area ini)' }], true));
   if (o.topBelumAgingArea) right.push(...para([label('Area Belum Plan >7 Hari Terbesar: '), val(o.topBelumAgingArea.area), { text: ' sebesar ' + fmt2(o.topBelumAgingArea.cbm) + ' CBM' + (o.topBelumAgingArea.isAllUnplanned ? ' (seluruh volume belum diplan)' : '') }], true));
-  T(right, { x: RX, y: PY, w: RW, h: PH, fontSize: 8, color: '111111', paraSpaceAfter: 2.5 });
+  T(right, { x: RX, y: cy0, w: RW, h: 6.0, fontSize: 8, color: '111111', paraSpaceAfter: 2.5 });
 }
-function hdrOpt(color, align) { return { bold: true, fontSize: 5.5, color, fill: { color: '000000' }, align: align || 'left', valign: 'middle' }; }
-function hdrOpt2(color, align) { return { bold: true, fontSize: 5, color: '000000', fill: { color }, align: align || 'left', valign: 'middle' }; }
-function cellOpt(text, small, align, bold, bg) { const light = !!bg; return { text: text, options: { fontSize: small ? 6 : 6.3, color: light ? (bold ? '7F1D1D' : '374151') : (bold ? 'FFFFFF' : 'D1D5DB'), fill: { color: bg || '17171B' }, align: align || 'left', valign: 'middle', bold: !!bold } }; }
+function cell1(text, bg, align, bold) { return { text: text, options: { fontSize: 6.3, color: bold ? '111111' : '374151', fill: { color: bg || 'FFFFFF' }, align: align || 'left', valign: 'middle', bold: !!bold } }; }
 function buildVendorTrendSlide(pres, v) {
   const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF';
   const s = pres.addSlide();
@@ -4052,7 +4118,7 @@ async function toolsGeneratePpt() {
     buildCoverSlide(pres, { tanggal: tanggalLabel });
     toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg());
     buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg());
-    buildOutstandingSlideV2(pres, toolsMapOutstanding(toolsData), toolsGradientBg());
+    buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData));
     buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData));
     buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData));
     buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData));
@@ -4070,8 +4136,14 @@ async function toolsGeneratePpt() {
     if (blob) toolsDownloadBlob(blob, fileName); else await pres.writeFile({ fileName: fileName });
 
     toolsSetPill('ok', 'PPT terunduh');
-    toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB.');
-    toolsLogRun('sukses', fileName, '8 slide', 'Rata-rata progres ' + (toolsData.rata != null ? toolsData.rata.toFixed(1) : '-') + '% (data pukul ' + toolsData.jam + ' WIB)');
+    toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Mengunggah salinan untuk preview\u2026');
+    const catatanRingkas = 'Rata-rata progres ' + (toolsData.rata != null ? toolsData.rata.toFixed(1) : '-') + '% (data pukul ' + toolsData.jam + ' WIB)';
+    const uploaded = blob ? await toolsUploadAndLog(blob, fileName, '8 slide', catatanRingkas) : null;
+    if (uploaded && uploaded.previewUrl) {
+      toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. Preview sudah tersedia di Riwayat PPT di bawah.');
+    } else {
+      toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. (Preview tidak tersedia \u2014 gagal diunggah ke Drive, file tetap ada di Download.)');
+    }
   } catch (e) {
     toolsSetPill('err', 'Gagal membuat PPT');
     toolsMsg('err', 'PPT gagal dibuat: ' + e.message);
