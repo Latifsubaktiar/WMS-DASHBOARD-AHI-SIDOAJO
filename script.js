@@ -3986,7 +3986,7 @@ function buildInboundPlanningSlide(pres, ib) {
   const left = [].concat(
     para([{ text: 'Ringkasan Umum:', options: { bold: true, fontSize: 11, paraSpaceAfter: 4 } }]),
     para([label('Total Kedatangan: '), val(ib.totalKedatangan + ' armada'), { text: ' (' + (ib.transfer === ib.totalKedatangan ? 'seluruhnya Transfer' : ib.transfer + ' Transfer, ' + ib.importAhi + ' Import AHI, ' + ib.lokal + ' Lokal') + ')' }], true),
-    para([label('Total Qty: '), val(ib.totalQty.toLocaleString('id-ID') + ' pcs')], true),
+    para([label('Total Qty: '), val((ib.totalQty || 0).toLocaleString('id-ID') + ' pcs')], true),
     para([label('Total SKU: '), val(String(ib.totalSKU) + ' SKU')], true),
     para([label('Total CBM: '), val(fmt2(ib.totalCBM) + ' CBM')], true)
   );
