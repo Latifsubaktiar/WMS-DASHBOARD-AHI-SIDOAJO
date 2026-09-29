@@ -3309,7 +3309,7 @@ document.addEventListener('keydown', (e) => {
 // ═════════════════════════════════════════════════════════════════
 const TOOLS_PPTX_CDN = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
 const TOOLS_JSZIP_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-const TOOLS_PARTS = [['profil', 'Profil DC'], ['inbound', 'Inbound'], ['storing', 'Storing'], ['outbound', 'Outbound'], ['inventory', 'Inventory'], ['planner', 'Planner SLA']];
+const TOOLS_PARTS = [['profil', 'Profil DC'], ['inbound', 'Inbound'], ['storing', 'Storing'], ['outbound', 'Outbound'], ['inventory', 'Inventory'], ['planner', 'Planner SLA'], ['plannerMaster', 'Planner CBM'], ['outstanding', 'Outstanding Backlog'], ['vendorTrend', 'Vendor Trend'], ['stockTransfer', 'Stock Transfer'], ['inboundPlanning', 'Inbound Planning']];
 let toolsData = null;
 let toolsHistory = null;
 let toolsBusy = false;
@@ -3512,6 +3512,16 @@ function toolsMapData(api) {
   };
 }
 
+function toolsMapPlannerMaster(api) {
+  const pm = api.plannerMaster || {};
+  const agg = x => x || { cbmPlan: 0, cbmShipped: 0, pct: 0, lc: 0 };
+  return { yesterday: agg(pm.yesterday), today: agg(pm.today) };
+}
+function toolsMapOutstanding(api) { return api.outstanding || {}; }
+function toolsMapVendorTrend(api) { return api.vendorTrend || {}; }
+function toolsMapStockTransfer(api) { return api.stockTransfer || {}; }
+function toolsMapInboundPlanning(api) { return api.inboundPlanning || {}; }
+
 // latar gradien biru -> kuning -> oranye (seperti slide contoh)
 function toolsGradientBg() {
   const c = document.createElement('canvas'); c.width = 1920; c.height = 1080;
@@ -3629,6 +3639,364 @@ function toolsBuildProfilDailySlide(pres, D, bgData) {
   s.addNotes('Dibuat otomatis dari data dashboard WMS AHI Sidoarjo pukul ' + D.jam + ' WIB. Kartu, grafik dan donut adalah objek PowerPoint asli (bisa diedit).');
 }
 
+
+// ── slide builders (di-generate & diuji terpisah sebelum dipasang) ──
+function buildCoverSlide(pres, d) {
+  const FONT = 'Arial';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  s.addShape(pres.ShapeType.rect, { x: 8.6, y: 0, w: 4.733, h: 7.5, fill: { color: 'C81E32' }, line: { width: 0 } });
+  T('Kawan Lama Group', { x: 0.5, y: 0.35, w: 5, h: 0.4, fontSize: 15, bold: true, color: '111111' });
+  T('BRINGING MORE GOOD THINGS TO LIFE', { x: 0.5, y: 0.68, w: 5, h: 0.2, fontSize: 6.5, color: '6B7280', charSpacing: 1 });
+  T('DAILY OPERATIONAL', { x: 0.5, y: 1.5, w: 7, h: 0.4, fontSize: 18, bold: true, color: '111111', charSpacing: 2 });
+  T('REPORT', { x: 0.45, y: 1.85, w: 7, h: 0.9, fontSize: 52, bold: true, color: 'C81E32' });
+  T('DC AHI SIDOARJO', { x: 0.45, y: 2.65, w: 7, h: 0.55, fontSize: 34, bold: true, color: '111111' });
+  s.addShape(pres.ShapeType.line, { x: 0.5, y: 3.35, w: 1.3, h: 0, line: { color: 'C81E32', width: 3 } });
+  T('PERFORMA HARI INI, UNTUK OPERASIONAL YANG LEBIH BAIK', { x: 0.5, y: 3.5, w: 7, h: 0.25, fontSize: 9.5, bold: true, color: '374151', charSpacing: 1 });
+  const topics = ['Profil DC', 'Planner Reporting', 'Inbound Reporting', 'Storing Reporting', 'Outbound Reporting', 'Inventory Reporting', 'GA Reporting', 'HC Reporting', 'MTC Reporting'];
+  T('\u2758 PRESENTATION TOPICS', { x: 0.5, y: 4.0, w: 5, h: 0.25, fontSize: 10, bold: true, color: '111111' });
+  const col = Math.ceil(topics.length / 3);
+  topics.forEach((t, i) => {
+    const c = Math.floor(i / 3), r = i % 3;
+    T((i + 1 < 10 ? '0' : '') + (i + 1) + '.  ' + t, { x: 0.5 + c * 2.0, y: 4.4 + r * 0.35, w: 2.0, h: 0.3, fontSize: 8.5, color: '111111' });
+  });
+  T((d.tanggal || '') + '   |   DC AHI SIDOARJO', { x: 0.5, y: 6.9, w: 6, h: 0.25, fontSize: 8, bold: true, color: '6B7280' });
+}
+
+function buildThankYouSlide(pres) {
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  s.addText('Kawan Lama Group', { x: 9.6, y: 0.35, w: 3.3, h: 0.35, fontSize: 12, bold: true, color: '111111', fontFace: 'Arial', isTextBox: true });
+  s.addText('TERIMA KASIH', { x: 1.5, y: 3.1, w: 8, h: 0.9, fontSize: 38, bold: true, color: '1E3A8A', fontFace: 'Arial', isTextBox: true });
+}
+
+function buildPlannerSlide(pres, planner, master) {
+  const FONT = 'Arial', RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF', NAVY = '1F3A8A';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('REPORTING PLANNER', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 26, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.72, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+  T("Yesterday's Work Completion", { x: 0.4, y: 1.2, w: 6.0, h: 0.3, fontSize: 13, bold: true, italic: true, color: 'A50F1E' });
+  T('Daily Proses today', { x: 6.9, y: 1.2, w: 6.0, h: 0.3, fontSize: 13, bold: true, italic: true, color: NAVY });
+
+  function panel(x, y, w, h, d, title) {
+    s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: '0D0D0F' }, line: { color: 'C81E32', width: 1 } });
+    T(title, { x: x + 0.15, y: y + 0.1, w: w - 0.3, h: 0.2, fontSize: 8, bold: true, color: 'FF4D5E' });
+    const cards = [
+      ['TOTAL CBM PLAN', fmt2(d.cbmPlan), 'FFFFFF'], ['CBM SHIPPED', fmt2(d.cbmShipped), '34D399'],
+      ['ACHIEVEMENT', d.pct.toFixed(1) + '%', d.pct >= 80 ? '34D399' : (d.pct >= 50 ? 'FBBF24' : 'F87171')], ['TOTAL LC', String(d.lc), '60A5FA']
+    ];
+    const cw = (w - 0.5) / 4;
+    cards.forEach((c, i) => {
+      T(c[1], { x: x + 0.15 + i * (cw + 0.05), y: y + 0.42, w: cw, h: 0.35, fontSize: 14, bold: true, color: c[2], fit: 'shrink' });
+      T(c[0], { x: x + 0.15 + i * (cw + 0.05), y: y + 0.78, w: cw, h: 0.35, fontSize: 6, bold: true, color: '9CA3AF' });
+    });
+  }
+  const PW = 6.0, PH = 1.35, PY = 1.55;
+  panel(0.4, PY, PW, PH, master.yesterday, 'MAIN DASHBOARD');
+  panel(6.9, PY, PW, PH, master.today, 'MAIN DASHBOARD');
+
+  const by = PY + PH + 0.3;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 8 } }); out[out.length - 1].options.breakLine = true; return out; };
+  T([].concat(
+    para([{ text: 'Laporan Ringkasan Pekerjaan Kemarin:', options: { bold: true, italic: true, fontSize: 11, paraSpaceAfter: 4 } }]),
+    para([label('CBM Plan: '), val(fmt2(master.yesterday.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.yesterday.cbmShipped) + ' CBM')], true),
+    para([label('Achievement: '), val(master.yesterday.pct.toFixed(1) + '%'), { text: ' dari ' + master.yesterday.lc + ' LC' }], true),
+    para([label('SLA Planner: '), val('SLA GRW ' + planner.slaGrw + ', SLA Customer ' + planner.slaCust)], true)
+  ), { x: 0.4, y: by, w: PW, h: 1.6, fontSize: 9.5, color: '111111', paraSpaceAfter: 3 });
+  T([].concat(
+    para([{ text: 'Laporan Ringkasan Plan Loading Today AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 11, paraSpaceAfter: 4 } }]),
+    para([label('CBM Plan: '), val(fmt2(master.today.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.today.cbmShipped) + ' CBM')], true),
+    para([label('Progres Loading: '), val(master.today.pct.toFixed(1) + '%'), { text: ' dari ' + master.today.lc + ' LC' }], true)
+  ), { x: 6.9, y: by, w: PW, h: 1.6, fontSize: 9.5, color: '111111', paraSpaceAfter: 3 });
+}
+function fmt2(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+function buildOutstandingSlide(pres, o) {
+  const FONT = 'Arial', W = 13.333, H = 7.5, RED_LABEL = 'B4121F';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('MONITORING OUTSTANDING', { x: 0.4, y: 0.28, w: 8, h: 0.5, fontSize: 26, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.72, w: 8, h: 0.35, fontSize: 13, italic: true, color: '333333' });
+
+  // panel gelap kiri
+  const LX = 0.4, PY = 1.2, PW = 8.9, PH = 5.9, DB = '0D0D0F';
+  s.addShape(pres.ShapeType.roundRect, { x: LX, y: PY, w: PW, h: PH, rectRadius: 0.06, fill: { color: DB }, line: { color: 'C81E32', width: 1 } });
+  T('\u26A0 MONITORING OUTSTANDING', { x: LX + 0.2, y: PY + 0.14, w: PW - 0.4, h: 0.24, fontSize: 10, bold: true, color: 'FF4D5E', charSpacing: 1 });
+
+  // 5 kartu KPI
+  const cards = [
+    ['BACKLOG OUTSTANDING', o.backlogTotal, 'CBM total', 'FFFFFF'],
+    ['BACKLOG SUDAH PLAN', o.sudahPlan, 'CBM', '34D399'],
+    ['BACKLOG BELUM PLAN', o.belumPlan, 'CBM', 'FBBF24'],
+    ['BACKLOG AGING 7 UP', o.aging7up, 'CBM', 'F87171'],
+    ['ALLOCATION UNSUCCESSFUL', o.allocUnsuccessful, 'CBM', 'F87171']
+  ];
+  const cw = 1.62, cg = 0.09, cx0 = LX + 0.2, cy0 = PY + 0.5, ch = 1.0;
+  cards.forEach((c, i) => {
+    s.addShape(pres.ShapeType.roundRect, { x: cx0 + i * (cw + cg), y: cy0, w: cw, h: ch, rectRadius: 0.05, fill: { color: '17171B' }, line: { color: '2A2A30', width: 0.75 } });
+    T(fmt2(c[1]), { x: cx0 + i * (cw + cg) + 0.08, y: cy0 + 0.12, w: cw - 0.16, h: 0.42, fontSize: 20, bold: true, color: c[3], fit: 'shrink' });
+    T(c[0], { x: cx0 + i * (cw + cg) + 0.08, y: cy0 + 0.58, w: cw - 0.16, h: 0.3, fontSize: 6.3, bold: true, color: '9CA3AF' });
+  });
+
+  // Planning Priority (top store)
+  const py2 = cy0 + ch + 0.18;
+  s.addShape(pres.ShapeType.roundRect, { x: cx0, y: py2, w: PW - 0.4, h: 1.0, rectRadius: 0.05, fill: { color: '17171B' }, line: { color: 'FBBF24', width: 0.75 } });
+  T('\u26A0 PLANNING PRIORITY \u2014 Store Belum Plan Terbanyak', { x: cx0 + 0.15, y: py2 + 0.1, w: PW - 0.6, h: 0.2, fontSize: 8.5, bold: true, color: 'FBBF24' });
+  if (o.topStoreBelumPlan) {
+    const ts = o.topStoreBelumPlan;
+    T(ts.code + ' (' + ts.name + ')', { x: cx0 + 0.15, y: py2 + 0.38, w: PW - 3.6, h: 0.3, fontSize: 13, bold: true, color: 'FFFFFF' });
+    T(fmt2(ts.cbm) + ' CBM  \u2022  ' + ts.pct.toFixed(1) + '% dari total Belum Plan', { x: cx0 + 0.15, y: py2 + 0.68, w: PW - 3.6, h: 0.25, fontSize: 10, color: 'D1D5DB' });
+  } else {
+    T('(Tidak ada store dengan backlog Belum Plan)', { x: cx0 + 0.15, y: py2 + 0.45, w: PW - 0.6, h: 0.3, fontSize: 10, color: '9CA3AF' });
+  }
+
+  // Order Aging by Area
+  const py3 = py2 + 1.18;
+  s.addShape(pres.ShapeType.roundRect, { x: cx0, y: py3, w: PW - 0.4, h: PY + PH - py3 - 0.2, rectRadius: 0.05, fill: { color: '17171B' }, line: { color: '3B82F6', width: 0.75 } });
+  T('MONITORING ORDER AGING BY AREA STORING', { x: cx0 + 0.15, y: py3 + 0.1, w: PW - 0.6, h: 0.2, fontSize: 8.5, bold: true, color: '7FA2FF' });
+  const half = (PW - 0.7) / 2;
+  if (o.topAgingArea) {
+    T('Area Order >7 Hari Terbesar', { x: cx0 + 0.15, y: py3 + 0.42, w: half, h: 0.2, fontSize: 8, color: '9CA3AF' });
+    T(o.topAgingArea.area, { x: cx0 + 0.15, y: py3 + 0.64, w: half, h: 0.3, fontSize: 14, bold: true, color: 'FFFFFF' });
+    T(fmt2(o.topAgingArea.cbm) + ' CBM (' + o.topAgingArea.pctOfArea.toFixed(1) + '% dari volume area ini)', { x: cx0 + 0.15, y: py3 + 0.98, w: half, h: 0.4, fontSize: 8.5, color: 'D1D5DB' });
+  }
+  if (o.topBelumAgingArea) {
+    T('Area Belum Plan >7 Hari Terbesar', { x: cx0 + 0.35 + half, y: py3 + 0.42, w: half, h: 0.2, fontSize: 8, color: '9CA3AF' });
+    T(o.topBelumAgingArea.area, { x: cx0 + 0.35 + half, y: py3 + 0.64, w: half, h: 0.3, fontSize: 14, bold: true, color: 'FFFFFF' });
+    T(fmt2(o.topBelumAgingArea.cbm) + ' CBM' + (o.topBelumAgingArea.isAllUnplanned ? ' (seluruh volume belum diplan)' : ''), { x: cx0 + 0.35 + half, y: py3 + 0.98, w: half, h: 0.4, fontSize: 8.5, color: 'D1D5DB' });
+  }
+
+  // teks laporan kanan
+  const RX = LX + PW + 0.2, RW = W - RX - 0.4;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 8 } }); out[out.length - 1].options.breakLine = true; return out; };
+  const right = [].concat(
+    para([{ text: 'Laporan Ringkasan Monitoring Outstanding Backlog & Order Aging by Area Storing WMS AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 6 } }]),
+    para([{ text: 'Ringkasan Outstanding Backlog', options: { bold: true, fontSize: 10.5, paraSpaceAfter: 3 } }]),
+    para([label('Total Backlog: '), val(fmt2(o.backlogTotal) + ' CBM'), { text: ' (' + o.rowCount + ' baris data)' }], true),
+    para([label('Sudah Plan: '), val(fmt2(o.sudahPlan) + ' CBM')], true),
+    para([label('Belum Plan: '), val(fmt2(o.belumPlan) + ' CBM')], true),
+    para([label('Backlog Aging 7 UP: '), val(fmt2(o.aging7up) + ' CBM')], true),
+    para([label('Allocation Unsuccessful: '), val(fmt2(o.allocUnsuccessful) + ' CBM')], true)
+  );
+  if (o.topStoreBelumPlan) right.push(...para([label('Prioritas Store Belum Plan Terbanyak: '), val(o.topStoreBelumPlan.code + ' (' + o.topStoreBelumPlan.name + ')'), { text: ' sebesar ' + fmt2(o.topStoreBelumPlan.cbm) + ' CBM (' + o.topStoreBelumPlan.pct.toFixed(1) + '% dari total Belum Plan)' }], true));
+  right.push(...para([{ text: 'Ringkasan Order Aging by Area Storing', options: { bold: true, fontSize: 10.5, paraSpaceAfter: 3 } }]));
+  if (o.topAgingArea) right.push(...para([label('Area Order >7 Hari Terbesar: '), val(o.topAgingArea.area), { text: ' sebesar ' + fmt2(o.topAgingArea.cbm) + ' CBM (' + o.topAgingArea.pctOfArea.toFixed(1) + '% dari total volume area ' + o.topAgingArea.area + ')' }], true));
+  if (o.topBelumAgingArea) right.push(...para([label('Area Belum Plan >7 Hari Terbesar: '), val(o.topBelumAgingArea.area), { text: ' sebesar ' + fmt2(o.topBelumAgingArea.cbm) + ' CBM' + (o.topBelumAgingArea.isAllUnplanned ? ' (seluruh volume belum diplan)' : '') }], true));
+  T(right, { x: RX, y: PY, w: RW, h: PH, fontSize: 9, color: '111111', paraSpaceAfter: 3 });
+}
+
+function buildVendorTrendSlide(pres, v) {
+  const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('TREND DAILY VENDOR PERFORMANCE', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 24, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.7, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+
+  const LX = 0.4, PY = 1.1, PW = 12.53, DB = '0D0D0F';
+  const topH = 2.85;
+  s.addShape(pres.ShapeType.roundRect, { x: LX, y: PY, w: PW, h: topH, rectRadius: 0.06, fill: { color: DB }, line: { color: 'C81E32', width: 1 } });
+  T('\u2713 TREND DAILY VENDOR PERFORMANCE (ON TIME ACHIEVEMENT)', { x: LX + 0.2, y: PY + 0.12, w: PW - 0.4, h: 0.2, fontSize: 9.5, bold: true, color: 'FF4D5E' });
+
+  const cards = [
+    ['VENDOR SUPPORTING', v.achievementPeriode.toFixed(1) + '%', 'Monthly On-Time Avg', 'FFFFFF'],
+    ['TOTAL COMPLETED LC', String(v.total.total), 'Total Load Containers', '60A5FA'],
+    ['TOTAL ON TIME LC', String(v.total.onTime), 'Delivered Within Schedule', '34D399'],
+    ['TERLAMBAT LC', String(v.total.terlambat), 'Require Dispatch Followup', 'F87171'],
+    ['BELUM SUPPORT LC', String(v.total.belumSupport), 'Delayed Admin Support', 'FBBF24']
+  ];
+  const cw = 2.28, cg = 0.14, cx0 = LX + 0.2, cy0 = PY + 0.4;
+  cards.forEach((c, i) => {
+    T(c[1], { x: cx0 + i * (cw + cg), y: cy0, w: cw, h: 0.55, fontSize: 26, bold: true, color: c[3] });
+    T(c[0], { x: cx0 + i * (cw + cg), y: cy0 + 0.56, w: cw, h: 0.2, fontSize: 8, bold: true, color: 'D1D5DB' });
+    T(c[2], { x: cx0 + i * (cw + cg), y: cy0 + 0.75, w: cw, h: 0.25, fontSize: 7, color: '8B92A0' });
+  });
+
+  // grafik: batang (on time/terlambat) + garis achievement
+  const chartY = cy0 + 1.15, chartH = topH - (chartY - PY) - 0.15;
+  s.addChart([
+    { type: pres.charts.BAR, data: [{ name: 'On Time', labels: v.days.map(d => d.tanggal.slice(8)), values: v.days.map(d => d.onTime) }, { name: 'Terlambat', labels: v.days.map(d => d.tanggal.slice(8)), values: v.days.map(d => d.terlambat) }], options: { chartColors: ['60A5FA', 'F87171'], barGrouping: 'stacked' } },
+    { type: pres.charts.LINE, data: [{ name: 'Achievement %', labels: v.days.map(d => d.tanggal.slice(8)), values: v.days.map(d => Math.round(d.ach)) }], options: { chartColors: ['FBBF24'], secondaryValAxis: true, secondaryCatAxis: true, lineSize: 2, lineDataSymbol: 'circle', lineDataSymbolSize: 4 } }
+  ], { x: LX + 0.2, y: chartY, w: PW - 0.4, h: chartH, showLegend: true, legendPos: 't', legendColor: 'D1D5DB', legendFontSize: 7,
+    catAxisLabelColor: '9CA3AF', catAxisLabelFontSize: 6, valAxisLabelColor: '9CA3AF', valAxisLabelFontSize: 7, valAxisHidden: false,
+    valGridLine: { color: '2A2A30', style: 'solid', size: 0.5 }, catGridLine: { style: 'none' }, plotArea: { fill: { color: DB } }, chartArea: { fill: { color: DB } },
+    valAxes: [
+      { valAxisTitle: 'LC', valAxisLabelColor: '9CA3AF', valAxisLabelFontSize: 7, valGridLine: { color: '2A2A30', style: 'solid', size: 0.5 } },
+      { valAxisTitle: 'Achievement %', valAxisMinVal: 0, valAxisMaxVal: 100, valAxisLabelColor: 'FBBF24', valAxisLabelFontSize: 7, valGridLine: { style: 'none' } }
+    ],
+    catAxes: [
+      { catAxisLabelColor: '9CA3AF', catAxisLabelFontSize: 6 },
+      { catAxisHidden: true }
+    ],
+    serAxisHidden: true });
+
+  // baris bawah: ringkasan trend (kiri) + detail miss kemarin (kanan)
+  const by = PY + topH + 0.18, bh = 7.5 - by - 0.25, bw = (PW - 0.3) / 2;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 7.5 } }); out[out.length - 1].options.breakLine = true; return out; };
+
+  const left = [].concat(
+    para([{ text: 'Ringkasan Trend Daily Vendor Performance (1\u2013' + v.days[v.days.length - 1].tanggal.slice(8) + ' ' + monthName(v.monthKey) + ')', options: { bold: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
+    para([label('Total Pengiriman: '), val(v.total.total + ' LC'), { text: ' (' + v.total.onTime + ' On Time, ' + v.total.terlambat + ' Terlambat, ' + v.total.belumSupport + ' Belum Support)' }], true),
+    para([label('Achievement Periode: '), val(v.achievementPeriode.toFixed(1) + '%')], true),
+    para([label('Performa Terbaik: '), val(fmtTgl(v.bestDay.tanggal)), { text: ' (' + v.bestDay.ach.toFixed(1) + '% dari ' + v.bestDay.total + ' LC)' }], true),
+    para([label('Performa Terburuk: '), val(fmtTgl(v.worstDay.tanggal)), { text: ' (' + v.worstDay.ach.toFixed(1) + '% dari ' + v.worstDay.total + ' LC)' }], true)
+  );
+  if (v.trendDelta) {
+    const dl = v.trendDelta.now - v.trendDelta.before;
+    left.push(...para([label('Arah Tren: '), val((dl >= 0 ? 'Membaik / Naik +' : 'Menurun ') + Math.abs(dl).toFixed(1) + ' poin'), { text: ' (7 hari terakhir ' + v.trendDelta.now.toFixed(1) + '% vs 7 hari sebelumnya ' + v.trendDelta.before.toFixed(1) + '%)' }], true));
+  }
+  left.push(...para([{ text: 'Vendor Terbaik dan Terjelek', options: { bold: true, fontSize: 10.5, paraSpaceAfter: 4 } }]));
+  if (v.vendorBest) left.push(...para([label('Vendor Terbaik (Volume Besar): '), val(v.vendorBest.carrier), { text: ' dengan achievement ' + v.vendorBest.ach.toFixed(1) + '% dari ' + v.vendorBest.total + ' LC' }], true));
+  if (v.vendorWorst) left.push(...para([label('Vendor Terjelek (Volume Besar): '), val(v.vendorWorst.carrier), { text: ' dengan achievement ' + v.vendorWorst.ach.toFixed(1) + '% dari ' + v.vendorWorst.total + ' LC (terdapat ' + v.vendorWorst.terlambat + ' LC terlambat)' }], true));
+  if (v.vendorLowestOverall) left.push(...para([label('Performa Terendah Keseluruhan (Min. 3 LC): '), val(v.vendorLowestOverall.carrier), { text: ' dengan achievement ' + v.vendorLowestOverall.ach.toFixed(1) + '% dari ' + v.vendorLowestOverall.total + ' LC' }], true));
+  T(left, { x: LX, y: by, w: bw, h: bh, fontSize: 8.7, color: '111111', paraSpaceAfter: 2.5 });
+
+  const y = v.yesterday;
+  const right = [].concat(para([{ text: 'Detail Miss Pengiriman Kemarin (' + fmtTgl(y.tanggal) + ')', options: { bold: true, fontSize: 10.5, paraSpaceAfter: 4 } }]));
+  if (y.ach !== null) right.push(...para([label('Total Miss: '), val(y.miss + ' LC'), { text: ' dari total ' + y.total + ' LC (Achievement harian ' + y.ach.toFixed(1) + '%)' }], true));
+  if (y.detail.length) {
+    right.push(...para([{ text: 'Rincian Vendor & LC Miss:', options: { bold: true } }]));
+    const byV = {};
+    y.detail.forEach(m => { (byV[m.carrier] = byV[m.carrier] || []).push(m); });
+    Object.keys(byV).forEach(carrier => {
+      const items = byV[carrier];
+      const parts = items.map(m => 'LC ' + m.lc + ' ke ' + (m.kota || '-') + ' (' + (m.status === 'terlambat' ? 'Terlambat ' + m.delayJam + ' jam ' + m.delayMenit + ' menit' : 'Belum Support') + ')');
+      right.push(...para([label(carrier + ' (' + items.length + ' LC): '), { text: parts.join(' dan ') }], true));
+    });
+  } else if (y.ach !== null) {
+    right.push(...para([{ text: 'Tidak ada MISS. Semua LC On Time.' }], true));
+  } else {
+    right.push(...para([{ text: '(Tidak ada data LC pada tanggal ini.)' }], true));
+  }
+  T(right, { x: LX + bw + 0.3, y: by, w: bw, h: bh, fontSize: 8.7, color: '111111', paraSpaceAfter: 2.5 });
+}
+function fmtTgl(iso) { const p = iso.split('-'); const bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; return parseInt(p[2], 10) + ' ' + bln[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
+function monthName(ym) { const p = ym.split('-'); const bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; return bln[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
+
+function buildStockTransferSlide(pres, st) {
+  const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('STOCK TRANSFER MONITORING', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 24, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.7, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+
+  const t = st.total;
+  const cardTop = [['ARMD BAKAL DELAY', 0, 'F87171'], ['PROSES MUAT', t.prosesMuat, '60A5FA'], ['ON DELIVERY', t.onDelivery, '34D399'], ['ATA DEPO TUNGGU BONGKAR', t.tungguBongkar, 'FBBF24']];
+  const LX = 0.4, PY = 1.15, RW = 7.55, RH = 0.9;
+  cardTop.forEach((c, i) => {
+    const cx = LX + i * (RW / 4);
+    T(String(c[1]), { x: cx, y: PY, w: RW / 4 - 0.1, h: 0.45, fontSize: 22, bold: true, color: c[2] });
+    T(c[0], { x: cx, y: PY + 0.48, w: RW / 4 - 0.1, h: 0.35, fontSize: 7, bold: true, color: '6B7280' });
+  });
+
+  // tabel jumlah armada per status
+  const ty = PY + RH + 0.1;
+  T('Jumlah Armada Berdasarkan Status Operasional', { x: LX, y: ty, w: RW, h: 0.25, fontSize: 10, bold: true, color: '111111' });
+  const cols = ['Jenis Armada', 'Proses Muat', 'On Delivery', 'ATA Depo', 'Tunggu Bongkar'];
+  const rows = st.perType.filter(x => x.prosesMuat + x.onDelivery + x.ataDepo + x.tungguBongkar > 0).map(x => [x.type, x.prosesMuat, x.onDelivery, x.ataDepo, x.tungguBongkar]);
+  rows.push(['GRAND TOTAL', t.prosesMuat, t.onDelivery, t.ataDepo, t.tungguBongkar]);
+  const tblRows = [cols.map(c => ({ text: c, options: { bold: true, color: 'FFFFFF', fill: { color: '374151' }, fontSize: 9 } }))];
+  rows.forEach((r, ri) => tblRows.push(r.map((v, ci) => ({ text: String(v), options: { fontSize: 9, bold: ri === rows.length - 1, fill: { color: ri === rows.length - 1 ? 'FEE2E2' : (ri % 2 ? 'F9FAFB' : 'FFFFFF') }, color: ci === 0 ? '111111' : '333333' } }))));
+  s.addTable(tblRows, { x: LX, y: ty + 0.3, w: RW, colW: [RW * 0.32, RW * 0.17, RW * 0.17, RW * 0.17, RW * 0.17], border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, rowH: 0.32 });
+
+  // detail ATA Depo
+  const ay = ty + 0.3 + (rows.length + 1) * 0.32 + 0.25;
+  T('Detail Status ATA Depo (' + t.ataDepo + ' Armada)', { x: LX, y: ay, w: RW, h: 0.25, fontSize: 10, bold: true, color: '111111' });
+  const label = tt => ({ text: tt, options: { bold: true, italic: true, color: RED_LABEL } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u2022 ', options: { color: RED_LABEL, fontSize: 8 } }); out[out.length - 1].options.breakLine = true; return out; };
+  const ataLines = [];
+  st.ataDetail.forEach(d => { const g = Object.keys(d.groups).map(k => k + ' (' + d.groups[k] + ')').join(', '); ataLines.push(...para([label(d.type + ' (' + d.total + ' armada): '), { text: g }], true)); });
+  T(ataLines, { x: LX, y: ay + 0.3, w: RW, h: 7.5 - (ay + 0.3) - 0.3, fontSize: 9, color: '111111', paraSpaceAfter: 2 });
+
+  // panel kanan: CBM
+  const RX = LX + RW + 0.3, RW2 = W - RX - 0.4;
+  s.addShape(pres.ShapeType.roundRect, { x: RX, y: PY, w: RW2, h: 7.5 - PY - 0.25, rectRadius: 0.05, fill: { color: '0D0D0F' }, line: { color: '3B82F6', width: 1 } });
+  T('TOTAL CBM\nOUTSTANDING', { x: RX + 0.15, y: PY + 0.12, w: RW2 - 0.3, h: 0.85, fontSize: 20, bold: true, color: 'FFFFFF', lineSpacingMultiple: 1.05 });
+  const cbm = st.cbm || {};
+  const rowsCbm = [['CBM Customer', cbm.cbmCustomer], ['CBM Astor', cbm.cbmAstor], ['CBM Area 1', cbm.cbmArea1], ['CBM Area 2', cbm.cbmArea2], ['CBM Area 3', cbm.cbmArea3]];
+  let ry = PY + 1.1;
+  rowsCbm.forEach(r => {
+    T(r[0], { x: RX + 0.15, y: ry, w: RW2 - 0.3, h: 0.2, fontSize: 8, color: '9CA3AF' });
+    T(fmt2(r[1] || 0) + ' CBM', { x: RX + 0.15, y: ry + 0.2, w: RW2 - 0.3, h: 0.3, fontSize: 14, bold: true, color: 'FFFFFF' });
+    ry += 0.58;
+  });
+}
+
+function buildInboundPlanningSlide(pres, ib) {
+  const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('INBOUND PLANNING', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 26, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.7, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+
+  const LX = 0.4, PY = 1.15, PW = 12.53;
+  function card(x, y, w, h, label, value, valColor, border) {
+    s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: border || 'E5E7EB', width: border ? 1.25 : 0.75 } });
+    T(String(value), { x: x + 0.12, y: y + 0.12, w: w - 0.24, h: 0.42, fontSize: 20, bold: true, color: valColor || '111111', fit: 'shrink' });
+    T(label, { x: x + 0.12, y: y + 0.56, w: w - 0.24, h: 0.28, fontSize: 7.5, bold: true, color: '6B7280' });
+  }
+  const row1 = [['TOTAL UNLOAD', ib.totalKedatangan, '111111'], ['TRANSFER', ib.transfer, '111111'], ['IMPORT AHI', ib.importAhi, '111111'], ['LOKAL', ib.lokal, '111111'], ['HIT', ib.hit, '10B981', '34D399'], ['MISS', ib.miss, 'EF4444', 'F87171'], ['TOTAL QTY', ib.totalQty.toLocaleString('id-ID') + ' pcs', '111111'], ['TOTAL SKU', ib.totalSKU, '111111']];
+  const cw1 = (PW - 0.7) / 8;
+  row1.forEach((c, i) => card(LX + i * (cw1 + 0.1), PY, cw1, 0.85, c[0], c[1], c[2], c[3]));
+
+  const py2 = PY + 1.0;
+  T('\uD83D\uDD52 STATUS PROSES UNLOADING \u2013 HARI INI', { x: LX, y: py2, w: PW, h: 0.25, fontSize: 9.5, bold: true, color: '374151' });
+  const stCards = [['DONE', ib.done, '10B981'], ['PROSES', ib.proses, '3B82F6'], ['ANTRI', ib.antri, '8B5CF6'], ['BELUM DATANG', ib.belumDatang, 'F59E0B']];
+  const cw2 = (PW - 0.3) / 4;
+  stCards.forEach((c, i) => {
+    const x = LX + i * (cw2 + 0.1);
+    s.addShape(pres.ShapeType.roundRect, { x, y: py2 + 0.3, w: cw2, h: 0.95, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: 'E5E7EB', width: 0.75 } });
+    T(String(c[1]), { x: x + 0.12, y: py2 + 0.42, w: cw2 - 0.24, h: 0.4, fontSize: 22, bold: true, color: c[2] });
+    T(c[0], { x: x + 0.12, y: py2 + 0.85, w: cw2 - 0.24, h: 0.22, fontSize: 8, bold: true, color: '6B7280' });
+    const pct = ib.totalKedatangan > 0 ? c[1] / ib.totalKedatangan * 100 : 0;
+    T(pct.toFixed(1) + '% dari total', { x: x + 0.12, y: py2 + 1.05, w: cw2 - 0.24, h: 0.18, fontSize: 6.5, color: '9CA3AF' });
+  });
+
+  const py3 = py2 + 1.5;
+  s.addShape(pres.ShapeType.roundRect, { x: LX, y: py3, w: 3.0, h: 1.0, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: 'E5E7EB', width: 0.75 } });
+  T(fmt2(ib.totalCBM), { x: LX + 0.15, y: py3 + 0.12, w: 2.7, h: 0.4, fontSize: 22, bold: true, color: 'EF4444' });
+  T('TOTAL CBM', { x: LX + 0.15, y: py3 + 0.55, w: 2.7, h: 0.2, fontSize: 8, bold: true, color: '6B7280' });
+  T('Est. Pallet: ~' + Math.round(ib.totalCBM / 1.2) + ' pallet', { x: LX + 0.15, y: py3 + 0.75, w: 2.7, h: 0.2, fontSize: 6.5, color: '9CA3AF' });
+
+  const areaKeys = [['CUSTOMER', ib.cbmPerArea.customer], ['ASTOR', ib.cbmPerArea.astor], ['AREA 1', ib.cbmPerArea.area1], ['AREA 2', ib.cbmPerArea.area2], ['AREA 3', ib.cbmPerArea.area3]];
+  const cw3 = (PW - 3.2) / 5;
+  areaKeys.forEach((c, i) => {
+    const x = LX + 3.2 + i * cw3;
+    s.addShape(pres.ShapeType.roundRect, { x, y: py3, w: cw3 - 0.1, h: 1.0, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: 'E5E7EB', width: 0.75 } });
+    T(fmt2(c[1]), { x: x + 0.1, y: py3 + 0.12, w: cw3 - 0.3, h: 0.38, fontSize: 15, bold: true, color: '111111', fit: 'shrink' });
+    T(c[0], { x: x + 0.1, y: py3 + 0.55, w: cw3 - 0.3, h: 0.2, fontSize: 7, bold: true, color: '6B7280' });
+  });
+
+  const by = py3 + 1.25;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u2022 ', options: { color: RED_LABEL, fontSize: 8 } }); out[out.length - 1].options.breakLine = true; return out; };
+  const left = [].concat(
+    para([{ text: 'Ringkasan Umum:', options: { bold: true, fontSize: 11, paraSpaceAfter: 4 } }]),
+    para([label('Total Kedatangan: '), val(ib.totalKedatangan + ' armada'), { text: ' (' + (ib.transfer === ib.totalKedatangan ? 'seluruhnya Transfer' : ib.transfer + ' Transfer, ' + ib.importAhi + ' Import AHI, ' + ib.lokal + ' Lokal') + ')' }], true),
+    para([label('Total Qty: '), val(ib.totalQty.toLocaleString('id-ID') + ' pcs')], true),
+    para([label('Total SKU: '), val(String(ib.totalSKU) + ' SKU')], true),
+    para([label('Total CBM: '), val(fmt2(ib.totalCBM) + ' CBM')], true)
+  );
+  T(left, { x: LX, y: by, w: (PW - 0.3) / 2, h: 1.4, fontSize: 10, color: '111111', paraSpaceAfter: 3 });
+  const right = [].concat(para([{ text: 'Rincian Total CBM per Area:', options: { bold: true, fontSize: 11, paraSpaceAfter: 4 } }]));
+  areaKeys.forEach(c => right.push(...para([label(cap(c[0]) + ': '), val(fmt2(c[1]) + ' CBM')], true)));
+  T(right, { x: LX + (PW - 0.3) / 2 + 0.3, y: by, w: (PW - 0.3) / 2, h: 1.7, fontSize: 10, color: '111111', paraSpaceAfter: 3 });
+}
+function cap(s) { return s.charAt(0) + s.slice(1).toLowerCase(); }
+
 // ◆ pada teks diberi indent gantung (baris yang membungkus rata di bawah teks, bukan di bawah ◆)
 async function toolsPostProcess(arrayBuffer) {
   await toolsLoadScript(TOOLS_JSZIP_CDN);
@@ -3671,16 +4039,24 @@ async function toolsGeneratePpt() {
     setBtn('⏳ Menyusun slide…');
     await toolsLoadScript(TOOLS_PPTX_CDN);
     if (typeof PptxGenJS === 'undefined') throw new Error('Pustaka PPT tidak termuat.');
-    const D = toolsMapData(toolsData);
     const pres = new PptxGenJS();
     pres.layout = 'LAYOUT_WIDE';
-    pres.title = 'Laporan Pagi DC AHI Sidoarjo';
-    toolsBuildProfilDailySlide(pres, D, toolsGradientBg());
+    pres.title = 'Daily Operational Report DC AHI Sidoarjo';
+    const now0 = new Date();
+    const tanggalLabel = now0.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    buildCoverSlide(pres, { tanggal: tanggalLabel });
+    toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg());
+    buildPlannerSlide(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData));
+    buildOutstandingSlide(pres, toolsMapOutstanding(toolsData));
+    buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData));
+    buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData));
+    buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData));
+    buildThankYouSlide(pres);
 
     setBtn('⏳ Menyiapkan file…');
     const now = new Date();
     const p2 = n => String(n).padStart(2, '0');
-    const fileName = 'Laporan_Pagi_DC_AHI_Sidoarjo_' + now.getFullYear() + '-' + p2(now.getMonth() + 1) + '-' + p2(now.getDate()) + '_' + p2(now.getHours()) + p2(now.getMinutes()) + '.pptx';
+    const fileName = 'Daily_Operational_Report_DC_AHI_Sidoarjo_' + now.getFullYear() + '-' + p2(now.getMonth() + 1) + '-' + p2(now.getDate()) + '_' + p2(now.getHours()) + p2(now.getMinutes()) + '.pptx';
     let blob = null;
     try {
       const buf = await pres.write({ outputType: 'arraybuffer' });
@@ -3689,8 +4065,8 @@ async function toolsGeneratePpt() {
     if (blob) toolsDownloadBlob(blob, fileName); else await pres.writeFile({ fileName: fileName });
 
     toolsSetPill('ok', 'PPT terunduh');
-    toolsMsg('ok', 'PPT berhasil dibuat: ' + fileName + ' (cek folder Download). Data pukul ' + D.jam + ' WIB.');
-    toolsLogRun('sukses', fileName, '1 slide', 'Rata-rata progres ' + D.rata.toFixed(1) + '% (data pukul ' + D.jam + ' WIB)');
+    toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB.');
+    toolsLogRun('sukses', fileName, '8 slide', 'Rata-rata progres ' + (toolsData.rata != null ? toolsData.rata.toFixed(1) : '-') + '% (data pukul ' + toolsData.jam + ' WIB)');
   } catch (e) {
     toolsSetPill('err', 'Gagal membuat PPT');
     toolsMsg('err', 'PPT gagal dibuat: ' + e.message);
