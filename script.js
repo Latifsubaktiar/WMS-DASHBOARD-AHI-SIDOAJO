@@ -3671,50 +3671,65 @@ function buildThankYouSlide(pres) {
   s.addText('TERIMA KASIH', { x: 1.5, y: 3.1, w: 8, h: 0.9, fontSize: 38, bold: true, color: '1E3A8A', fontFace: 'Arial', isTextBox: true });
 }
 
-function buildPlannerSlide(pres, planner, master) {
+function buildPlannerSlideV2(pres, planner, master, bgData) {
   const FONT = 'Arial', RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF', NAVY = '1F3A8A';
   const s = pres.addSlide();
-  s.background = { color: 'FFFFFF' };
+  s.background = { data: bgData };
+  s.addShape(pres.ShapeType.roundRect, { x: 0.25, y: 0.25, w: 12.83, h: 7.0, rectRadius: 0.1, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
   const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
-  T('REPORTING PLANNER', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 26, bold: true, color: '111111' });
-  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.72, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
-  T("Yesterday's Work Completion", { x: 0.4, y: 1.2, w: 6.0, h: 0.3, fontSize: 13, bold: true, italic: true, color: 'A50F1E' });
-  T('Daily Proses today', { x: 6.9, y: 1.2, w: 6.0, h: 0.3, fontSize: 13, bold: true, italic: true, color: NAVY });
+  T('REPORTING PLANNER', { x: 0.55, y: 0.4, w: 8, h: 0.45, fontSize: 24, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.55, y: 0.82, w: 8, h: 0.28, fontSize: 11.5, italic: true, color: '333333' });
+  T("Yesterday's Work Completion", { x: 0.55, y: 1.22, w: 6.0, h: 0.28, fontSize: 12.5, bold: true, italic: true, color: 'A50F1E', align: 'center' });
+  T('Daily Proses today', { x: 6.9, y: 1.22, w: 6.0, h: 0.28, fontSize: 12.5, bold: true, italic: true, color: NAVY, align: 'center' });
 
-  function panel(x, y, w, h, d, title) {
+  function panel(x, y, w, h, d) {
     s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: '0D0D0F' }, line: { color: 'C81E32', width: 1 } });
-    T(title, { x: x + 0.15, y: y + 0.1, w: w - 0.3, h: 0.2, fontSize: 8, bold: true, color: 'FF4D5E' });
-    const cards = [
-      ['TOTAL CBM PLAN', fmt2(d.cbmPlan), 'FFFFFF'], ['CBM SHIPPED', fmt2(d.cbmShipped), '34D399'],
-      ['ACHIEVEMENT', d.pct.toFixed(1) + '%', d.pct >= 80 ? '34D399' : (d.pct >= 50 ? 'FBBF24' : 'F87171')], ['TOTAL LC', String(d.lc), '60A5FA']
-    ];
-    const cw = (w - 0.5) / 4;
-    cards.forEach((c, i) => {
-      T(c[1], { x: x + 0.15 + i * (cw + 0.05), y: y + 0.42, w: cw, h: 0.35, fontSize: 14, bold: true, color: c[2], fit: 'shrink' });
-      T(c[0], { x: x + 0.15 + i * (cw + 0.05), y: y + 0.78, w: cw, h: 0.35, fontSize: 6, bold: true, color: '9CA3AF' });
-    });
+    T('MAIN DASHBOARD', { x: x + 0.13, y: y + 0.08, w: w - 0.26, h: 0.16, fontSize: 7, bold: true, color: 'FF4D5E' });
+    const rowY0 = y + 0.28, rh = 0.52, gap = 0.045, cw3 = (w - 0.26 - gap * 2) / 3, cw4 = (w - 0.26 - gap * 3) / 4;
+    function cell3(rowY, i, val, lbl, bg, fg) { const cx = x + 0.13 + i * (cw3 + gap); s.addShape(pres.ShapeType.roundRect, { x: cx, y: rowY, w: cw3, h: rh, rectRadius: 0.03, fill: { color: bg } }); T(val, { x: cx + 0.05, y: rowY + 0.05, w: cw3 - 0.1, h: 0.28, fontSize: 12, bold: true, color: fg, fit: 'shrink' }); T(lbl, { x: cx + 0.05, y: rowY + 0.33, w: cw3 - 0.1, h: 0.18, fontSize: 5, bold: true, color: fg }); }
+    cell3(rowY0, 0, fmt2i(d.caseIdShipped), 'CASE ID SHIPPED', 'FCD34D', '3F2D00');
+    cell3(rowY0, 1, d.caseIdPct.toFixed(1) + '%', 'CASE ID FULFILLMENT (%)', 'FCD34D', '3F2D00');
+    cell3(rowY0, 2, fmt2i(d.caseIdPlan), 'CASE ID PLAN', 'FCD34D', '3F2D00');
+    const row2Y = rowY0 + rh + gap;
+    cell3(row2Y, 0, fmt2(d.cbmShipped), 'CBM SHIPPED', 'F87171', '3F0808');
+    cell3(row2Y, 1, d.pct.toFixed(1) + '%', 'CBM FULFILLMENT (%)', 'F87171', '3F0808');
+    cell3(row2Y, 2, fmt2(d.cbmPlan), 'CBM PLAN', 'F87171', '3F0808');
+    function cell4(rowY, i, val, lbl, bg, fg) { const cx = x + 0.13 + i * (cw4 + gap); s.addShape(pres.ShapeType.roundRect, { x: cx, y: rowY, w: cw4, h: rh, rectRadius: 0.03, fill: { color: bg } }); T(val, { x: cx + 0.05, y: rowY + 0.05, w: cw4 - 0.1, h: 0.28, fontSize: 11, bold: true, color: fg, fit: 'shrink' }); T(lbl, { x: cx + 0.05, y: rowY + 0.33, w: cw4 - 0.1, h: 0.18, fontSize: 4.8, bold: true, color: fg }); }
+    const row3Y = row2Y + rh + gap;
+    cell4(row3Y, 0, fmt2(d.cbmPlanShift1), 'CBM PLAN SHIFT 1', '6EE7B7', '013320');
+    cell4(row3Y, 1, fmt2(d.cbmPlanShift2), 'CBM PLAN SHIFT 2', '6EE7B7', '013320');
+    cell4(row3Y, 2, planner.slaCust || '-', 'SLA CUSTOMER', '6EE7B7', '013320');
+    cell4(row3Y, 3, planner.slaGrw || '-', 'SLA GRW', '6EE7B7', '013320');
+    const row4Y = row3Y + rh + gap;
+    ['B1', 'B2', 'B3', 'B4'].forEach((b, i) => cell4(row4Y, i, fmt2i(d.batch[b].caseId), 'CASE ID PLAN ' + b, '93C5FD', '0B2545'));
+    const row5Y = row4Y + rh + gap;
+    ['B1', 'B2', 'B3', 'B4'].forEach((b, i) => cell4(row5Y, i, fmt2(d.batch[b].cbm), 'CBM PLAN ' + b, 'D1D5DB', '1F2937'));
+    return row5Y + rh;
   }
-  const PW = 6.0, PH = 1.35, PY = 1.55;
-  panel(0.4, PY, PW, PH, master.yesterday, 'MAIN DASHBOARD');
-  panel(6.9, PY, PW, PH, master.today, 'MAIN DASHBOARD');
+  const PW = 6.0, PH = 3.55, PY = 1.5;
+  const bottomL = panel(0.55, PY, PW, PH, master.yesterday);
+  panel(6.9, PY, PW, PH, master.today);
 
-  const by = PY + PH + 0.3;
+  const by = PY + PH + 0.15;
   const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
   const val = t => ({ text: t, options: { bold: true } });
-  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 8 } }); out[out.length - 1].options.breakLine = true; return out; };
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 7.5 } }); out[out.length - 1].options.breakLine = true; return out; };
   T([].concat(
-    para([{ text: 'Laporan Ringkasan Pekerjaan Kemarin:', options: { bold: true, italic: true, fontSize: 11, paraSpaceAfter: 4 } }]),
-    para([label('CBM Plan: '), val(fmt2(master.yesterday.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.yesterday.cbmShipped) + ' CBM')], true),
-    para([label('Achievement: '), val(master.yesterday.pct.toFixed(1) + '%'), { text: ' dari ' + master.yesterday.lc + ' LC' }], true),
-    para([label('SLA Planner: '), val('SLA GRW ' + planner.slaGrw + ', SLA Customer ' + planner.slaCust)], true)
-  ), { x: 0.4, y: by, w: PW, h: 1.6, fontSize: 9.5, color: '111111', paraSpaceAfter: 3 });
+    para([{ text: 'Laporan Ringkasan Pekerjaan Kemarin:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
+    para([label('CBM Plan: '), val(fmt2(master.yesterday.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.yesterday.cbmShipped) + ' CBM'), { text: ' (' + master.yesterday.pct.toFixed(1) + '%)' }], true),
+    para([label('Case ID Plan: '), val(fmt2i(master.yesterday.caseIdPlan)), { text: ' | ' }, label('Case ID Shipped: '), val(fmt2i(master.yesterday.caseIdShipped)), { text: ' (' + master.yesterday.caseIdPct.toFixed(1) + '%)' }], true),
+    para([label('SLA Planner: '), val('SLA GRW ' + (planner.slaGrw || '-') + ', SLA Customer ' + (planner.slaCust || '-'))], true)
+  ), { x: 0.55, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
   T([].concat(
-    para([{ text: 'Laporan Ringkasan Plan Loading Today AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 11, paraSpaceAfter: 4 } }]),
+    para([{ text: 'Laporan Ringkasan Plan Loading Today AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
     para([label('CBM Plan: '), val(fmt2(master.today.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.today.cbmShipped) + ' CBM')], true),
     para([label('Progres Loading: '), val(master.today.pct.toFixed(1) + '%'), { text: ' dari ' + master.today.lc + ' LC' }], true)
-  ), { x: 6.9, y: by, w: PW, h: 1.6, fontSize: 9.5, color: '111111', paraSpaceAfter: 3 });
+  ), { x: 6.9, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
 }
+function fmt2i(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
 function fmt2(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmt2i(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
+
 
 function buildOutstandingSlide(pres, o) {
   const FONT = 'Arial', W = 13.333, H = 7.5, RED_LABEL = 'B4121F';
@@ -4046,7 +4061,7 @@ async function toolsGeneratePpt() {
     const tanggalLabel = now0.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     buildCoverSlide(pres, { tanggal: tanggalLabel });
     toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg());
-    buildPlannerSlide(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData));
+    buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg());
     buildOutstandingSlide(pres, toolsMapOutstanding(toolsData));
     buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData));
     buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData));
