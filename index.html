@@ -1598,6 +1598,7 @@
     <div class="tl-tabs">
       <button class="tl-tab active" id="tlTabPagi" onclick="toolsSwitchTab('pagi')">📄 PPT Laporan Pagi <span class="tl-tab-tag">Otomatis</span></button>
       <button class="tl-tab" id="tlTabPimpinan" onclick="toolsSwitchTab('pimpinan')">🧑‍💼 PPT Pak Rudi, Pak Husni &amp; Pak Arson <span class="tl-tab-tag">Manual</span></button>
+      <button class="tl-tab" id="tlTabPlanner" onclick="toolsSwitchTab('planner')">📊 PPT Planner <span class="tl-tab-tag">Manual</span></button>
     </div>
 
     <div id="tlPanePagi">
@@ -1655,6 +1656,20 @@
         </div>
         <div class="tl-msg tl-frame-msg" id="tlPimpMsg"></div>
         <iframe id="tlPimpFrame" class="tl-frame" title="PPT untuk Pimpinan" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+      </div>
+    </div>
+
+    <div id="tlPanePlanner" style="display:none">
+      <div class="card tl-block" style="padding:0;overflow:hidden">
+        <div class="tl-frame-bar">
+          <div><b>PPT Planner Presentation Daily</b><span class="tl-muted">Screenshot dashboard lalu Ctrl+V, gambar masuk otomatis ke kotak berikutnya. Isi ringkasan, lalu klik Generate PPT.</span></div>
+          <div class="tl-frame-bar-btns">
+            <button class="tl-btn tl-btn-sm" onclick="toolsReloadPlanner()">↺ Muat ulang</button>
+            <a class="tl-btn tl-btn-sm" href="ppt-planner.html" target="_blank" rel="noopener">↗ Buka di tab baru</a>
+          </div>
+        </div>
+        <div class="tl-msg tl-frame-msg" id="tlPlanMsg"></div>
+        <iframe id="tlPlanFrame" class="tl-frame" title="PPT Planner" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
       </div>
     </div>
   </div>
