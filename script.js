@@ -3309,7 +3309,7 @@ document.addEventListener('keydown', (e) => {
 // ═════════════════════════════════════════════════════════════════
 const TOOLS_PPTX_CDN = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
 const TOOLS_JSZIP_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-const TOOLS_PARTS = [['profil', 'Profil DC'], ['inbound', 'Inbound'], ['storing', 'Storing'], ['outbound', 'Outbound'], ['inventory', 'Inventory'], ['planner', 'Planner SLA']];
+const TOOLS_PARTS = [['profil', 'Profil DC'], ['inbound', 'Inbound'], ['storing', 'Storing'], ['outbound', 'Outbound'], ['inventory', 'Inventory'], ['planner', 'Planner SLA'], ['plannerMaster', 'Planner CBM'], ['outstanding', 'Outstanding Backlog'], ['vendorTrend', 'Vendor Trend'], ['stockTransfer', 'Stock Transfer'], ['inboundPlanning', 'Inbound Planning']];
 let toolsData = null;
 let toolsHistory = null;
 let toolsBusy = false;
@@ -3438,21 +3438,51 @@ async function toolsLoadHistory() {
   }
 }
 
+function toolsDriveFileId(url) {
+  const m = String(url || '').match(/\/file\/d\/([^/]+)/);
+  return m ? m[1] : null;
+}
+
 function toolsRenderHistory() {
   const box = toolsEl('tlHistory'); if (!box) return;
   const rows = toolsHistory || [];
   toolsRenderSchedule();
   if (!rows.length) { box.innerHTML = '<div class="tl-empty">Belum ada PPT yang tercatat. PPT yang dibuat otomatis (jadwal) maupun lewat tombol akan muncul di sini.</div>'; return; }
-  box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Status</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody>' +
-    rows.map(r => {
+  box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Status</th><th>Keterangan</th><th>Preview</th><th>Aksi</th></tr></thead><tbody>' +
+    rows.map((r, i) => {
       const auto = r.jenis === 'otomatis', ok = r.status === 'sukses';
+      const fid = toolsDriveFileId(r.link);
       const link = /^https:\/\//i.test(r.link || '') ? '<a class="tl-link" href="' + toolsEsc(r.link) + '" target="_blank" rel="noopener">Buka ↗</a>' : '<span class="tl-dash">–</span>';
+      const preview = fid ? '<button class="tl-btn tl-btn-sm" onclick="toolsOpenPreview(' + i + ')">▶ Preview</button>' : '<span class="tl-dash" title="Belum ada salinan yang bisa di-preview">–</span>';
       const ket = [r.file ? '<b>' + toolsEsc(r.file) + '</b>' : '', r.slide ? toolsEsc(r.slide) : '', r.catatan ? toolsEsc(r.catatan) : '', r.oleh ? 'oleh ' + toolsEsc(r.oleh) : ''].filter(Boolean).join(' · ');
       return '<tr><td class="tl-nowrap">' + toolsEsc(toolsFmtWaktu(r.waktu)) + '</td>' +
         '<td><span class="tl-pill ' + (auto ? 'tl-pill-auto' : 'tl-pill-manual') + '">' + (auto ? 'Otomatis' : 'Manual') + '</span></td>' +
         '<td><span class="tl-pill ' + (ok ? 'tl-pill-ok' : 'tl-pill-err') + '">' + (ok ? '✓ Sukses' : '✕ Gagal') + '</span></td>' +
-        '<td class="tl-ket">' + (ket || '<span class="tl-dash">–</span>') + '</td><td class="tl-nowrap">' + link + '</td></tr>';
+        '<td class="tl-ket">' + (ket || '<span class="tl-dash">–</span>') + '</td><td class="tl-nowrap">' + preview + '</td><td class="tl-nowrap">' + link + '</td></tr>';
     }).join('') + '</tbody></table></div>';
+}
+
+/** Buka modal preview Drive (iframe) untuk baris riwayat ke-i. Tidak perlu download. */
+function toolsOpenPreview(i) {
+  const r = (toolsHistory || [])[i]; if (!r) return;
+  const fid = toolsDriveFileId(r.link); if (!fid) return;
+  let modal = toolsEl('tlPreviewModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'tlPreviewModal';
+    modal.className = 'tl-modal-backdrop';
+    modal.innerHTML = '<div class="tl-modal"><div class="tl-modal-bar"><b id="tlPreviewTitle"></b><button class="tl-btn tl-btn-sm" onclick="toolsClosePreview()">✕ Tutup</button></div><iframe id="tlPreviewFrame" allow="fullscreen"></iframe></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) toolsClosePreview(); });
+  }
+  toolsEl('tlPreviewTitle').textContent = r.file || 'Preview PPT';
+  toolsEl('tlPreviewFrame').src = 'https://drive.google.com/file/d/' + fid + '/preview';
+  modal.style.display = 'flex';
+}
+function toolsClosePreview() {
+  const modal = toolsEl('tlPreviewModal'); if (!modal) return;
+  modal.style.display = 'none';
+  const fr = toolsEl('tlPreviewFrame'); if (fr) fr.src = 'about:blank';
 }
 
 // kartu jadwal otomatis: status diambil dari riwayat (run otomatis terakhir), bukan tebakan
@@ -3474,7 +3504,7 @@ function toolsRenderSchedule() {
     '<p class="tl-desc"><b>7 hari terakhir:</b> ' + okN + ' sukses, ' + (wk.length - okN) + ' gagal dari ' + wk.length + ' run.</p>';
 }
 
-// catat pembuatan PPT manual ke server (tidak menghalangi unduhan kalau gagal)
+// catat pembuatan PPT manual GAGAL ke server (dipakai kalau upload Drive tidak sempat/gagal dijalankan)
 async function toolsLogRun(status, file, slide, catatan) {
   try {
     const q = '?action=logPpt&status=' + encodeURIComponent(status) + '&file=' + encodeURIComponent(file || '') + '&slide=' + encodeURIComponent(slide || '') +
@@ -3482,6 +3512,58 @@ async function toolsLogRun(status, file, slide, catatan) {
     await fetch(GAS_DASHBOARD_URL + q);
   } catch (e) { console.warn('Gagal mencatat riwayat PPT:', e); }
   toolsLoadHistory();
+}
+
+/** Ubah Blob jadi base64 (dipakai buat upload PPT lewat POST). */
+function toolsBlobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] || '');
+    r.onerror = () => reject(new Error('Gagal membaca file PPT untuk diunggah.'));
+    r.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Unggah PPT (blob) ke Drive lewat POST, biar bisa di-PREVIEW dari Riwayat
+ * tanpa download. Server yang catat ke Riwayat (link-nya dijamin valid,
+ * bukan dari sini) — jadi di sini kita cuma kirim & baca hasilnya.
+ * Kalau upload gagal (mis. jaringan kantor blokir), PPT TETAP sudah terunduh
+ * duluan (dipanggil setelah toolsDownloadBlob), jadi tidak menghalangi kerja.
+ */
+/** POST lewat XMLHttpRequest (bukan fetch) — fetch() sering gagal "Failed to fetch"
+ * untuk POST lintas domain ke Apps Script (redirect internal Google tidak selalu
+ * cocok dengan pemeriksaan CORS versi fetch). XHR lebih tahan terhadap kasus ini. */
+function toolsXhrPost(url, bodyObj, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.timeout = timeoutMs || 60000;
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(JSON.parse(xhr.responseText)); } catch (e) { reject(new Error('Balasan server tidak valid (bukan JSON): ' + xhr.responseText.slice(0, 150))); }
+      } else { reject(new Error('HTTP ' + xhr.status + (xhr.statusText ? ' ' + xhr.statusText : ''))); }
+    };
+    xhr.onerror = () => reject(new Error('Gagal terhubung ke server (jaringan/CORS).'));
+    xhr.ontimeout = () => reject(new Error('Waktu unggah habis (lebih dari ' + Math.round((timeoutMs || 60000) / 1000) + ' detik).'));
+    xhr.send(JSON.stringify(bodyObj));
+  });
+}
+
+async function toolsUploadAndLog(blob, fileName, slide, catatan) {
+  try {
+    const base64 = await toolsBlobToBase64(blob);
+    const json = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'uploadPpt', base64: base64, fileName: fileName, slide: slide || '', catatan: catatan || '', oleh: localStorage.getItem('wms_name') || '' }, 90000);
+    if (!json || json.ok === false) throw new Error((json && json.error) || 'Upload ke Drive gagal');
+    toolsLoadHistory();
+    return json;
+  } catch (e) {
+    console.warn('Upload PPT ke Drive gagal, dicatat sebagai riwayat tanpa preview. Detail:', e);
+    // pesan panjang (URL dokumentasi Google, dll) cukup di console, JANGAN di kolom Keterangan
+    const singkat = String(e.message || '').split('.')[0].split(/\s*\(https?:/)[0].trim().slice(0, 120);
+    await toolsLogRun('sukses', fileName, slide, (catatan || '') + ' \u2014 preview belum tersedia (' + (singkat || 'gagal diunggah ke Drive') + ')');
+    return null;
+  }
 }
 
 // ── pemetaan data server -> data slide ─────────────────────────────
@@ -3511,6 +3593,16 @@ function toolsMapData(api) {
     jam: api.jam || ''
   };
 }
+
+function toolsMapPlannerMaster(api) {
+  const pm = api.plannerMaster || {};
+  const agg = x => x || { cbmPlan: 0, cbmShipped: 0, pct: 0, lc: 0 };
+  return { yesterday: agg(pm.yesterday), today: agg(pm.today) };
+}
+function toolsMapOutstanding(api) { return api.outstanding || {}; }
+function toolsMapVendorTrend(api) { return api.vendorTrend || {}; }
+function toolsMapStockTransfer(api) { return api.stockTransfer || {}; }
+function toolsMapInboundPlanning(api) { return api.inboundPlanning || {}; }
 
 // latar gradien biru -> kuning -> oranye (seperti slide contoh)
 function toolsGradientBg() {
@@ -3629,6 +3721,370 @@ function toolsBuildProfilDailySlide(pres, D, bgData) {
   s.addNotes('Dibuat otomatis dari data dashboard WMS AHI Sidoarjo pukul ' + D.jam + ' WIB. Kartu, grafik dan donut adalah objek PowerPoint asli (bisa diedit).');
 }
 
+
+// ── slide builders (di-generate & diuji terpisah sebelum dipasang) ──
+function buildCoverSlide(pres, d) {
+  const FONT = 'Arial';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  s.addShape(pres.ShapeType.rect, { x: 8.6, y: 0, w: 4.733, h: 7.5, fill: { color: 'C81E32' }, line: { width: 0 } });
+  T('Kawan Lama Group', { x: 0.5, y: 0.35, w: 5, h: 0.4, fontSize: 15, bold: true, color: '111111' });
+  T('BRINGING MORE GOOD THINGS TO LIFE', { x: 0.5, y: 0.68, w: 5, h: 0.2, fontSize: 6.5, color: '6B7280', charSpacing: 1 });
+  T('DAILY OPERATIONAL', { x: 0.5, y: 1.5, w: 7, h: 0.4, fontSize: 18, bold: true, color: '111111', charSpacing: 2 });
+  T('REPORT', { x: 0.45, y: 1.85, w: 7, h: 0.9, fontSize: 52, bold: true, color: 'C81E32' });
+  T('DC AHI SIDOARJO', { x: 0.45, y: 2.65, w: 7, h: 0.55, fontSize: 34, bold: true, color: '111111' });
+  s.addShape(pres.ShapeType.line, { x: 0.5, y: 3.35, w: 1.3, h: 0, line: { color: 'C81E32', width: 3 } });
+  T('PERFORMA HARI INI, UNTUK OPERASIONAL YANG LEBIH BAIK', { x: 0.5, y: 3.5, w: 7, h: 0.25, fontSize: 9.5, bold: true, color: '374151', charSpacing: 1 });
+  const topics = ['Profil DC', 'Planner Reporting', 'Inbound Reporting', 'Storing Reporting', 'Outbound Reporting', 'Inventory Reporting', 'GA Reporting', 'HC Reporting', 'MTC Reporting'];
+  T('\u2758 PRESENTATION TOPICS', { x: 0.5, y: 4.0, w: 5, h: 0.25, fontSize: 10, bold: true, color: '111111' });
+  const col = Math.ceil(topics.length / 3);
+  topics.forEach((t, i) => {
+    const c = Math.floor(i / 3), r = i % 3;
+    T((i + 1 < 10 ? '0' : '') + (i + 1) + '.  ' + t, { x: 0.5 + c * 2.0, y: 4.4 + r * 0.35, w: 2.0, h: 0.3, fontSize: 8.5, color: '111111' });
+  });
+  T((d.tanggal || '') + '   |   DC AHI SIDOARJO', { x: 0.5, y: 6.9, w: 6, h: 0.25, fontSize: 8, bold: true, color: '6B7280' });
+}
+
+function buildThankYouSlide(pres) {
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  s.addText('Kawan Lama Group', { x: 9.6, y: 0.35, w: 3.3, h: 0.35, fontSize: 12, bold: true, color: '111111', fontFace: 'Arial', isTextBox: true });
+  s.addText('TERIMA KASIH', { x: 1.5, y: 3.1, w: 8, h: 0.9, fontSize: 38, bold: true, color: '1E3A8A', fontFace: 'Arial', isTextBox: true });
+}
+
+function buildPlannerSlideV2(pres, planner, master, bgData) {
+  const FONT = 'Arial', RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF', NAVY = '1F3A8A';
+  const s = pres.addSlide();
+  s.background = { data: bgData };
+  s.addShape(pres.ShapeType.roundRect, { x: 0.25, y: 0.25, w: 12.83, h: 7.0, rectRadius: 0.1, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('REPORTING PLANNER', { x: 0.55, y: 0.4, w: 8, h: 0.45, fontSize: 24, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.55, y: 0.82, w: 8, h: 0.28, fontSize: 11.5, italic: true, color: '333333' });
+  T("Yesterday's Work Completion", { x: 0.55, y: 1.22, w: 6.0, h: 0.28, fontSize: 12.5, bold: true, italic: true, color: 'A50F1E', align: 'center' });
+  T('Daily Proses today', { x: 6.9, y: 1.22, w: 6.0, h: 0.28, fontSize: 12.5, bold: true, italic: true, color: NAVY, align: 'center' });
+
+  function panel(x, y, w, h, d) {
+    s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: '0D0D0F' }, line: { color: 'C81E32', width: 1 } });
+    T('MAIN DASHBOARD', { x: x + 0.13, y: y + 0.08, w: w - 0.26, h: 0.16, fontSize: 7, bold: true, color: 'FF4D5E' });
+    const rowY0 = y + 0.28, rh = 0.52, gap = 0.045, cw3 = (w - 0.26 - gap * 2) / 3, cw4 = (w - 0.26 - gap * 3) / 4;
+    function cell3(rowY, i, val, lbl, bg, fg) { const cx = x + 0.13 + i * (cw3 + gap); s.addShape(pres.ShapeType.roundRect, { x: cx, y: rowY, w: cw3, h: rh, rectRadius: 0.03, fill: { color: bg } }); T(val, { x: cx + 0.05, y: rowY + 0.05, w: cw3 - 0.1, h: 0.28, fontSize: 12, bold: true, color: fg, fit: 'shrink' }); T(lbl, { x: cx + 0.05, y: rowY + 0.33, w: cw3 - 0.1, h: 0.18, fontSize: 5, bold: true, color: fg }); }
+    cell3(rowY0, 0, fmt2i(d.caseIdShipped), 'CASE ID SHIPPED', 'FCD34D', '3F2D00');
+    cell3(rowY0, 1, d.caseIdPct.toFixed(1) + '%', 'CASE ID FULFILLMENT (%)', 'FCD34D', '3F2D00');
+    cell3(rowY0, 2, fmt2i(d.caseIdPlan), 'CASE ID PLAN', 'FCD34D', '3F2D00');
+    const row2Y = rowY0 + rh + gap;
+    cell3(row2Y, 0, fmt2(d.cbmShipped), 'CBM SHIPPED', 'F87171', '3F0808');
+    cell3(row2Y, 1, d.pct.toFixed(1) + '%', 'CBM FULFILLMENT (%)', 'F87171', '3F0808');
+    cell3(row2Y, 2, fmt2(d.cbmPlan), 'CBM PLAN', 'F87171', '3F0808');
+    function cell4(rowY, i, val, lbl, bg, fg) { const cx = x + 0.13 + i * (cw4 + gap); s.addShape(pres.ShapeType.roundRect, { x: cx, y: rowY, w: cw4, h: rh, rectRadius: 0.03, fill: { color: bg } }); T(val, { x: cx + 0.05, y: rowY + 0.05, w: cw4 - 0.1, h: 0.28, fontSize: 11, bold: true, color: fg, fit: 'shrink' }); T(lbl, { x: cx + 0.05, y: rowY + 0.33, w: cw4 - 0.1, h: 0.18, fontSize: 4.8, bold: true, color: fg }); }
+    const row3Y = row2Y + rh + gap;
+    cell4(row3Y, 0, fmt2(d.cbmPlanShift1), 'CBM PLAN SHIFT 1', '6EE7B7', '013320');
+    cell4(row3Y, 1, fmt2(d.cbmPlanShift2), 'CBM PLAN SHIFT 2', '6EE7B7', '013320');
+    cell4(row3Y, 2, planner.slaCust || '-', 'SLA CUSTOMER', '6EE7B7', '013320');
+    cell4(row3Y, 3, planner.slaGrw || '-', 'SLA GRW', '6EE7B7', '013320');
+    const row4Y = row3Y + rh + gap;
+    ['B1', 'B2', 'B3', 'B4'].forEach((b, i) => cell4(row4Y, i, fmt2i(d.batch[b].caseId), 'CASE ID PLAN ' + b, '93C5FD', '0B2545'));
+    const row5Y = row4Y + rh + gap;
+    ['B1', 'B2', 'B3', 'B4'].forEach((b, i) => cell4(row5Y, i, fmt2(d.batch[b].cbm), 'CBM PLAN ' + b, 'D1D5DB', '1F2937'));
+    return row5Y + rh;
+  }
+  const PW = 6.0, PH = 3.55, PY = 1.5;
+  const bottomL = panel(0.55, PY, PW, PH, master.yesterday);
+  panel(6.9, PY, PW, PH, master.today);
+
+  const by = PY + PH + 0.15;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 7.5 } }); out[out.length - 1].options.breakLine = true; return out; };
+  T([].concat(
+    para([{ text: 'Laporan Ringkasan Pekerjaan Kemarin:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
+    para([label('CBM Plan: '), val(fmt2(master.yesterday.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.yesterday.cbmShipped) + ' CBM'), { text: ' (' + master.yesterday.pct.toFixed(1) + '%)' }], true),
+    para([label('Case ID Plan: '), val(fmt2i(master.yesterday.caseIdPlan)), { text: ' | ' }, label('Case ID Shipped: '), val(fmt2i(master.yesterday.caseIdShipped)), { text: ' (' + master.yesterday.caseIdPct.toFixed(1) + '%)' }], true),
+    para([label('SLA Planner: '), val('SLA GRW ' + (planner.slaGrw || '-') + ', SLA Customer ' + (planner.slaCust || '-'))], true)
+  ), { x: 0.55, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
+  T([].concat(
+    para([{ text: 'Laporan Ringkasan Plan Loading Today AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
+    para([label('CBM Plan: '), val(fmt2(master.today.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.today.cbmShipped) + ' CBM')], true),
+    para([label('Progres Loading: '), val(master.today.pct.toFixed(1) + '%'), { text: ' dari ' + master.today.lc + ' LC' }], true)
+  ), { x: 6.9, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
+}
+function fmt2i(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
+function fmt2(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+
+function buildOutstandingSlideV3(pres, o) {
+  const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('MONITORING OUTSTANDING', { x: 0.4, y: 0.28, w: 8, h: 0.45, fontSize: 22, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.68, w: 8, h: 0.26, fontSize: 11, italic: true, color: '333333' });
+
+  const LX = 0.4, PW = 9.15;
+  const cards = [['BACKLOG OUTSTANDING', o.backlogTotal, '111111', 'E5E7EB'], ['BACKLOG SUDAH PLAN', o.sudahPlan, '10B981', 'A7F3D0'], ['BACKLOG BELUM PLAN', o.belumPlan, 'D97706', 'FDE68A'], ['BACKLOG AGING 7 UP', o.aging7up, 'DC2626', 'FCA5A5'], ['ALLOCATION UNSUCCESSFUL', o.allocUnsuccessful, 'DC2626', 'FCA5A5']];
+  const cw = 1.72, cg = 0.09, cy0 = 1.05, ch = 0.85;
+  cards.forEach((c, i) => {
+    s.addShape(pres.ShapeType.roundRect, { x: LX + i * (cw + cg), y: cy0, w: cw, h: ch, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: c[3], width: 1 } });
+    T(fmt2(c[1]), { x: LX + i * (cw + cg) + 0.08, y: cy0 + 0.1, w: cw - 0.16, h: 0.38, fontSize: 17, bold: true, color: c[2], fit: 'shrink' });
+    T(c[0], { x: LX + i * (cw + cg) + 0.08, y: cy0 + 0.52, w: cw - 0.16, h: 0.28, fontSize: 6, bold: true, color: '6B7280' });
+  });
+
+  // ── Tabel 1: PLANNING PRIORITY (top 10, urut Total Unplanned terbesar) ──
+  const t1y = cy0 + ch + 0.16;
+  T('\u26A0\uFE0F PLANNING PRIORITY (AGING 4-7 & 7 UP) \u2014 Top 10 Total Unplanned Terbesar', { x: LX, y: t1y, w: PW, h: 0.18, fontSize: 8, bold: true, color: 'B45309' });
+  const hdr1 = c => ({ text: c, options: { bold: true, fontSize: 6.5, color: '374151', fill: { color: 'F3F4F6' }, align: 'left', valign: 'middle' } });
+  const hdr1r = c => ({ text: c, options: { bold: true, fontSize: 6.5, color: '374151', fill: { color: 'F3F4F6' }, align: 'right', valign: 'middle' } });
+  const t1rows = [[hdr1('STOREBOOKING'), hdr1('SHIP TO'), hdr1r('AGING 4-7'), hdr1r('AGING 7 UP'), hdr1r('TOTAL UNPLANNED')]];
+  const storeList = (o.storeTable || []).slice().sort((a, b) => b.totalUnplanned - a.totalUnplanned).slice(0, 10);
+  storeList.forEach((r, i) => {
+    const bg = i % 2 ? 'FAFAFA' : 'FFFFFF';
+    t1rows.push([cell1(r.code, bg), cell1(r.name, bg), cell1(fmt2(r.aging4to7), bg, 'right'), cell1(fmt2(r.aging7up), bg, 'right'), cell1(fmt2(r.totalUnplanned), bg, 'right', true)]);
+  });
+  s.addTable(t1rows, { x: LX, y: t1y + 0.2, w: PW, colW: [PW * 0.14, PW * 0.4, PW * 0.15, PW * 0.15, PW * 0.16], border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, rowH: 0.185 });
+
+  // ── Tabel 2: ORDER AGING BY AREA STORING (semua area) ──
+  const t1h = 0.2 + t1rows.length * 0.185;
+  const t2y = t1y + t1h + 0.18;
+  T('\uD83D\uDCCA MONITORING ORDER AGING BY AREA STORING', { x: LX, y: t2y, w: PW, h: 0.18, fontSize: 8, bold: true, color: '1D4ED8' });
+  const bl = o.bucketLabel || ['0 hari', '1-3 hari', '4-7 hari', '7 UP'];
+  const grpHdr = (label, bg) => ({ text: label, options: { bold: true, fontSize: 5.5, color: '111111', fill: { color: bg }, align: 'center', valign: 'middle' } });
+  const t2rows = [
+    [{ text: '', options: { fill: { color: 'F3F4F6' } } }, { text: '', options: { fill: { color: 'F3F4F6' } } }, grpHdr('AGING SUDAH PLAN (CBM)', 'A7F3D0'), { text: '', options: { fill: { color: 'A7F3D0' } } }, { text: '', options: { fill: { color: 'A7F3D0' } } }, { text: '', options: { fill: { color: 'A7F3D0' } } }, grpHdr('AGING BELUM PLAN (CBM)', 'FDE68A'), { text: '', options: { fill: { color: 'FDE68A' } } }, { text: '', options: { fill: { color: 'FDE68A' } } }, { text: '', options: { fill: { color: 'FDE68A' } } }],
+    [hdr1('AREA STORING'), hdr1r('TOTAL')].concat(bl.map(b => ({ text: b, options: { bold: true, fontSize: 5.5, color: '065F46', fill: { color: 'D1FAE5' }, align: 'right', valign: 'middle' } }))).concat(bl.map(b => ({ text: b, options: { bold: true, fontSize: 5.5, color: '92400E', fill: { color: 'FEF3C7' }, align: 'right', valign: 'middle' } })))
+  ];
+  (o.areaTable || []).forEach((a, i) => {
+    const bg = i % 2 ? 'FAFAFA' : 'FFFFFF';
+    t2rows.push([cell1(a.area, bg, 'left', true), cell1(fmt2(a.total), bg, 'right', true)].concat(a.sudah.map(v => cell1(fmt2(v), bg, 'right'))).concat(a.belum.map(v => cell1(fmt2(v), bg, 'right'))));
+  });
+  if (o.areaGrandTotal) { const g = o.areaGrandTotal; t2rows.push([cell1('GRAND TOTAL', 'FEE2E2', 'left', true), cell1(fmt2(g.total), 'FEE2E2', 'right', true)].concat(g.sudah.map(v => cell1(fmt2(v), 'FEE2E2', 'right'))).concat(g.belum.map(v => cell1(fmt2(v), 'FEE2E2', 'right')))); }
+  const colW2 = [PW * 0.16, PW * 0.1].concat(new Array(8).fill(PW * 0.0925));
+  s.addTable(t2rows, { x: LX, y: t2y + 0.2, w: PW, colW: colW2, border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, rowH: 0.19 });
+
+  // ── teks laporan kanan ──
+  const RX = LX + PW + 0.25, RW = W - RX - 0.35;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 7 } }); out[out.length - 1].options.breakLine = true; return out; };
+  const right = [].concat(
+    para([{ text: 'Laporan Ringkasan Monitoring Outstanding Backlog & Order Aging by Area Storing WMS AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 9, paraSpaceAfter: 5 } }]),
+    para([{ text: 'Ringkasan Outstanding Backlog', options: { bold: true, fontSize: 9, paraSpaceAfter: 3 } }]),
+    para([label('Total Backlog: '), val(fmt2(o.backlogTotal) + ' CBM'), { text: ' (' + o.rowCount + ' baris data)' }], true),
+    para([label('Sudah Plan: '), val(fmt2(o.sudahPlan) + ' CBM')], true),
+    para([label('Belum Plan: '), val(fmt2(o.belumPlan) + ' CBM')], true),
+    para([label('Backlog Aging 7 UP: '), val(fmt2(o.aging7up) + ' CBM')], true),
+    para([label('Allocation Unsuccessful: '), val(fmt2(o.allocUnsuccessful) + ' CBM')], true)
+  );
+  if (o.topStoreBelumPlan) right.push(...para([label('Prioritas Store Belum Plan Terbanyak: '), val(o.topStoreBelumPlan.code + ' (' + o.topStoreBelumPlan.name + ')'), { text: ' sebesar ' + fmt2(o.topStoreBelumPlan.cbm) + ' CBM (' + o.topStoreBelumPlan.pct.toFixed(1) + '% dari total Belum Plan)' }], true));
+  right.push(...para([{ text: 'Ringkasan Order Aging by Area Storing', options: { bold: true, fontSize: 9, paraSpaceAfter: 3 } }]));
+  if (o.topAgingArea) right.push(...para([label('Area Order >7 Hari Terbesar: '), val(o.topAgingArea.area), { text: ' sebesar ' + fmt2(o.topAgingArea.cbm) + ' CBM (' + o.topAgingArea.pctOfArea.toFixed(1) + '% dari volume area ini)' }], true));
+  if (o.topBelumAgingArea) right.push(...para([label('Area Belum Plan >7 Hari Terbesar: '), val(o.topBelumAgingArea.area), { text: ' sebesar ' + fmt2(o.topBelumAgingArea.cbm) + ' CBM' + (o.topBelumAgingArea.isAllUnplanned ? ' (seluruh volume belum diplan)' : '') }], true));
+  T(right, { x: RX, y: cy0, w: RW, h: 6.0, fontSize: 8, color: '111111', paraSpaceAfter: 2.5 });
+}
+function cell1(text, bg, align, bold) { return { text: text, options: { fontSize: 6.3, color: bold ? '111111' : '374151', fill: { color: bg || 'FFFFFF' }, align: align || 'left', valign: 'middle', bold: !!bold } }; }
+function buildVendorTrendSlide(pres, v) {
+  const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('TREND DAILY VENDOR PERFORMANCE', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 24, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.7, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+
+  const LX = 0.4, PY = 1.1, PW = 12.53, DB = '0D0D0F';
+  const topH = 2.85;
+  s.addShape(pres.ShapeType.roundRect, { x: LX, y: PY, w: PW, h: topH, rectRadius: 0.06, fill: { color: DB }, line: { color: 'C81E32', width: 1 } });
+  T('\u2713 TREND DAILY VENDOR PERFORMANCE (ON TIME ACHIEVEMENT)', { x: LX + 0.2, y: PY + 0.12, w: PW - 0.4, h: 0.2, fontSize: 9.5, bold: true, color: 'FF4D5E' });
+
+  const cards = [
+    ['VENDOR SUPPORTING', v.achievementPeriode.toFixed(1) + '%', 'Monthly On-Time Avg', 'FFFFFF'],
+    ['TOTAL COMPLETED LC', String(v.total.total), 'Total Load Containers', '60A5FA'],
+    ['TOTAL ON TIME LC', String(v.total.onTime), 'Delivered Within Schedule', '34D399'],
+    ['TERLAMBAT LC', String(v.total.terlambat), 'Require Dispatch Followup', 'F87171'],
+    ['BELUM SUPPORT LC', String(v.total.belumSupport), 'Delayed Admin Support', 'FBBF24']
+  ];
+  const cw = 2.28, cg = 0.14, cx0 = LX + 0.2, cy0 = PY + 0.4;
+  cards.forEach((c, i) => {
+    T(c[1], { x: cx0 + i * (cw + cg), y: cy0, w: cw, h: 0.55, fontSize: 26, bold: true, color: c[3] });
+    T(c[0], { x: cx0 + i * (cw + cg), y: cy0 + 0.56, w: cw, h: 0.2, fontSize: 8, bold: true, color: 'D1D5DB' });
+    T(c[2], { x: cx0 + i * (cw + cg), y: cy0 + 0.75, w: cw, h: 0.25, fontSize: 7, color: '8B92A0' });
+  });
+
+  // grafik: batang (on time/terlambat) + garis achievement
+  const chartY = cy0 + 1.15, chartH = topH - (chartY - PY) - 0.15;
+  s.addChart([
+    { type: pres.charts.BAR, data: [{ name: 'On Time', labels: v.days.map(d => d.tanggal.slice(8)), values: v.days.map(d => d.onTime) }, { name: 'Terlambat', labels: v.days.map(d => d.tanggal.slice(8)), values: v.days.map(d => d.terlambat) }], options: { chartColors: ['60A5FA', 'F87171'], barGrouping: 'stacked' } },
+    { type: pres.charts.LINE, data: [{ name: 'Achievement %', labels: v.days.map(d => d.tanggal.slice(8)), values: v.days.map(d => Math.round(d.ach)) }], options: { chartColors: ['FBBF24'], secondaryValAxis: true, secondaryCatAxis: true, lineSize: 2, lineDataSymbol: 'circle', lineDataSymbolSize: 4 } }
+  ], { x: LX + 0.2, y: chartY, w: PW - 0.4, h: chartH, showLegend: true, legendPos: 't', legendColor: 'D1D5DB', legendFontSize: 7,
+    catAxisLabelColor: '9CA3AF', catAxisLabelFontSize: 6, valAxisLabelColor: '9CA3AF', valAxisLabelFontSize: 7, valAxisHidden: false,
+    valGridLine: { color: '2A2A30', style: 'solid', size: 0.5 }, catGridLine: { style: 'none' }, plotArea: { fill: { color: DB } }, chartArea: { fill: { color: DB } },
+    valAxes: [
+      { valAxisTitle: 'LC', valAxisLabelColor: '9CA3AF', valAxisLabelFontSize: 7, valGridLine: { color: '2A2A30', style: 'solid', size: 0.5 } },
+      { valAxisTitle: 'Achievement %', valAxisMinVal: 0, valAxisMaxVal: 100, valAxisLabelColor: 'FBBF24', valAxisLabelFontSize: 7, valGridLine: { style: 'none' } }
+    ],
+    catAxes: [
+      { catAxisLabelColor: '9CA3AF', catAxisLabelFontSize: 6 },
+      { catAxisHidden: true }
+    ],
+    serAxisHidden: true });
+
+  // baris bawah: ringkasan trend (kiri) + detail miss kemarin (kanan)
+  const by = PY + topH + 0.18, bh = 7.5 - by - 0.25, bw = (PW - 0.3) / 2;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 7.5 } }); out[out.length - 1].options.breakLine = true; return out; };
+
+  const left = [].concat(
+    para([{ text: 'Ringkasan Trend Daily Vendor Performance (1\u2013' + v.days[v.days.length - 1].tanggal.slice(8) + ' ' + monthName(v.monthKey) + ')', options: { bold: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
+    para([label('Total Pengiriman: '), val(v.total.total + ' LC'), { text: ' (' + v.total.onTime + ' On Time, ' + v.total.terlambat + ' Terlambat, ' + v.total.belumSupport + ' Belum Support)' }], true),
+    para([label('Achievement Periode: '), val(v.achievementPeriode.toFixed(1) + '%')], true),
+    para([label('Performa Terbaik: '), val(fmtTgl(v.bestDay.tanggal)), { text: ' (' + v.bestDay.ach.toFixed(1) + '% dari ' + v.bestDay.total + ' LC)' }], true),
+    para([label('Performa Terburuk: '), val(fmtTgl(v.worstDay.tanggal)), { text: ' (' + v.worstDay.ach.toFixed(1) + '% dari ' + v.worstDay.total + ' LC)' }], true)
+  );
+  if (v.trendDelta) {
+    const dl = v.trendDelta.now - v.trendDelta.before;
+    left.push(...para([label('Arah Tren: '), val((dl >= 0 ? 'Membaik / Naik +' : 'Menurun ') + Math.abs(dl).toFixed(1) + ' poin'), { text: ' (7 hari terakhir ' + v.trendDelta.now.toFixed(1) + '% vs 7 hari sebelumnya ' + v.trendDelta.before.toFixed(1) + '%)' }], true));
+  }
+  left.push(...para([{ text: 'Vendor Terbaik dan Terjelek', options: { bold: true, fontSize: 10.5, paraSpaceAfter: 4 } }]));
+  if (v.vendorBest) left.push(...para([label('Vendor Terbaik (Volume Besar): '), val(v.vendorBest.carrier), { text: ' dengan achievement ' + v.vendorBest.ach.toFixed(1) + '% dari ' + v.vendorBest.total + ' LC' }], true));
+  if (v.vendorWorst) left.push(...para([label('Vendor Terjelek (Volume Besar): '), val(v.vendorWorst.carrier), { text: ' dengan achievement ' + v.vendorWorst.ach.toFixed(1) + '% dari ' + v.vendorWorst.total + ' LC (terdapat ' + v.vendorWorst.terlambat + ' LC terlambat)' }], true));
+  if (v.vendorLowestOverall) left.push(...para([label('Performa Terendah Keseluruhan (Min. 3 LC): '), val(v.vendorLowestOverall.carrier), { text: ' dengan achievement ' + v.vendorLowestOverall.ach.toFixed(1) + '% dari ' + v.vendorLowestOverall.total + ' LC' }], true));
+  T(left, { x: LX, y: by, w: bw, h: bh, fontSize: 8.7, color: '111111', paraSpaceAfter: 2.5 });
+
+  const y = v.yesterday;
+  const right = [].concat(para([{ text: 'Detail Miss Pengiriman Kemarin (' + fmtTgl(y.tanggal) + ')', options: { bold: true, fontSize: 10.5, paraSpaceAfter: 4 } }]));
+  if (y.ach !== null) right.push(...para([label('Total Miss: '), val(y.miss + ' LC'), { text: ' dari total ' + y.total + ' LC (Achievement harian ' + y.ach.toFixed(1) + '%)' }], true));
+  if (y.detail.length) {
+    right.push(...para([{ text: 'Rincian Vendor & LC Miss:', options: { bold: true } }]));
+    const byV = {};
+    y.detail.forEach(m => { (byV[m.carrier] = byV[m.carrier] || []).push(m); });
+    Object.keys(byV).forEach(carrier => {
+      const items = byV[carrier];
+      const parts = items.map(m => 'LC ' + m.lc + ' ke ' + (m.kota || '-') + ' (' + (m.status === 'terlambat' ? 'Terlambat ' + m.delayJam + ' jam ' + m.delayMenit + ' menit' : 'Belum Support') + ')');
+      right.push(...para([label(carrier + ' (' + items.length + ' LC): '), { text: parts.join(' dan ') }], true));
+    });
+  } else if (y.ach !== null) {
+    right.push(...para([{ text: 'Tidak ada MISS. Semua LC On Time.' }], true));
+  } else {
+    right.push(...para([{ text: '(Tidak ada data LC pada tanggal ini.)' }], true));
+  }
+  T(right, { x: LX + bw + 0.3, y: by, w: bw, h: bh, fontSize: 8.7, color: '111111', paraSpaceAfter: 2.5 });
+}
+function fmtTgl(iso) { const p = iso.split('-'); const bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; return parseInt(p[2], 10) + ' ' + bln[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
+function monthName(ym) { const p = ym.split('-'); const bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; return bln[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
+
+function buildStockTransferSlide(pres, st) {
+  const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('STOCK TRANSFER MONITORING', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 24, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.7, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+
+  const t = st.total;
+  const cardTop = [['ARMD BAKAL DELAY', 0, 'F87171'], ['PROSES MUAT', t.prosesMuat, '60A5FA'], ['ON DELIVERY', t.onDelivery, '34D399'], ['ATA DEPO TUNGGU BONGKAR', t.tungguBongkar, 'FBBF24']];
+  const LX = 0.4, PY = 1.15, RW = 7.55, RH = 0.9;
+  cardTop.forEach((c, i) => {
+    const cx = LX + i * (RW / 4);
+    T(String(c[1]), { x: cx, y: PY, w: RW / 4 - 0.1, h: 0.45, fontSize: 22, bold: true, color: c[2] });
+    T(c[0], { x: cx, y: PY + 0.48, w: RW / 4 - 0.1, h: 0.35, fontSize: 7, bold: true, color: '6B7280' });
+  });
+
+  // tabel jumlah armada per status
+  const ty = PY + RH + 0.1;
+  T('Jumlah Armada Berdasarkan Status Operasional', { x: LX, y: ty, w: RW, h: 0.25, fontSize: 10, bold: true, color: '111111' });
+  const cols = ['Jenis Armada', 'Proses Muat', 'On Delivery', 'ATA Depo', 'Tunggu Bongkar'];
+  const rows = st.perType.filter(x => x.prosesMuat + x.onDelivery + x.ataDepo + x.tungguBongkar > 0).map(x => [x.type, x.prosesMuat, x.onDelivery, x.ataDepo, x.tungguBongkar]);
+  rows.push(['GRAND TOTAL', t.prosesMuat, t.onDelivery, t.ataDepo, t.tungguBongkar]);
+  const tblRows = [cols.map(c => ({ text: c, options: { bold: true, color: 'FFFFFF', fill: { color: '374151' }, fontSize: 9 } }))];
+  rows.forEach((r, ri) => tblRows.push(r.map((v, ci) => ({ text: String(v), options: { fontSize: 9, bold: ri === rows.length - 1, fill: { color: ri === rows.length - 1 ? 'FEE2E2' : (ri % 2 ? 'F9FAFB' : 'FFFFFF') }, color: ci === 0 ? '111111' : '333333' } }))));
+  s.addTable(tblRows, { x: LX, y: ty + 0.3, w: RW, colW: [RW * 0.32, RW * 0.17, RW * 0.17, RW * 0.17, RW * 0.17], border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, rowH: 0.32 });
+
+  // detail ATA Depo
+  const ay = ty + 0.3 + (rows.length + 1) * 0.32 + 0.25;
+  T('Detail Status ATA Depo (' + t.ataDepo + ' Armada)', { x: LX, y: ay, w: RW, h: 0.25, fontSize: 10, bold: true, color: '111111' });
+  const label = tt => ({ text: tt, options: { bold: true, italic: true, color: RED_LABEL } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u2022 ', options: { color: RED_LABEL, fontSize: 8 } }); out[out.length - 1].options.breakLine = true; return out; };
+  const ataLines = [];
+  st.ataDetail.forEach(d => { const g = Object.keys(d.groups).map(k => k + ' (' + d.groups[k] + ')').join(', '); ataLines.push(...para([label(d.type + ' (' + d.total + ' armada): '), { text: g }], true)); });
+  T(ataLines, { x: LX, y: ay + 0.3, w: RW, h: 7.5 - (ay + 0.3) - 0.3, fontSize: 9, color: '111111', paraSpaceAfter: 2 });
+
+  // panel kanan: CBM
+  const RX = LX + RW + 0.3, RW2 = W - RX - 0.4;
+  s.addShape(pres.ShapeType.roundRect, { x: RX, y: PY, w: RW2, h: 7.5 - PY - 0.25, rectRadius: 0.05, fill: { color: '0D0D0F' }, line: { color: '3B82F6', width: 1 } });
+  T('TOTAL CBM\nOUTSTANDING', { x: RX + 0.15, y: PY + 0.12, w: RW2 - 0.3, h: 0.85, fontSize: 20, bold: true, color: 'FFFFFF', lineSpacingMultiple: 1.05 });
+  const cbm = st.cbm || {};
+  const rowsCbm = [['CBM Customer', cbm.cbmCustomer], ['CBM Astor', cbm.cbmAstor], ['CBM Area 1', cbm.cbmArea1], ['CBM Area 2', cbm.cbmArea2], ['CBM Area 3', cbm.cbmArea3]];
+  let ry = PY + 1.1;
+  rowsCbm.forEach(r => {
+    T(r[0], { x: RX + 0.15, y: ry, w: RW2 - 0.3, h: 0.2, fontSize: 8, color: '9CA3AF' });
+    T(fmt2(r[1] || 0) + ' CBM', { x: RX + 0.15, y: ry + 0.2, w: RW2 - 0.3, h: 0.3, fontSize: 14, bold: true, color: 'FFFFFF' });
+    ry += 0.58;
+  });
+}
+
+function buildInboundPlanningSlide(pres, ib) {
+  const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
+  const s = pres.addSlide();
+  s.background = { color: 'FFFFFF' };
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+  T('INBOUND PLANNING', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 26, bold: true, color: '111111' });
+  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.7, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+
+  const LX = 0.4, PY = 1.15, PW = 12.53;
+  function card(x, y, w, h, label, value, valColor, border) {
+    s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: border || 'E5E7EB', width: border ? 1.25 : 0.75 } });
+    T(String(value), { x: x + 0.12, y: y + 0.12, w: w - 0.24, h: 0.42, fontSize: 20, bold: true, color: valColor || '111111', fit: 'shrink' });
+    T(label, { x: x + 0.12, y: y + 0.56, w: w - 0.24, h: 0.28, fontSize: 7.5, bold: true, color: '6B7280' });
+  }
+  const row1 = [['TOTAL UNLOAD', ib.totalKedatangan, '111111'], ['TRANSFER', ib.transfer, '111111'], ['IMPORT AHI', ib.importAhi, '111111'], ['LOKAL', ib.lokal, '111111'], ['HIT', ib.hit, '10B981', '34D399'], ['MISS', ib.miss, 'EF4444', 'F87171'], ['TOTAL QTY', ib.totalQty.toLocaleString('id-ID') + ' pcs', '111111'], ['TOTAL SKU', ib.totalSKU, '111111']];
+  const cw1 = (PW - 0.7) / 8;
+  row1.forEach((c, i) => card(LX + i * (cw1 + 0.1), PY, cw1, 0.85, c[0], c[1], c[2], c[3]));
+
+  const py2 = PY + 1.0;
+  T('\uD83D\uDD52 STATUS PROSES UNLOADING \u2013 HARI INI', { x: LX, y: py2, w: PW, h: 0.25, fontSize: 9.5, bold: true, color: '374151' });
+  const stCards = [['DONE', ib.done, '10B981'], ['PROSES', ib.proses, '3B82F6'], ['ANTRI', ib.antri, '8B5CF6'], ['BELUM DATANG', ib.belumDatang, 'F59E0B']];
+  const cw2 = (PW - 0.3) / 4;
+  stCards.forEach((c, i) => {
+    const x = LX + i * (cw2 + 0.1);
+    s.addShape(pres.ShapeType.roundRect, { x, y: py2 + 0.3, w: cw2, h: 0.95, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: 'E5E7EB', width: 0.75 } });
+    T(String(c[1]), { x: x + 0.12, y: py2 + 0.42, w: cw2 - 0.24, h: 0.4, fontSize: 22, bold: true, color: c[2] });
+    T(c[0], { x: x + 0.12, y: py2 + 0.85, w: cw2 - 0.24, h: 0.22, fontSize: 8, bold: true, color: '6B7280' });
+    const pct = ib.totalKedatangan > 0 ? c[1] / ib.totalKedatangan * 100 : 0;
+    T(pct.toFixed(1) + '% dari total', { x: x + 0.12, y: py2 + 1.05, w: cw2 - 0.24, h: 0.18, fontSize: 6.5, color: '9CA3AF' });
+  });
+
+  const py3 = py2 + 1.5;
+  s.addShape(pres.ShapeType.roundRect, { x: LX, y: py3, w: 3.0, h: 1.0, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: 'E5E7EB', width: 0.75 } });
+  T(fmt2(ib.totalCBM), { x: LX + 0.15, y: py3 + 0.12, w: 2.7, h: 0.4, fontSize: 22, bold: true, color: 'EF4444' });
+  T('TOTAL CBM', { x: LX + 0.15, y: py3 + 0.55, w: 2.7, h: 0.2, fontSize: 8, bold: true, color: '6B7280' });
+  T('Est. Pallet: ~' + Math.round(ib.totalCBM / 1.2) + ' pallet', { x: LX + 0.15, y: py3 + 0.75, w: 2.7, h: 0.2, fontSize: 6.5, color: '9CA3AF' });
+
+  const areaKeys = [['CUSTOMER', ib.cbmPerArea.customer], ['ASTOR', ib.cbmPerArea.astor], ['AREA 1', ib.cbmPerArea.area1], ['AREA 2', ib.cbmPerArea.area2], ['AREA 3', ib.cbmPerArea.area3]];
+  const cw3 = (PW - 3.2) / 5;
+  areaKeys.forEach((c, i) => {
+    const x = LX + 3.2 + i * cw3;
+    s.addShape(pres.ShapeType.roundRect, { x, y: py3, w: cw3 - 0.1, h: 1.0, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: 'E5E7EB', width: 0.75 } });
+    T(fmt2(c[1]), { x: x + 0.1, y: py3 + 0.12, w: cw3 - 0.3, h: 0.38, fontSize: 15, bold: true, color: '111111', fit: 'shrink' });
+    T(c[0], { x: x + 0.1, y: py3 + 0.55, w: cw3 - 0.3, h: 0.2, fontSize: 7, bold: true, color: '6B7280' });
+  });
+
+  const by = py3 + 1.25;
+  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = t => ({ text: t, options: { bold: true } });
+  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u2022 ', options: { color: RED_LABEL, fontSize: 8 } }); out[out.length - 1].options.breakLine = true; return out; };
+  const left = [].concat(
+    para([{ text: 'Ringkasan Umum:', options: { bold: true, fontSize: 11, paraSpaceAfter: 4 } }]),
+    para([label('Total Kedatangan: '), val(ib.totalKedatangan + ' armada'), { text: ' (' + (ib.transfer === ib.totalKedatangan ? 'seluruhnya Transfer' : ib.transfer + ' Transfer, ' + ib.importAhi + ' Import AHI, ' + ib.lokal + ' Lokal') + ')' }], true),
+    para([label('Total Qty: '), val((ib.totalQty || 0).toLocaleString('id-ID') + ' pcs')], true),
+    para([label('Total SKU: '), val(String(ib.totalSKU) + ' SKU')], true),
+    para([label('Total CBM: '), val(fmt2(ib.totalCBM) + ' CBM')], true)
+  );
+  T(left, { x: LX, y: by, w: (PW - 0.3) / 2, h: 1.4, fontSize: 10, color: '111111', paraSpaceAfter: 3 });
+  const right = [].concat(para([{ text: 'Rincian Total CBM per Area:', options: { bold: true, fontSize: 11, paraSpaceAfter: 4 } }]));
+  areaKeys.forEach(c => right.push(...para([label(cap(c[0]) + ': '), val(fmt2(c[1]) + ' CBM')], true)));
+  T(right, { x: LX + (PW - 0.3) / 2 + 0.3, y: by, w: (PW - 0.3) / 2, h: 1.7, fontSize: 10, color: '111111', paraSpaceAfter: 3 });
+}
+function cap(s) { return s.charAt(0) + s.slice(1).toLowerCase(); }
+
 // ◆ pada teks diberi indent gantung (baris yang membungkus rata di bawah teks, bukan di bawah ◆)
 async function toolsPostProcess(arrayBuffer) {
   await toolsLoadScript(TOOLS_JSZIP_CDN);
@@ -3671,16 +4127,24 @@ async function toolsGeneratePpt() {
     setBtn('⏳ Menyusun slide…');
     await toolsLoadScript(TOOLS_PPTX_CDN);
     if (typeof PptxGenJS === 'undefined') throw new Error('Pustaka PPT tidak termuat.');
-    const D = toolsMapData(toolsData);
     const pres = new PptxGenJS();
     pres.layout = 'LAYOUT_WIDE';
-    pres.title = 'Laporan Pagi DC AHI Sidoarjo';
-    toolsBuildProfilDailySlide(pres, D, toolsGradientBg());
+    pres.title = 'Daily Operational Report DC AHI Sidoarjo';
+    const now0 = new Date();
+    const tanggalLabel = now0.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    buildCoverSlide(pres, { tanggal: tanggalLabel });
+    toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg());
+    buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg());
+    buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData));
+    buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData));
+    buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData));
+    buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData));
+    buildThankYouSlide(pres);
 
     setBtn('⏳ Menyiapkan file…');
     const now = new Date();
     const p2 = n => String(n).padStart(2, '0');
-    const fileName = 'Laporan_Pagi_DC_AHI_Sidoarjo_' + now.getFullYear() + '-' + p2(now.getMonth() + 1) + '-' + p2(now.getDate()) + '_' + p2(now.getHours()) + p2(now.getMinutes()) + '.pptx';
+    const fileName = 'Daily_Operational_Report_DC_AHI_Sidoarjo_' + now.getFullYear() + '-' + p2(now.getMonth() + 1) + '-' + p2(now.getDate()) + '_' + p2(now.getHours()) + p2(now.getMinutes()) + '.pptx';
     let blob = null;
     try {
       const buf = await pres.write({ outputType: 'arraybuffer' });
@@ -3689,8 +4153,14 @@ async function toolsGeneratePpt() {
     if (blob) toolsDownloadBlob(blob, fileName); else await pres.writeFile({ fileName: fileName });
 
     toolsSetPill('ok', 'PPT terunduh');
-    toolsMsg('ok', 'PPT berhasil dibuat: ' + fileName + ' (cek folder Download). Data pukul ' + D.jam + ' WIB.');
-    toolsLogRun('sukses', fileName, '1 slide', 'Rata-rata progres ' + D.rata.toFixed(1) + '% (data pukul ' + D.jam + ' WIB)');
+    toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Mengunggah salinan untuk preview\u2026');
+    const catatanRingkas = 'Rata-rata progres ' + (toolsData.rata != null ? toolsData.rata.toFixed(1) : '-') + '% (data pukul ' + toolsData.jam + ' WIB)';
+    const uploaded = blob ? await toolsUploadAndLog(blob, fileName, '8 slide', catatanRingkas) : null;
+    if (uploaded && uploaded.previewUrl) {
+      toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. Preview sudah tersedia di Riwayat PPT di bawah.');
+    } else {
+      toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. (Preview tidak tersedia \u2014 gagal diunggah ke Drive, file tetap ada di Download.)');
+    }
   } catch (e) {
     toolsSetPill('err', 'Gagal membuat PPT');
     toolsMsg('err', 'PPT gagal dibuat: ' + e.message);
@@ -3701,4 +4171,43 @@ async function toolsGeneratePpt() {
     if (ref) ref.disabled = false;
     if (gen) gen.disabled = !toolsAllOk(toolsData);
   }
+}
+
+// ── TAB di halaman Tools: (1) PPT Laporan Pagi otomatis, (2) PPT untuk Pak Rudi, Pak Husni & Pak Arson (tool HTML lama, dipasang utuh lewat iframe) ──
+var TOOLS_PIMP_URL = 'ppt-pimpinan.html';
+var toolsTab = 'pagi';
+
+function toolsSwitchTab(name) {
+  toolsTab = name === 'pimpinan' ? 'pimpinan' : 'pagi';
+  const pagi = toolsEl('tlPanePagi'), pimp = toolsEl('tlPanePimpinan');
+  if (pagi) pagi.style.display = toolsTab === 'pagi' ? '' : 'none';
+  if (pimp) pimp.style.display = toolsTab === 'pimpinan' ? '' : 'none';
+  const t1 = toolsEl('tlTabPagi'), t2 = toolsEl('tlTabPimpinan');
+  if (t1) t1.classList.toggle('active', toolsTab === 'pagi');
+  if (t2) t2.classList.toggle('active', toolsTab === 'pimpinan');
+  if (toolsTab === 'pimpinan') toolsLoadPimpinan(false);
+}
+
+async function toolsLoadPimpinan(force) {
+  const fr = toolsEl('tlPimpFrame'), msg = toolsEl('tlPimpMsg');
+  if (!fr) return;
+  if (fr.dataset.loaded === '1' && !force) return;
+  try {
+    // cek dulu filenya ada (satu situs yang sama, jadi boleh); kalau belum di-upload, kasih petunjuk, bukan iframe kosong
+    const res = await fetch(TOOLS_PIMP_URL, { method: 'HEAD', cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (msg) { msg.className = 'tl-msg tl-frame-msg'; msg.textContent = ''; }
+    fr.style.display = '';
+    fr.src = TOOLS_PIMP_URL + (force ? '?v=' + Date.now() : '');
+    fr.dataset.loaded = '1';
+  } catch (e) {
+    fr.style.display = 'none';
+    if (msg) { msg.className = 'tl-msg tl-msg-err tl-frame-msg'; msg.textContent = 'Tool PPT untuk pimpinan belum bisa dimuat (' + e.message + '). Pastikan file ppt-pimpinan.html sudah di-upload ke repo GitHub, sejajar dengan index.html.'; }
+  }
+}
+
+function toolsReloadPimpinan() {
+  const fr = toolsEl('tlPimpFrame');
+  if (fr) fr.dataset.loaded = '0';
+  toolsLoadPimpinan(true);
 }
