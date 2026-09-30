@@ -4080,10 +4080,10 @@ function buildInboundPlanningSlide(pres, ib) {
   );
   T(left, { x: LX, y: by, w: (PW - 0.3) / 2, h: 1.4, fontSize: 10, color: '111111', paraSpaceAfter: 3 });
   const right = [].concat(para([{ text: 'Rincian Total CBM per Area:', options: { bold: true, fontSize: 11, paraSpaceAfter: 4 } }]));
-  areaKeys.forEach(c => right.push(...para([label(cap(c[0]) + ': '), val(fmt2(c[1]) + ' CBM')], true)));
+  areaKeys.forEach(c => right.push(...para([label(toolsCapWord(c[0]) + ': '), val(fmt2(c[1]) + ' CBM')], true)));
   T(right, { x: LX + (PW - 0.3) / 2 + 0.3, y: by, w: (PW - 0.3) / 2, h: 1.7, fontSize: 10, color: '111111', paraSpaceAfter: 3 });
 }
-function cap(s) { return s.charAt(0) + s.slice(1).toLowerCase(); }
+function toolsCapWord(s) { return s.charAt(0) + s.slice(1).toLowerCase(); }
 
 // ◆ pada teks diberi indent gantung (baris yang membungkus rata di bawah teks, bukan di bawah ◆)
 async function toolsPostProcess(arrayBuffer) {
