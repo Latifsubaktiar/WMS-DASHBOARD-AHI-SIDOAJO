@@ -4192,16 +4192,23 @@ async function toolsLoadFrameTool(url, frameId, msgId, force, namaTool) {
   const fr = toolsEl(frameId), msg = toolsEl(msgId);
   if (!fr) return;
   if (fr.dataset.loaded === '1' && !force) return;
+  const setMsg = (cls, text) => { if (msg) { msg.className = 'tl-msg ' + cls + ' tl-frame-msg'; msg.textContent = text; } };
   try {
     const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    if (msg) { msg.className = 'tl-msg tl-frame-msg'; msg.textContent = ''; }
+    setMsg('tl-msg-wait', '⏳ Memuat ' + namaTool + '… (kalau lebih dari 8 detik tidak muncul, akan ada pesan di sini)');
     fr.style.display = '';
-    fr.src = url + (force ? '?v=' + Date.now() : '');
     fr.dataset.loaded = '1';
+    let selesai = false;
+    fr.onload = () => { selesai = true; setMsg('tl-msg-frame', ''); };
+    fr.onerror = () => { selesai = true; fr.style.display = 'none'; setMsg('tl-msg-err', 'Tool ' + namaTool + ' gagal dimuat (iframe error). Coba buka langsung: ' + url); };
+    setTimeout(() => {
+      if (!selesai) setMsg('tl-msg-err', '⚠️ ' + namaTool + ' sudah diminta tapi belum selesai dimuat setelah 8 detik. Kemungkinan diblokir jaringan/firewall, atau file terlalu berat. Coba klik "Buka di tab baru" untuk cek langsung, atau tunggu lebih lama.');
+    }, 8000);
+    fr.src = url + (force ? '?v=' + Date.now() : '');
   } catch (e) {
     fr.style.display = 'none';
-    if (msg) { msg.className = 'tl-msg tl-msg-err tl-frame-msg'; msg.textContent = 'Tool ' + namaTool + ' belum bisa dimuat (' + e.message + '). Pastikan file ' + url + ' sudah di-upload ke repo GitHub, sejajar dengan index.html.'; }
+    setMsg('tl-msg-err', 'Tool ' + namaTool + ' belum bisa dimuat (' + e.message + '). Pastikan file ' + url + ' sudah di-upload ke repo GitHub, sejajar dengan index.html.');
   }
 }
 
