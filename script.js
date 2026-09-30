@@ -4173,70 +4173,40 @@ async function toolsGeneratePpt() {
   }
 }
 
-// ── TAB di halaman Tools: (1) PPT Laporan Pagi otomatis, (2) PPT untuk Pak Rudi, Pak Husni & Pak Arson (tool HTML lama, dipasang utuh lewat iframe) ──
+// ── TAB di halaman Tools: (1) PPT Laporan Pagi otomatis, (2) PPT untuk Pak Rudi, Pak Husni & Pak Arson, (3) PPT Planner — dua terakhir tool HTML lama, dipasang utuh lewat iframe ──
 var TOOLS_PIMP_URL = 'ppt-pimpinan.html';
+var TOOLS_PLANNER_URL = 'ppt-planner.html';
 var toolsTab = 'pagi';
 
 function toolsSwitchTab(name) {
   toolsTab = (name === 'pimpinan' || name === 'planner') ? name : 'pagi';
-  const pagi = toolsEl('tlPanePagi'), pimp = toolsEl('tlPanePimpinan'), plan = toolsEl('tlPanePlanner');
-  if (pagi) pagi.style.display = toolsTab === 'pagi' ? '' : 'none';
-  if (pimp) pimp.style.display = toolsTab === 'pimpinan' ? '' : 'none';
-  if (plan) plan.style.display = toolsTab === 'planner' ? '' : 'none';
-  const t1 = toolsEl('tlTabPagi'), t2 = toolsEl('tlTabPimpinan'), t3 = toolsEl('tlTabPlanner');
-  if (t1) t1.classList.toggle('active', toolsTab === 'pagi');
-  if (t2) t2.classList.toggle('active', toolsTab === 'pimpinan');
-  if (t3) t3.classList.toggle('active', toolsTab === 'planner');
+  const panes = { pagi: toolsEl('tlPanePagi'), pimpinan: toolsEl('tlPanePimpinan'), planner: toolsEl('tlPanePlanner') };
+  const tabs = { pagi: toolsEl('tlTabPagi'), pimpinan: toolsEl('tlTabPimpinan'), planner: toolsEl('tlTabPlanner') };
+  Object.keys(panes).forEach(k => { if (panes[k]) panes[k].style.display = (toolsTab === k) ? '' : 'none'; if (tabs[k]) tabs[k].classList.toggle('active', toolsTab === k); });
   if (toolsTab === 'pimpinan') toolsLoadPimpinan(false);
   if (toolsTab === 'planner') toolsLoadPlanner(false);
 }
 
-async function toolsLoadPimpinan(force) {
-  const fr = toolsEl('tlPimpFrame'), msg = toolsEl('tlPimpMsg');
+/** Muat satu tool HTML (Pimpinan/Planner) ke dalam iframe-nya, dengan pengecekan file ada dulu. */
+async function toolsLoadFrameTool(url, frameId, msgId, force, namaTool) {
+  const fr = toolsEl(frameId), msg = toolsEl(msgId);
   if (!fr) return;
   if (fr.dataset.loaded === '1' && !force) return;
   try {
-    // cek dulu filenya ada (satu situs yang sama, jadi boleh); kalau belum di-upload, kasih petunjuk, bukan iframe kosong
-    const res = await fetch(TOOLS_PIMP_URL, { method: 'HEAD', cache: 'no-store' });
+    const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     if (msg) { msg.className = 'tl-msg tl-frame-msg'; msg.textContent = ''; }
     fr.style.display = '';
-    fr.src = TOOLS_PIMP_URL + (force ? '?v=' + Date.now() : '');
+    fr.src = url + (force ? '?v=' + Date.now() : '');
     fr.dataset.loaded = '1';
   } catch (e) {
     fr.style.display = 'none';
-    if (msg) { msg.className = 'tl-msg tl-msg-err tl-frame-msg'; msg.textContent = 'Tool PPT untuk pimpinan belum bisa dimuat (' + e.message + '). Pastikan file ppt-pimpinan.html sudah di-upload ke repo GitHub, sejajar dengan index.html.'; }
+    if (msg) { msg.className = 'tl-msg tl-msg-err tl-frame-msg'; msg.textContent = 'Tool ' + namaTool + ' belum bisa dimuat (' + e.message + '). Pastikan file ' + url + ' sudah di-upload ke repo GitHub, sejajar dengan index.html.'; }
   }
 }
 
-function toolsReloadPimpinan() {
-  const fr = toolsEl('tlPimpFrame');
-  if (fr) fr.dataset.loaded = '0';
-  toolsLoadPimpinan(true);
-}
+function toolsLoadPimpinan(force) { return toolsLoadFrameTool(TOOLS_PIMP_URL, 'tlPimpFrame', 'tlPimpMsg', force, 'PPT untuk pimpinan'); }
+function toolsReloadPimpinan() { const fr = toolsEl('tlPimpFrame'); if (fr) fr.dataset.loaded = '0'; toolsLoadPimpinan(true); }
 
-// ── TAB 3: PPT Planner Presentation Daily (tool HTML terpisah, dipasang utuh lewat iframe) ──
-var TOOLS_PLAN_URL = 'ppt-planner.html';
-
-async function toolsLoadPlanner(force) {
-  const fr = toolsEl('tlPlanFrame'), msg = toolsEl('tlPlanMsg');
-  if (!fr) return;
-  if (fr.dataset.loaded === '1' && !force) return;
-  try {
-    const res = await fetch(TOOLS_PLAN_URL, { method: 'HEAD', cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    if (msg) { msg.className = 'tl-msg tl-frame-msg'; msg.textContent = ''; }
-    fr.style.display = '';
-    fr.src = TOOLS_PLAN_URL + (force ? '?v=' + Date.now() : '');
-    fr.dataset.loaded = '1';
-  } catch (e) {
-    fr.style.display = 'none';
-    if (msg) { msg.className = 'tl-msg tl-msg-err tl-frame-msg'; msg.textContent = 'Tool PPT Planner belum bisa dimuat (' + e.message + '). Pastikan file ppt-planner.html sudah di-upload ke repo GitHub, sejajar dengan index.html.'; }
-  }
-}
-
-function toolsReloadPlanner() {
-  const fr = toolsEl('tlPlanFrame');
-  if (fr) fr.dataset.loaded = '0';
-  toolsLoadPlanner(true);
-}
+function toolsLoadPlanner(force) { return toolsLoadFrameTool(TOOLS_PLANNER_URL, 'tlPlannerFrame', 'tlPlannerMsg', force, 'PPT Planner'); }
+function toolsReloadPlanner() { const fr = toolsEl('tlPlannerFrame'); if (fr) fr.dataset.loaded = '0'; toolsLoadPlanner(true); }
