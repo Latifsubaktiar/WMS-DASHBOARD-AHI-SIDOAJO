@@ -3406,7 +3406,7 @@ function toolsRenderData() {
     kpi.innerHTML = k.map(x => '<div class="tl-kpi"><span>' + toolsEsc(x[0]) + '</span><b>' + toolsEsc(x[1]) + '</b><small>' + toolsEsc(x[2]) + '</small></div>').join('');
     toolsSetPill('ok', 'Siap dibuat');
   } else {
-    const bad = TOOLS_PARTS.filter(p => !(d[p[0]] && d[p[0]].ok !== false)).map(p => p[1]);
+    const badP = TOOLS_PARTS.filter(p => !(d[p[0]] && d[p[0]].ok !== false)); const bad = badP.map(p => p[1] + ((d[p[0]] && d[p[0]].error) ? ' (' + d[p[0]].error + ')' : ' (tidak ada data dari server — deploy Code.gs terbaru?)'));
     kpi.innerHTML = '<div class="tl-empty">Data belum lengkap. Bagian bermasalah: <b>' + toolsEsc(bad.join(', ')) + '</b>. PPT tidak dibuat supaya tidak ada angka kosong yang ikut terkirim.</div>';
     toolsSetPill('err', 'Data belum lengkap');
   }
