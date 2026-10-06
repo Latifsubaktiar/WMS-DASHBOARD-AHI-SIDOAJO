@@ -3634,7 +3634,7 @@ function toolsShotRender(note) {
     el.classList.toggle('has', !!s);
     el.classList.toggle('sel', toolsShotSel === k);
     if (img) { if (s) img.src = s.url; else img.removeAttribute('src'); }
-    if (at) at.textContent = s ? ('Ditempel ' + s.at + ' · ' + s.w + '×' + s.h + ' px') : '';
+    if (at) at.textContent = s ? ((s.auto ? 'Otomatis ' : 'Ditempel ') + s.at + ' · ' + s.w + '×' + s.h + ' px') : '';
   });
   const st = toolsEl('tlShotState');
   if (st) st.textContent = note || ('Slide 2: ' + (toolsShotsReady() ? '✅ persis PPT asli' : 'kartu otomatis') + '  ·  Slide 5: ' + (toolsVendorShotsReady() ? '✅ persis PPT asli' : 'tampilan otomatis') + '  (isi kedua gambar tiap slide supaya persis PPT asli)');
@@ -3816,7 +3816,7 @@ function toolsBuildProfilDailySlide(pres, D, bgData, shots) {
     { label: 'INBOUND', value: D.inb.total, sub: 'Selesai ' + D.inb.fin + ' · Proses ' + D.inb.pro + ' · Belum ' + D.inb.blm, pct: D.inb.pct.toFixed(1) + '%', accent: '3B82F6' },
     { label: 'STORING', value: D.sto.total, sub: 'Picked ' + D.sto.pick + ' dari ' + D.sto.rel, pct: D.sto.pct.toFixed(1) + '%', accent: 'EF4444' },
     { label: 'OUTBOUND', value: D.out.total, sub: 'Antri ' + D.out.antri + ' · Belum ' + D.out.blm + ' · Selesai ' + D.out.sel, pct: D.out.pct.toFixed(1) + '%', accent: 'F59E0B' },
-    { label: 'INDEX PLANNER', value: D.slaCustPlanner, sub: 'SLA GRW ' + D.slaGrw + ' · CUST ' + D.slaCustPlanner, pct: 'SLA', accent: '8B5CF6', valueSize: 17 },
+    { label: 'INDEX PLANNER', value: D.slaCustPlanner, sub: 'GRW ' + D.slaGrw + '\nCUST ' + D.slaCustPlanner, pct: 'SLA', accent: '8B5CF6', valueSize: 14 },
     { label: 'INVENTORY', value: D.inv.akurasi, sub: 'Hit ' + D.inv.hit + ' · Miss ' + D.inv.miss, pct: 'CC ' + D.inv.cc.replace('.00', ''), accent: '10B981', valueSize: 17 }
   ].forEach((c, i) => card(cx0 + i * (cw + cg), cy0, cw, ch, { label: c.label, value: c.value, sub: c.sub, pct: c.pct, accent: c.accent, bg: NB, valueColor: c.accent, valueSize: c.valueSize || 22 }));
   const dy = cy0 + ch + 0.1;
@@ -4557,6 +4557,67 @@ function toolsDownloadBlob(blob, fileName) {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
+// ── AUTO-CAPTURE panel Profil DC & Daily Proses (tanpa paste manual) ──
+// Memuat app Profil DC di iframe tersembunyi; Main.html di sana (sudah ditambah rutin capture)
+// membalas dengan 2 gambar lewat postMessage.
+function toolsBcast(w, msg, d) {
+  if (d > 6) return;
+  let n = 0; try { n = w.length; } catch (e) { return; }
+  for (let i = 0; i < n; i++) {
+    let f; try { f = w[i]; } catch (e) { continue; }
+    try { f.postMessage(msg, '*'); } catch (e) { }
+    toolsBcast(f, msg, d + 1);
+  }
+}
+function toolsShotFromUrl(url, key) {
+  return new Promise(function (resolve, reject) {
+    const im = new Image();
+    im.onerror = function () { reject(new Error('gambar capture gagal dibuka')); };
+    im.onload = function () {
+      const sc = Math.min(1, 1800 / im.naturalWidth), w = Math.max(1, Math.round(im.naturalWidth * sc)), h = Math.max(1, Math.round(im.naturalHeight * sc));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.fillStyle = '#0a0508'; g.fillRect(0, 0, w, h); g.drawImage(im, 0, 0, w, h);
+      const u = c.toDataURL('image/jpeg', 0.92), d = new Date();
+      TOOLS_SHOTS[key] = { url: u, data: u.replace(/^data:/, ''), w: w, h: h, auto: true, at: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') };
+      resolve();
+    };
+    im.src = url;
+  });
+}
+function toolsAutoCaptureProfil(timeoutMs) {
+  return new Promise(function (resolve) {
+    const id = 'cap' + Date.now();
+    const fr = document.createElement('iframe');
+    fr.src = URLS.profildc;
+    fr.setAttribute('aria-hidden', 'true');
+    fr.style.cssText = 'position:fixed;left:0;top:0;width:1700px;height:1000px;border:0;opacity:0.01;pointer-events:none;z-index:-1;';
+    const got = {}; let acked = false, finished = false, poll = null, tmo = null;
+    const finish = function (ok) {
+      if (finished) return; finished = true;
+      clearInterval(poll); clearTimeout(tmo);
+      window.removeEventListener('message', onMsg);
+      setTimeout(function () { try { fr.remove(); } catch (e) { } }, 300);
+      resolve(ok);
+    };
+    function onMsg(e) {
+      const d = e.data; if (!d || d.id !== id) return;
+      if (d.type === 'wmsCapAck') acked = true;
+      else if (d.type === 'wmsCapRes' && (d.which === 'a' || d.which === 'b')) {
+        toolsShotFromUrl(d.url, d.which).then(function () { got[d.which] = 1; if (got.a && got.b) finish(true); }).catch(function () { });
+      } else if (d.type === 'wmsCapErr') { console.warn('Capture gagal:', d.msg); finish(false); }
+    }
+    window.addEventListener('message', onMsg);
+    document.body.appendChild(fr);
+    // iframe baru dimuat -> ulangi permintaan tiap 2 dtk sampai dijawab
+    poll = setInterval(function () {
+      if (acked) return;
+      const msg = { type: 'wmsCapReq', id: id };
+      try { fr.contentWindow.postMessage(msg, '*'); toolsBcast(fr.contentWindow, msg, 0); } catch (e) { }
+    }, 2000);
+    tmo = setTimeout(function () { finish(!!(got.a && got.b)); }, timeoutMs || 80000);
+  });
+}
+
 async function toolsGeneratePpt() {
   if (toolsBusy) return;
   toolsBusy = true;
@@ -4569,6 +4630,13 @@ async function toolsGeneratePpt() {
     toolsData = await toolsFetchData();
     toolsRenderData();
     if (!toolsAllOk(toolsData)) throw new Error('Data belum lengkap, PPT tidak dibuat (lihat bagian "Data yang dipakai").');
+
+    // gambar Profil DC & Daily Proses: otomatis (kecuali dua-duanya sudah ditempel manual)
+    if (!(TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto)) {
+      setBtn('⏳ Mengambil gambar Profil DC… (±30 dtk)');
+      try { TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; await toolsAutoCaptureProfil(80000); } catch (e) { console.warn('Auto-capture dilewati:', e); }
+      toolsShotRender();
+    }
 
     setBtn('⏳ Menyusun slide…');
     await toolsLoadScript(TOOLS_PPTX_CDN);
