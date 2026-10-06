@@ -1539,6 +1539,22 @@
       #page-tools .tl-slide small{font-size:11.5px;color:var(--text-3)}
       #page-tools .tl-tag{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--green-bg);color:var(--green);white-space:nowrap}
       #page-tools .tl-tag-soon{background:rgba(122,154,188,.18);color:var(--text-3)}
+      #page-tools .tl-shots{margin:0 0 16px;padding:12px 14px;border:1px dashed var(--border-2);border-radius:12px}
+      #page-tools .tl-shots-head b{display:block;font-size:13px;color:var(--text)}
+      #page-tools .tl-shots-head small{display:block;margin-top:2px;font-size:11.5px;line-height:1.5;color:var(--text-3)}
+      #page-tools .tl-shot-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+      #page-tools .tl-shot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:118px;padding:9px;border:1.5px dashed var(--border-2);border-radius:10px;background:rgba(255,255,255,.55);text-align:center;cursor:pointer;outline:none;transition:all .2s}
+      #page-tools .tl-shot:hover,#page-tools .tl-shot:focus,#page-tools .tl-shot.sel,#page-tools .tl-shot.drag{border-color:var(--accent);background:var(--accent-light)}
+      #page-tools .tl-shot-name{font-size:12px;font-weight:800;color:var(--text)}
+      #page-tools .tl-shot-hint,#page-tools .tl-shot-at{font-size:11px;color:var(--text-3)}
+      #page-tools .tl-shot img{display:none;max-width:100%;max-height:92px;border-radius:6px;border:1px solid var(--border-2)}
+      #page-tools .tl-shot.has img{display:block}
+      #page-tools .tl-shot.has .tl-shot-hint{display:none}
+      #page-tools .tl-shot-act{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+      #page-tools .tl-shot-clear{display:none}
+      #page-tools .tl-shot.has .tl-shot-clear{display:inline-block}
+      #page-tools .tl-shot-state{margin-top:9px;font-size:11.5px;font-weight:700;color:var(--text-2)}
+      @media(max-width:560px){#page-tools .tl-shot-row{grid-template-columns:1fr}}
       #page-tools .tl-actions{display:flex;gap:10px;flex-wrap:wrap}
       #page-tools .tl-btn{height:38px;padding:0 18px;border-radius:10px;border:1px solid var(--border-2);background:var(--bg);color:var(--text-2);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
       #page-tools .tl-btn:hover:not(:disabled){transform:translateY(-1px);background:var(--surface);color:var(--text)}
@@ -1617,6 +1633,28 @@
             <div class="tl-slide"><span class="tl-slide-no">6</span><div><b>Stock Transfer Monitoring</b></div><span class="tl-tag">Tersedia</span></div>
             <div class="tl-slide"><span class="tl-slide-no">7</span><div><b>Inbound Planning</b></div><span class="tl-tag">Tersedia</span></div>
             <div class="tl-slide"><span class="tl-slide-no">8</span><div><b>Terima Kasih</b></div><span class="tl-tag">Tersedia</span></div>
+          </div>
+          <div class="tl-shots" id="tlShots">
+            <div class="tl-shots-head"><b>🖼️ Gambar slide 2 (opsional)</b><small>Screenshot dari panel Profil DC dan Daily Proses. Isi keduanya supaya slide 2 persis seperti PPT asli; kalau kosong dipakai kartu otomatis. Gambar hanya disimpan sementara di halaman ini.</small></div>
+            <div class="tl-shot-row">
+              <div class="tl-shot" id="tlShotA" data-shot="a" tabindex="0">
+                <span class="tl-shot-name">Profil DC Sidoarjo (peta)</span>
+                <img alt="Pratinjau Profil DC Sidoarjo (peta)">
+                <span class="tl-shot-hint">Klik kotak ini lalu tekan Ctrl+V, atau seret file ke sini</span>
+                <span class="tl-shot-at"></span>
+                <span class="tl-shot-act"><button type="button" class="tl-btn tl-btn-sm tl-shot-pick">Pilih file</button><button type="button" class="tl-btn tl-btn-sm tl-shot-clear">Hapus</button></span>
+                <input type="file" id="tlShotFileA" accept="image/*" hidden>
+              </div>
+              <div class="tl-shot" id="tlShotB" data-shot="b" tabindex="0">
+                <span class="tl-shot-name">Daily Proses today (grafik)</span>
+                <img alt="Pratinjau Daily Proses today (grafik)">
+                <span class="tl-shot-hint">Klik kotak ini lalu tekan Ctrl+V, atau seret file ke sini</span>
+                <span class="tl-shot-at"></span>
+                <span class="tl-shot-act"><button type="button" class="tl-btn tl-btn-sm tl-shot-pick">Pilih file</button><button type="button" class="tl-btn tl-btn-sm tl-shot-clear">Hapus</button></span>
+                <input type="file" id="tlShotFileB" accept="image/*" hidden>
+              </div>
+            </div>
+            <div class="tl-shot-state" id="tlShotState">Slide 2 memakai kartu otomatis. Isi kedua gambar supaya tampilannya persis PPT asli.</div>
           </div>
           <div class="tl-actions">
             <button class="tl-btn tl-btn-primary" id="tlGenBtn" onclick="toolsGeneratePpt()" disabled>⬇️ Buat PPT sekarang</button>
