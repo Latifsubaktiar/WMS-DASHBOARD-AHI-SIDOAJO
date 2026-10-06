@@ -3613,8 +3613,160 @@ function toolsGradientBg() {
   return c.toDataURL('image/png').replace(/^data:/, '');
 }
 
+// ── SLOT SCREENSHOT slide 2 (Profil DC & Daily Proses) ─────────────
+// Gambar ditempel/dipilih manual dari panel Profil DC; hanya disimpan di memori halaman ini (tidak dipakai lagi setelah refresh)
+var TOOLS_SHOTS = { a: null, b: null };
+var TOOLS_SHOT_KEYS = ['a', 'b'];
+var toolsShotSel = null;
+
+function toolsShotsPaneVisible() {
+  const pg = toolsEl('page-tools'), pane = toolsEl('tlPanePagi');
+  return !!(pg && pg.classList.contains('active') && pane && pane.style.display !== 'none');
+}
+function toolsShotsReady() { return (TOOLS_SHOTS.a && TOOLS_SHOTS.b) ? TOOLS_SHOTS : null; }
+
+function toolsShotRender(note) {
+  TOOLS_SHOT_KEYS.forEach(function (k) {
+    const el = toolsEl('tlShot' + k.toUpperCase());
+    if (!el) return;
+    const s = TOOLS_SHOTS[k], img = el.querySelector('img'), at = el.querySelector('.tl-shot-at');
+    el.classList.toggle('has', !!s);
+    el.classList.toggle('sel', toolsShotSel === k);
+    if (img) { if (s) img.src = s.url; else img.removeAttribute('src'); }
+    if (at) at.textContent = s ? ('Ditempel ' + s.at + ' · ' + s.w + '×' + s.h + ' px') : '';
+  });
+  const st = toolsEl('tlShotState');
+  if (st) st.textContent = note || (toolsShotsReady()
+    ? '✅ Slide 2 akan dibuat persis seperti PPT asli (memakai kedua gambar ini).'
+    : 'Slide 2 memakai kartu otomatis. Isi kedua gambar supaya tampilannya persis PPT asli.');
+}
+
+// baca file gambar -> kecilkan (maks 1800 px lebar) -> JPEG
+function toolsShotLoad(file, key) {
+  if (!file || !/^image\//.test(file.type || '')) { toolsShotRender('File harus berupa gambar (PNG/JPG).'); return; }
+  const fr = new FileReader();
+  fr.onerror = function () { toolsShotRender('Gambar gagal dibaca, coba lagi.'); };
+  fr.onload = function () {
+    const im = new Image();
+    im.onerror = function () { toolsShotRender('Gambar gagal dibuka, coba file lain.'); };
+    im.onload = function () {
+      const sc = Math.min(1, 1800 / im.naturalWidth), w = Math.max(1, Math.round(im.naturalWidth * sc)), h = Math.max(1, Math.round(im.naturalHeight * sc));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(im, 0, 0, w, h);
+      const url = c.toDataURL('image/jpeg', 0.92), d = new Date();
+      TOOLS_SHOTS[key] = { url: url, data: url.replace(/^data:/, ''), w: w, h: h, at: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') };
+      toolsShotSel = null;
+      toolsShotRender();
+    };
+    im.src = fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+
+(function () {
+  const keyOf = function (t) { const s = t && t.closest ? t.closest('#tlShots .tl-shot') : null; return s ? s.getAttribute('data-shot') : null; };
+  document.addEventListener('click', function (e) {
+    const t = e.target, key = keyOf(t);
+    if (!key) return;
+    if (t.closest('.tl-shot-clear')) { TOOLS_SHOTS[key] = null; toolsShotSel = null; toolsShotRender(); e.stopPropagation(); return; }
+    if (t.closest('.tl-shot-pick')) { const f = toolsEl('tlShotFile' + key.toUpperCase()); if (f) { f.value = ''; f.click(); } return; }
+    toolsShotSel = key; toolsShotRender('Kotak dipilih — tekan Ctrl+V untuk menempel screenshot ke sini.');
+  });
+  document.addEventListener('change', function (e) {
+    const t = e.target;
+    if (t && t.matches && t.matches('#tlShots input[type=file]')) { const key = keyOf(t); if (key && t.files && t.files[0]) toolsShotLoad(t.files[0], key); }
+  });
+  document.addEventListener('paste', function (e) {
+    if (!toolsShotsPaneVisible()) return;
+    const tag = (e.target && e.target.tagName) || '';
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || (e.target && e.target.isContentEditable)) return;
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    let file = null;
+    for (let i = 0; i < items.length; i++) { if (items[i].kind === 'file' && /^image\//.test(items[i].type)) { file = items[i].getAsFile(); break; } }
+    if (!file) return;
+    e.preventDefault();
+    const key = toolsShotSel || TOOLS_SHOT_KEYS.filter(function (k) { return !TOOLS_SHOTS[k]; })[0];
+    if (!key) { toolsShotRender('Kedua gambar sudah terisi. Klik kotak yang mau diganti, lalu Ctrl+V lagi.'); return; }
+    toolsShotLoad(file, key);
+  });
+  document.addEventListener('dragover', function (e) { const s = e.target && e.target.closest ? e.target.closest('#tlShots .tl-shot') : null; if (s) { e.preventDefault(); s.classList.add('drag'); } });
+  document.addEventListener('dragleave', function (e) { const s = e.target && e.target.closest ? e.target.closest('#tlShots .tl-shot') : null; if (s) s.classList.remove('drag'); });
+  document.addEventListener('drop', function (e) {
+    const s = e.target && e.target.closest ? e.target.closest('#tlShots .tl-shot') : null;
+    if (!s) return;
+    e.preventDefault(); s.classList.remove('drag');
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) toolsShotLoad(f, s.getAttribute('data-shot'));
+  });
+})();
+
+// ── SLIDE 2 versi gambar: tata letak persis PPT asli (peta + grafik hasil screenshot) ──
+function toolsBuildProfilShotsSlide(pres, D, bgData, shots) {
+  const FONT = 'Arial', RED = '9B0A0A', BLUE = '1A1AFF', LS = 12.6;
+  const s = pres.addSlide();
+  s.background = { data: bgData };
+  s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  const T = (text, o) => s.addText(text, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, o));
+
+  T('PROFIL DC AHI SIDOARJO', { x: 0.5, y: 0.27, w: 10, h: 0.55, fontSize: 26.5, bold: true, color: '000000' });
+  T('Overview of DC Profile & Operations Daily Reports', { x: 0.5, y: 0.70, w: 10, h: 0.4, fontSize: 17.3, italic: true, color: '1A1A1A' });
+  T('Profil Dc Sidoarjo', { x: 0.367, y: 1.1, w: 6.249, h: 0.3, fontSize: 14, bold: true, italic: true, color: '8B0A14', align: 'center', valign: 'middle' });
+  T('Daily Proses today', { x: 6.734, y: 1.1, w: 6.25, h: 0.3, fontSize: 14, bold: true, italic: true, color: '1F4E9E', align: 'center', valign: 'middle' });
+  s.addShape(pres.ShapeType.line, { x: 4.85, y: 1.254, w: 3.5, h: 0, line: { color: '1A1AE6', width: 1.25, dashType: 'sysDot', endArrowType: 'triangle' } });
+
+  // gambar: dimuat utuh (tanpa gepeng) di dalam kotak, dengan bayangan tipis
+  const SHADOW = { type: 'outer', color: '000000', opacity: 0.4, blur: 5, offset: 2, angle: 90 };
+  const place = (shot, bx, by, bw, bh) => {
+    s.addShape(pres.ShapeType.rect, { x: bx, y: by, w: bw, h: bh, fill: { color: '0D0D0D' }, line: { color: '0D0D0D', width: 0 }, shadow: SHADOW });
+    const k = Math.min(bw / shot.w, bh / shot.h), w = shot.w * k, h = shot.h * k;
+    s.addImage({ data: shot.data, x: bx + (bw - w) / 2, y: by + (bh - h) / 2, w: w, h: h });
+  };
+  place(shots.a, 0.367, 1.38, 6.249, 3.30);
+  place(shots.b, 6.734, 1.38, 6.25, 3.29);
+
+  // teks laporan (bullet ❖, ukuran & posisi seperti PPT asli)
+  const lab = t => ({ text: t, options: { bold: true, italic: true, color: RED } });
+  const B = t => ({ text: t, options: { bold: true, italic: true } });
+  const N = t => ({ text: t });
+  const fin = (runs, extra) => runs.map((r, i) => {
+    const o = Object.assign({ lineSpacing: LS }, r.options || {});
+    if (i === runs.length - 1) o.breakLine = true;
+    if (extra && i === 0) Object.assign(o, extra);
+    return { text: r.text, options: o };
+  });
+  const bul = runs => fin(runs, { bullet: { indent: 24, code: '2756' }, indentLevel: 1 });
+  const plain = runs => fin(runs);
+  const head = t => fin([{ text: t, options: { bold: true, italic: true, fontSize: 11.5, paraSpaceAfter: 13.8 } }]);
+
+  const left = [].concat(
+    head('Laporan Ringkasan Umum Profil DC AHI Sidoarjo:'),
+    bul([lab('Kapasitas & Okupansi:'), N(' Occupancy sebesar '), B(D.occupancy + ','), N(' dari total '), B('kapasitas ' + D.kapasitas + ' dengan inventory terisi ' + D.inventory), N('.')]),
+    bul([lab('Akurasi & SLA'), N(': Accuracy mencapai '), B(D.accuracy + ', SLA Store ' + D.slaStore + ', dan SLA Customer ' + D.slaCust + '.')]),
+    bul([lab('Beban Kerja (Workload): Inbound ' + D.workIn + ' dan Outbound ' + D.workOut + '.')]),
+    plain([N('Pencapaian Per Area:')]),
+    D.areas.map(a => plain([N(a[0] + ': ' + a[2])])).reduce((x, y) => x.concat(y), []),
+    plain([{ text: 'SLA Planner Kemarin: SLA GRW ' + D.slaGrw + ' dan SLA Customer ' + D.slaCustPlanner + '.', options: { bold: true, italic: true, color: BLUE } }])
+  );
+  T(left, { x: 0.49, y: 4.79, w: 5.7, h: 2.35, fontSize: 10.5, color: '000000' });
+
+  const right = [].concat(
+    head('Laporan ringkasan progres operasional harian DC AHI Sidoarjo:'),
+    bul([lab('Inbound Hari Ini:'), N(' Total ' + D.inb.total + ' LC (Selesai ' + D.inb.fin + ', Proses ' + D.inb.pro + ', Belum ' + D.inb.blm + '), pencapaian ' + D.inb.pct.toFixed(1) + '%.')]),
+    bul([lab('Storing:'), N(' Total ' + D.sto.total + ' LC, Release Case ' + D.sto.rel + ', Picked Case ' + D.sto.pick + ', Staged Case ' + D.sto.stg + ', Sisa ' + D.sto.sisa + ' Case, pencapaian ' + D.sto.pct.toFixed(1) + '%.')]),
+    bul([lab('Outbound Hari Ini:'), N(' Total ' + D.out.total + ' LC (Antri ' + D.out.antri + ', Belum Datang ' + D.out.blm + ', Selesai ' + D.out.sel + '), pencapaian ' + D.out.pct.toFixed(1) + '%.')]),
+    bul([lab('Cycle Count & Akurasi Inventory:'), N(' Total ' + D.inv.lok + ' lokasi (CC ' + D.inv.cc + '), Hit ' + D.inv.hit + ', Miss ' + D.inv.miss + ', Akurasi ' + D.inv.akurasi + '.')]),
+    (function () { const r = bul([lab('SLA Planner:'), N(' SLA GRW ' + D.slaGrw + ' dan SLA Customer ' + D.slaCustPlanner + '.')]); r[0].options.paraSpaceAfter = 13; return r; })(),
+    plain([{ text: 'Untuk progres daily operasional di lapangan saat ini pukul ' + D.jam + ' WIB sebesar ' + D.rata.toFixed(1) + '%.', options: { bold: true, italic: true, color: BLUE } }])
+  );
+  T(right, { x: 6.86, y: 4.79, w: 6.05, h: 2.35, fontSize: 10.5, color: '000000' });
+
+  s.addShape(pres.ShapeType.line, { x: 6.70, y: 4.84, w: 0, h: 2.35, line: { color: 'F04438', width: 1.25, dashType: 'sysDot' } });
+  s.addNotes('Dibuat otomatis dari data dashboard WMS AHI Sidoarjo pukul ' + D.jam + ' WIB. Gambar peta/grafik berasal dari screenshot panel Profil DC & Daily Proses.');
+}
+
 // ── SLIDE 1: Profil DC + Daily Proses ──────────────────────────────
-function toolsBuildProfilDailySlide(pres, D, bgData) {
+function toolsBuildProfilDailySlide(pres, D, bgData, shots) {
+  if (shots && shots.a && shots.b) return toolsBuildProfilShotsSlide(pres, D, bgData, shots);
   const FONT = 'Arial', RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF', NAVY = '1F3A8A';
   const s = pres.addSlide();
   s.background = { data: bgData };
@@ -3665,7 +3817,7 @@ function toolsBuildProfilDailySlide(pres, D, bgData) {
     { label: 'INBOUND', value: D.inb.total, sub: 'Selesai ' + D.inb.fin + ' · Proses ' + D.inb.pro + ' · Belum ' + D.inb.blm, pct: D.inb.pct.toFixed(1) + '%', accent: '3B82F6' },
     { label: 'STORING', value: D.sto.total, sub: 'Picked ' + D.sto.pick + ' dari ' + D.sto.rel, pct: D.sto.pct.toFixed(1) + '%', accent: 'EF4444' },
     { label: 'OUTBOUND', value: D.out.total, sub: 'Antri ' + D.out.antri + ' · Belum ' + D.out.blm + ' · Selesai ' + D.out.sel, pct: D.out.pct.toFixed(1) + '%', accent: 'F59E0B' },
-    { label: 'INDEX PLANNER', value: D.slaCustPlanner, sub: 'SLA GRW ' + D.slaGrw + ' · CUST ' + D.slaCustPlanner, pct: 'SLA', accent: '8B5CF6' },
+    { label: 'INDEX PLANNER', value: D.slaCustPlanner, sub: 'SLA GRW ' + D.slaGrw + ' · CUST ' + D.slaCustPlanner, pct: 'SLA', accent: '8B5CF6', valueSize: 17 },
     { label: 'INVENTORY', value: D.inv.akurasi, sub: 'Hit ' + D.inv.hit + ' · Miss ' + D.inv.miss, pct: 'CC ' + D.inv.cc.replace('.00', ''), accent: '10B981', valueSize: 17 }
   ].forEach((c, i) => card(cx0 + i * (cw + cg), cy0, cw, ch, { label: c.label, value: c.value, sub: c.sub, pct: c.pct, accent: c.accent, bg: NB, valueColor: c.accent, valueSize: c.valueSize || 22 }));
   const dy = cy0 + ch + 0.1;
@@ -4179,6 +4331,15 @@ function toolsDedupeBulletPPr(xml) {
   });
 }
 
+// bullet ❖ (slide 2): hitam, sedikit lebih besar, posisi bullet & teks seperti PPT asli
+function toolsFixDiamondBullets(xml) {
+  return xml.replace(/<a:p>[\s\S]*?<\/a:p>/g, function (p) {
+    if (p.indexOf('<a:buChar char="&#x2756;"/>') < 0) return p;
+    return p.replace(/marL="\d+" indent="-?\d+"/, 'marL="609905" indent="-399593"')
+      .replace('<a:buSzPct val="100000"/>', '<a:buClr><a:srgbClr val="000000"/></a:buClr><a:buSzPct val="125000"/>');
+  });
+}
+
 async function toolsPostProcess(arrayBuffer) {
   await toolsLoadScript(TOOLS_JSZIP_CDN);
   const zip = await JSZip.loadAsync(arrayBuffer);
@@ -4196,7 +4357,7 @@ async function toolsPostProcess(arrayBuffer) {
   }
   const slideNames = Object.keys(zip.files).filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n));
   for (const n of slideNames) {
-    const x0 = await zip.file(n).async('string'), x1 = toolsDedupeBulletPPr(x0);
+    const x0 = await zip.file(n).async('string'), x1 = toolsFixDiamondBullets(toolsDedupeBulletPPr(x0));
     if (x1 !== x0) zip.file(n, x1);
   }
   return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
@@ -4231,7 +4392,7 @@ async function toolsGeneratePpt() {
     const now0 = new Date();
     const tanggalLabel = now0.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     buildCoverSlide(pres, { tanggal: tanggalLabel });
-    toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg());
+    toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg(), toolsShotsReady());
     buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg());
     buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData), toolsGradientBg());
     buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData));
