@@ -4118,6 +4118,105 @@ function buildOutstandingSlideV3(pres, o, bgData) {
   T(right, { x: RXT, y: 0.4, w: RWT, h: 6.7, fontSize: 10, color: '000000', lineSpacingMultiple: 1.12 });
 }
 function cell1(text, bg, align, bold) { return { text: text, options: { fontSize: 6.3, color: bold ? '111111' : '374151', fill: { color: bg || 'FFFFFF' }, align: align || 'left', valign: 'middle', bold: !!bold } }; }
+// ── Dashboard Trend Daily Vendor dibuat dari data (tanpa screenshot): panel atas + Percentage Breakdown ──
+function toolsVendorNativeTop(s, pres, T, v) {
+  const IN = 0.00969, DB = '131316';
+  const SHADOW = { type: 'outer', color: '000000', opacity: 0.4, blur: 5, offset: 2, angle: 90 };
+  s.addShape(pres.ShapeType.rect, { x: 0.349, y: 1.105, w: 12.66, h: 4.157, fill: { color: DB }, line: { color: DB, width: 0 }, shadow: SHADOW });
+  s.addImage({ data: osGradPng(1280, 54, '1B2238', '12151F'), x: 0.504, y: 1.279, w: 12.37, h: 0.27 });
+  T('↗', { x: 0.62, y: 1.345, w: 0.15, h: 0.14, fontSize: 7, bold: true, color: 'FACC15' });
+  T('TREND DAILY VENDOR PERFORMANCE (ON TIME ACHIEVEMENT)', { x: 0.833, y: 1.35, w: 7, h: 0.14, fontSize: 7.5, bold: true, color: 'FACC15' });
+  T('*Menampilkan seluruh tanggal pada kolom LOAD DATE (AU) bulan aktif (Abaikan filter Stuffing Date)', { x: 6.0, y: 1.358, w: 6.75, h: 0.12, fontSize: 6.3, italic: true, color: '9CA3AF', align: 'right' });
+
+  const tot = v.total || { total: 0, onTime: 0, terlambat: 0, belumSupport: 0 };
+  const cards = [
+    ['VENDOR SUPPORTING', num0(v.achievementPeriode).toFixed(1) + '%', 'Monthly On-Time Avg', 'FACC15', '3A3208'],
+    ['TOTAL COMPLETED LC', tot.total + ' LC', 'Total Load Containers', '3B82F6', '14264A'],
+    ['TOTAL ON-TIME LC', tot.onTime + ' LC', 'Delivered Within Schedule', '34D399', '0F3A2A'],
+    ['TERLAMBAT LC', tot.terlambat + ' LC', 'Requires Dispatch Followup', 'EF4444', '3F1518'],
+    ['DELAYED SUPPORT LC', tot.belumSupport + ' LC', 'Delayed Admin Support', 'F59E0B', '3F2A0E']
+  ];
+  const cxs = [0.504, 2.985, 5.475, 7.965, 10.456], cw = 2.384, cy = 1.667, ch = 0.70;
+  cards.forEach((c, i) => {
+    const x = cxs[i];
+    s.addShape(pres.ShapeType.roundRect, { x: x, y: cy, w: cw, h: ch, rectRadius: 0.05, fill: { color: '1A1A1D' }, line: { color: '2E2E33', width: 0.75 } });
+    T(c[0], { x: x + 0.12, y: cy + 0.11, w: cw - 0.6, h: 0.12, fontSize: 6, bold: true, color: 'A3A3A3' });
+    T(c[1], { x: x + 0.12, y: cy + 0.2, w: cw - 0.6, h: 0.3, fontSize: 16, bold: true, color: c[3] });
+    T(c[2], { x: x + 0.12, y: cy + 0.55, w: cw - 0.6, h: 0.1, fontSize: 5.8, color: '6B7280' });
+    s.addShape(pres.ShapeType.ellipse, { x: x + cw - 0.43, y: cy + 0.2, w: 0.29, h: 0.29, fill: { color: c[4] }, line: { color: c[3], width: 0.75 } });
+    s.addShape(pres.ShapeType.ellipse, { x: x + cw - 0.43 + 0.095, y: cy + 0.2 + 0.095, w: 0.1, h: 0.1, fill: { color: c[3] }, line: { color: c[3], width: 0 } });
+  });
+
+  const days = v.days || [];
+  const labs = days.map(d => d.tanggal);
+  const mx = Math.max.apply(null, [5].concat(days.map(d => d.onTime + d.terlambat + d.belumSupport)));
+  const top = Math.ceil(mx / 5) * 5;
+  s.addChart([
+    { type: pres.charts.BAR, data: [
+      { name: 'ON TIME (LC)', labels: labs, values: days.map(d => d.onTime) },
+      { name: 'TERLAMBAT (LC)', labels: labs, values: days.map(d => d.terlambat) },
+      { name: 'DELAYED SUPPORT (LC)', labels: labs, values: days.map(d => d.belumSupport) }
+    ], options: { chartColors: ['3B82F6', 'EF4444', 'F59E0B'], barGrouping: 'stacked', barGapWidthPct: 25 } },
+    { type: pres.charts.LINE, data: [{ name: 'ACHIEVEMENT %', labels: labs, values: days.map(d => Math.round(d.ach * 10) / 10) }],
+      options: { chartColors: ['FACC15'], secondaryValAxis: true, secondaryCatAxis: true, lineSize: 1.25, lineDataSymbol: 'circle', lineDataSymbolSize: 4,
+        showValue: true, dataLabelPosition: 't', dataLabelColor: 'FACC15', dataLabelFontSize: 6, dataLabelFormatCode: 'General"%"' } }
+  ], { x: 0.58, y: 2.76, w: 12.2, h: 2.3, showLegend: true, legendPos: 't', legendColor: 'E5E7EB', legendFontSize: 6.5, legendFontFace: 'Arial',
+    catAxisLabelColor: '9CA3AF', catAxisLabelFontSize: 6, catAxisLabelRotate: -30, catAxisLabelFontFace: 'Arial',
+    valAxisLabelColor: '9CA3AF', valAxisLabelFontSize: 6, valAxisMinVal: 0, valAxisMaxVal: top, valAxisMajorUnit: 5,
+    valGridLine: { color: '2A2A2E', style: 'solid', size: 0.5 }, catGridLine: { style: 'none' },
+    plotArea: { fill: { color: DB } }, chartArea: { fill: { color: DB } },
+    valAxes: [
+      { showValAxisTitle: true, valAxisTitle: 'Jumlah LC', valAxisTitleColor: '9CA3AF', valAxisTitleFontSize: 6, valAxisMinVal: 0, valAxisMaxVal: top, valAxisMajorUnit: 5, valAxisLabelColor: '9CA3AF', valAxisLabelFontSize: 6, valGridLine: { color: '2A2A2E', style: 'solid', size: 0.5 } },
+      { showValAxisTitle: true, valAxisTitle: 'Achievement %', valAxisTitleColor: 'FACC15', valAxisTitleFontSize: 6, valAxisMinVal: 0, valAxisMaxVal: 100, valAxisMajorUnit: 20, valAxisLabelColor: 'FACC15', valAxisLabelFontSize: 6, valAxisLabelFormatCode: '0"%"', valGridLine: { style: 'none' } }
+    ],
+    catAxes: [{ catAxisLabelColor: '9CA3AF', catAxisLabelFontSize: 6, catAxisLabelRotate: -30 }, { catAxisHidden: true }],
+    serAxisHidden: true });
+}
+
+function toolsVendorNativeBreakdown(s, pres, T, v) {
+  const X = 0.359, Y = 5.349, W = 4.467, H = 1.87, DB = '131316';
+  const SHADOW = { type: 'outer', color: '000000', opacity: 0.4, blur: 5, offset: 2, angle: 90 };
+  s.addShape(pres.ShapeType.rect, { x: X, y: Y, w: W, h: H, fill: { color: DB }, line: { color: DB, width: 0 }, shadow: SHADOW });
+  s.addImage({ data: osGradPng(450, 50, '1B2238', '12151F'), x: X, y: Y, w: W, h: 0.25 });
+  T('%', { x: 0.47, y: Y + 0.075, w: 0.15, h: 0.12, fontSize: 6, bold: true, color: 'FACC15' });
+  T('PERCENTAGE BREAKDOWN', { x: 1.9, y: Y + 0.075, w: 2.84, h: 0.12, fontSize: 7, bold: true, color: 'FACC15', align: 'right' });
+
+  const ls = v.lateStats || { avgH: 0, maxH: 0 };
+  const hm = h => { const m = Math.round((h || 0) * 60); return Math.floor(m / 60) + ' Jam ' + (m % 60) + ' Menit'; };
+  const box = (x, w, accent, label, value, vcol) => {
+    s.addShape(pres.ShapeType.rect, { x: x, y: 5.669, w: w, h: 0.31, fill: { color: '0E0E10' }, line: { color: '26262A', width: 0.5 } });
+    s.addShape(pres.ShapeType.rect, { x: x, y: 5.669, w: 0.03, h: 0.31, fill: { color: accent }, line: { color: accent, width: 0 } });
+    T(label, { x: x, y: 5.69, w: w, h: 0.08, fontSize: 4.6, bold: true, color: '9CA3AF', align: 'center' });
+    T(value, { x: x, y: 5.775, w: w, h: 0.16, fontSize: 9.5, bold: true, color: vcol, align: 'center' });
+  };
+  box(0.388, 2.18, 'F59E0B', 'RERATA TERLAMBAT', hm(ls.avgH), 'FB923C');
+  box(2.616, 2.2, 'EF4444', 'TERLAMBAT TERLAMA', hm(ls.maxH), 'EF4444');
+
+  const tot = v.total || { total: 0, onTime: 0, terlambat: 0, belumSupport: 0 };
+  const sum = Math.max(1, tot.onTime + tot.terlambat + tot.belumSupport);
+  const pc = x => Math.round(x / sum * 100);
+  s.addChart(pres.charts.DOUGHNUT, [{ name: 'Status', labels: ['On Time', 'Terlambat', 'Delay Support'], values: [Math.max(tot.onTime, 0.0001), Math.max(tot.terlambat, 0.0001), Math.max(tot.belumSupport, 0.0001)] }], {
+    x: 0.84, y: 6.04, w: 1.14, h: 1.14, holeSize: 66, chartColors: ['10B981', 'EF4444', 'F59E0B'], firstSliceAng: 0,
+    showLegend: false, showTitle: false, showLabel: false, showValue: false, showPercent: false,
+    dataBorder: { pt: 0.5, color: DB }, plotArea: { fill: { color: DB } }, chartArea: { fill: { color: DB } } });
+  T(pc(tot.onTime) + '%', { x: 0.84, y: 6.46, w: 1.14, h: 0.2, fontSize: 9.5, bold: true, color: '10B981', align: 'center' });
+  T('ON TIME', { x: 0.84, y: 6.64, w: 1.14, h: 0.08, fontSize: 3.5, color: '9CA3AF', align: 'center' });
+
+  const hd = (t, al) => ({ text: t, options: { fontSize: 4.2, bold: true, color: 'FACC15', align: al, valign: 'middle', fill: { color: '1A1A1D' }, margin: [0, 0.04, 0, 0.04] } });
+  const cell = (t, al, col, bold, fill) => ({ text: t, options: { fontSize: 5.4, bold: !!bold, color: col, align: al, valign: 'middle', fill: { color: fill || DB }, margin: [0, 0.04, 0, 0.04] } });
+  const row = (dot, name, n, p) => [
+    { text: [{ text: '● ', options: { color: dot, fontSize: 4 } }, { text: name, options: { color: 'E5E7EB', fontSize: 5.4, bold: true } }], options: { valign: 'middle', align: 'left', fill: { color: DB }, margin: [0, 0.04, 0, 0.04] } },
+    cell(String(n), 'right', dot, true), cell(p + '%', 'right', 'FFFFFF', true)];
+  s.addTable([
+    [hd('REKAP PROGRESS', 'left'), hd('TOTAL DETAIL', 'right'), hd('PERSENTASE', 'right')],
+    row('10B981', 'On Time', tot.onTime, pc(tot.onTime)),
+    row('EF4444', 'Terlambat', tot.terlambat, pc(tot.terlambat)),
+    row('F59E0B', 'Delay Support', tot.belumSupport, pc(tot.belumSupport)),
+    [cell('TOTAL LC', 'left', 'FACC15', true, '221C08'), cell(String(sum), 'right', 'FACC15', true, '221C08'), cell('100%', 'right', 'FACC15', true, '221C08')]
+  ], { x: 2.413, y: 6.2, w: 2.335, colW: [1.0, 0.75, 0.585], rowH: [0.16, 0.2, 0.2, 0.2, 0.2], border: { type: 'solid', color: '26262A', pt: 0.5 }, autoPage: false });
+}
+function num0(x) { const n = parseFloat(x); return isNaN(n) ? 0 : n; }
+
 // ── SLIDE 5 versi gambar: Trend Daily Vendor Performance persis PPT asli (dashboard + breakdown hasil screenshot) ──
 function toolsBuildVendorShotsSlide(pres, v, bgData, shots) {
   const FONT = 'Arial', LS = 10.1;
@@ -4125,7 +4224,7 @@ function toolsBuildVendorShotsSlide(pres, v, bgData, shots) {
   s.background = { data: bgData };
   s.addShape(pres.ShapeType.rect, { x: 0.29, y: 0.32, w: 12.81, h: 7.01, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
   const T = (text, o) => s.addText(text, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, o));
-  T('TREND DAILY VENDOR PERFORMANCE', { x: 0.485, y: 0.35, w: 10, h: 0.5, fontSize: 25.2, bold: true, color: '000000' });
+  T('TREND DAILY VENDOR PERFORMANCE', { x: 0.485, y: 0.35, w: 10, h: 0.5, fontSize: 25.6, bold: true, color: '000000' });
   T('Monitoring Vendor Performance & Achievement Trend', { x: 0.485, y: 0.77, w: 10, h: 0.35, fontSize: 17.5, italic: true, color: '1A1A1A' });
 
   const SHADOW = { type: 'outer', color: '000000', opacity: 0.4, blur: 5, offset: 2, angle: 90 };
@@ -4134,8 +4233,13 @@ function toolsBuildVendorShotsSlide(pres, v, bgData, shots) {
     const k = Math.min(bw / shot.w, bh / shot.h), w = shot.w * k, h = shot.h * k;
     s.addImage({ data: shot.data, x: bx + (bw - w) / 2, y: by + (bh - h) / 2, w: w, h: h });
   };
-  place(shots.a, 0.349, 1.105, 12.66, 4.157);
-  place(shots.b, 0.359, 5.349, 4.467, 1.87);
+  if (shots && shots.a && shots.b) {
+    place(shots.a, 0.349, 1.105, 12.66, 4.157);
+    place(shots.b, 0.359, 5.349, 4.467, 1.87);
+  } else {
+    toolsVendorNativeTop(s, pres, T, v);
+    toolsVendorNativeBreakdown(s, pres, T, v);
+  }
 
   const B = t => ({ text: t, options: { bold: true } });
   const N = t => ({ text: t });
@@ -4189,7 +4293,7 @@ function toolsBuildVendorShotsSlide(pres, v, bgData, shots) {
 }
 
 function buildVendorTrendSlide(pres, v, bgData, shots) {
-  if (bgData && shots && shots.a && shots.b) return toolsBuildVendorShotsSlide(pres, v, bgData, shots);
+  if (bgData) return toolsBuildVendorShotsSlide(pres, v, bgData, shots);
   const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF';
   const s = pres.addSlide();
   s.background = { color: 'FFFFFF' };
