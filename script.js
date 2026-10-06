@@ -4584,6 +4584,7 @@ function toolsShotFromUrl(url, key) {
     im.src = url;
   });
 }
+var toolsCapNote = '';
 function toolsAutoCaptureProfil(timeoutMs) {
   return new Promise(function (resolve) {
     const id = 'cap' + Date.now();
@@ -4604,7 +4605,7 @@ function toolsAutoCaptureProfil(timeoutMs) {
       if (d.type === 'wmsCapAck') acked = true;
       else if (d.type === 'wmsCapRes' && (d.which === 'a' || d.which === 'b')) {
         toolsShotFromUrl(d.url, d.which).then(function () { got[d.which] = 1; if (got.a && got.b) finish(true); }).catch(function () { });
-      } else if (d.type === 'wmsCapErr') { console.warn('Capture gagal:', d.msg); finish(false); }
+      } else if (d.type === 'wmsCapErr') { console.warn('Capture gagal:', d.msg); toolsCapNote = 'Auto-capture Slide 2 gagal: ' + d.msg + '. '; finish(false); }
     }
     window.addEventListener('message', onMsg);
     document.body.appendChild(fr);
@@ -4614,7 +4615,10 @@ function toolsAutoCaptureProfil(timeoutMs) {
       const msg = { type: 'wmsCapReq', id: id };
       try { fr.contentWindow.postMessage(msg, '*'); toolsBcast(fr.contentWindow, msg, 0); } catch (e) { }
     }, 2000);
-    tmo = setTimeout(function () { finish(!!(got.a && got.b)); }, timeoutMs || 80000);
+    tmo = setTimeout(function () {
+      if (!(got.a && got.b)) toolsCapNote = 'Auto-capture Slide 2 gagal: ' + (acked ? 'app Profil DC membalas tapi gambar tidak lengkap (' + Object.keys(got).length + '/2)' : 'tidak ada balasan dari app Profil DC — Main.html belum di-deploy New version, atau iframe diblokir') + '. ';
+      finish(!!(got.a && got.b));
+    }, timeoutMs || 80000);
   });
 }
 
@@ -4634,7 +4638,7 @@ async function toolsGeneratePpt() {
     // gambar Profil DC & Daily Proses: otomatis (kecuali dua-duanya sudah ditempel manual)
     if (!(TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto)) {
       setBtn('⏳ Mengambil gambar Profil DC… (±30 dtk)');
-      try { TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; await toolsAutoCaptureProfil(80000); } catch (e) { console.warn('Auto-capture dilewati:', e); }
+      try { toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; await toolsAutoCaptureProfil(80000); } catch (e) { console.warn('Auto-capture dilewati:', e); }
       toolsShotRender();
     }
 
@@ -4667,13 +4671,13 @@ async function toolsGeneratePpt() {
     if (blob) toolsDownloadBlob(blob, fileName); else await pres.writeFile({ fileName: fileName });
 
     toolsSetPill('ok', 'PPT terunduh');
-    toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Mengunggah salinan untuk preview\u2026');
+    toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Mengunggah salinan untuk preview\u2026');
     const catatanRingkas = 'Rata-rata progres ' + (toolsData.rata != null ? toolsData.rata.toFixed(1) : '-') + '% (data pukul ' + toolsData.jam + ' WIB)';
     const uploaded = blob ? await toolsUploadAndLog(blob, fileName, '8 slide', catatanRingkas) : null;
     if (uploaded && uploaded.previewUrl) {
-      toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. Preview sudah tersedia di Riwayat PPT di bawah.');
+      toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. Preview sudah tersedia di Riwayat PPT di bawah.');
     } else {
-      toolsMsg('ok', 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. (Preview tidak tersedia \u2014 gagal diunggah ke Drive, file tetap ada di Download.)');
+      toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. (Preview tidak tersedia \u2014 gagal diunggah ke Drive, file tetap ada di Download.)');
     }
   } catch (e) {
     toolsSetPill('err', 'Gagal membuat PPT');
