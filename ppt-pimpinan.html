@@ -318,7 +318,7 @@ function list(stage, head, hx, hy, bx, tx, items){
   const it = items.split('\n').filter(v=>v.trim());
   const lh = { lineHeight:'calc(12.2 * 100cqw / 720)' };
   txt(stage, it.map(()=> '❏').join('\n'), bx, hy+0.155, 10, '', lh);
-  txt(stage, it.map(esc).join('\n'), tx, hy+0.155, 10, '', Object.assign({ fontWeight:300 }, lh));
+  txt(stage, it.map(esc).join('\n'), tx, hy+0.155, 10, '', lh);
   return it.length;
 }
 const check = (stage, t, x, y, pt) => t && txt(stage, '<span class="ck">✓ </span>'+esc(t), x, y-0.02, pt, 'bi');
@@ -488,6 +488,8 @@ document.querySelectorAll('[data-k]').forEach(inp => {
 tglIn.addEventListener('input', render);
 
 $('#clearPhotos').addEventListener('click', () => {
+  if (!Object.keys(P).length) { status('Belum ada foto yang ditempel.'); return; }
+  if (!confirm('Kosongkan semua foto (' + Object.keys(P).length + ' gambar)?')) return;
   Object.keys(P).forEach(k => { URL.revokeObjectURL(P[k].url); delete P[k]; });
   document.querySelectorAll('.slot').forEach(e => paintSlot(e));
   select('chart'); updateProg(); status('Foto dikosongkan. Siap untuk laporan berikutnya.');
@@ -501,7 +503,7 @@ function crop(p, box){
   const sx = (p.w-sw)*p.fx, sy = (p.h-sh)*p.fy;
   const ow = Math.min(Math.round(box.w*260), Math.round(sw)), oh = Math.round(ow/ar);
   const c = document.createElement('canvas'); c.width = ow; c.height = oh;
-  const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
+  const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, ow, oh); g.imageSmoothingQuality = 'high';
   g.drawImage(p.img, sx, sy, sw, sh, 0, 0, ow, oh);
   return c.toDataURL('image/jpeg', .88);
 }
@@ -531,7 +533,7 @@ $('#gen').addEventListener('click', async () => {
            items:S.s3.items.split('\n'), labels:S.s3.labels, photos }
     };
     const blob = await drBuild(PptxGenJS, d, BG).write({ outputType:'blob' });
-    const t = new Date(); const fname = 'Daily_Report_' + fmt(t).replace(/ /g,'_') + '.pptx';
+    const fname = 'Daily_Report_' + (tg || fmt(new Date())).replace(/ /g,'_') + '.pptx';
     if (dl){
       try { await dl.save({ filename:fname, data:blob }); status('Tersimpan: <b>' + esc(fname) + '</b>' + (kosong ? ' — ' + kosong + ' kotak gambar masih kosong.' : ''), 'ok'); }
       catch(err){ status(err && err.code === 'declined' ? 'Download dibatalkan.' : 'Gagal menyimpan (' + esc(err && err.code || 'error') + ').', err && err.code === 'declined' ? '' : 'err'); }
