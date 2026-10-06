@@ -3812,73 +3812,156 @@ function fmt2i(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
 function fmt2(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
 
-function buildOutstandingSlideV3(pres, o) {
-  const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
+// ── SLIDE: MONITORING OUTSTANDING (tampilan mengikuti PPT asli: latar gradien + panel gelap) ──
+// PNG gradien/rounded (untuk header bar & kartu) digambar lewat canvas, lalu dipasang sebagai gambar di slide.
+function osGradPng(wPx, hPx, c1, c2, opt) {
+  opt = opt || {};
+  const c = document.createElement('canvas'); c.width = wPx; c.height = hPx;
+  const g = c.getContext('2d'), r = opt.r || 0;
+  g.beginPath();
+  g.moveTo(r, 0); g.lineTo(wPx - r, 0); g.arcTo(wPx, 0, wPx, r, r); g.lineTo(wPx, hPx - r); g.arcTo(wPx, hPx, wPx - r, hPx, r);
+  g.lineTo(r, hPx); g.arcTo(0, hPx, 0, hPx - r, r); g.lineTo(0, r); g.arcTo(0, 0, r, 0, r); g.closePath(); g.clip();
+  const gr = g.createLinearGradient(0, 0, wPx, hPx * (opt.tilt || 0));
+  const hx = v => (String(v).charAt(0) === '#' ? v : '#' + v);
+  gr.addColorStop(0, hx(c1)); gr.addColorStop(1, hx(c2));
+  g.fillStyle = gr; g.fillRect(0, 0, wPx, hPx);
+  if (opt.edge) { g.fillStyle = (String(opt.edge).charAt(0) === '#' ? opt.edge : '#' + opt.edge); g.fillRect(0, hPx - (opt.edgeH || 5), wPx, opt.edgeH || 5); }
+  return 'image/png;base64,' + c.toDataURL('image/png').split(',')[1];
+}
+
+function buildOutstandingSlideV3(pres, o, bgData) {
+  const FONT = 'Arial', W = 13.333;
   const s = pres.addSlide();
-  s.background = { color: 'FFFFFF' };
+  s.background = bgData ? { data: bgData } : { color: 'FFFFFF' };
+  s.addShape(pres.ShapeType.roundRect, { x: 0.25, y: 0.25, w: 12.83, h: 7.0, rectRadius: 0.1, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
   const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
-  T('MONITORING OUTSTANDING', { x: 0.4, y: 0.28, w: 8, h: 0.45, fontSize: 22, bold: true, color: '111111' });
-  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.68, w: 8, h: 0.26, fontSize: 11, italic: true, color: '333333' });
+  const R = (x, y, w, h, color, extra) => s.addShape(pres.ShapeType.rect, Object.assign({ x: x, y: y, w: w, h: h, fill: { color: color }, line: { color: color, width: 0 } }, extra || {}));
+  const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+  const fD = v => num(v).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const fDash = v => (num(v) === 0 ? '-' : fD(v));
+  const fEn = v => num(v).toFixed(2);
 
-  const LX = 0.4, PW = 9.15;
-  const cards = [['BACKLOG OUTSTANDING', o.backlogTotal, '111111', 'E5E7EB'], ['BACKLOG SUDAH PLAN', o.sudahPlan, '10B981', 'A7F3D0'], ['BACKLOG BELUM PLAN', o.belumPlan, 'D97706', 'FDE68A'], ['BACKLOG AGING 7 UP', o.aging7up, 'DC2626', 'FCA5A5'], ['ALLOCATION UNSUCCESSFUL', o.allocUnsuccessful, 'DC2626', 'FCA5A5']];
-  const cw = 1.72, cg = 0.09, cy0 = 1.05, ch = 0.85;
-  cards.forEach((c, i) => {
-    s.addShape(pres.ShapeType.roundRect, { x: LX + i * (cw + cg), y: cy0, w: cw, h: ch, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: c[3], width: 1 } });
-    T(fmt2(c[1]), { x: LX + i * (cw + cg) + 0.08, y: cy0 + 0.1, w: cw - 0.16, h: 0.38, fontSize: 17, bold: true, color: c[2], fit: 'shrink' });
-    T(c[0], { x: LX + i * (cw + cg) + 0.08, y: cy0 + 0.52, w: cw - 0.16, h: 0.28, fontSize: 6, bold: true, color: '6B7280' });
-  });
+  T('MONITORING OUTSTANDING', { x: 0.47, y: 0.28, w: 10, h: 0.55, fontSize: 27, bold: true, color: '111111' });
+  T('Monitoring Outstanding Progress & Completion Status', { x: 0.47, y: 0.75, w: 10, h: 0.4, fontSize: 17.5, italic: true, color: '222222' });
 
-  // ── Tabel 1: PLANNING PRIORITY (top 10, urut Total Unplanned terbesar) ──
-  const t1y = cy0 + ch + 0.16;
-  T('\u26A0\uFE0F PLANNING PRIORITY (AGING 4-7 & 7 UP) \u2014 Top 10 Total Unplanned Terbesar', { x: LX, y: t1y, w: PW, h: 0.18, fontSize: 8, bold: true, color: 'B45309' });
-  const hdr1 = c => ({ text: c, options: { bold: true, fontSize: 6.5, color: '374151', fill: { color: 'F3F4F6' }, align: 'left', valign: 'middle' } });
-  const hdr1r = c => ({ text: c, options: { bold: true, fontSize: 6.5, color: '374151', fill: { color: 'F3F4F6' }, align: 'right', valign: 'middle' } });
-  const t1rows = [[hdr1('STOREBOOKING'), hdr1('SHIP TO'), hdr1r('AGING 4-7'), hdr1r('AGING 7 UP'), hdr1r('TOTAL UNPLANNED')]];
-  const storeList = (o.storeTable || []).slice().sort((a, b) => b.totalUnplanned - a.totalUnplanned).slice(0, 10);
-  storeList.forEach((r, i) => {
-    const bg = i % 2 ? 'FAFAFA' : 'FFFFFF';
-    t1rows.push([cell1(r.code, bg), cell1(r.name, bg), cell1(fmt2(r.aging4to7), bg, 'right'), cell1(fmt2(r.aging7up), bg, 'right'), cell1(fmt2(r.totalUnplanned), bg, 'right', true)]);
-  });
-  s.addTable(t1rows, { x: LX, y: t1y + 0.2, w: PW, colW: [PW * 0.14, PW * 0.4, PW * 0.15, PW * 0.15, PW * 0.16], border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, rowH: 0.185 });
+  // ── panel gelap atas: kartu + tabel Planning Priority ──
+  const LX = 0.395, PWD = 9.83, SHADOW = { type: 'outer', color: '000000', opacity: 0.45, blur: 6, offset: 2, angle: 90 };
+  R(0.376, 1.167, 9.865, 4.015, '0D0D0D', { shadow: SHADOW });
+  s.addImage({ data: osGradPng(1966, 74, 'A51C1C', '161010'), x: LX, y: 1.195, w: PWD, h: 0.37 });
+  R(LX, 1.195, 0.05, 0.37, 'FACC15');
+  s.addShape(pres.ShapeType.flowChartCollate, { x: 0.53, y: 1.305, w: 0.12, h: 0.15, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  T('MONITORING OUTSTANDING', { x: 0.74, y: 1.28, w: 6, h: 0.22, fontSize: 12, bold: true, color: 'FFFFFF', charSpacing: 0.5 });
 
-  // ── Tabel 2: ORDER AGING BY AREA STORING (semua area) ──
-  const t1h = 0.2 + t1rows.length * 0.185;
-  const t2y = t1y + t1h + 0.18;
-  T('\uD83D\uDCCA MONITORING ORDER AGING BY AREA STORING', { x: LX, y: t2y, w: PW, h: 0.18, fontSize: 8, bold: true, color: '1D4ED8' });
-  const bl = o.bucketLabel || ['0 hari', '1-3 hari', '4-7 hari', '7 UP'];
-  const grpHdr = (label, bg) => ({ text: label, options: { bold: true, fontSize: 5.5, color: '111111', fill: { color: bg }, align: 'center', valign: 'middle' } });
-  const t2rows = [
-    [{ text: '', options: { fill: { color: 'F3F4F6' } } }, { text: '', options: { fill: { color: 'F3F4F6' } } }, grpHdr('AGING SUDAH PLAN (CBM)', 'A7F3D0'), { text: '', options: { fill: { color: 'A7F3D0' } } }, { text: '', options: { fill: { color: 'A7F3D0' } } }, { text: '', options: { fill: { color: 'A7F3D0' } } }, grpHdr('AGING BELUM PLAN (CBM)', 'FDE68A'), { text: '', options: { fill: { color: 'FDE68A' } } }, { text: '', options: { fill: { color: 'FDE68A' } } }, { text: '', options: { fill: { color: 'FDE68A' } } }],
-    [hdr1('AREA STORING'), hdr1r('TOTAL')].concat(bl.map(b => ({ text: b, options: { bold: true, fontSize: 5.5, color: '065F46', fill: { color: 'D1FAE5' }, align: 'right', valign: 'middle' } }))).concat(bl.map(b => ({ text: b, options: { bold: true, fontSize: 5.5, color: '92400E', fill: { color: 'FEF3C7' }, align: 'right', valign: 'middle' } })))
+  const cards = [
+    ['BACKLOG OUTSTANDING', o.backlogTotal, 'CBM TOTAL', '6D28D9', 'A855F7', '4C1D95', 'FFFFFF'],
+    ['BACKLOG SUDAH PLAN', o.sudahPlan, 'CBM', '14998E', '2DD4BF', '0B6E66', 'FFFFFF'],
+    ['BACKLOG BELUM PLAN', o.belumPlan, 'CBM', 'FFD60A', 'FFE55C', 'C9A800', '111111'],
+    ['BACKLOG AGING 7 UP', o.aging7up, 'CBM', 'FF5A5A', 'FF7B7B', 'B91C1C', 'FFFFFF'],
+    ['ALLOCATION UNSUCCESSFUL', o.allocUnsuccessful, 'CBM', '036AA0', '0EA5E9', '024F78', 'FFFFFF']
   ];
-  (o.areaTable || []).forEach((a, i) => {
-    const bg = i % 2 ? 'FAFAFA' : 'FFFFFF';
-    t2rows.push([cell1(a.area, bg, 'left', true), cell1(fmt2(a.total), bg, 'right', true)].concat(a.sudah.map(v => cell1(fmt2(v), bg, 'right'))).concat(a.belum.map(v => cell1(fmt2(v), bg, 'right'))));
+  const cw = 1.9, cpitch = 1.977, cy = 1.735, ch = 0.725;
+  cards.forEach((c, i) => {
+    const x = LX + i * cpitch;
+    s.addImage({ data: osGradPng(380, 145, c[3], c[4], { r: 8, edge: c[5], edgeH: 6, tilt: 0.3 }), x: x, y: cy, w: cw, h: ch });
+    T(c[0], { x: x, y: cy + 0.07, w: cw, h: 0.14, fontSize: 6.5, bold: true, color: c[6], align: 'center' });
+    T(fD(c[1]), { x: x, y: cy + 0.2, w: cw, h: 0.32, fontSize: 16, bold: true, color: c[6], align: 'center', fit: 'shrink' });
+    T(c[2], { x: x, y: cy + 0.54, w: cw, h: 0.12, fontSize: 5, color: c[6], align: 'center' });
   });
-  if (o.areaGrandTotal) { const g = o.areaGrandTotal; t2rows.push([cell1('GRAND TOTAL', 'FEE2E2', 'left', true), cell1(fmt2(g.total), 'FEE2E2', 'right', true)].concat(g.sudah.map(v => cell1(fmt2(v), 'FEE2E2', 'right'))).concat(g.belum.map(v => cell1(fmt2(v), 'FEE2E2', 'right')))); }
-  const colW2 = [PW * 0.16, PW * 0.1].concat(new Array(8).fill(PW * 0.0925));
-  s.addTable(t2rows, { x: LX, y: t2y + 0.2, w: PW, colW: colW2, border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, rowH: 0.19 });
 
-  // ── teks laporan kanan ──
-  const RX = LX + PW + 0.25, RW = W - RX - 0.35;
-  const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
-  const val = t => ({ text: t, options: { bold: true } });
-  const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u25C6 ', options: { color: RED_LABEL, fontSize: 7 } }); out[out.length - 1].options.breakLine = true; return out; };
+  // header bar Planning Priority
+  const hy = 2.613;
+  s.addImage({ data: osGradPng(1966, 53, 'B83232', '1C1414'), x: LX, y: hy, w: PWD, h: 0.265 });
+  R(LX, hy, 0.05, 0.265, 'FACC15');
+  s.addShape(pres.ShapeType.ellipse, { x: 0.52, y: hy + 0.083, w: 0.1, h: 0.1, fill: { color: 'F59E0B' }, line: { color: 'FDE68A', width: 0.75 } });
+  T('PLANNING PRIORITY (AGING 4-7 & 7 UP)', { x: 0.74, y: hy + 0.05, w: 6, h: 0.17, fontSize: 7.5, bold: true, color: 'FFFFFF' });
+  T('ACTION REQUIRED: SEGERA PLANNING', { x: 6.9, y: hy + 0.075, w: 3.2, h: 0.12, fontSize: 5.5, bold: true, color: 'D1D5DB', align: 'right' });
+
+  // tabel 1 (top 10 total unplanned terbesar)
+  const mg = [0.02, 0.06, 0.02, 0.06];
+  const th = (t, fill, color, align) => ({ text: t, options: { bold: true, fontSize: 6, color: color, fill: { color: fill }, align: align || 'left', valign: 'middle', margin: mg } });
+  const t1rows = [[th('STOREBOOKING', '111111', 'FACC15', 'center'), th('SHIP TO', '111111', 'FACC15'), th('AGING 4-7', '4A1313', 'F87171', 'center'), th('AGING 7 UP', '3A0F0F', 'F87171', 'center'), th('TOTAL\nUNPLANNED', 'B91C1C', 'FFFFFF', 'center')]];
+  const storeList = (o.storeTable || []).slice().sort((a, b) => b.totalUnplanned - a.totalUnplanned).slice(0, 10);
+  const td = (t, fill, color, align, bold) => ({ text: t, options: { fontSize: 6, color: color, fill: { color: fill }, align: align, valign: 'middle', bold: !!bold, margin: mg } });
+  storeList.forEach((r, i) => {
+    const alt = i % 2;
+    t1rows.push([td(String(r.code || ''), '222222', 'D1D5DB', 'center'), td(String(r.name || ''), alt ? '1F1F1F' : '1A1A1A', 'E5E7EB', 'left'),
+      td(fDash(r.aging4to7), alt ? '351313' : '2E1010', 'F87171', 'right'), td(fDash(r.aging7up), alt ? '2B0F0F' : '260D0D', 'F87171', 'right'), td(fDash(r.totalUnplanned), 'A81818', 'FFFFFF', 'right', true)]);
+  });
+  const colW1 = [0.73, 6.98, 0.64, 0.63, 0.83];
+  s.addTable(t1rows, { x: LX, y: 2.882, w: PWD, colW: colW1, border: { type: 'solid', color: '2B2B2B', pt: 0.5 }, autoPage: false, rowH: [0.325].concat(new Array(storeList.length).fill(0.1856)) });
+
+  // ── panel gelap bawah: Order Aging by Area Storing ──
+  const P2Y = 5.288, P2B = 7.19;
+  R(0.376, P2Y, 9.865, P2B - P2Y, '0D0D0D', { shadow: SHADOW });
+  R(LX, 5.317, PWD, 0.265, '1B1B1B');
+  R(LX, 5.317, 0.05, 0.265, 'FACC15');
+  s.addShape(pres.ShapeType.roundRect, { x: 0.52, y: 5.402, w: 0.12, h: 0.095, rectRadius: 0.02, fill: { color: 'FACC15' }, line: { color: 'FACC15', width: 0 } });
+  T('MONITORING ORDER AGING BY AREA STORING', { x: 0.74, y: 5.367, w: 6, h: 0.17, fontSize: 7.5, bold: true, color: 'FACC15' });
+  T('DATA AGGREGATED BY AREA', { x: 6.9, y: 5.392, w: 3.2, h: 0.12, fontSize: 5.5, bold: true, color: 'D1D5DB', align: 'right' });
+
+  const bl = (o.bucketLabel || ['0 hari', '1-3 hari', '4-7 hari', '7 UP']).map(b => String(b).replace(/\s*hari/i, ''));
+  const areas = o.areaTable || [];
+  const sumArr = (arr, k) => arr.reduce((t, a) => t + num(a[k]), 0);
+  const gt = o.areaGrandTotal || { total: areas.reduce((t, a) => t + num(a.total), 0), sudah: [0, 1, 2, 3].map(i => areas.reduce((t, a) => t + num((a.sudah || [])[i]), 0)), belum: [0, 1, 2, 3].map(i => areas.reduce((t, a) => t + num((a.belum || [])[i]), 0)) };
+  const tot4 = arr => (arr || []).slice(0, 4).reduce((t, v) => t + num(v), 0);
+  const sdhGT = tot4(gt.sudah), blmGT = tot4(gt.belum);
+  const pctTxt = (v, base) => (base > 0 ? (num(v) / base * 100).toFixed(1) : '0.0') + '%';
+
+  const BLUE = '2B4764', GREEN = '22A55A';
+  const hc = (t, fill, o2) => ({ text: t, options: Object.assign({ bold: true, fontSize: 6, color: 'FACC15', fill: { color: fill }, align: 'center', valign: 'middle', margin: mg }, o2 || {}) });
+  const pc = (v, base, sub, fill, color) => ({ text: [{ text: pctTxt(v, base), options: { bold: true, fontSize: 6.5, color: color, breakLine: true } }, { text: sub, options: { fontSize: 4.5, color: 'D1D5DB' } }], options: { fill: { color: fill }, align: 'center', valign: 'middle', margin: [0, 0.02, 0, 0.02] } });
+  const pcT = (sub, fill) => ({ text: [{ text: '100%', options: { bold: true, fontSize: 6.5, color: 'FFFFFF', breakLine: true } }, { text: sub, options: { fontSize: 4.5, color: 'FFFFFF' } }], options: { fill: { color: fill }, align: 'center', valign: 'middle', margin: [0, 0.02, 0, 0.02] } });
+  const pCol = i => (i < 2 ? 'FACC15' : 'F87171');
+  const grp = (t, fill) => ({ text: t, options: { bold: true, fontSize: 6, color: 'FFFFFF', fill: { color: fill }, align: 'center', valign: 'middle', colspan: 5, margin: mg } });
+
+  const rowsT2 = [
+    [hc('AREA STORING', '1C1C1C', { rowspan: 2 }), hc('TOTAL', '1C1C1C', { rowspan: 2 }), grp('AGING SUDAH PLAN (CBM)', BLUE), grp('AGING BELUM PLAN (CBM)', GREEN)],
+    [].concat(bl.map((b, i) => pc(gt.sudah[i], sdhGT, b, '141414', pCol(i)))).concat([pcT('TOTAL', BLUE)])
+      .concat(bl.map((b, i) => pc(gt.belum[i], blmGT, b, '141414', pCol(i)))).concat([pcT('TOTAL', GREEN)])
+  ];
+  const sCol = ['141414', '1E7B34', 'B31B1B', 'C42222'], bCol = ['1F6E36', '3E9E4F', 'B31B1B', 'C42222'];
+  const dc = (v, fill, align, bold) => ({ text: (typeof v === 'number' ? fDash(v) : v), options: { fontSize: 6.3, color: (typeof v === 'number' && num(v) === 0 && fill !== BLUE && fill !== '2E9E4F') ? '6B7280' : 'FFFFFF', fill: { color: fill }, align: align || 'right', valign: 'middle', bold: !!bold, margin: mg } });
+  areas.forEach(a => {
+    const sd = (a.sudah || []).slice(0, 4), bk = (a.belum || []).slice(0, 4);
+    const sdT = tot4(sd), bkT = tot4(bk);
+    rowsT2.push([dc(String(a.area || ''), '1C1C1C', 'left', true), dc(num(a.total), '1C1C1C', 'right', true)]
+      .concat(sd.map((v, i) => dc(num(v), num(v) === 0 ? '141414' : sCol[i], 'right'))).concat([dc(sdT, BLUE, 'right', true)])
+      .concat(bk.map((v, i) => dc(num(v), num(v) === 0 ? '141414' : bCol[i], 'right'))).concat([dc(bkT, '2E9E4F', 'right', true)]));
+  });
+  const gb = [{ type: 'solid', pt: 1.5, color: 'C62828' }, { type: 'solid', pt: 0.5, color: '2B2B2B' }, { type: 'solid', pt: 0.5, color: '2B2B2B' }, { type: 'solid', pt: 0.5, color: '2B2B2B' }];
+  const gy = (v, fill) => ({ text: fD(v), options: { fontSize: 6.3, color: 'FACC15', fill: { color: fill }, align: 'right', valign: 'middle', bold: true, margin: mg, border: gb } });
+  rowsT2.push([{ text: 'GRAND TOTAL', options: { fontSize: 6.3, color: 'FACC15', fill: { color: BLUE }, align: 'right', valign: 'middle', bold: true, margin: mg, border: gb } }, gy(gt.total, '3D2F00')]
+    .concat((gt.sudah || []).slice(0, 4).map(v => gy(v, '2B3F55'))).concat([gy(sdhGT, '1B2533')])
+    .concat((gt.belum || []).slice(0, 4).map(v => gy(v, '2B3F55'))).concat([gy(blmGT, '1F7A3A')]));
+  const t2y = 5.6, hdrH = 0.235, pctH = 0.28, gtH = 0.22;
+  const rh = areas.length ? Math.min(0.212, (P2B - 0.04 - (t2y + hdrH + pctH) - gtH) / areas.length) : 0.2;
+  const colW2raw = [1.978, 0.99].concat([0.651, 0.646, 0.651, 0.651, 0.844, 0.651, 0.646, 0.651, 0.651, 0.844]);
+  const k = PWD / colW2raw.reduce((a, b) => a + b, 0);
+  s.addTable(rowsT2, { x: LX, y: t2y, w: PWD, colW: colW2raw.map(v => +(v * k).toFixed(4)), border: { type: 'solid', color: '2B2B2B', pt: 0.5 }, autoPage: false, rowH: [hdrH, pctH].concat(new Array(areas.length).fill(rh)).concat([gtH]) });
+
+  // ── teks laporan kanan (bullet bulat, ukuran & posisi seperti PPT asli) ──
+  const RXT = 10.46, RWT = 2.4;
+  const B = t => ({ text: t, options: { bold: true } });
+  const N = t => ({ text: t });
+  const line = runs => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); out[out.length - 1].options.breakLine = true; return out; };
+  const bul = runs => { const out = line(runs); out[0].options.bullet = { indent: 24, code: '25CF' }; out[0].options.indentLevel = 1; out[0].options.paraSpaceAfter = 1.5; return out; };
+  const gap = () => [{ text: ' ', options: { breakLine: true } }];
   const right = [].concat(
-    para([{ text: 'Laporan Ringkasan Monitoring Outstanding Backlog & Order Aging by Area Storing WMS AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 9, paraSpaceAfter: 5 } }]),
-    para([{ text: 'Ringkasan Outstanding Backlog', options: { bold: true, fontSize: 9, paraSpaceAfter: 3 } }]),
-    para([label('Total Backlog: '), val(fmt2(o.backlogTotal) + ' CBM'), { text: ' (' + o.rowCount + ' baris data)' }], true),
-    para([label('Sudah Plan: '), val(fmt2(o.sudahPlan) + ' CBM')], true),
-    para([label('Belum Plan: '), val(fmt2(o.belumPlan) + ' CBM')], true),
-    para([label('Backlog Aging 7 UP: '), val(fmt2(o.aging7up) + ' CBM')], true),
-    para([label('Allocation Unsuccessful: '), val(fmt2(o.allocUnsuccessful) + ' CBM')], true)
+    line([N('Laporan Ringkasan Monitoring Outstanding Backlog & Order Aging by Area Storing WMS AHI Sidoarjo:')]),
+    gap(),
+    line([B('Ringkasan Outstanding Backlog')]),
+    bul([B('Total Backlog'), N(': '), B(fEn(o.backlogTotal) + ' CBM'), N(' (' + num(o.rowCount).toLocaleString('id-ID') + ' baris data)')]),
+    bul([B('Sudah Plan'), N(': '), B(fEn(o.sudahPlan) + ' CBM')]),
+    bul([B('Belum Plan'), N(': '), B(fEn(o.belumPlan) + ' CBM')]),
+    bul([B('Backlog Aging 7 UP'), N(': '), B(fEn(o.aging7up) + ' CBM')]),
+    bul([B('Allocation Unsuccessful'), N(': '), B(fEn(o.allocUnsuccessful) + ' CBM')])
   );
-  if (o.topStoreBelumPlan) right.push(...para([label('Prioritas Store Belum Plan Terbanyak: '), val(o.topStoreBelumPlan.code + ' (' + o.topStoreBelumPlan.name + ')'), { text: ' sebesar ' + fmt2(o.topStoreBelumPlan.cbm) + ' CBM (' + o.topStoreBelumPlan.pct.toFixed(1) + '% dari total Belum Plan)' }], true));
-  right.push(...para([{ text: 'Ringkasan Order Aging by Area Storing', options: { bold: true, fontSize: 9, paraSpaceAfter: 3 } }]));
-  if (o.topAgingArea) right.push(...para([label('Area Order >7 Hari Terbesar: '), val(o.topAgingArea.area), { text: ' sebesar ' + fmt2(o.topAgingArea.cbm) + ' CBM (' + o.topAgingArea.pctOfArea.toFixed(1) + '% dari volume area ini)' }], true));
-  if (o.topBelumAgingArea) right.push(...para([label('Area Belum Plan >7 Hari Terbesar: '), val(o.topBelumAgingArea.area), { text: ' sebesar ' + fmt2(o.topBelumAgingArea.cbm) + ' CBM' + (o.topBelumAgingArea.isAllUnplanned ? ' (seluruh volume belum diplan)' : '') }], true));
-  T(right, { x: RX, y: cy0, w: RW, h: 6.0, fontSize: 8, color: '111111', paraSpaceAfter: 2.5 });
+  if (o.topStoreBelumPlan) right.push(...bul([B('Prioritas Store Belum Plan Terbanyak'), N(': '), B(o.topStoreBelumPlan.code + ' (' + o.topStoreBelumPlan.name + ')'), N(' sebesar '), B(fEn(o.topStoreBelumPlan.cbm) + ' CBM'), N(' (' + num(o.topStoreBelumPlan.pct).toFixed(1) + '% dari total Belum Plan)')]));
+  right.push(...gap(), ...gap(), ...line([B('Ringkasan Order Aging by Area Storing')]));
+  const cap = w => String(w || '').charAt(0).toUpperCase() + String(w || '').slice(1).toLowerCase();
+  if (o.topAgingArea) right.push(...bul([B('Area Order >7 Hari Terbesar'), N(': '), B(String(o.topAgingArea.area)), N(' sebesar '), B(fEn(o.topAgingArea.cbm) + ' CBM'), N(' (' + num(o.topAgingArea.pctOfArea).toFixed(1) + '% dari total volume area ' + cap(o.topAgingArea.area) + ')')]));
+  if (o.topBelumAgingArea) right.push(...bul([B('Area Belum Plan >7 Hari Terbesar'), N(': '), B(String(o.topBelumAgingArea.area)), N(' sebesar '), B(fEn(o.topBelumAgingArea.cbm) + ' CBM'), N(o.topBelumAgingArea.isAllUnplanned ? ' (seluruh volume belum diplan)' : '')]));
+  T(right, { x: RXT, y: 0.4, w: RWT, h: 6.7, fontSize: 10, color: '000000', lineSpacingMultiple: 1.12 });
 }
 function cell1(text, bg, align, bold) { return { text: text, options: { fontSize: 6.3, color: bold ? '111111' : '374151', fill: { color: bg || 'FFFFFF' }, align: align || 'left', valign: 'middle', bold: !!bold } }; }
 function buildVendorTrendSlide(pres, v) {
@@ -4086,6 +4169,16 @@ function buildInboundPlanningSlide(pres, ib) {
 function toolsCapWord(s) { return s.charAt(0) + s.slice(1).toLowerCase(); }
 
 // ◆ pada teks diberi indent gantung (baris yang membungkus rata di bawah teks, bukan di bawah ◆)
+// pptxgenjs menulis <a:pPr> di SETIAP potongan teks dalam satu paragraf. Untuk paragraf ber-bullet, sisakan pPr pertama
+// saja supaya bullet & indent konsisten (PowerPoint, LibreOffice, Google Slides) dan XML-nya valid.
+function toolsDedupeBulletPPr(xml) {
+  return xml.replace(/<a:p>[\s\S]*?<\/a:p>/g, function (p) {
+    if (p.indexOf('<a:buChar') < 0) return p;
+    let first = true;
+    return p.replace(/<a:pPr\b[^>]*\/>|<a:pPr\b[^>]*>[\s\S]*?<\/a:pPr>/g, function (m) { if (first) { first = false; return m; } return ''; });
+  });
+}
+
 async function toolsPostProcess(arrayBuffer) {
   await toolsLoadScript(TOOLS_JSZIP_CDN);
   const zip = await JSZip.loadAsync(arrayBuffer);
@@ -4100,6 +4193,11 @@ async function toolsPostProcess(arrayBuffer) {
       }
     }
     zip.file('ppt/slides/slide1.xml', parts.join('<a:p>'));
+  }
+  const slideNames = Object.keys(zip.files).filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n));
+  for (const n of slideNames) {
+    const x0 = await zip.file(n).async('string'), x1 = toolsDedupeBulletPPr(x0);
+    if (x1 !== x0) zip.file(n, x1);
   }
   return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
 }
@@ -4135,7 +4233,7 @@ async function toolsGeneratePpt() {
     buildCoverSlide(pres, { tanggal: tanggalLabel });
     toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg());
     buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg());
-    buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData));
+    buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData), toolsGradientBg());
     buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData));
     buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData));
     buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData));
