@@ -3596,7 +3596,7 @@ function toolsMapData(api) {
 
 function toolsMapPlannerMaster(api) {
   const pm = api.plannerMaster || {};
-  const agg = x => x || { cbmPlan: 0, cbmShipped: 0, pct: 0, lc: 0, caseIdPlan: 0, caseIdShipped: 0, caseIdPct: 0, cbmPlanShift1: 0, cbmPlanShift2: 0, batch: { B1: { cbm: 0 }, B2: { cbm: 0 }, B3: { cbm: 0 }, B4: { cbm: 0 } } };
+  const agg = x => x || { cbmPlan: 0, cbmShipped: 0, pct: 0, lc: 0, caseIdPlan: 0, caseIdShipped: 0, caseIdPct: 0, cbmPlanShift1: 0, cbmPlanShift2: 0, batch: { B1: { cbm: 0, caseId: 0 }, B2: { cbm: 0, caseId: 0 }, B3: { cbm: 0, caseId: 0 }, B4: { cbm: 0, caseId: 0 } } };
   return { yesterday: agg(pm.yesterday), today: agg(pm.today) };
 }
 function toolsMapOutstanding(api) { return api.outstanding || {}; }
@@ -3951,17 +3951,21 @@ function buildPlannerSlideV2(pres, planner, master, bgData) {
     para([{ text: 'Laporan Ringkasan Pekerjaan Kemarin:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
     para([label('CBM Plan: '), val(fmt2(master.yesterday.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.yesterday.cbmShipped) + ' CBM'), { text: ' (' + master.yesterday.pct.toFixed(1) + '%)' }], true),
     para([label('Case ID Plan: '), val(fmt2i(master.yesterday.caseIdPlan)), { text: ' | ' }, label('Case ID Shipped: '), val(fmt2i(master.yesterday.caseIdShipped)), { text: ' (' + master.yesterday.caseIdPct.toFixed(1) + '%)' }], true),
-    para([label('Plan per Shift: '), val('Shift 1 ' + fmt2(master.yesterday.cbmPlanShift1) + ' CBM'), { text: ' | ' }, val('Shift 2 ' + fmt2(master.yesterday.cbmPlanShift2) + ' CBM')], true),
+    para([label('Plan Outbound per Shift (CBM): '), val('Shift 1 ' + fmt2(master.yesterday.cbmPlanShift1)), { text: ' | ' }, val('Shift 2 ' + fmt2(master.yesterday.cbmPlanShift2))], true),
+    para([label('Plan Storing per Shift (Case ID): '), val('Shift 1 (B2+B3) ' + fmt2i(planStoring(master.yesterday).s1)), { text: ' | ' }, val('Shift 2 (B4+B1) ' + fmt2i(planStoring(master.yesterday).s2))], true),
     para([label('SLA Planner: '), val('SLA GRW ' + (planner.slaGrw || '-') + ', SLA Customer ' + (planner.slaCust || '-'))], true)
   ), { x: 0.55, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
   T([].concat(
     para([{ text: 'Laporan Ringkasan Plan Loading Today AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
     para([label('CBM Plan: '), val(fmt2(master.today.cbmPlan) + ' CBM'), { text: ' | ' }, label('Case ID Plan: '), val(fmt2i(master.today.caseIdPlan))], true),
-    para([label('Plan per Shift: '), val('Shift 1 ' + fmt2(master.today.cbmPlanShift1) + ' CBM'), { text: ' | ' }, val('Shift 2 ' + fmt2(master.today.cbmPlanShift2) + ' CBM')], true),
-    para([label('Plan per Batch: '), val('B1 ' + fmt2(master.today.batch.B1.cbm) + ' | B2 ' + fmt2(master.today.batch.B2.cbm) + ' | B3 ' + fmt2(master.today.batch.B3.cbm) + ' | B4 ' + fmt2(master.today.batch.B4.cbm) + ' CBM')], true),
+    para([label('Plan Outbound per Shift (CBM): '), val('Shift 1 ' + fmt2(master.today.cbmPlanShift1)), { text: ' | ' }, val('Shift 2 ' + fmt2(master.today.cbmPlanShift2))], true),
+    para([label('Plan Storing per Shift (Case ID): '), val('Shift 1 (B2+B3) ' + fmt2i(planStoring(master.today).s1)), { text: ' | ' }, val('Shift 2 (B4+B1) ' + fmt2i(planStoring(master.today).s2))], true),
+    para([label('Plan Outbound per Batch (CBM): '), val('B1 ' + fmt2(master.today.batch.B1.cbm) + ' | B2 ' + fmt2(master.today.batch.B2.cbm) + ' | B3 ' + fmt2(master.today.batch.B3.cbm) + ' | B4 ' + fmt2(master.today.batch.B4.cbm) + ' CBM')], true),
     para([label('Total LC: '), val(String(master.today.lc || 0) + ' LC')], true)
   ), { x: 6.9, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
 }
+// Storing: B2+B3 = Shift 1, B4+B1 = Shift 2 (dihitung dari Case ID plan per batch, bukan CBM)
+function planStoring(d) { const b = (d && d.batch) || {}; const c = k => (b[k] && b[k].caseId) || 0; return { s1: c('B2') + c('B3'), s2: c('B4') + c('B1') }; }
 function fmt2i(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
 function fmt2(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
