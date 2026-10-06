@@ -3596,7 +3596,7 @@ function toolsMapData(api) {
 
 function toolsMapPlannerMaster(api) {
   const pm = api.plannerMaster || {};
-  const agg = x => x || { cbmPlan: 0, cbmShipped: 0, pct: 0, lc: 0 };
+  const agg = x => x || { cbmPlan: 0, cbmShipped: 0, pct: 0, lc: 0, caseIdPlan: 0, caseIdShipped: 0, caseIdPct: 0, cbmPlanShift1: 0, cbmPlanShift2: 0, batch: { B1: { cbm: 0 }, B2: { cbm: 0 }, B3: { cbm: 0 }, B4: { cbm: 0 } } };
   return { yesterday: agg(pm.yesterday), today: agg(pm.today) };
 }
 function toolsMapOutstanding(api) { return api.outstanding || {}; }
@@ -3615,8 +3615,8 @@ function toolsGradientBg() {
 
 // ── SLOT SCREENSHOT slide 2 (Profil DC & Daily Proses) ─────────────
 // Gambar ditempel/dipilih manual dari panel Profil DC; hanya disimpan di memori halaman ini (tidak dipakai lagi setelah refresh)
-var TOOLS_SHOTS = { a: null, b: null };
-var TOOLS_SHOT_KEYS = ['a', 'b'];
+var TOOLS_SHOTS = { a: null, b: null, c: null, d: null };
+var TOOLS_SHOT_KEYS = ['a', 'b', 'c', 'd']; // a,b = slide 2 (Profil DC); c,d = slide 5 (Trend Daily Vendor)
 var toolsShotSel = null;
 
 function toolsShotsPaneVisible() {
@@ -3624,6 +3624,7 @@ function toolsShotsPaneVisible() {
   return !!(pg && pg.classList.contains('active') && pane && pane.style.display !== 'none');
 }
 function toolsShotsReady() { return (TOOLS_SHOTS.a && TOOLS_SHOTS.b) ? TOOLS_SHOTS : null; }
+function toolsVendorShotsReady() { return (TOOLS_SHOTS.c && TOOLS_SHOTS.d) ? { a: TOOLS_SHOTS.c, b: TOOLS_SHOTS.d } : null; }
 
 function toolsShotRender(note) {
   TOOLS_SHOT_KEYS.forEach(function (k) {
@@ -3636,9 +3637,7 @@ function toolsShotRender(note) {
     if (at) at.textContent = s ? ('Ditempel ' + s.at + ' · ' + s.w + '×' + s.h + ' px') : '';
   });
   const st = toolsEl('tlShotState');
-  if (st) st.textContent = note || (toolsShotsReady()
-    ? '✅ Slide 2 akan dibuat persis seperti PPT asli (memakai kedua gambar ini).'
-    : 'Slide 2 memakai kartu otomatis. Isi kedua gambar supaya tampilannya persis PPT asli.');
+  if (st) st.textContent = note || ('Slide 2: ' + (toolsShotsReady() ? '✅ persis PPT asli' : 'kartu otomatis') + '  ·  Slide 5: ' + (toolsVendorShotsReady() ? '✅ persis PPT asli' : 'tampilan otomatis') + '  (isi kedua gambar tiap slide supaya persis PPT asli)');
 }
 
 // baca file gambar -> kecilkan (maks 1800 px lebar) -> JPEG
@@ -3686,7 +3685,7 @@ function toolsShotLoad(file, key) {
     if (!file) return;
     e.preventDefault();
     const key = toolsShotSel || TOOLS_SHOT_KEYS.filter(function (k) { return !TOOLS_SHOTS[k]; })[0];
-    if (!key) { toolsShotRender('Kedua gambar sudah terisi. Klik kotak yang mau diganti, lalu Ctrl+V lagi.'); return; }
+    if (!key) { toolsShotRender('Semua kotak sudah terisi. Klik kotak yang mau diganti, lalu Ctrl+V lagi.'); return; }
     toolsShotLoad(file, key);
   });
   document.addEventListener('dragover', function (e) { const s = e.target && e.target.closest ? e.target.closest('#tlShots .tl-shot') : null; if (s) { e.preventDefault(); s.classList.add('drag'); } });
@@ -3952,12 +3951,15 @@ function buildPlannerSlideV2(pres, planner, master, bgData) {
     para([{ text: 'Laporan Ringkasan Pekerjaan Kemarin:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
     para([label('CBM Plan: '), val(fmt2(master.yesterday.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.yesterday.cbmShipped) + ' CBM'), { text: ' (' + master.yesterday.pct.toFixed(1) + '%)' }], true),
     para([label('Case ID Plan: '), val(fmt2i(master.yesterday.caseIdPlan)), { text: ' | ' }, label('Case ID Shipped: '), val(fmt2i(master.yesterday.caseIdShipped)), { text: ' (' + master.yesterday.caseIdPct.toFixed(1) + '%)' }], true),
+    para([label('Plan per Shift: '), val('Shift 1 ' + fmt2(master.yesterday.cbmPlanShift1) + ' CBM'), { text: ' | ' }, val('Shift 2 ' + fmt2(master.yesterday.cbmPlanShift2) + ' CBM')], true),
     para([label('SLA Planner: '), val('SLA GRW ' + (planner.slaGrw || '-') + ', SLA Customer ' + (planner.slaCust || '-'))], true)
   ), { x: 0.55, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
   T([].concat(
     para([{ text: 'Laporan Ringkasan Plan Loading Today AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
-    para([label('CBM Plan: '), val(fmt2(master.today.cbmPlan) + ' CBM'), { text: ' | ' }, label('CBM Shipped: '), val(fmt2(master.today.cbmShipped) + ' CBM')], true),
-    para([label('Progres Loading: '), val(master.today.pct.toFixed(1) + '%'), { text: ' dari ' + master.today.lc + ' LC' }], true)
+    para([label('CBM Plan: '), val(fmt2(master.today.cbmPlan) + ' CBM'), { text: ' | ' }, label('Case ID Plan: '), val(fmt2i(master.today.caseIdPlan))], true),
+    para([label('Plan per Shift: '), val('Shift 1 ' + fmt2(master.today.cbmPlanShift1) + ' CBM'), { text: ' | ' }, val('Shift 2 ' + fmt2(master.today.cbmPlanShift2) + ' CBM')], true),
+    para([label('Plan per Batch: '), val('B1 ' + fmt2(master.today.batch.B1.cbm) + ' | B2 ' + fmt2(master.today.batch.B2.cbm) + ' | B3 ' + fmt2(master.today.batch.B3.cbm) + ' | B4 ' + fmt2(master.today.batch.B4.cbm) + ' CBM')], true),
+    para([label('Total LC: '), val(String(master.today.lc || 0) + ' LC')], true)
   ), { x: 6.9, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
 }
 function fmt2i(n) { return Math.round(n || 0).toLocaleString('id-ID'); }
@@ -4116,7 +4118,78 @@ function buildOutstandingSlideV3(pres, o, bgData) {
   T(right, { x: RXT, y: 0.4, w: RWT, h: 6.7, fontSize: 10, color: '000000', lineSpacingMultiple: 1.12 });
 }
 function cell1(text, bg, align, bold) { return { text: text, options: { fontSize: 6.3, color: bold ? '111111' : '374151', fill: { color: bg || 'FFFFFF' }, align: align || 'left', valign: 'middle', bold: !!bold } }; }
-function buildVendorTrendSlide(pres, v) {
+// ── SLIDE 5 versi gambar: Trend Daily Vendor Performance persis PPT asli (dashboard + breakdown hasil screenshot) ──
+function toolsBuildVendorShotsSlide(pres, v, bgData, shots) {
+  const FONT = 'Arial', LS = 10.1;
+  const s = pres.addSlide();
+  s.background = { data: bgData };
+  s.addShape(pres.ShapeType.rect, { x: 0.29, y: 0.32, w: 12.81, h: 7.01, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  const T = (text, o) => s.addText(text, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, o));
+  T('TREND DAILY VENDOR PERFORMANCE', { x: 0.485, y: 0.35, w: 10, h: 0.5, fontSize: 25.2, bold: true, color: '000000' });
+  T('Monitoring Vendor Performance & Achievement Trend', { x: 0.485, y: 0.77, w: 10, h: 0.35, fontSize: 17.5, italic: true, color: '1A1A1A' });
+
+  const SHADOW = { type: 'outer', color: '000000', opacity: 0.4, blur: 5, offset: 2, angle: 90 };
+  const place = (shot, bx, by, bw, bh) => {
+    s.addShape(pres.ShapeType.rect, { x: bx, y: by, w: bw, h: bh, fill: { color: '0D0D0D' }, line: { color: '0D0D0D', width: 0 }, shadow: SHADOW });
+    const k = Math.min(bw / shot.w, bh / shot.h), w = shot.w * k, h = shot.h * k;
+    s.addImage({ data: shot.data, x: bx + (bw - w) / 2, y: by + (bh - h) / 2, w: w, h: h });
+  };
+  place(shots.a, 0.349, 1.105, 12.66, 4.157);
+  place(shots.b, 0.359, 5.349, 4.467, 1.87);
+
+  const B = t => ({ text: t, options: { bold: true } });
+  const N = t => ({ text: t });
+  const fin = (runs, extra) => runs.map((r, i) => {
+    const o = Object.assign({ lineSpacing: LS }, r.options || {});
+    if (i === runs.length - 1) o.breakLine = true;
+    if (extra && i === 0) Object.assign(o, extra);
+    return { text: r.text, options: o };
+  });
+  const bul = (runs, after) => fin(runs, Object.assign({ bullet: { indent: 24, code: '2022' }, indentLevel: 1 }, after ? { paraSpaceAfter: after } : {}));
+  const head = (t, after) => fin([{ text: t, options: { bold: true, fontSize: 7.4, paraSpaceAfter: after } }]);
+  const num = x => (typeof x === 'number' && !isNaN(x) ? x : parseFloat(x) || 0);
+
+  const dl = v.days[v.days.length - 1];
+  const left = [].concat(
+    head('Ringkasan Trend Daily Vendor Performance (1–' + (dl ? dl.tanggal.slice(8) : '') + ' ' + monthName(v.monthKey) + ')', 9.8),
+    bul([N('Total Pengiriman: '), B(v.total.total + ' LC'), N(' ('), B(String(v.total.onTime)), N(' On Time, '), B(String(v.total.terlambat)), N(' Terlambat, '), B(String(v.total.belumSupport)), N(' Belum Support)')]),
+    bul([N('Achievement Periode: '), B(num(v.achievementPeriode).toFixed(1) + '%')]),
+    bul([N('Performa Terbaik: '), B(fmtTgl(v.bestDay.tanggal)), N(' ('), B(num(v.bestDay.ach).toFixed(1) + '%'), N(' dari '), B(v.bestDay.total + ' LC'), N(')')]),
+    bul([N('Performa Terburuk: '), B(fmtTgl(v.worstDay.tanggal)), N(' ('), B(num(v.worstDay.ach).toFixed(1) + '%'), N(' dari '), B(v.worstDay.total + ' LC'), N(')')], v.trendDelta ? 0 : 9.8)
+  );
+  if (v.trendDelta) {
+    const d = v.trendDelta.now - v.trendDelta.before;
+    left.push(...bul([N('Arah Tren: ' + (d >= 0 ? 'Membaik / Naik ' : 'Menurun ')), B((d >= 0 ? '+' : '-') + Math.abs(d).toFixed(1) + ' poin'), N(' (7 hari terakhir '), B(v.trendDelta.now.toFixed(1) + '%'), N(' vs 7 hari sebelumnya '), B(v.trendDelta.before.toFixed(1) + '%'), N(')')], 9.8));
+  }
+  left.push(...head('Vendor Terbaik dan Terjelek', 9.8));
+  if (v.vendorBest) left.push(...bul([N('Vendor Terbaik (Volume Besar): '), B(v.vendorBest.carrier), N(' dengan achievement '), B(num(v.vendorBest.ach).toFixed(1) + '%'), N(' dari '), B(v.vendorBest.total + ' LC')]));
+  if (v.vendorWorst) left.push(...bul([N('Vendor Terjelek (Volume Besar): '), B(v.vendorWorst.carrier), N(' dengan achievement '), B(num(v.vendorWorst.ach).toFixed(1) + '%'), N(' dari '), B(v.vendorWorst.total + ' LC'), N(' (terdapat '), B(v.vendorWorst.terlambat + ' LC'), N(' terlambat)')]));
+  if (v.vendorLowestOverall) left.push(...bul([N('Performa Terendah Keseluruhan (Min. 3 LC): '), B(v.vendorLowestOverall.carrier), N(' dengan achievement '), B(num(v.vendorLowestOverall.ach).toFixed(1) + '%'), N(' dari '), B(v.vendorLowestOverall.total + ' LC')]));
+  T(left, { x: 4.92, y: 5.28, w: 5.2, h: 1.95, fontSize: 7.4, color: '000000' });
+
+  const y = v.yesterday || { detail: [], ach: null };
+  const right = [].concat(head('Detail Miss Pengiriman Kemarin (' + fmtTgl(y.tanggal) + ')', 12.6));
+  if (y.ach !== null && y.ach !== undefined) right.push(...bul([N('Total Miss: '), B(y.miss + ' LC'), N(' dari total '), B(y.total + ' LC'), N(' (Achievement harian '), B(num(y.ach).toFixed(1) + '%'), N(')')]));
+  if (y.detail && y.detail.length) {
+    right.push(...bul([N('Rincian Vendor & LC Miss:')]));
+    const byV = {};
+    y.detail.forEach(m => { (byV[m.carrier] = byV[m.carrier] || []).push(m); });
+    Object.keys(byV).forEach(carrier => {
+      const items = byV[carrier];
+      const parts = items.map(m => 'LC ' + m.lc + ' ke ' + (m.kota || '-') + ' (' + (m.status === 'terlambat' ? 'Terlambat ' + m.delayJam + ' jam ' + m.delayMenit + ' menit' : 'Belum Support') + ')');
+      right.push(...bul([B(carrier + ' (' + items.length + ' LC):'), N(' ' + parts.join(' dan '))]));
+    });
+  } else if (y.ach !== null && y.ach !== undefined) {
+    right.push(...bul([N('Tidak ada MISS. Semua LC On Time.')]));
+  } else {
+    right.push(...bul([N('(Tidak ada data LC pada tanggal ini.)')]));
+  }
+  T(right, { x: 9.88, y: 5.28, w: 3.05, h: 1.95, fontSize: 7.4, color: '000000' });
+  s.addNotes('Dibuat otomatis dari data dashboard WMS AHI Sidoarjo. Gambar dashboard dan Percentage Breakdown berasal dari screenshot.');
+}
+
+function buildVendorTrendSlide(pres, v, bgData, shots) {
+  if (bgData && shots && shots.a && shots.b) return toolsBuildVendorShotsSlide(pres, v, bgData, shots);
   const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF';
   const s = pres.addSlide();
   s.background = { color: 'FFFFFF' };
@@ -4334,9 +4407,15 @@ function toolsDedupeBulletPPr(xml) {
 // bullet ❖ (slide 2): hitam, sedikit lebih besar, posisi bullet & teks seperti PPT asli
 function toolsFixDiamondBullets(xml) {
   return xml.replace(/<a:p>[\s\S]*?<\/a:p>/g, function (p) {
-    if (p.indexOf('<a:buChar char="&#x2756;"/>') < 0) return p;
-    return p.replace(/marL="\d+" indent="-?\d+"/, 'marL="609905" indent="-399593"')
-      .replace('<a:buSzPct val="100000"/>', '<a:buClr><a:srgbClr val="000000"/></a:buClr><a:buSzPct val="125000"/>');
+    if (p.indexOf('<a:buChar char="&#x2756;"/>') >= 0) {
+      return p.replace(/marL="\d+" indent="-?\d+"/, 'marL="609905" indent="-399593"')
+        .replace('<a:buSzPct val="100000"/>', '<a:buClr><a:srgbClr val="000000"/></a:buClr><a:buSzPct val="125000"/>');
+    }
+    if (p.indexOf('<a:buChar char="&#x2022;"/>') >= 0) { // bullet bulat slide Trend Daily Vendor
+      return p.replace(/marL="\d+" indent="-?\d+"/, 'marL="609600" indent="-334772"')
+        .replace('<a:buSzPct val="100000"/>', '<a:buClr><a:srgbClr val="000000"/></a:buClr><a:buSzPct val="150000"/>');
+    }
+    return p;
   });
 }
 
@@ -4395,7 +4474,7 @@ async function toolsGeneratePpt() {
     toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg(), toolsShotsReady());
     buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg());
     buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData), toolsGradientBg());
-    buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData));
+    buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData), toolsGradientBg(), toolsVendorShotsReady());
     buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData));
     buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData));
     buildThankYouSlide(pres);
