@@ -3344,6 +3344,8 @@ function initToolsPage() {
   if (el) el.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   if (!toolsData) toolsRefreshData();
   toolsLoadHistory();
+  // mulai ambil gambar Profil DC di belakang layar biar generate nanti cepat
+  setTimeout(function () { try { toolsPrewarmCapture(); } catch (e) { } }, 1500);
 }
 
 function toolsAllOk(api) {
@@ -3616,6 +3618,7 @@ function toolsGradientBg() {
 // ── SLOT SCREENSHOT slide 2 (Profil DC & Daily Proses) ─────────────
 // Gambar ditempel/dipilih manual dari panel Profil DC; hanya disimpan di memori halaman ini (tidak dipakai lagi setelah refresh)
 var TOOLS_SHOTS = { a: null, b: null, c: null, d: null };
+var toolsCapPromise = null, toolsCapAt = 0;
 var TOOLS_SHOT_KEYS = ['a', 'b', 'c', 'd']; // a,b = slide 2 (Profil DC); c,d = slide 5 (Trend Daily Vendor)
 var toolsShotSel = null;
 
@@ -3874,6 +3877,183 @@ function toolsBuildProfilDailySlide(pres, D, bgData, shots) {
 
 
 // ── slide builders (di-generate & diuji terpisah sebelum dipasang) ──
+// ══════════ SLIDE BARU (versi Morning Report): kerangka + OD Gantung, ATK, Skema Reduce ══════════
+function toolsFrameSlide(pres, bgData, title, subtitle) {
+  const s = pres.addSlide();
+  s.background = { data: bgData };
+  s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  s.addText(title, { x: 0.5, y: 0.27, w: 11, h: 0.55, fontFace: 'Arial', margin: 0, isTextBox: true, valign: 'top', fontSize: 26.5, bold: true, color: '000000' });
+  s.addText(subtitle, { x: 0.5, y: 0.70, w: 11, h: 0.4, fontFace: 'Arial', margin: 0, isTextBox: true, valign: 'top', fontSize: 17.3, italic: true, color: '1A1A1A' });
+  return s;
+}
+function toolsNf(n) { return Number(n || 0).toLocaleString('id-ID'); }
+
+function buildOdGantungSlide(pres, od, bgData) {
+  const s = toolsFrameSlide(pres, bgData, 'OD Gantung In Receive AHI', 'Monitoring Outstanding OD & Receiving Progress');
+  const T = (t, o) => s.addText(t, Object.assign({ fontFace: 'Arial', margin: 0, isTextBox: true, valign: 'top' }, o));
+  const box = (x, y, w, h, line) => s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.06, fill: { color: 'FFFFFF' }, line: { color: line || 'E5E7EB', width: 0.75 }, shadow: { type: 'outer', color: '000000', opacity: 0.12, blur: 4, offset: 1, angle: 90 } });
+  const cards = [['TOTAL OD GANTUNG', toolsNf(od.uniqueOd), 'Unik Order'], ['TOTAL BARIS / ARTIKEL', toolsNf(od.rows), 'Item Tertahan'], ['OD MEMILIKI LPPB DO', toolsNf(od.odLppbDo), 'Dilaporkan – kolom AP'], ['STATUS PELAPORAN LPPB', od.lppbPct + '%', 'LPPB DO dari OD']];
+  const cw = 2.1, gap = 0.133;
+  cards.forEach((c, i) => {
+    const x = 0.5 + i * (cw + gap);
+    box(x, 1.2, cw, 1.0);
+    T(c[0], { x: x + 0.14, y: 1.3, w: cw - 0.28, h: 0.2, fontSize: 7, bold: true, color: '6B7280' });
+    T(c[1], { x: x + 0.14, y: 1.55, w: cw - 0.28, h: 0.4, fontSize: 22, bold: true, color: '111111' });
+    T(c[2], { x: x + 0.14, y: 1.95, w: cw - 0.28, h: 0.18, fontSize: 6.5, color: '9CA3AF' });
+  });
+  // Summary Bongkar
+  box(0.5, 2.35, 8.8, 1.85);
+  T('Summary Bongkar – Datang / Belum', { x: 0.7, y: 2.45, w: 6, h: 0.3, fontSize: 12, bold: true, color: '111111' });
+  T('OD Sudah Bongkar: ' + toolsNf(od.sudahBongkarOd), { x: 6.5, y: 2.47, w: 2.6, h: 0.25, fontSize: 8, bold: true, color: '6B7280', align: 'right' });
+  const lppbTop = Object.keys(od.lppb || {}).sort((a, b) => od.lppb[b] - od.lppb[a]).slice(0, 3).map(k => k + ' ' + toolsNf(od.lppb[k])).join(' | ');
+  const mini = [['SUDAH BONGKAR (OD)', toolsNf(od.sudahBongkarOd), '10B981'], ['BELUM BONGKAR (OD)', toolsNf(od.belumBongkarOd), 'F59E0B'], ['OD ADA SELISIH QTY', toolsNf(od.odSelisih), 'EF4444'], ['STATUS LPPB', lppbTop || '-', '3B82F6']];
+  mini.forEach((m, i) => {
+    const x = 0.7 + i * 2.1;
+    s.addShape(pres.ShapeType.roundRect, { x, y: 2.85, w: 1.95, h: 1.15, rectRadius: 0.05, fill: { color: 'F9FAFB' }, line: { color: 'E5E7EB', width: 0.5 } });
+    T(m[0], { x: x + 0.1, y: 2.93, w: 1.75, h: 0.2, fontSize: 6.5, bold: true, color: '6B7280' });
+    T(m[1], { x: x + 0.1, y: 3.2, w: 1.75, h: 0.7, fontSize: i === 3 ? 8.5 : 20, bold: true, color: m[2], fit: 'shrink' });
+  });
+  // Aging
+  box(0.5, 4.35, 8.8, 2.65);
+  T('Summary Aging Outstanding DO', { x: 0.7, y: 4.45, w: 6, h: 0.3, fontSize: 12, bold: true, color: '111111' });
+  const colors = ['F59E0B', '10B981', '3B82F6', '8B5CF6', 'EC4899', 'EF4444'];
+  const total = (od.buckets || []).reduce((a, b) => a + b.od, 0) || 1;
+  let bx = 0.7; const bw = 8.4;
+  (od.buckets || []).forEach((b, i) => {
+    const w = Math.max(0.02, bw * b.od / total);
+    if (b.od > 0) { s.addShape(pres.ShapeType.rect, { x: bx, y: 4.95, w, h: 0.16, fill: { color: colors[i] }, line: { width: 0 } }); bx += w; }
+  });
+  const cw2 = (bw - 0.1 * 5) / 6;
+  (od.buckets || []).forEach((b, i) => {
+    const x = 0.7 + i * (cw2 + 0.1);
+    s.addShape(pres.ShapeType.roundRect, { x, y: 5.3, w: cw2, h: 1.5, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: 'E5E7EB', width: 0.75 } });
+    s.addShape(pres.ShapeType.ellipse, { x: x + 0.12, y: 5.43, w: 0.1, h: 0.1, fill: { color: colors[i] }, line: { width: 0 } });
+    T(b.label, { x: x + 0.28, y: 5.39, w: cw2 - 0.35, h: 0.2, fontSize: 8, bold: true, color: '111111' });
+    T(toolsNf(b.od), { x: x + 0.12, y: 5.85, w: cw2 - 0.2, h: 0.4, fontSize: 18, bold: true, color: '111111' });
+    T('OD  ·  ' + Math.round(b.od / total * 100) + '%', { x: x + 0.12, y: 6.3, w: cw2 - 0.2, h: 0.2, fontSize: 7, color: '6B7280' });
+  });
+  // teks kanan
+  const L = t => ({ text: t, options: { bold: true, italic: true, color: 'B4121F' } });
+  const lppbTxt = Object.keys(od.lppb || {}).sort((a, b) => od.lppb[b] - od.lppb[a]).map(k => k + ' ' + toolsNf(od.lppb[k])).join(' | ');
+  const b0 = od.buckets || [];
+  const runs = [
+    { text: 'Laporan OD Gantung In Receive AHI (' + od.tanggal + ')', options: { bold: true, italic: true, breakLine: true } },
+    { text: '• ', options: {} }, L('Total OD Gantung: '), { text: toolsNf(od.uniqueOd) + ' OD (' + toolsNf(od.rows) + ' baris item)', options: { breakLine: true } },
+    { text: '• ', options: {} }, L('Receiving Progress: '), { text: 'Sudah Bongkar ' + toolsNf(od.sudahBongkarOd) + ' | Belum Bongkar ' + toolsNf(od.belumBongkarOd), options: { breakLine: true } },
+    { text: '• ', options: {} }, L('Status LPPB: '), { text: lppbTxt, options: { breakLine: true } },
+    { text: '• ', options: {} }, L('OD ada selisih qty (discrepancy): '), { text: toolsNf(od.odSelisih) + ' OD', options: { breakLine: true } },
+    { text: '• ', options: {} }, L('Aging OD: '), { text: b0.map(b => b.label + ' ' + toolsNf(b.od)).join(' | '), options: { breakLine: true } },
+    { text: '• ', options: {} }, L('5 OD aging tertinggi:'), { text: '', options: { breakLine: true } }
+  ];
+  (od.top || []).forEach((t, i) => { runs.push({ text: (i + 1) + '. ' + t.od + ' — ' + t.toko + ' — ' + t.aging + ' hari (' + t.bongkar + ')', options: { breakLine: i < od.top.length - 1 } }); });
+  T(runs, { x: 9.55, y: 1.2, w: 3.4, h: 5.8, fontSize: 8.5, color: '111111', paraSpaceAfter: 3 });
+  return s;
+}
+
+function buildAtkSlide(pres, a, bgData) {
+  const s = toolsFrameSlide(pres, bgData, 'General Affairs - Request ATK per Day', 'Monitoring Daily ATK Requests & Fulfillment');
+  const T = (t, o) => s.addText(t, Object.assign({ fontFace: 'Arial', margin: 0, isTextBox: true, valign: 'top' }, o));
+  const box = (x, y, w, h, line) => s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: line || 'E5E7EB', width: 0.75 }, shadow: { type: 'outer', color: '000000', opacity: 0.12, blur: 4, offset: 1, angle: 90 } });
+  const cards = [['REQUEST WEEKLY', toolsNf(a.week), 'F59E0B', '7 hari terakhir'], ['TOTAL REQUEST', toolsNf(a.dayFul), '10B981', 'Qty fulfillment ' + a.tanggal], ['HUTANG HCI', toolsNf(a.hci), 'EF4444', 'Kode stock X']];
+  const cw = 2.85;
+  cards.forEach((c, i) => {
+    const x = 0.5 + i * (cw + 0.125);
+    box(x, 1.2, cw, 0.95);
+    s.addShape(pres.ShapeType.rect, { x: x + 0.02, y: 2.11, w: cw - 0.04, h: 0.04, fill: { color: c[2] }, line: { width: 0 } });
+    T(c[0], { x: x + 0.14, y: 1.28, w: cw - 0.28, h: 0.2, fontSize: 7, bold: true, color: '6B7280' });
+    T(c[1], { x: x + 0.14, y: 1.5, w: cw - 0.28, h: 0.4, fontSize: 22, bold: true, color: c[2] });
+    T(c[3], { x: x + 0.14, y: 1.9, w: cw - 0.28, h: 0.18, fontSize: 6.5, color: '9CA3AF' });
+  });
+  // donut per departemen
+  box(0.5, 2.3, 4.3, 2.15);
+  T('Request by Departemen (bulan ini)', { x: 0.65, y: 2.36, w: 4, h: 0.22, fontSize: 8.5, bold: true, color: '111111' });
+  const dept = (a.dept || []).slice(0, 6);
+  if (dept.length) {
+    s.addChart(pres.charts.DOUGHNUT, [{ name: 'Dept', labels: dept.map(d => d.label), values: dept.map(d => d.value) }], { x: 0.55, y: 2.6, w: 4.2, h: 1.8, holeSize: 55, showLegend: true, legendPos: 'r', legendFontSize: 7, legendFontFace: 'Arial', showPercent: false, showValue: false, showLabel: false, chartColors: ['EF4444', 'F59E0B', '3B82F6', '10B981', '8B5CF6', '64748B'], dataBorder: { pt: 1, color: 'FFFFFF' } });
+  }
+  // trend harian
+  box(4.95, 2.3, 4.35, 2.15);
+  T('Trend Request Harian', { x: 5.1, y: 2.36, w: 4, h: 0.22, fontSize: 8.5, bold: true, color: '111111' });
+  if ((a.trend || []).length) {
+    s.addChart(pres.charts.BAR, [{ name: 'Qty', labels: a.trend.map(t => t.label), values: a.trend.map(t => t.value) }], { x: 5.0, y: 2.6, w: 4.25, h: 1.8, barDir: 'col', chartColors: ['EF4444'], catAxisLabelFontSize: 6, valAxisLabelFontSize: 6, catAxisLabelFontFace: 'Arial', valAxisLabelFontFace: 'Arial', showLegend: false, valGridLine: { color: 'E5E7EB', size: 0.5 }, catGridLine: { style: 'none' }, showValue: false });
+  }
+  // tabel per shift
+  const tbl = (x, title, color, total, rows) => {
+    s.addShape(pres.ShapeType.rect, { x, y: 4.6, w: 4.3, h: 0.28, fill: { color }, line: { width: 0 } });
+    T('' + title, { x: x + 0.1, y: 4.64, w: 2, h: 0.2, fontSize: 8, bold: true, color: 'FFFFFF' });
+    T(String(toolsNf(total)), { x: x + 3.2, y: 4.62, w: 1.0, h: 0.22, fontSize: 10, bold: true, color: 'FFFFFF', align: 'right' });
+    const body = [[{ text: 'STOCK CODE', options: { bold: true } }, { text: 'DESKRIPSI', options: { bold: true } }, { text: 'QTY', options: { bold: true } }, { text: 'REMARK', options: { bold: true } }]];
+    (rows || []).slice(0, 8).forEach(r => body.push([r.code, r.desc, String(r.qty), r.remark || '']));
+    if (!(rows || []).length) body.push([{ text: 'Tidak ada data', options: { italic: true, colspan: 4, align: 'center', color: '9CA3AF' } }]);
+    s.addTable(body.map((r, i) => r.map(c => typeof c === 'string' ? { text: c, options: { fontSize: 6, color: '111111' } } : { text: c.text, options: Object.assign({ fontSize: 6, color: i === 0 ? '6B7280' : '111111' }, c.options) })), { x, y: 4.9, w: 4.3, colW: [0.7, 1.9, 0.4, 1.3], rowH: 0.2, border: { type: 'solid', color: 'E5E7EB', pt: 0.5 }, autoPage: false, margin: [0, 0.04, 0, 0.04] });
+  };
+  tbl(0.5, 'SHIFT 1', '1E3A5F', a.shift1, a.shift1Rows);
+  tbl(5.0, 'SHIFT 2', 'DC2626', a.shift2, a.shift2Rows);
+  // teks kanan
+  const deptTxt = (a.dayDept || []).slice(0, 6).map(d => d.label + ' ' + toolsNf(d.value)).join(' | ') || '-';
+  const items = (a.topItems || []).map(t => t.label + ' (' + toolsNf(t.value) + ')').join('; ') || '-';
+  const L = t => ({ text: t, options: { bold: true, italic: true, color: '1D3FBF' } });
+  const runs = [
+    { text: 'Laporan General Affairs — Request ATK per Day AHI Sidoarjo (' + a.tanggal + ')', options: { bold: true, italic: true, breakLine: true } },
+    { text: '• ', options: {} }, L('Total Request: '), { text: toolsNf(a.dayItems) + ' item | Fulfillment (qty): ' + toolsNf(a.dayFul), options: { breakLine: true } },
+    { text: '• Qty Request: ' + toolsNf(a.dayReq), options: { breakLine: true } },
+    { text: '• Per Shift (qty): Shift 1 ' + toolsNf(a.shift1) + ' | Shift 2 ' + toolsNf(a.shift2), options: { breakLine: true } },
+    { text: '• Per Departemen (qty): ' + deptTxt, options: { breakLine: true } },
+    { text: '• Item terbanyak: ' + items, options: { breakLine: true } },
+    { text: '• Hutang HCI (kode X): ' + toolsNf(a.hci), options: { breakLine: true } },
+    { text: '• 7 hari terakhir: ' + toolsNf(a.week) + ' | Bulan ini (MTD): ' + toolsNf(a.month), options: {} }
+  ];
+  T(runs, { x: 9.55, y: 1.2, w: 3.4, h: 5.8, fontSize: 8.5, color: '111111', paraSpaceAfter: 3 });
+  return s;
+}
+
+function buildReduceSlide(pres, r, bgData) {
+  const s = toolsFrameSlide(pres, bgData, 'General Affairs - SKEMA REDUCE 40%', 'Overview of 40% Reduction Plan & Progress');
+  const T = (t, o) => s.addText(t, Object.assign({ fontFace: 'Arial', margin: 0, isTextBox: true, valign: 'top' }, o));
+  s.addShape(pres.ShapeType.rect, { x: 0.5, y: 1.2, w: 12.3, h: 0.5, fill: { color: '065F46' }, line: { width: 0 } });
+  T('40%', { x: 0.62, y: 1.3, w: 0.5, h: 0.3, fontSize: 10, bold: true, color: 'FFFFFF' });
+  T('SKEMA REDUCE 40%', { x: 1.2, y: 1.24, w: 6, h: 0.25, fontSize: 11, bold: true, color: 'FFFFFF' });
+  T('Target Pengurangan Pemakaian ATK — AHI Sidoarjo', { x: 1.2, y: 1.48, w: 6, h: 0.2, fontSize: 7, color: 'D1FAE5' });
+  T('BULAN: ' + (r.bulan || ''), { x: 9.8, y: 1.34, w: 2.9, h: 0.25, fontSize: 9, bold: true, color: 'FFFFFF', align: 'right' });
+  const green = '059669', red = 'DC2626', amber = 'F59E0B';
+  const big = (x, name, g) => {
+    s.addShape(pres.ShapeType.roundRect, { x, y: 1.85, w: 6.05, h: 2.0, rectRadius: 0.06, fill: { color: 'ECFDF5' }, line: { color: 'D1FAE5', width: 0.75 } });
+    T(name.toUpperCase(), { x: x + 0.2, y: 1.97, w: 4, h: 0.22, fontSize: 8, bold: true, color: '6B7280' });
+    T(g.pct + '%', { x: x + 0.2, y: 2.2, w: 3, h: 0.7, fontSize: 40, bold: true, color: g.pct > 100 ? red : green });
+    T('MTD Pemakaian dari Target Bulan', { x: x + 0.2, y: 2.9, w: 4, h: 0.2, fontSize: 7, color: '6B7280' });
+    s.addShape(pres.ShapeType.roundRect, { x: x + 0.2, y: 3.15, w: 5.65, h: 0.1, rectRadius: 0.05, fill: { color: 'E5E7EB' }, line: { width: 0 } });
+    s.addShape(pres.ShapeType.roundRect, { x: x + 0.2, y: 3.15, w: Math.max(0.1, 5.65 * Math.min(g.pct, 100) / 100), h: 0.1, rectRadius: 0.05, fill: { color: g.pct > 100 ? red : amber }, line: { width: 0 } });
+    [['TOTAL AKTUAL', g.aktual], ['TARGET BULAN', g.target]].forEach((b, i) => {
+      const bx = x + 0.2 + i * 2.85;
+      s.addShape(pres.ShapeType.roundRect, { x: bx, y: 3.35, w: 2.8, h: 0.4, rectRadius: 0.04, fill: { color: 'FFFFFF' }, line: { color: 'E5E7EB', width: 0.5 } });
+      T(b[0], { x: bx + 0.1, y: 3.4, w: 1.4, h: 0.3, fontSize: 6.5, bold: true, color: '6B7280', valign: 'middle' });
+      T(toolsNf(b[1]), { x: bx + 1.4, y: 3.4, w: 1.3, h: 0.3, fontSize: 14, bold: true, color: '111111', align: 'right', valign: 'middle' });
+    });
+  };
+  big(0.5, r.lakban.name, r.lakban);
+  big(6.75, r.plastic.name, r.plastic);
+  T('DETAIL PER DEPARTEMEN', { x: 0.5, y: 3.98, w: 4, h: 0.2, fontSize: 7, bold: true, color: '6B7280' });
+  const small = [];
+  r.lakban.dept.forEach(d => small.push({ g: r.lakban.name, d }));
+  r.plastic.dept.forEach(d => small.push({ g: r.plastic.name, d }));
+  small.forEach((it, i) => {
+    const col = i % 3, row = Math.floor(i / 3);
+    const x = 0.5 + col * 4.15, y = 4.25 + row * 1.4, w = 4.0, h = 1.3;
+    const over = it.d.pct > 100, c = over ? red : green;
+    s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: over ? 'FCA5A5' : 'D1D5DB', width: 0.75 } });
+    T(it.g.toUpperCase(), { x: x + 0.15, y: y + 0.08, w: 3, h: 0.16, fontSize: 6, bold: true, color: '9CA3AF' });
+    T(it.d.dept.toUpperCase(), { x: x + 0.15, y: y + 0.26, w: 1.2, h: 0.18, fontSize: 6.5, bold: true, color: '6D28D9' });
+    s.addChart(pres.charts.DOUGHNUT, [{ name: 'p', labels: ['Aktual', 'Sisa'], values: [Math.max(0.001, Math.min(it.d.aktual, it.d.target || it.d.aktual)), Math.max(0.001, (it.d.target || 0) - it.d.aktual)] }], { x: x + 0.1, y: y + 0.42, w: 0.85, h: 0.85, holeSize: 68, showLegend: false, showPercent: false, showValue: false, showLabel: false, chartColors: [c, 'E5E7EB'], dataBorder: { pt: 0, color: 'FFFFFF' } });
+    T(it.d.pct + '%', { x: x + 0.1, y: y + 0.68, w: 0.85, h: 0.3, fontSize: 9, bold: true, color: c, align: 'center' });
+    T('Aktual / Target', { x: x + 1.1, y: y + 0.45, w: 2.5, h: 0.16, fontSize: 6.5, color: '6B7280' });
+    T(toolsNf(it.d.aktual) + ' / ' + toolsNf(it.d.target), { x: x + 1.1, y: y + 0.62, w: 2.7, h: 0.3, fontSize: 14, bold: true, color: '111111' });
+    s.addShape(pres.ShapeType.roundRect, { x: x + 1.1, y: y + 0.98, w: 2.7, h: 0.07, rectRadius: 0.03, fill: { color: 'E5E7EB' }, line: { width: 0 } });
+    s.addShape(pres.ShapeType.roundRect, { x: x + 1.1, y: y + 0.98, w: Math.max(0.06, 2.7 * Math.min(it.d.pct, 100) / 100), h: 0.07, rectRadius: 0.03, fill: { color: c }, line: { width: 0 } });
+    T('AVG: ' + (it.d.avg != null ? it.d.avg : '-') + '/hari  →  Target: ' + (it.d.t60 != null ? it.d.t60 : '-') + '/hari', { x: x + 1.1, y: y + 1.08, w: 2.8, h: 0.16, fontSize: 5.5, color: '6B7280' });
+  });
+  return s;
+}
+
 function buildCoverSlide(pres, d) {
   const FONT = 'Arial';
   const s = pres.addSlide();
@@ -3894,14 +4074,14 @@ function buildCoverSlide(pres, d) {
     const c = Math.floor(i / 3), r = i % 3;
     T((i + 1 < 10 ? '0' : '') + (i + 1) + '.  ' + t, { x: 0.5 + c * 2.0, y: 4.4 + r * 0.35, w: 2.0, h: 0.3, fontSize: 8.5, color: '111111' });
   });
-  T((d.tanggal || '') + '   |   DC AHI SIDOARJO', { x: 0.5, y: 6.9, w: 6, h: 0.25, fontSize: 8, bold: true, color: '6B7280' });
+  T(String(d.tanggal || '').toUpperCase() + '   |   DC AHI SIDOARJO', { x: 0.5, y: 6.9, w: 6, h: 0.25, fontSize: 8, bold: true, color: '6B7280' });
 }
 
-function buildThankYouSlide(pres) {
+function buildThankYouSlide(pres, bgData) {
   const s = pres.addSlide();
-  s.background = { color: 'FFFFFF' };
+  if (bgData) { s.background = { data: bgData }; s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } }); } else { s.background = { color: 'FFFFFF' }; }
   s.addText('Kawan Lama Group', { x: 9.6, y: 0.35, w: 3.3, h: 0.35, fontSize: 12, bold: true, color: '111111', fontFace: 'Arial', isTextBox: true });
-  s.addText('TERIMA KASIH', { x: 1.5, y: 3.1, w: 8, h: 0.9, fontSize: 38, bold: true, color: '1E3A8A', fontFace: 'Arial', isTextBox: true });
+  s.addText('TERIMA KASIH', { x: 0.3, y: 3.0, w: 12.76, h: 1.0, fontSize: 40, bold: true, color: '0B2A66', fontFace: 'Arial', isTextBox: true, align: 'center', valign: 'middle' });
 }
 
 function buildPlannerSlideV2(pres, planner, master, bgData) {
@@ -4387,17 +4567,17 @@ function buildVendorTrendSlide(pres, v, bgData, shots) {
 function fmtTgl(iso) { const p = iso.split('-'); const bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; return parseInt(p[2], 10) + ' ' + bln[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
 function monthName(ym) { const p = ym.split('-'); const bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; return bln[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
 
-function buildStockTransferSlide(pres, st) {
+function buildStockTransferSlide(pres, st, bgData) {
   const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
   const s = pres.addSlide();
-  s.background = { color: 'FFFFFF' };
+  if (bgData) { s.background = { data: bgData }; s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } }); } else { s.background = { color: 'FFFFFF' }; }
   const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
-  T('STOCK TRANSFER MONITORING', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 24, bold: true, color: '111111' });
-  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.7, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+  T('Stock Transfer Monitoring', { x: 0.5, y: 0.27, w: 11, h: 0.55, fontSize: 26.5, bold: true, color: '000000' });
+  T('Overview of Stock Transfer Progress & Status', { x: 0.5, y: 0.70, w: 11, h: 0.4, fontSize: 17.3, italic: true, color: '1A1A1A' });
 
   const t = st.total;
   const cardTop = [['ARMD BAKAL DELAY', 0, 'F87171'], ['PROSES MUAT', t.prosesMuat, '60A5FA'], ['ON DELIVERY', t.onDelivery, '34D399'], ['ATA DEPO TUNGGU BONGKAR', t.tungguBongkar, 'FBBF24']];
-  const LX = 0.4, PY = 1.15, RW = 7.55, RH = 0.9;
+  const LX = 0.5, PY = 1.15, RW = 7.55, RH = 0.9;
   cardTop.forEach((c, i) => {
     const cx = LX + i * (RW / 4);
     T(String(c[1]), { x: cx, y: PY, w: RW / 4 - 0.1, h: 0.45, fontSize: 22, bold: true, color: c[2] });
@@ -4421,11 +4601,11 @@ function buildStockTransferSlide(pres, st) {
   const para = (runs, bullet) => { const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) })); if (bullet) out.unshift({ text: '\u2022 ', options: { color: RED_LABEL, fontSize: 8 } }); out[out.length - 1].options.breakLine = true; return out; };
   const ataLines = [];
   st.ataDetail.forEach(d => { const g = Object.keys(d.groups).map(k => k + ' (' + d.groups[k] + ')').join(', '); ataLines.push(...para([label(d.type + ' (' + d.total + ' armada): '), { text: g }], true)); });
-  T(ataLines, { x: LX, y: ay + 0.3, w: RW, h: 7.5 - (ay + 0.3) - 0.3, fontSize: 9, color: '111111', paraSpaceAfter: 2 });
+  T(ataLines, { x: LX, y: ay + 0.3, w: RW, h: 7.1 - (ay + 0.3), fontSize: 9, color: '111111', paraSpaceAfter: 2 });
 
   // panel kanan: CBM
   const RX = LX + RW + 0.3, RW2 = W - RX - 0.4;
-  s.addShape(pres.ShapeType.roundRect, { x: RX, y: PY, w: RW2, h: 7.5 - PY - 0.25, rectRadius: 0.05, fill: { color: '0D0D0F' }, line: { color: '3B82F6', width: 1 } });
+  s.addShape(pres.ShapeType.roundRect, { x: RX, y: PY, w: RW2, h: 7.1 - PY, rectRadius: 0.05, fill: { color: '0D0D0F' }, line: { color: '3B82F6', width: 1 } });
   T('TOTAL CBM\nOUTSTANDING', { x: RX + 0.15, y: PY + 0.12, w: RW2 - 0.3, h: 0.85, fontSize: 20, bold: true, color: 'FFFFFF', lineSpacingMultiple: 1.05 });
   const cbm = st.cbm || {};
   const rowsCbm = [['CBM Customer', cbm.cbmCustomer], ['CBM Astor', cbm.cbmAstor], ['CBM Area 1', cbm.cbmArea1], ['CBM Area 2', cbm.cbmArea2], ['CBM Area 3', cbm.cbmArea3]];
@@ -4437,15 +4617,15 @@ function buildStockTransferSlide(pres, st) {
   });
 }
 
-function buildInboundPlanningSlide(pres, ib) {
+function buildInboundPlanningSlide(pres, ib, bgData) {
   const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
   const s = pres.addSlide();
-  s.background = { color: 'FFFFFF' };
+  if (bgData) { s.background = { data: bgData }; s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } }); } else { s.background = { color: 'FFFFFF' }; }
   const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
-  T('INBOUND PLANNING', { x: 0.4, y: 0.28, w: 10, h: 0.5, fontSize: 26, bold: true, color: '111111' });
-  T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.4, y: 0.7, w: 10, h: 0.3, fontSize: 12, italic: true, color: '333333' });
+  T('Inbound Planning', { x: 0.5, y: 0.27, w: 11, h: 0.55, fontSize: 26.5, bold: true, color: '000000' });
+  T('Today\u2019s Inbound Plan & Operational Schedule', { x: 0.5, y: 0.70, w: 11, h: 0.4, fontSize: 17.3, italic: true, color: '1A1A1A' });
 
-  const LX = 0.4, PY = 1.15, PW = 12.53;
+  const LX = 0.5, PY = 1.15, PW = 12.33;
   function card(x, y, w, h, label, value, valColor, border) {
     s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: border || 'E5E7EB', width: border ? 1.25 : 0.75 } });
     T(String(value), { x: x + 0.12, y: y + 0.12, w: w - 0.24, h: 0.42, fontSize: 20, bold: true, color: valColor || '111111', fit: 'shrink' });
@@ -4622,6 +4802,21 @@ function toolsAutoCaptureProfil(timeoutMs) {
   });
 }
 
+// Mulai ambil gambar Profil DC di latar belakang (dipanggil saat halaman Tools dibuka),
+// supaya pas tombol Generate ditekan gambarnya sudah siap -> generate terasa cepat.
+function toolsPrewarmCapture() {
+  if (toolsCapPromise) return toolsCapPromise;
+  if (TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto) return null;
+  toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; toolsCapAt = 0;
+  toolsCapPromise = toolsAutoCaptureProfil(80000).then(function (ok) {
+    toolsCapPromise = null;
+    toolsCapAt = (ok && TOOLS_SHOTS.a && TOOLS_SHOTS.b) ? Date.now() : 0;
+    try { toolsShotRender(); } catch (e) { }
+    return ok;
+  }).catch(function () { toolsCapPromise = null; return false; });
+  return toolsCapPromise;
+}
+
 async function toolsGeneratePpt() {
   if (toolsBusy) return;
   toolsBusy = true;
@@ -4637,8 +4832,12 @@ async function toolsGeneratePpt() {
 
     // gambar Profil DC & Daily Proses: otomatis (kecuali dua-duanya sudah ditempel manual)
     if (!(TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto)) {
-      setBtn('⏳ Mengambil gambar Profil DC… (±30 dtk)');
-      try { toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; await toolsAutoCaptureProfil(80000); } catch (e) { console.warn('Auto-capture dilewati:', e); }
+      // gambar hasil prewarm dipakai ulang kalau umurnya < 10 menit (ga perlu capture lagi)
+      const capSiap = TOOLS_SHOTS.a && TOOLS_SHOTS.b && toolsCapAt && (Date.now() - toolsCapAt) < 600000;
+      if (!capSiap) {
+        const capP = toolsPrewarmCapture();
+        if (capP) { setBtn('⏳ Mengambil gambar Profil DC…'); try { await capP; } catch (e) { console.warn('Auto-capture dilewati:', e); } }
+      }
       toolsShotRender();
     }
 
@@ -4655,9 +4854,14 @@ async function toolsGeneratePpt() {
     buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg());
     buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData), toolsGradientBg());
     buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData), toolsGradientBg(), toolsVendorShotsReady());
-    buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData));
-    buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData));
-    buildThankYouSlide(pres);
+    buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData), toolsGradientBg());
+    buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData), toolsGradientBg());
+    const skipped = [];
+    if (toolsData.odGantung && toolsData.odGantung.ok) buildOdGantungSlide(pres, toolsData.odGantung, toolsGradientBg()); else skipped.push('OD Gantung');
+    if (toolsData.atk && toolsData.atk.ok) buildAtkSlide(pres, toolsData.atk, toolsGradientBg()); else skipped.push('ATK');
+    if (toolsData.reduce && toolsData.reduce.ok) buildReduceSlide(pres, toolsData.reduce, toolsGradientBg()); else skipped.push('Skema Reduce');
+    if (skipped.length) toolsCapNote += 'Slide dilewati (data belum tersedia): ' + skipped.join(', ') + '. ';
+    buildThankYouSlide(pres, toolsGradientBg());
 
     setBtn('⏳ Menyiapkan file…');
     const now = new Date();
@@ -4671,13 +4875,13 @@ async function toolsGeneratePpt() {
     if (blob) toolsDownloadBlob(blob, fileName); else await pres.writeFile({ fileName: fileName });
 
     toolsSetPill('ok', 'PPT terunduh');
-    toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Mengunggah salinan untuk preview\u2026');
+    toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download). Mengunggah salinan untuk preview\u2026');
     const catatanRingkas = 'Rata-rata progres ' + (toolsData.rata != null ? toolsData.rata.toFixed(1) : '-') + '% (data pukul ' + toolsData.jam + ' WIB)';
-    const uploaded = blob ? await toolsUploadAndLog(blob, fileName, '8 slide', catatanRingkas) : null;
+    const uploaded = blob ? await toolsUploadAndLog(blob, fileName, (pres.slides ? pres.slides.length : '') + ' slide', catatanRingkas) : null;
     if (uploaded && uploaded.previewUrl) {
-      toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. Preview sudah tersedia di Riwayat PPT di bawah.');
+      toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. Preview sudah tersedia di Riwayat PPT di bawah.');
     } else {
-      toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (8 slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. (Preview tidak tersedia \u2014 gagal diunggah ke Drive, file tetap ada di Download.)');
+      toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. (Preview tidak tersedia \u2014 gagal diunggah ke Drive, file tetap ada di Download.)');
     }
   } catch (e) {
     toolsSetPill('err', 'Gagal membuat PPT');
