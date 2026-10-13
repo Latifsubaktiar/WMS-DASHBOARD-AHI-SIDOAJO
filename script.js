@@ -4588,7 +4588,63 @@ function buildVendorTrendSlide(pres, v, bgData, shots) {
 function fmtTgl(iso) { const p = iso.split('-'); const bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; return parseInt(p[2], 10) + ' ' + bln[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
 function monthName(ym) { const p = ym.split('-'); const bln = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']; return bln[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
 
-function buildStockTransferSlide(pres, st, bgData) {
+// ── SLIDE 6 versi screenshot asli (app Inbound: Outstanding Armada Stock Transfer) ──
+function buildStockTransferShotsSlide(pres, st, bgData, shots) {
+  const FONT = 'Arial', RED_LABEL = 'B4121F';
+  const s = pres.addSlide();
+  if (bgData) { s.background = { data: bgData }; }
+  s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+
+  T('Stock Transfer Monitoring', { x: 0.5, y: 0.30, w: 9, h: 0.5, fontSize: 25, bold: true, color: '000000' });
+  T('Overview of Stock Transfer Progress & Status', { x: 0.5, y: 0.72, w: 9, h: 0.35, fontSize: 15, italic: true, color: '1A1A1A' });
+  T('Aging Armada & Outstanding CBM', { x: 0.45, y: 1.22, w: 6.2, h: 0.3, fontSize: 13, bold: true, italic: true, color: 'A50F1E', align: 'center' });
+
+  const SH = { type: 'outer', color: '000000', opacity: 0.35, blur: 5, offset: 2, angle: 90 };
+  const place = (shot, bx, by, bw, bh, bg) => {
+    s.addShape(pres.ShapeType.rect, { x: bx, y: by, w: bw, h: bh, fill: { color: bg || 'FFFFFF' }, line: { color: bg || 'FFFFFF', width: 0 }, shadow: SH });
+    const k = Math.min(bw / shot.w, bh / shot.h), iw = shot.w * k, ih = shot.h * k;
+    s.addImage({ data: shot.data, x: bx + (bw - iw) / 2, y: by + (bh - ih) / 2, w: iw, h: ih });
+  };
+  // kiri: tabel AGING ARMADA + ATA (kotak garis putus-putus merah seperti PPT asli)
+  s.addShape(pres.ShapeType.rect, { x: 0.42, y: 1.55, w: 6.26, h: 3.3, fill: { color: 'FFFFFF' }, line: { color: 'E04A2F', width: 1, dashType: 'dash' } });
+  place(shots.g, 0.5, 1.62, 6.1, 3.16);
+  // kanan atas: kartu KPI + Detail Status per Armada
+  place(shots.h, 6.9, 1.00, 6.05, 2.45);
+  // kanan bawah: tab CBM
+  place(shots.i, 6.9, 3.55, 6.05, 3.55);
+
+  // teks ringkasan di bawah gambar kiri
+  const label = tt => ({ text: tt, options: { bold: true, italic: true, color: RED_LABEL } });
+  const para = (runs, bullet) => {
+    const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) }));
+    if (bullet) out.unshift({ text: '\u2022 ', options: { color: '111111', fontSize: 9 } });
+    out[out.length - 1].options.breakLine = true;
+    return out;
+  };
+  const t = st.total, baris = [];
+  baris.push(...para([{ text: 'Laporan Ringkasan Stock Transfer Inbound Monitoring', options: { bold: true, italic: true, fontSize: 11, paraSpaceAfter: 5 } }]));
+  baris.push(...para([{ text: '1. Jumlah Armada Berdasarkan Status Operasional', options: { bold: true, fontSize: 9.5, paraSpaceAfter: 3 } }]));
+  const ket = (nama, nilai) => {
+    const rinci = st.perType.filter(x => x[nama] > 0).map(x => x[nama] + ' ' + x.type).join(', ');
+    return para([label(({ prosesMuat: 'Proses Muat', onDelivery: 'On Delivery', ataDepo: 'ATA Depo', tungguBongkar: 'Tunggu Bongkar' })[nama] + ': '),
+      { text: nilai + ' armada' + (rinci ? ' (' + rinci + ')' : '') }], true);
+  };
+  baris.push(...ket('prosesMuat', t.prosesMuat));
+  baris.push(...ket('onDelivery', t.onDelivery));
+  baris.push(...ket('ataDepo', t.ataDepo));
+  baris.push(...ket('tungguBongkar', t.tungguBongkar));
+  baris.push(...para([{ text: '2. Detail Status ATA Depo (' + t.ataDepo + ' Armada)', options: { bold: true, fontSize: 9.5, paraSpaceBefore: 5, paraSpaceAfter: 3 } }]));
+  (st.ataDetail || []).forEach(d => {
+    const g = Object.keys(d.groups).map(k => k + ' (' + d.groups[k] + ')').join(', ');
+    baris.push(...para([label(d.type + ' (' + d.total + ' armada): '), { text: g }], true));
+  });
+  T(baris, { x: 0.5, y: 4.95, w: 6.2, h: 2.15, fontSize: 9, color: '111111', paraSpaceAfter: 2 });
+  s.addNotes('Gambar diambil otomatis dari halaman Outstanding Armada Stock Transfer (app Inbound).');
+}
+
+function buildStockTransferSlide(pres, st, bgData, shots) {
+  if (shots && shots.g && shots.h && shots.i) return buildStockTransferShotsSlide(pres, st, bgData, shots);
   const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
   const s = pres.addSlide();
   if (bgData) { s.background = { data: bgData }; s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } }); } else { s.background = { color: 'FFFFFF' }; }
@@ -4863,15 +4919,59 @@ function toolsAutoCapturePlanner(timeoutMs) {
   });
 }
 
+function toolsInboundShotsReady() { return (TOOLS_SHOTS.g && TOOLS_SHOTS.h && TOOLS_SHOTS.i) ? { g: TOOLS_SHOTS.g, h: TOOLS_SHOTS.h, i: TOOLS_SHOTS.i } : null; }
+
+// Capture halaman Outstanding Armada Stock Transfer (app Inbound) -> slide 6
+function toolsAutoCaptureInbound(timeoutMs) {
+  return new Promise(function (resolve) {
+    const id = 'cap3' + Date.now();
+    const fr = document.createElement('iframe');
+    fr.src = URLS.inbound;
+    fr.setAttribute('aria-hidden', 'true');
+    fr.style.cssText = 'position:fixed;left:0;top:0;width:1700px;height:1200px;border:0;opacity:0.01;pointer-events:none;z-index:-1;';
+    const got = {}; let acked = false, finished = false, poll = null, tmo = null, langkah = '';
+    const perlu = function () { return got.g && got.h && got.i; };
+    const finish = function (ok) {
+      if (finished) return; finished = true;
+      clearInterval(poll); clearTimeout(tmo);
+      window.removeEventListener('message', onMsg);
+      setTimeout(function () { try { fr.remove(); } catch (e) { } }, 300);
+      resolve(ok);
+    };
+    function onMsg(e) {
+      const d = e.data; if (!d || d.id !== id) return;
+      if (d.type === 'wmsCapAck') acked = true;
+      else if (d.type === 'wmsCapInfo') { langkah = String(d.step || ''); console.log('Capture Inbound:', langkah); }
+      else if (d.type === 'wmsCapRes' && (d.which === 'g' || d.which === 'h' || d.which === 'i')) {
+        toolsShotFromUrl(d.url, d.which).then(function () { got[d.which] = 1; if (perlu()) finish(true); }).catch(function () { });
+      } else if (d.type === 'wmsCapErr') { console.warn('Capture Inbound gagal:', d.msg); toolsCapNote += 'Auto-capture Slide 6 gagal: ' + d.msg + '. '; finish(false); }
+    }
+    window.addEventListener('message', onMsg);
+    document.body.appendChild(fr);
+    poll = setInterval(function () {
+      if (acked) return;
+      const msg = { type: 'wmsCapReq3', id: id };
+      try { fr.contentWindow.postMessage(msg, '*'); toolsBcast(fr.contentWindow, msg, 0); } catch (e) { }
+    }, 2000);
+    tmo = setTimeout(function () {
+      if (!perlu()) toolsCapNote += 'Auto-capture Slide 6 gagal: ' + (acked ? 'app Inbound membalas tapi gambar tidak lengkap (' + Object.keys(got).length + '/3' + (langkah ? ', berhenti di: ' + langkah : '') + ')' : 'tidak ada balasan dari app Inbound') + '. ';
+      finish(!!perlu());
+    }, timeoutMs || 180000);
+  });
+}
+
 // Mulai ambil gambar Profil DC di latar belakang (dipanggil saat halaman Tools dibuka),
 // supaya pas tombol Generate ditekan gambarnya sudah siap -> generate terasa cepat.
 function toolsPrewarmCapture() {
   if (toolsCapPromise) return toolsCapPromise;
   if (TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto) return null;
-  toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; TOOLS_SHOTS.e = null; TOOLS_SHOTS.f = null; toolsCapAt = 0;
+  toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; TOOLS_SHOTS.e = null; TOOLS_SHOTS.f = null;
+  TOOLS_SHOTS.g = null; TOOLS_SHOTS.h = null; TOOLS_SHOTS.i = null; toolsCapAt = 0;
   toolsCapPromise = toolsAutoCaptureProfil(160000).then(function (ok) {
-    // lanjut capture app Planner buat slide 3
-    return toolsAutoCapturePlanner(170000).then(function () { return ok; });
+    // lanjut capture app Planner (slide 3), lalu app Inbound (slide 6)
+    return toolsAutoCapturePlanner(170000)
+      .then(function () { return toolsAutoCaptureInbound(180000); })
+      .then(function () { return ok; });
   }).then(function (ok) {
     toolsCapPromise = null; toolsCapSudah = true;
     toolsCapAt = (ok && TOOLS_SHOTS.a && TOOLS_SHOTS.b) ? Date.now() : 0;
@@ -4923,7 +5023,7 @@ async function toolsGeneratePpt() {
     buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg(), toolsPlannerShotsReady());
     buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData), toolsGradientBg());
     buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData), toolsGradientBg(), toolsVendorShotsReady());
-    buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData), toolsGradientBg());
+    buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData), toolsGradientBg(), toolsInboundShotsReady());
     buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData), toolsGradientBg());
     const skipped = [];
     if (toolsData.odGantung && toolsData.odGantung.ok) buildOdGantungSlide(pres, toolsData.odGantung, toolsGradientBg()); else skipped.push('OD Gantung');
