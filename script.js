@@ -4846,7 +4846,7 @@ function toolsAutoCaptureProfil(timeoutMs) {
   return new Promise(function (resolve) {
     const id = 'cap' + Date.now();
     const fr = document.createElement('iframe');
-    fr.src = URLS.profildc;
+    fr.src = toolsNoCache(URLS.profildc);
     fr.setAttribute('aria-hidden', 'true');
     fr.style.cssText = 'position:fixed;left:0;top:0;width:1700px;height:1000px;border:0;opacity:0.01;pointer-events:none;z-index:-1;';
     const got = {}; let acked = false, finished = false, poll = null, tmo = null;
@@ -4879,6 +4879,9 @@ function toolsAutoCaptureProfil(timeoutMs) {
   });
 }
 
+// tambah penanda waktu di URL supaya browser TIDAK memakai salinan lama dari cache
+function toolsNoCache(u) { return u + (u.indexOf('?') >= 0 ? '&' : '?') + '_cap=' + Date.now(); }
+
 function toolsPlannerShotsReady() { return (TOOLS_SHOTS.e && TOOLS_SHOTS.f) ? { e: TOOLS_SHOTS.e, f: TOOLS_SHOTS.f } : null; }
 
 // Capture panel MAIN DASHBOARD app Planner (2x: tanggal kemarin & hari ini) -> slide 3
@@ -4886,7 +4889,7 @@ function toolsAutoCapturePlanner(timeoutMs) {
   return new Promise(function (resolve) {
     const id = 'cap2' + Date.now();
     const fr = document.createElement('iframe');
-    fr.src = URLS.planner;
+    fr.src = toolsNoCache(URLS.planner);
     fr.setAttribute('aria-hidden', 'true');
     fr.style.cssText = 'position:fixed;left:0;top:0;width:1700px;height:1100px;border:0;opacity:0.01;pointer-events:none;z-index:-1;';
     const got = {}; let acked = false, finished = false, poll = null, tmo = null, langkah = '';
@@ -4926,7 +4929,7 @@ function toolsAutoCaptureInbound(timeoutMs) {
   return new Promise(function (resolve) {
     const id = 'cap3' + Date.now();
     const fr = document.createElement('iframe');
-    fr.src = URLS.inbound;
+    fr.src = toolsNoCache(URLS.inbound);
     fr.setAttribute('aria-hidden', 'true');
     fr.style.cssText = 'position:fixed;left:0;top:0;width:1700px;height:1200px;border:0;opacity:0.01;pointer-events:none;z-index:-1;';
     const got = {}; let acked = false, finished = false, poll = null, tmo = null, langkah = '';
