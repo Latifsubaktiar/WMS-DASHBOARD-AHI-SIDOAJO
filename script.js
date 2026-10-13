@@ -3626,7 +3626,7 @@ function toolsGradientBg() {
 // ── SLOT SCREENSHOT slide 2 (Profil DC & Daily Proses) ─────────────
 // Gambar ditempel/dipilih manual dari panel Profil DC; hanya disimpan di memori halaman ini (tidak dipakai lagi setelah refresh)
 var TOOLS_SHOTS = { a: null, b: null, c: null, d: null };
-var toolsCapPromise = null, toolsCapAt = 0;
+var toolsCapPromise = null, toolsCapAt = 0, toolsCapSudah = false;
 var toolsUploadErr = '';
 var TOOLS_SHOT_KEYS = ['a', 'b', 'c', 'd']; // a,b = slide 2 (Profil DC); c,d = slide 5 (Trend Daily Vendor)
 var toolsShotSel = null;
@@ -4858,7 +4858,7 @@ function toolsAutoCapturePlanner(timeoutMs) {
     tmo = setTimeout(function () {
       if (!(got.e && got.f)) toolsCapNote += 'Auto-capture Slide 3 gagal: ' + (acked ? 'app Planner membalas tapi gambar tidak lengkap (' + Object.keys(got).length + '/2)' : 'tidak ada balasan dari app Planner') + '. ';
       finish(!!(got.e && got.f));
-    }, timeoutMs || 110000);
+    }, timeoutMs || 170000);
   });
 }
 
@@ -4870,9 +4870,9 @@ function toolsPrewarmCapture() {
   toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; TOOLS_SHOTS.e = null; TOOLS_SHOTS.f = null; toolsCapAt = 0;
   toolsCapPromise = toolsAutoCaptureProfil(160000).then(function (ok) {
     // lanjut capture app Planner buat slide 3
-    return toolsAutoCapturePlanner(110000).then(function () { return ok; });
+    return toolsAutoCapturePlanner(170000).then(function () { return ok; });
   }).then(function (ok) {
-    toolsCapPromise = null;
+    toolsCapPromise = null; toolsCapSudah = true;
     toolsCapAt = (ok && TOOLS_SHOTS.a && TOOLS_SHOTS.b) ? Date.now() : 0;
     try { toolsShotRender(); } catch (e) { }
     return ok;
@@ -4900,11 +4900,11 @@ async function toolsGeneratePpt() {
 
     // gambar Profil DC & Daily Proses: otomatis (kecuali dua-duanya sudah ditempel manual)
     if (!(TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto)) {
-      // gambar hasil prewarm dipakai ulang kalau umurnya < 10 menit (ga perlu capture lagi)
-      const capSiap = TOOLS_SHOTS.a && TOOLS_SHOTS.b && toolsCapAt && (Date.now() - toolsCapAt) < 600000;
-      if (!capSiap) {
-        const capP = toolsPrewarmCapture();
-        if (capP) { setBtn('⏳ Mengambil gambar Profil DC…'); try { await capP; } catch (e) { console.warn('Auto-capture dilewati:', e); } }
+      // tunggu capture latar belakang kalau masih jalan; kalau belum pernah jalan, jalankan sekarang
+      const capSegar = toolsCapSudah && toolsCapAt && (Date.now() - toolsCapAt) < 600000;
+      if (toolsCapPromise || !(toolsCapSudah && capSegar)) {
+        const capP = toolsCapPromise || (toolsCapSudah ? null : toolsPrewarmCapture());
+        if (capP) { setBtn('⏳ Mengambil gambar dashboard…'); try { await capP; } catch (e) { console.warn('Auto-capture dilewati:', e); } }
       }
       toolsShotRender();
     }
