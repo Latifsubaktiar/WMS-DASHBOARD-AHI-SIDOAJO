@@ -4833,7 +4833,7 @@ function toolsAutoCapturePlanner(timeoutMs) {
     fr.src = URLS.planner;
     fr.setAttribute('aria-hidden', 'true');
     fr.style.cssText = 'position:fixed;left:0;top:0;width:1700px;height:1100px;border:0;opacity:0.01;pointer-events:none;z-index:-1;';
-    const got = {}; let acked = false, finished = false, poll = null, tmo = null;
+    const got = {}; let acked = false, finished = false, poll = null, tmo = null, langkah = '';
     const finish = function (ok) {
       if (finished) return; finished = true;
       clearInterval(poll); clearTimeout(tmo);
@@ -4844,6 +4844,7 @@ function toolsAutoCapturePlanner(timeoutMs) {
     function onMsg(e) {
       const d = e.data; if (!d || d.id !== id) return;
       if (d.type === 'wmsCapAck') acked = true;
+      else if (d.type === 'wmsCapInfo') { langkah = String(d.step || ''); console.log('Capture Planner:', langkah); }
       else if (d.type === 'wmsCapRes' && (d.which === 'e' || d.which === 'f')) {
         toolsShotFromUrl(d.url, d.which).then(function () { got[d.which] = 1; if (got.e && got.f) finish(true); }).catch(function () { });
       } else if (d.type === 'wmsCapErr') { console.warn('Capture Planner gagal:', d.msg); toolsCapNote += 'Auto-capture Slide 3 gagal: ' + d.msg + '. '; finish(false); }
@@ -4856,7 +4857,7 @@ function toolsAutoCapturePlanner(timeoutMs) {
       try { fr.contentWindow.postMessage(msg, '*'); toolsBcast(fr.contentWindow, msg, 0); } catch (e) { }
     }, 2000);
     tmo = setTimeout(function () {
-      if (!(got.e && got.f)) toolsCapNote += 'Auto-capture Slide 3 gagal: ' + (acked ? 'app Planner membalas tapi gambar tidak lengkap (' + Object.keys(got).length + '/2)' : 'tidak ada balasan dari app Planner') + '. ';
+      if (!(got.e && got.f)) toolsCapNote += 'Auto-capture Slide 3 gagal: ' + (acked ? 'app Planner membalas tapi gambar tidak lengkap (' + Object.keys(got).length + '/2' + (langkah ? ', berhenti di: ' + langkah : '') + ')' : 'tidak ada balasan dari app Planner') + '. ';
       finish(!!(got.e && got.f));
     }, timeoutMs || 170000);
   });
