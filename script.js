@@ -3365,7 +3365,13 @@ async function toolsRefreshData() {
   if (gen) gen.disabled = true; if (ref) ref.disabled = true;
   toolsSetPill('wait', 'Mengambil data…'); toolsMsg('', '');
   try {
+    // kalau ada bagian yang gagal (mis. Google lagi ramai), ambil ulang otomatis 2x
     toolsData = await toolsFetchData();
+    for (let coba = 0; coba < 2 && !toolsAllOk(toolsData); coba++) {
+      toolsSetPill('wait', 'Sebagian data gagal, mengambil ulang… (' + (coba + 1) + '/2)');
+      await new Promise(function (r) { setTimeout(r, 3000); });
+      try { toolsData = await toolsFetchData(); } catch (e2) { console.warn('Ambil ulang gagal:', e2); break; }
+    }
     toolsRenderData();
   } catch (e) {
     toolsData = null;
@@ -4884,6 +4890,11 @@ async function toolsGeneratePpt() {
   try {
     setBtn('⏳ Mengambil data terbaru…');
     toolsData = await toolsFetchData();
+    for (let coba = 0; coba < 2 && !toolsAllOk(toolsData); coba++) {
+      setBtn('⏳ Sebagian data gagal, mengambil ulang… (' + (coba + 1) + '/2)');
+      await new Promise(function (r) { setTimeout(r, 3000); });
+      try { toolsData = await toolsFetchData(); } catch (e2) { console.warn('Ambil ulang gagal:', e2); break; }
+    }
     toolsRenderData();
     if (!toolsAllOk(toolsData)) throw new Error('Data belum lengkap, PPT tidak dibuat (lihat bagian "Data yang dipakai").');
 
