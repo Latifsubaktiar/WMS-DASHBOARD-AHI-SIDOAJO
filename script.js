@@ -3554,6 +3554,7 @@ function toolsXhrPost(url, bodyObj, timeoutMs) {
 
 async function toolsUploadAndLog(blob, fileName, slide, catatan) {
   try {
+    toolsUploadErr = '';
     const base64 = await toolsBlobToBase64(blob);
     const json = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'uploadPpt', base64: base64, fileName: fileName, slide: slide || '', catatan: catatan || '', oleh: localStorage.getItem('wms_name') || '' }, 90000);
     if (!json || json.ok === false) throw new Error((json && json.error) || 'Upload ke Drive gagal');
@@ -3561,6 +3562,7 @@ async function toolsUploadAndLog(blob, fileName, slide, catatan) {
     return json;
   } catch (e) {
     console.warn('Upload PPT ke Drive gagal, dicatat sebagai riwayat tanpa preview. Detail:', e);
+    toolsUploadErr = String((e && e.message) || e);
     // pesan panjang (URL dokumentasi Google, dll) cukup di console, JANGAN di kolom Keterangan
     const singkat = String(e.message || '').split('.')[0].split(/\s*\(https?:/)[0].trim().slice(0, 120);
     await toolsLogRun('sukses', fileName, slide, (catatan || '') + ' \u2014 preview belum tersedia (' + (singkat || 'gagal diunggah ke Drive') + ')');
@@ -3619,6 +3621,7 @@ function toolsGradientBg() {
 // Gambar ditempel/dipilih manual dari panel Profil DC; hanya disimpan di memori halaman ini (tidak dipakai lagi setelah refresh)
 var TOOLS_SHOTS = { a: null, b: null, c: null, d: null };
 var toolsCapPromise = null, toolsCapAt = 0;
+var toolsUploadErr = '';
 var TOOLS_SHOT_KEYS = ['a', 'b', 'c', 'd']; // a,b = slide 2 (Profil DC); c,d = slide 5 (Trend Daily Vendor)
 var toolsShotSel = null;
 
@@ -4935,7 +4938,7 @@ async function toolsGeneratePpt() {
     if (uploaded && uploaded.previewUrl) {
       toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. Preview sudah tersedia di Riwayat PPT di bawah.');
     } else {
-      toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. (Preview tidak tersedia \u2014 gagal diunggah ke Drive, file tetap ada di Download.)');
+      toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download). Data pukul ' + toolsData.jam + ' WIB. (Preview tidak tersedia \u2014 ' + (toolsUploadErr || 'gagal diunggah ke Drive') + ')');
     }
   } catch (e) {
     toolsSetPill('err', 'Gagal membuat PPT');
