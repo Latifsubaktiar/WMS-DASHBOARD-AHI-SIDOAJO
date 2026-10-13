@@ -4084,7 +4084,7 @@ function buildThankYouSlide(pres, bgData) {
   s.addText('TERIMA KASIH', { x: 0.3, y: 3.0, w: 12.76, h: 1.0, fontSize: 40, bold: true, color: '0B2A66', fontFace: 'Arial', isTextBox: true, align: 'center', valign: 'middle' });
 }
 
-function buildPlannerSlideV2(pres, planner, master, bgData) {
+function buildPlannerSlideV2(pres, planner, master, bgData, shots) {
   const FONT = 'Arial', RED_LABEL = 'B4121F', BLUE_TXT = '1F3FBF', NAVY = '1F3A8A';
   const s = pres.addSlide();
   s.background = { data: bgData };
@@ -4120,8 +4120,20 @@ function buildPlannerSlideV2(pres, planner, master, bgData) {
     return row5Y + rh;
   }
   const PW = 6.0, PH = 3.55, PY = 1.5;
-  const bottomL = panel(0.55, PY, PW, PH, master.yesterday);
-  panel(6.9, PY, PW, PH, master.today);
+  if (shots && shots.e && shots.f) {
+    // pakai screenshot asli panel MAIN DASHBOARD dari app Planner
+    const SH = { type: 'outer', color: '000000', opacity: 0.4, blur: 5, offset: 2, angle: 90 };
+    const place = (shot, bx, byy, bw, bh) => {
+      s.addShape(pres.ShapeType.rect, { x: bx, y: byy, w: bw, h: bh, fill: { color: '0D0D0D' }, line: { color: '0D0D0D', width: 0 }, shadow: SH });
+      const k = Math.min(bw / shot.w, bh / shot.h), iw = shot.w * k, ih = shot.h * k;
+      s.addImage({ data: shot.data, x: bx + (bw - iw) / 2, y: byy + (bh - ih) / 2, w: iw, h: ih });
+    };
+    place(shots.e, 0.55, PY, PW, PH);
+    place(shots.f, 6.9, PY, PW, PH);
+  } else {
+    panel(0.55, PY, PW, PH, master.yesterday);
+    panel(6.9, PY, PW, PH, master.today);
+  }
 
   const by = PY + PH + 0.15;
   const label = t => ({ text: t, options: { bold: true, italic: true, color: RED_LABEL } });
@@ -4802,13 +4814,55 @@ function toolsAutoCaptureProfil(timeoutMs) {
   });
 }
 
+function toolsPlannerShotsReady() { return (TOOLS_SHOTS.e && TOOLS_SHOTS.f) ? { e: TOOLS_SHOTS.e, f: TOOLS_SHOTS.f } : null; }
+
+// Capture panel MAIN DASHBOARD app Planner (2x: tanggal kemarin & hari ini) -> slide 3
+function toolsAutoCapturePlanner(timeoutMs) {
+  return new Promise(function (resolve) {
+    const id = 'cap2' + Date.now();
+    const fr = document.createElement('iframe');
+    fr.src = URLS.planner;
+    fr.setAttribute('aria-hidden', 'true');
+    fr.style.cssText = 'position:fixed;left:0;top:0;width:1700px;height:1100px;border:0;opacity:0.01;pointer-events:none;z-index:-1;';
+    const got = {}; let acked = false, finished = false, poll = null, tmo = null;
+    const finish = function (ok) {
+      if (finished) return; finished = true;
+      clearInterval(poll); clearTimeout(tmo);
+      window.removeEventListener('message', onMsg);
+      setTimeout(function () { try { fr.remove(); } catch (e) { } }, 300);
+      resolve(ok);
+    };
+    function onMsg(e) {
+      const d = e.data; if (!d || d.id !== id) return;
+      if (d.type === 'wmsCapAck') acked = true;
+      else if (d.type === 'wmsCapRes' && (d.which === 'e' || d.which === 'f')) {
+        toolsShotFromUrl(d.url, d.which).then(function () { got[d.which] = 1; if (got.e && got.f) finish(true); }).catch(function () { });
+      } else if (d.type === 'wmsCapErr') { console.warn('Capture Planner gagal:', d.msg); toolsCapNote += 'Auto-capture Slide 3 gagal: ' + d.msg + '. '; finish(false); }
+    }
+    window.addEventListener('message', onMsg);
+    document.body.appendChild(fr);
+    poll = setInterval(function () {
+      if (acked) return;
+      const msg = { type: 'wmsCapReq2', id: id };
+      try { fr.contentWindow.postMessage(msg, '*'); toolsBcast(fr.contentWindow, msg, 0); } catch (e) { }
+    }, 2000);
+    tmo = setTimeout(function () {
+      if (!(got.e && got.f)) toolsCapNote += 'Auto-capture Slide 3 gagal: ' + (acked ? 'app Planner membalas tapi gambar tidak lengkap (' + Object.keys(got).length + '/2)' : 'tidak ada balasan dari app Planner') + '. ';
+      finish(!!(got.e && got.f));
+    }, timeoutMs || 110000);
+  });
+}
+
 // Mulai ambil gambar Profil DC di latar belakang (dipanggil saat halaman Tools dibuka),
 // supaya pas tombol Generate ditekan gambarnya sudah siap -> generate terasa cepat.
 function toolsPrewarmCapture() {
   if (toolsCapPromise) return toolsCapPromise;
   if (TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto) return null;
-  toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; toolsCapAt = 0;
+  toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; TOOLS_SHOTS.e = null; TOOLS_SHOTS.f = null; toolsCapAt = 0;
   toolsCapPromise = toolsAutoCaptureProfil(80000).then(function (ok) {
+    // lanjut capture app Planner buat slide 3
+    return toolsAutoCapturePlanner(110000).then(function () { return ok; });
+  }).then(function (ok) {
     toolsCapPromise = null;
     toolsCapAt = (ok && TOOLS_SHOTS.a && TOOLS_SHOTS.b) ? Date.now() : 0;
     try { toolsShotRender(); } catch (e) { }
@@ -4851,7 +4905,7 @@ async function toolsGeneratePpt() {
     const tanggalLabel = now0.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     buildCoverSlide(pres, { tanggal: tanggalLabel });
     toolsBuildProfilDailySlide(pres, toolsMapData(toolsData), toolsGradientBg(), toolsShotsReady());
-    buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg());
+    buildPlannerSlideV2(pres, toolsData.planner || {}, toolsMapPlannerMaster(toolsData), toolsGradientBg(), toolsPlannerShotsReady());
     buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData), toolsGradientBg());
     buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData), toolsGradientBg(), toolsVendorShotsReady());
     buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData), toolsGradientBg());
