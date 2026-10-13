@@ -4813,7 +4813,7 @@ function toolsAutoCaptureProfil(timeoutMs) {
     tmo = setTimeout(function () {
       if (!(got.a && got.b)) toolsCapNote = 'Auto-capture Slide 2 gagal: ' + (acked ? 'app Profil DC membalas tapi gambar tidak lengkap (' + Object.keys(got).length + '/2)' : 'tidak ada balasan dari app Profil DC — Main.html belum di-deploy New version, atau iframe diblokir') + '. ';
       finish(!!(got.a && got.b));
-    }, timeoutMs || 80000);
+    }, timeoutMs || 160000);
   });
 }
 
@@ -4862,7 +4862,7 @@ function toolsPrewarmCapture() {
   if (toolsCapPromise) return toolsCapPromise;
   if (TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto) return null;
   toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; TOOLS_SHOTS.e = null; TOOLS_SHOTS.f = null; toolsCapAt = 0;
-  toolsCapPromise = toolsAutoCaptureProfil(80000).then(function (ok) {
+  toolsCapPromise = toolsAutoCaptureProfil(160000).then(function (ok) {
     // lanjut capture app Planner buat slide 3
     return toolsAutoCapturePlanner(110000).then(function () { return ok; });
   }).then(function (ok) {
