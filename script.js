@@ -4694,7 +4694,53 @@ function buildStockTransferSlide(pres, st, bgData, shots) {
   });
 }
 
-function buildInboundPlanningSlide(pres, ib, bgData) {
+// ── SLIDE 7 versi screenshot asli (app Inbound: Inbound Planning) ──
+function buildInboundPlanningShotSlide(pres, ib, bgData, shots) {
+  const FONT = 'Arial', RED_LABEL = 'B4121F';
+  const s = pres.addSlide();
+  if (bgData) { s.background = { data: bgData }; }
+  s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } });
+  const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
+
+  T('Inbound Planning', { x: 0.5, y: 0.27, w: 11, h: 0.55, fontSize: 26.5, bold: true, color: '000000' });
+  T('Today\u2019s Inbound Plan & Operational Schedule', { x: 0.5, y: 0.70, w: 11, h: 0.4, fontSize: 17.3, italic: true, color: '1A1A1A' });
+
+  const SH = { type: 'outer', color: '000000', opacity: 0.35, blur: 5, offset: 2, angle: 90 };
+  const bx = 0.5, by = 1.18, bw = 12.33, bh = 3.75;
+  s.addShape(pres.ShapeType.rect, { x: bx, y: by, w: bw, h: bh, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 }, shadow: SH });
+  const k = Math.min(bw / shots.j.w, bh / shots.j.h), iw = shots.j.w * k, ih = shots.j.h * k;
+  s.addImage({ data: shots.j.data, x: bx + (bw - iw) / 2, y: by + (bh - ih) / 2, w: iw, h: ih });
+
+  // teks ringkasan dua kolom di bawah gambar
+  const label = tt => ({ text: tt, options: { bold: true, italic: true, color: RED_LABEL } });
+  const val = tt => ({ text: tt, options: { bold: true } });
+  const para = (runs, bullet) => {
+    const out = runs.map(r => ({ text: r.text, options: Object.assign({}, r.options) }));
+    if (bullet) out.unshift({ text: '\u00b7 ', options: { color: RED_LABEL, fontSize: 9 } });
+    out[out.length - 1].options.breakLine = true;
+    return out;
+  };
+  const kiri = [].concat(
+    para([{ text: 'Ringkasan Umum:', options: { bold: true, fontSize: 11, paraSpaceAfter: 4 } }]),
+    para([label('Total Kedatangan: '), val(ib.totalKedatangan + ' armada'),
+      { text: ' (' + ib.transfer + ' Transfer, ' + ib.importAhi + ' Import AHI, ' + ib.lokal + ' Lokal)' }], true),
+    para([label('Total Qty: '), val((ib.totalQty || 0).toLocaleString('id-ID') + ' pcs')], true),
+    para([label('Total SKU: '), val((ib.totalSKU || 0) + ' SKU')], true),
+    para([label('Total CBM: '), val(fmt2(ib.totalCBM) + ' CBM')], true)
+  );
+  T(kiri, { x: 0.5, y: 5.08, w: 5.9, h: 2.0, fontSize: 10, color: '111111', paraSpaceAfter: 2 });
+
+  const area = [['Customer', ib.cbmCustomer], ['Astor', ib.cbmAstor], ['Area 1', ib.cbmArea1], ['Area 2', ib.cbmArea2], ['Area 3', ib.cbmArea3]];
+  const kanan = [].concat(
+    para([{ text: 'Rincian Total CBM per Area:', options: { bold: true, fontSize: 11, paraSpaceAfter: 4 } }]),
+    area.map(c => para([label(c[0] + ': '), val(fmt2(c[1]) + ' CBM')], true)).reduce((x, y) => x.concat(y), [])
+  );
+  T(kanan, { x: 6.9, y: 5.08, w: 5.9, h: 2.0, fontSize: 10, color: '111111', paraSpaceAfter: 2 });
+  s.addNotes('Gambar diambil otomatis dari halaman Inbound Planning (app Inbound).');
+}
+
+function buildInboundPlanningSlide(pres, ib, bgData, shots) {
+  if (shots && shots.j) return buildInboundPlanningShotSlide(pres, ib, bgData, shots);
   const FONT = 'Arial', W = 13.333, RED_LABEL = 'B4121F';
   const s = pres.addSlide();
   if (bgData) { s.background = { data: bgData }; s.addShape(pres.ShapeType.rect, { x: 0.30, y: 0.26, w: 12.76, h: 6.95, fill: { color: 'FFFFFF' }, line: { color: 'FFFFFF', width: 0 } }); } else { s.background = { color: 'FFFFFF' }; }
@@ -4705,7 +4751,10 @@ function buildInboundPlanningSlide(pres, ib, bgData) {
   const LX = 0.5, PY = 1.15, PW = 12.33;
   function card(x, y, w, h, label, value, valColor, border) {
     s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: 'FFFFFF' }, line: { color: border || 'E5E7EB', width: border ? 1.25 : 0.75 } });
-    T(String(value), { x: x + 0.12, y: y + 0.12, w: w - 0.24, h: 0.42, fontSize: 20, bold: true, color: valColor || '111111', fit: 'shrink' });
+    // ukuran huruf menyesuaikan panjang teks, supaya angka panjang (mis. "57.183 pcs")
+    // tidak tumpah menimpa label di bawahnya
+    const tv = String(value), fs = tv.length <= 5 ? 20 : (tv.length <= 7 ? 16 : (tv.length <= 10 ? 13 : 11));
+    T(tv, { x: x + 0.12, y: y + 0.10, w: w - 0.24, h: 0.44, fontSize: fs, bold: true, color: valColor || '111111', valign: 'middle', fit: 'shrink' });
     T(label, { x: x + 0.12, y: y + 0.56, w: w - 0.24, h: 0.28, fontSize: 7.5, bold: true, color: '6B7280' });
   }
   const row1 = [['TOTAL UNLOAD', ib.totalKedatangan, '111111'], ['TRANSFER', ib.transfer, '111111'], ['IMPORT AHI', ib.importAhi, '111111'], ['LOKAL', ib.lokal, '111111'], ['HIT', ib.hit, '10B981', '34D399'], ['MISS', ib.miss, 'EF4444', 'F87171'], ['TOTAL QTY', ib.totalQty.toLocaleString('id-ID') + ' pcs', '111111'], ['TOTAL SKU', ib.totalSKU, '111111']];
@@ -4879,6 +4928,46 @@ function toolsAutoCaptureProfil(timeoutMs) {
   });
 }
 
+function toolsInboundPlanShotReady() { return TOOLS_SHOTS.j ? { j: TOOLS_SHOTS.j } : null; }
+
+// Capture halaman Inbound Planning (app Inbound) -> slide 7
+function toolsAutoCaptureInboundPlan(timeoutMs) {
+  return new Promise(function (resolve) {
+    const id = 'cap4' + Date.now();
+    const fr = document.createElement('iframe');
+    fr.src = toolsNoCache(URLS.inbound);
+    fr.setAttribute('aria-hidden', 'true');
+    fr.style.cssText = 'position:fixed;left:0;top:0;width:1700px;height:1200px;border:0;opacity:0.01;pointer-events:none;z-index:-1;';
+    let acked = false, finished = false, poll = null, tmo = null, langkah = '', dapat = false;
+    const finish = function (ok) {
+      if (finished) return; finished = true;
+      clearInterval(poll); clearTimeout(tmo);
+      window.removeEventListener('message', onMsg);
+      setTimeout(function () { try { fr.remove(); } catch (e) { } }, 300);
+      resolve(ok);
+    };
+    function onMsg(e) {
+      const d = e.data; if (!d || d.id !== id) return;
+      if (d.type === 'wmsCapAck') acked = true;
+      else if (d.type === 'wmsCapInfo') { langkah = String(d.step || ''); console.log('Capture Inbound Planning:', langkah); }
+      else if (d.type === 'wmsCapRes' && d.which === 'j') {
+        toolsShotFromUrl(d.url, 'j').then(function () { dapat = true; finish(true); }).catch(function () { });
+      } else if (d.type === 'wmsCapErr') { console.warn('Capture Inbound Planning gagal:', d.msg); toolsCapNote += 'Auto-capture Slide 7 gagal: ' + d.msg + '. '; finish(false); }
+    }
+    window.addEventListener('message', onMsg);
+    document.body.appendChild(fr);
+    poll = setInterval(function () {
+      if (acked) return;
+      const msg = { type: 'wmsCapReq4', id: id };
+      try { fr.contentWindow.postMessage(msg, '*'); toolsBcast(fr.contentWindow, msg, 0); } catch (e) { }
+    }, 2000);
+    tmo = setTimeout(function () {
+      if (!dapat) toolsCapNote += 'Auto-capture Slide 7 gagal: ' + (acked ? 'app Inbound Planning membalas tapi gambar tidak sampai' + (langkah ? ' (berhenti di: ' + langkah + ')' : '') : 'tidak ada balasan dari app Inbound Planning') + '. ';
+      finish(dapat);
+    }, timeoutMs || 150000);
+  });
+}
+
 // tambah penanda waktu di URL supaya browser TIDAK memakai salinan lama dari cache
 function toolsNoCache(u) { return u + (u.indexOf('?') >= 0 ? '&' : '?') + '_cap=' + Date.now(); }
 
@@ -4969,11 +5058,12 @@ function toolsPrewarmCapture() {
   if (toolsCapPromise) return toolsCapPromise;
   if (TOOLS_SHOTS.a && !TOOLS_SHOTS.a.auto && TOOLS_SHOTS.b && !TOOLS_SHOTS.b.auto) return null;
   toolsCapNote = ''; TOOLS_SHOTS.a = null; TOOLS_SHOTS.b = null; TOOLS_SHOTS.e = null; TOOLS_SHOTS.f = null;
-  TOOLS_SHOTS.g = null; TOOLS_SHOTS.h = null; TOOLS_SHOTS.i = null; toolsCapAt = 0;
+  TOOLS_SHOTS.g = null; TOOLS_SHOTS.h = null; TOOLS_SHOTS.i = null; TOOLS_SHOTS.j = null; toolsCapAt = 0;
   toolsCapPromise = toolsAutoCaptureProfil(160000).then(function (ok) {
     // lanjut capture app Planner (slide 3), lalu app Inbound (slide 6)
     return toolsAutoCapturePlanner(170000)
       .then(function () { return toolsAutoCaptureInbound(180000); })
+      .then(function () { return toolsAutoCaptureInboundPlan(150000); })
       .then(function () { return ok; });
   }).then(function (ok) {
     toolsCapPromise = null; toolsCapSudah = true;
@@ -5027,7 +5117,7 @@ async function toolsGeneratePpt() {
     buildOutstandingSlideV3(pres, toolsMapOutstanding(toolsData), toolsGradientBg());
     buildVendorTrendSlide(pres, toolsMapVendorTrend(toolsData), toolsGradientBg(), toolsVendorShotsReady());
     buildStockTransferSlide(pres, toolsMapStockTransfer(toolsData), toolsGradientBg(), toolsInboundShotsReady());
-    buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData), toolsGradientBg());
+    buildInboundPlanningSlide(pres, toolsMapInboundPlanning(toolsData), toolsGradientBg(), toolsInboundPlanShotReady());
     const skipped = [];
     if (toolsData.odGantung && toolsData.odGantung.ok) buildOdGantungSlide(pres, toolsData.odGantung, toolsGradientBg()); else skipped.push('OD Gantung');
     if (toolsData.atk && toolsData.atk.ok) buildAtkSlide(pres, toolsData.atk, toolsGradientBg()); else skipped.push('ATK');
