@@ -4863,7 +4863,40 @@ async function toolsPostProcess(arrayBuffer) {
     const x0 = await zip.file(n).async('string'), x1 = toolsFixDiamondBullets(toolsDedupeBulletPPr(x0));
     if (x1 !== x0) zip.file(n, x1);
   }
+  await toolsFixJpegExt(zip);
   return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+}
+
+/**
+ * pptxgenjs menamai gambar latar slide dengan akhiran .png padahal isinya JPEG,
+ * dan di [Content_Types].xml akhiran .png didaftarkan sebagai image/png.
+ * PowerPoint & LibreOffice tetap bisa buka karena mereka memeriksa isi filenya,
+ * tapi pembaca yang ketat (misalnya preview lampiran Gmail) jadi gagal.
+ * Di sini nama file yang isinya JPEG diubah ke .jpeg lalu acuannya ikut dibetulkan.
+ */
+async function toolsFixJpegExt(zip) {
+  const media = Object.keys(zip.files).filter(n => /^ppt\/media\/.+\.png$/i.test(n));
+  const ganti = {};
+  for (const n of media) {
+    const u8 = await zip.file(n).async('uint8array');
+    if (u8.length > 3 && u8[0] === 0xFF && u8[1] === 0xD8 && u8[2] === 0xFF) {  // tanda pengenal JPEG
+      const baru = n.replace(/\.png$/i, '.jpeg');
+      zip.file(baru, u8);
+      zip.remove(n);
+      ganti[n.split('/').pop()] = baru.split('/').pop();
+    }
+  }
+  const lama = Object.keys(ganti);
+  if (!lama.length) return 0;
+  const rels = Object.keys(zip.files).filter(n => /\.rels$/i.test(n));
+  for (const n of rels) {
+    const x0 = await zip.file(n).async('string');
+    let x1 = x0;
+    lama.forEach(function (nm) { if (x1.indexOf(nm) >= 0) x1 = x1.split(nm).join(ganti[nm]); });
+    if (x1 !== x0) zip.file(n, x1);
+  }
+  console.log('Perbaikan nama gambar JPEG di PPT:', lama.length, 'file');
+  return lama.length;
 }
 
 function toolsDownloadBlob(blob, fileName) {
