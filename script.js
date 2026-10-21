@@ -6147,6 +6147,56 @@ function toolsNilaiKandidat(idx) {
 /* Hasil hitung ulang terakhir, dipakai tombol "Simpan nilai". */
 var TI_NILAI_TERAKHIR = null;
 
+/**
+ * Hitung ulang SEMUA kandidat yang sudah dinilai, lalu simpan.
+ * Dipakai setelah perbaikan kunci: nilai lama dihitung dengan kunci dari acakan
+ * yang bisa meleset, yang baru dihitung dari sheet DATA tiap file.
+ * Nilai soal 5.1 (manual) tidak diubah — dipakai yang sudah tersimpan.
+ */
+async function toolsNilaiUlangSemua() {
+  const box = toolsEl('tiRiwayatMsg');
+  const pesan = (cls, s) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = s; } };
+  const izin = tiMintaNipNilai();
+  if (izin === null) { pesan('tl-msg-err', tiNipKenapaGagal()); return; }
+  if (!izin) return;
+
+  const antre = tiRiwayat.filter(r => String(r.status || '').indexOf('Sudah') === 0 && r.idSoal && r.baris);
+  if (!antre.length) { pesan('tl-msg-wait', 'Tidak ada kandidat yang sudah dinilai.'); return; }
+  if (!confirm('Hitung ulang nilai ' + antre.length + ' kandidat dengan kunci dari sheet DATA masing-masing file?\n\nNilai soal 5.1 (Pivot) tidak diubah.')) return;
+
+  const el = toolsEl('tiWajibRumus');
+  const tegakkan = el ? !!el.checked : true;
+  const hasil = [];
+  for (let i = 0; i < antre.length; i++) {
+    const r = antre[i];
+    pesan('tl-msg-wait', '⏳ Menghitung ulang <b>' + toolsEsc(r.nama) + '</b>… (' + (i + 1) + '/' + antre.length + ')');
+    try {
+      const res = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'jawabanInterview', idSoal: r.idSoal }, 60000);
+      if (!res || res.ok === false) throw new Error((res && res.error) || 'tidak terbaca');
+      const p = tiBuatPaket(r.nama, tiTglNormal(r.tanggal), Number(r.durasi) || 30, Number(r.jmlBaris) || 400);
+      const kunciFile = tiKunciDariFile(res.grid || [], res.data || [], res.master || []);
+      const n = tiNilaiDariGrid(p, res.grid || [], res.rumus || [], tegakkan, kunciFile);
+      const n51 = Math.max(0, Math.min(5, parseInt(r.nilai51, 10) || 0));
+      const akhir = n.total + n51;
+      const rincian = [1, 2, 3, 4, 5, 6].map(b => 'B' + b + ': ' + n.perBagian[b].dapat + (b === 5 ? '+' + n51 : '') + '/' + n.perBagian[b].maks).join(' · ');
+      await toolsXhrPost(GAS_DASHBOARD_URL, {
+        action: 'simpanNilaiInterview', baris: r.baris, nilaiOtomatis: n.total, nilai51: n51,
+        rincian: rincian, oleh: localStorage.getItem('wms_name') || ''
+      }, 30000);
+      hasil.push({ nama: r.nama, lama: Number(r.nilaiAkhir), baru: akhir, sumber: kunciFile ? 'file' : 'acakan' });
+    } catch (e) {
+      hasil.push({ nama: r.nama, gagal: String(e.message || e) });
+    }
+  }
+  const baris = hasil.map(h => h.gagal
+    ? '• <b>' + toolsEsc(h.nama) + '</b> — gagal: ' + toolsEsc(h.gagal)
+    : '• <b>' + toolsEsc(h.nama) + '</b> — ' + h.lama + ' → <b>' + h.baru + '</b>/100'
+      + (h.baru !== h.lama ? ' <span style="color:var(--green)">(berubah)</span>' : ' <span class="tl-muted">(tetap)</span>')
+      + (h.sumber === 'acakan' ? ' <span style="color:var(--orange)">⚠️ sheet DATA tidak terbaca</span>' : ''));
+  pesan('tl-msg-ok', '✅ Selesai menghitung ulang ' + hasil.length + ' kandidat:<br>' + baris.join('<br>'));
+  await toolsMuatRiwayatInterview();
+}
+
 /** Simpan hasil hitung ulang ke sheet riwayat. */
 async function toolsSimpanNilaiTerakhir() {
   const t = TI_NILAI_TERAKHIR;
@@ -6292,6 +6342,8 @@ async function tiNilai(r, opsi) {
     }
 
     const rincian = [1, 2, 3, 4, 5, 6].map(b => 'B' + b + ': ' + n.perBagian[b].dapat + (b === 5 ? '+' + n51 : '') + '/' + n.perBagian[b].maks).join(' · ');
+    // dihitung di sini karena sudah dipakai di bagian catatan penyimpanan di bawah
+    const terisi = 39 - n.kosong, akhir = n.total + n51, lulus = akhir >= TI_KKM;
 
     // Penyimpanan ke sheet riwayat bersifat tambahan: kalau gagal, nilainya tetap ditampilkan.
     let catatanSimpan = '';
@@ -6317,7 +6369,6 @@ async function tiNilai(r, opsi) {
       catatanSimpan = '<br><i>Nilai ini tidak disimpan ke riwayat (dinilai dari link langsung).</i>';
     }
 
-    const terisi = 39 - n.kosong, akhir = n.total + n51, lulus = akhir >= TI_KKM;
     let html = (lulus ? '✅' : '❌') + ' <b>' + toolsEsc(r.nama) + '</b> — nilai akhir ' + tiNilaiWarna(akhir)
       + ' <span class="tl-muted">(KKM ' + TI_KKM + ')</span><br>'
       + '<span class="tl-muted">' + n.total + ' poin dari jawaban yang benar + ' + n51 + ' poin soal 5.1 (Pivot Table, kamu yang menilai) = <b>'
