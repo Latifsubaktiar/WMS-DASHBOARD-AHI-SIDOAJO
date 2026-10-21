@@ -5204,9 +5204,11 @@ function toolsLoadPlanner(force) { return toolsLoadFrameTool(TOOLS_PLANNER_URL, 
 function toolsReloadPlanner() { const fr = toolsEl('tlPlannerFrame'); if (fr) fr.dataset.loaded = '0'; toolsLoadPlanner(true); }
 
 // ══════════════════════════════════════════════════════════════════
-//  TES INTERVIEW — STAFF PLANNING (file Excel per kandidat)
+//  TES INTERVIEW — STAFF PLANNING
 //  Tiap kandidat dapat DATA yang berbeda (diacak dari nama + tanggal),
 //  jadi jawabannya ikut berbeda walaupun dikerjakan bersamaan.
+//  Hasil bisa langsung jadi Google Sheet (lewat Apps Script) atau
+//  diunduh sebagai file Excel.
 // ══════════════════════════════════════════════════════════════════
 const TI_XLSX_CDN = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
 
@@ -5343,150 +5345,249 @@ function tiBuatPaket(nama, tanggal, durasi, jmlBaris) {
   return { nama: nama, tanggal: tanggal, durasi: durasi, rows: rows, pil: pil, jwb: jwb, ifRows: ifRows, vlStore: vlStore, vlLc: vlLc };
 }
 
+function tiTglIndo(iso) {
+  const B = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const p = String(iso || '').split('-');
+  if (p.length !== 3) return String(iso || '');
+  return parseInt(p[2], 10) + ' ' + (B[parseInt(p[1], 10) - 1] || p[1]) + ' ' + p[0];
+}
+
+/** Sheet PETUNJUK — urutan barisnya sama dengan file contoh. */
 function tiSheetPetunjuk(p, kunci) {
   const a = [];
-  a.push(['', 'INTERVIEW TEST — STAFF PLANNING' + (kunci ? '  (KUNCI JAWABAN)' : '')]);
-  a.push(['', 'DC AHI Sidoarjo · Tes Praktek Microsoft Excel']);
-  a.push([]);
-  a.push(['', 'Nama Kandidat', p.nama]);
-  a.push(['', 'Tanggal Tes', p.tanggal]);
-  a.push(['', 'Jam Mulai', '']);
-  a.push(['', 'Jam Selesai', '']);
-  a.push(['', 'Interviewer', '']);
-  a.push([]);
-  a.push(['', 'PETUNJUK PENGERJAAN']);
-  a.push(['', '1.  Waktu pengerjaan ' + p.durasi + ' menit.']);
-  a.push(['', '2.  Kerjakan semua soal di sheet SOAL. Isi jawaban pada kolom JAWABAN.']);
-  a.push(['', '3.  Wajib menggunakan RUMUS Excel (bukan diketik manual), kecuali soal Pivot dan Filter & Sort.']);
-  a.push(['', '4.  Sumber data: sheet DATA (data Load Control / LC) dan sheet MASTER STORE.']);
-  a.push(['', '5.  Untuk soal Pivot Table, buat pivot di sheet PIVOT.']);
-  a.push(['', '6.  Untuk soal Filter & Sort, lakukan langsung di sheet DATA, lalu tulis hasilnya di sheet SOAL.']);
-  a.push(['', '7.  Simpan file setelah selesai.']);
-  a.push([]);
-  a.push(['', 'MATERI & BOBOT NILAI']);
-  a.push(['', 'Bagian', 'Rumus / Fitur', 'Nilai']);
-  a.push(['', 1, 'SUM, AVERAGE, COUNT', 15]);
-  a.push(['', 2, 'SUMIF, COUNTIF', 25]);
-  a.push(['', 3, 'IF', 10]);
-  a.push(['', 4, 'VLOOKUP', 20]);
-  a.push(['', 5, 'Pivot Table', 15]);
-  a.push(['', 6, 'Filter & Sort', 15]);
-  a.push(['', '', 'TOTAL', 100]);
-  a.push([]);
-  a.push(['', 'CATATAN: data pada file ini dibuat khusus untuk kandidat di atas.']);
-  a.push(['', 'Kandidat lain memakai data berbeda, jadi jawabannya juga berbeda.']);
+  a.push([]);                                                                      // 1
+  a.push(['', 'INTERVIEW TEST — STAFF PLANNING' + (kunci ? '  (KUNCI JAWABAN)' : '')]); // 2
+  a.push(['', 'DC AHI Sidoarjo · Tes Praktek Microsoft Excel']);              // 3
+  a.push([]);                                                                      // 4
+  a.push(['', 'Nama Kandidat', p.nama]);                                           // 5
+  a.push(['', 'Tanggal Tes', tiTglIndo(p.tanggal)]);                               // 6
+  a.push(['', 'Jam Mulai', '']);                                                   // 7
+  a.push(['', 'Jam Selesai', '']);                                                 // 8
+  a.push(['', 'Interviewer', '']);                                                 // 9
+  a.push([]);                                                                      // 10
+  a.push(['', 'PETUNJUK PENGERJAAN']);                                             // 11
+  a.push(['', '1.  Waktu pengerjaan ' + p.durasi + ' menit.']);                    // 12
+  a.push(['', '2.  Kerjakan semua soal di sheet SOAL. Isi jawaban pada kotak berwarna KUNING.']); // 13
+  a.push(['', '3.  Wajib menggunakan RUMUS Excel (bukan diketik manual), kecuali soal Pivot dan Filter & Sort.']); // 14
+  a.push(['', '4.  Sumber data: sheet DATA (data Load Control / LC) dan sheet MASTER STORE.']); // 15
+  a.push(['', '5.  Untuk soal Pivot Table, buat pivot di sheet PIVOT.']);          // 16
+  a.push(['', '6.  Untuk soal Filter & Sort, lakukan langsung di sheet DATA, lalu tulis hasilnya di sheet SOAL.']); // 17
+  a.push(['', '7.  Simpan file setelah selesai.']);                                // 18
+  a.push([]);                                                                      // 19
+  a.push([]);                                                                      // 20
+  a.push(['', 'MATERI & BOBOT NILAI']);                                            // 21
+  a.push(['', 'Bagian', 'Rumus / Fitur', 'Nilai']);                                // 22
+  a.push(['', '1', 'SUM, AVERAGE, COUNT', 15]);                                    // 23
+  a.push(['', '2', 'SUMIF, COUNTIF', 25]);                                         // 24
+  a.push(['', '3', 'IF', 10]);                                                     // 25
+  a.push(['', '4', 'VLOOKUP', 20]);                                                // 26
+  a.push(['', '5', 'Pivot Table', 15]);                                            // 27
+  a.push(['', '6', 'Filter & Sort', 15]);                                          // 28
+  a.push(['', '', 'TOTAL', 100]);                                                  // 29
   return a;
 }
 
+/**
+ * Sheet SOAL — urutan baris persis sama dengan file contoh (62 baris),
+ * jadi alamat kotak jawabannya tetap: C6-C8, C12-C16, D21-D30, dst.
+ * Mengembalikan { aoa, kuning } supaya Apps Script tahu sel mana yang dikuning.
+ */
 function tiSheetSoal(p, kunci) {
   const j = p.jwb, K = v => kunci ? v : '';
-  const a = [];
-  a.push(['SOAL TES EXCEL — STAFF PLANNING' + (kunci ? '  (KUNCI JAWABAN)' : '')]);
-  a.push(['Nama: ' + p.nama + '   |   Tanggal: ' + p.tanggal + '   |   Waktu: ' + p.durasi + ' menit']);
-  a.push(['Isi jawaban di kolom JAWABAN. Gunakan rumus Excel. Sumber data: sheet DATA & MASTER STORE.']);
-  a.push([]);
-  a.push(['BAGIAN 1 — SUM, AVERAGE, COUNT   (15 poin)']);
-  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);
-  a.push([1, 'Berapa TOTAL seluruh TOTALORDER (kolom M)?', K(j.totalOrder), '', '5 poin']);
-  a.push([2, 'Berapa RATA-RATA CBM per LC (kolom T)? (2 angka di belakang koma)', K(j.avgCbm), '', '5 poin']);
-  a.push([3, 'Berapa JUMLAH LC yang memiliki data CBM (kolom T)?', K(j.jmlCbm), '', '5 poin']);
-  a.push([]);
-  a.push(['BAGIAN 2 — SUMIF, COUNTIF   (25 poin)']);
-  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);
-  a.push([4, 'Berapa jumlah LC dengan JALUR = "' + p.pil.jalur + '"?', K(j.cJalur), '', '5 poin']);
-  a.push([5, 'Berapa jumlah LC dengan NAMA EXPEDISI = "' + p.pil.exp1 + '"?', K(j.cExp), '', '5 poin']);
-  a.push([6, 'Berapa jumlah LC dengan STATUS = "' + p.pil.status + '"?', K(j.cStatus), '', '5 poin']);
-  a.push([7, 'Berapa total TOTALORDER untuk NAMA EXPEDISI = "' + p.pil.exp2 + '"?', K(j.sOrderExp), '', '5 poin']);
-  a.push([8, 'Berapa total CBM untuk TRANSPORTTYPE = "' + p.pil.tt + '"?', K(j.sCbmTt), '', '5 poin']);
-  a.push([]);
-  a.push(['BAGIAN 3 — IF   (10 poin)']);
-  a.push(['Isi kolom KETERANGAN: jika % SHIP = 100 maka "SELESAI", selain itu "BELUM SELESAI".']);
-  a.push(['No', 'LC', '% SHIP', 'KETERANGAN', 'Poin']);
-  p.ifRows.forEach(function (row, i) {
+  const a = [], kuning = [];
+  const kun = (ref, fmt, merge) => kuning.push({ s: 'SOAL', r: ref, f: fmt || '', m: !!merge });
+
+  a.push(['SOAL TES EXCEL — STAFF PLANNING' + (kunci ? '  (KUNCI JAWABAN)' : '')]);                 // 1
+  a.push([kunci ? 'Kunci dihitung langsung dari sheet DATA file ini. Toleransi pembulatan 0,01.'
+    : 'Isi jawaban di kotak KUNING. Gunakan rumus Excel. Sumber data: sheet DATA & MASTER STORE.']);      // 2
+  a.push([]);                                                                                            // 3
+  a.push(['BAGIAN 1 — SUM, AVERAGE, COUNT   (15 poin)']);                                           // 4
+  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);                                                   // 5
+  a.push([1, 'Berapa TOTAL seluruh TOTALORDER (kolom M)?', K(j.totalOrder), '', '5 poin']);              // 6
+  a.push([2, 'Berapa RATA-RATA CBM per LC (kolom T)? (2 angka di belakang koma)', K(j.avgCbm), '', '5 poin']); // 7
+  a.push([3, 'Berapa JUMLAH LC yang memiliki data CBM (kolom T)?', K(j.jmlCbm), '', '5 poin']);          // 8
+  kun('C6', '#,##0', true); kun('C7', '0.00', true); kun('C8', '#,##0', true);
+  a.push([]);                                                                                            // 9
+  a.push(['BAGIAN 2 — SUMIF, COUNTIF   (25 poin)']);                                                // 10
+  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);                                                   // 11
+  a.push([4, 'Berapa jumlah LC dengan JALUR = "' + p.pil.jalur + '"?', K(j.cJalur), '', '5 poin']);      // 12
+  a.push([5, 'Berapa jumlah LC dengan NAMA EXPEDISI = "' + p.pil.exp1 + '"?', K(j.cExp), '', '5 poin']); // 13
+  a.push([6, 'Berapa jumlah LC dengan STATUS = "' + p.pil.status + '"?', K(j.cStatus), '', '5 poin']);   // 14
+  a.push([7, 'Berapa total TOTALORDER untuk NAMA EXPEDISI = "' + p.pil.exp2 + '"?', K(j.sOrderExp), '', '5 poin']); // 15
+  a.push([8, 'Berapa total CBM untuk TRANSPORTTYPE = "' + p.pil.tt + '"?', K(j.sCbmTt), '', '5 poin']);  // 16
+  kun('C12', '#,##0', true); kun('C13', '#,##0', true); kun('C14', '#,##0', true);
+  kun('C15', '#,##0', true); kun('C16', '#,##0.00', true);
+  a.push([]);                                                                                            // 17
+  a.push(['BAGIAN 3 — IF   (10 poin)']);                                                            // 18
+  a.push(['Isi kolom KETERANGAN: jika % SHIP = 100 maka "SELESAI", selain itu "BELUM SELESAI".']);       // 19
+  a.push(['No', 'LC', '% SHIP', 'KETERANGAN', 'Poin']);                                                  // 20
+  p.ifRows.forEach(function (row, i) {                                                                   // 21-30
     a.push([i + 1, row[0], row[31], K(row[31] === 100 ? 'SELESAI' : 'BELUM SELESAI'), '1 poin']);
+    kun('D' + (21 + i), '', false);
   });
-  a.push([]);
-  a.push(['BAGIAN 4 — VLOOKUP   (20 poin)']);
-  a.push(['4A. Cari NAMA STORE dari sheet MASTER STORE berdasarkan KODE STORE.']);
-  a.push(['No', 'KODE STORE', 'NAMA STORE', '', 'Poin']);
-  p.vlStore.forEach(function (s, i) { a.push([i + 1, s[0], K(s[1]), '', '2 poin']); });
-  a.push([]);
-  a.push(['4B. Cari NAMA EXPEDISI dan JALUR dari sheet DATA berdasarkan nomor LC.']);
-  a.push(['No', 'LC', 'NAMA EXPEDISI', 'JALUR', 'Poin']);
-  p.vlLc.forEach(function (row, i) { a.push([i + 1, row[0], K(row[1]), K(row[6]), '2 poin']); });
-  a.push([]);
-  a.push(['BAGIAN 5 — PIVOT TABLE   (15 poin)']);
-  a.push(['Buat Pivot Table di sheet PIVOT: Rows = NAMA EXPEDISI, Values = Count of LC dan Sum of TOTALORDER. Lalu jawab:']);
-  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);
-  a.push(['5.1', 'Pivot Table sudah dibuat di sheet PIVOT dengan susunan yang benar (dinilai interviewer).', '(dinilai interviewer)', '', '5 poin']);
-  a.push(['5.2', 'NAMA EXPEDISI dengan jumlah LC TERBANYAK?', K(j.pivotExp), '', '3 poin']);
-  a.push(['5.3', 'Berapa jumlah LC ekspedisi tersebut?', K(j.pivotJml), '', '3 poin']);
-  a.push(['5.4', 'Berapa total TOTALORDER ekspedisi tersebut?', K(j.pivotOrder), '', '4 poin']);
-  a.push([]);
-  a.push(['BAGIAN 6 — FILTER & SORT   (15 poin)']);
-  a.push(['Di sheet DATA: Filter JALUR = "' + p.pil.jalurFilter + '", lalu Sort kolom CBM dari TERBESAR ke TERKECIL. Lalu jawab:']);
-  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);
-  a.push(['6.1', 'Berapa jumlah baris (LC) hasil filter JALUR = "' + p.pil.jalurFilter + '"?', K(j.filJml), '', '5 poin']);
-  a.push(['6.2', 'LC dengan CBM TERBESAR di jalur tersebut (urutan paling atas)?', K(j.filLc), '', '5 poin']);
-  a.push(['6.3', 'Berapa CBM dari LC tersebut?', K(j.filCbm), '', '5 poin']);
-  if (kunci) {
-    a.push([]);
-    a.push(['CATATAN PENILAIAN']);
-    a.push(['Angka di atas dihitung langsung dari sheet DATA file ini, jadi sudah pasti cocok.']);
-    a.push(['Toleransi pembulatan 0,01 untuk jawaban desimal.']);
-  }
-  return a;
+  a.push([]);                                                                                            // 31
+  a.push(['BAGIAN 4 — VLOOKUP   (20 poin)']);                                                       // 32
+  a.push(['4A. Cari NAMA STORE dari sheet MASTER STORE berdasarkan KODE STORE.']);                       // 33
+  a.push(['No', 'KODE STORE', 'NAMA STORE', '', 'Poin']);                                                // 34
+  p.vlStore.forEach(function (s, i) {                                                                    // 35-39
+    a.push([i + 1, s[0], K(s[1]), '', '2 poin']); kun('C' + (35 + i), '', true);
+  });
+  a.push([]);                                                                                            // 40
+  a.push(['4B. Cari NAMA EXPEDISI dan JALUR dari sheet DATA berdasarkan nomor LC.']);                    // 41
+  a.push(['No', 'LC', 'NAMA EXPEDISI', 'JALUR', 'Poin']);                                                // 42
+  p.vlLc.forEach(function (row, i) {                                                                     // 43-47
+    a.push([i + 1, row[0], K(row[1]), K(row[6]), '2 poin']);
+    kun('C' + (43 + i), '', false); kun('D' + (43 + i), '', false);
+  });
+  a.push([]);                                                                                            // 48
+  a.push(['BAGIAN 5 — PIVOT TABLE   (15 poin)']);                                                   // 49
+  a.push(['Buat Pivot Table di sheet PIVOT: Rows = NAMA EXPEDISI, Values = Count of LC dan Sum of TOTALORDER. Lalu jawab:']); // 50
+  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);                                                   // 51
+  a.push(['5.1', 'Pivot Table sudah dibuat di sheet PIVOT dengan susunan yang benar (dinilai interviewer).', '(dinilai interviewer)', '', '5 poin']); // 52
+  a.push(['5.2', 'NAMA EXPEDISI dengan jumlah LC TERBANYAK?', K(j.pivotExp), '', '3 poin']);             // 53
+  a.push(['5.3', 'Berapa jumlah LC ekspedisi tersebut?', K(j.pivotJml), '', '3 poin']);                  // 54
+  a.push(['5.4', 'Berapa total TOTALORDER ekspedisi tersebut?', K(j.pivotOrder), '', '4 poin']);         // 55
+  kun('C53', '', true); kun('C54', '#,##0', true); kun('C55', '#,##0', true);
+  a.push([]);                                                                                            // 56
+  a.push(['BAGIAN 6 — FILTER & SORT   (15 poin)']);                                                 // 57
+  a.push(['Di sheet DATA: Filter JALUR = "' + p.pil.jalurFilter + '", lalu Sort kolom CBM dari TERBESAR ke TERKECIL. Lalu jawab:']); // 58
+  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);                                                   // 59
+  a.push(['6.1', 'Berapa jumlah baris (LC) hasil filter JALUR tersebut?', K(j.filJml), '', '5 poin']);   // 60
+  a.push(['6.2', 'LC dengan CBM TERBESAR di jalur tersebut (urutan paling atas)?', K(j.filLc), '', '5 poin']); // 61
+  a.push(['6.3', 'Berapa CBM dari LC tersebut?', K(j.filCbm), '', '5 poin']);                            // 62
+  kun('C60', '#,##0', true); kun('C61', '', true); kun('C62', '#,##0.00', true);
+
+  return { aoa: a, kuning: kuning };
+}
+
+/** Semua bahan satu file: 5 sheet + daftar kotak kuning. */
+function tiBahanFile(p, kunci) {
+  const soal = tiSheetSoal(p, kunci);
+  const kuning = soal.kuning.concat([
+    { s: 'PETUNJUK', r: 'C5', f: '', m: false },
+    { s: 'PETUNJUK', r: 'C6', f: '', m: false },
+    { s: 'PETUNJUK', r: 'C7', f: '', m: false },
+    { s: 'PETUNJUK', r: 'C8', f: '', m: false },
+    { s: 'PETUNJUK', r: 'C9', f: '', m: false }
+  ]);
+  return {
+    petunjuk: tiSheetPetunjuk(p, kunci),
+    soal: soal.aoa,
+    data: [TI_HEADER].concat(p.rows),
+    master: [['KODE STORE', 'NAMA STORE']].concat(TI_STORE),
+    pivot: [['Buat Pivot Table untuk Soal Bagian 5 di sheet ini.']],
+    kuning: kuning
+  };
 }
 
 function tiBuatWorkbook(p, kunci) {
+  const b = tiBahanFile(p, kunci);
   const wb = XLSX.utils.book_new();
   const add = (nama, aoa) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), nama);
-  add('PETUNJUK', tiSheetPetunjuk(p, kunci));
-  add('SOAL', tiSheetSoal(p, kunci));
-  add('DATA', [TI_HEADER].concat(p.rows));
-  add('MASTER STORE', [['KODE STORE', 'NAMA STORE']].concat(TI_STORE));
-  add('PIVOT', [['Buat Pivot Table untuk Soal Bagian 5 di sheet ini.']]);
+  add('PETUNJUK', b.petunjuk);
+  add('SOAL', b.soal);
+  add('DATA', b.data);
+  add('MASTER STORE', b.master);
+  add('PIVOT', b.pivot);
   return wb;
 }
 
-function tiNamaFile(awalan, nama, tanggal) {
-  const bersih = String(nama).replace(/[^A-Za-z0-9 _-]/g, '').trim().replace(/\s+/g, '_') || 'Kandidat';
-  return awalan + '_' + bersih + '_' + tanggal + '.xlsx';
+function tiNamaBersih(nama) {
+  return String(nama).replace(/[^A-Za-z0-9 _-]/g, '').trim().replace(/\s+/g, '_') || 'Kandidat';
+}
+function tiNamaFile(awalan, nama, tanggal) { return awalan + '_' + tiNamaBersih(nama) + '_' + tanggal + '.xlsx'; }
+function tiJudulSheet(awalan, nama, tanggal) {
+  return awalan + ' INTERVIEW TEST STAFF PLANNING - ' + String(nama).trim() + ' (' + tanggal + ')';
 }
 
-async function toolsBuatTesInterview() {
-  const btn = toolsEl('tiBtn'), msg = toolsEl('tiMsg');
-  const setMsg = (cls, t) => { if (msg) { msg.className = 'tl-msg ' + cls; msg.textContent = t; } };
+/** Baca isi form tab Tes Interview. */
+function tiBacaForm() {
   const namaRaw = (toolsEl('tiNama') || {}).value || '';
-  const daftar = namaRaw.split('\n').map(s => s.trim()).filter(Boolean);
-  if (!daftar.length) { setMsg('tl-msg-err', 'Isi dulu nama kandidatnya, satu nama per baris.'); return; }
-  const tanggal = (toolsEl('tiTanggal') || {}).value || new Date().toISOString().slice(0, 10);
-  const durasi = parseInt((toolsEl('tiDurasi') || {}).value, 10) || 30;
-  const jmlBaris = Math.min(Math.max(parseInt((toolsEl('tiBaris') || {}).value, 10) || 400, 100), 2000);
-  const ikutKunci = !(toolsEl('tiKunci') && !toolsEl('tiKunci').checked);
+  return {
+    daftar: namaRaw.split('\n').map(s => s.trim()).filter(Boolean),
+    tanggal: (toolsEl('tiTanggal') || {}).value || new Date().toISOString().slice(0, 10),
+    durasi: parseInt((toolsEl('tiDurasi') || {}).value, 10) || 30,
+    baris: Math.min(Math.max(parseInt((toolsEl('tiBaris') || {}).value, 10) || 400, 100), 2000),
+    ikutKunci: !(toolsEl('tiKunci') && !toolsEl('tiKunci').checked)
+  };
+}
+function tiMsg(cls, t) {
+  const el = toolsEl('tiMsg');
+  if (el) { el.className = 'tl-msg ' + cls; el.innerHTML = t; }
+}
+function tiSibuk(on) {
+  ['tiBtnSheet', 'tiBtnExcel'].forEach(function (id) { const b = toolsEl(id); if (b) b.disabled = !!on; });
+}
 
-  if (btn) btn.disabled = true;
+// ── 1) Langsung jadi Google Sheet (lewat Apps Script) ──────────────
+async function toolsBuatSheetInterview() {
+  const f = tiBacaForm();
+  if (!f.daftar.length) { tiMsg('tl-msg-err', 'Isi dulu nama kandidatnya, satu nama per baris.'); return; }
+  tiSibuk(true);
+  const hasil = [];
+  let gagal = '';
   try {
-    setMsg('tl-msg-wait', '⏳ Menyiapkan pustaka Excel…');
+    for (let i = 0; i < f.daftar.length; i++) {
+      const nama = f.daftar[i];
+      const p = tiBuatPaket(nama, f.tanggal, f.durasi, f.baris);
+      const tugas = [{ awalan: 'SOAL', kunci: false }];
+      if (f.ikutKunci) tugas.push({ awalan: 'KUNCI', kunci: true });
+      for (let t = 0; t < tugas.length; t++) {
+        tiMsg('tl-msg-wait', '⏳ Membuat ' + tugas[t].awalan + ' untuk <b>' + toolsEsc(nama) + '</b>… (kandidat ' + (i + 1) + '/' + f.daftar.length + ')');
+        const b = tiBahanFile(p, tugas[t].kunci);
+        const res = await toolsXhrPost(GAS_DASHBOARD_URL, {
+          action: 'buatSheetInterview',
+          judul: tiJudulSheet(tugas[t].awalan, nama, f.tanggal),
+          petunjuk: b.petunjuk, soal: b.soal, data: b.data, master: b.master, pivot: b.pivot, kuning: b.kuning
+        }, 180000);
+        if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
+        hasil.push({ label: tugas[t].awalan + ' — ' + nama, url: res.url, catatan: res.catatan || '' });
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    gagal = String((e && e.message) || e);
+  }
+  tiSibuk(false);
+
+  let html = '';
+  if (hasil.length) {
+    html += '✅ ' + hasil.length + ' Google Sheet dibuat di Drive kamu:<br>';
+    html += hasil.map(h => '• <a href="' + h.url + '" target="_blank" rel="noopener"><b>' + toolsEsc(h.label) + '</b></a>' + (h.catatan ? ' <i>(' + toolsEsc(h.catatan) + ')</i>' : '')).join('<br>');
+  }
+  if (gagal) {
+    html += (html ? '<br><br>' : '') + '⚠️ Berhenti di tengah: ' + toolsEsc(gagal)
+      + '<br>Kalau pesannya soal izin, jalankan <b>authorizeSheetInterview</b> di editor Apps Script lalu deploy versi baru. Sementara itu bisa pakai tombol <b>Unduh Excel</b>.';
+  }
+  tiMsg(gagal ? (hasil.length ? 'tl-msg-wait' : 'tl-msg-err') : 'tl-msg-ok', html || 'Tidak ada yang dibuat.');
+}
+
+// ── 2) Unduh sebagai file Excel (cadangan, tanpa pewarnaan) ────────
+async function toolsBuatTesInterview() {
+  const f = tiBacaForm();
+  if (!f.daftar.length) { tiMsg('tl-msg-err', 'Isi dulu nama kandidatnya, satu nama per baris.'); return; }
+  tiSibuk(true);
+  try {
+    tiMsg('tl-msg-wait', '⏳ Menyiapkan pustaka Excel…');
     await toolsLoadScript(TI_XLSX_CDN);
     if (typeof XLSX === 'undefined') throw new Error('Pustaka Excel tidak termuat.');
     let n = 0;
-    for (const nama of daftar) {
-      setMsg('tl-msg-wait', '⏳ Membuat soal untuk ' + nama + '… (' + (n + 1) + '/' + daftar.length + ')');
-      const p = tiBuatPaket(nama, tanggal, durasi, jmlBaris);
-      XLSX.writeFile(tiBuatWorkbook(p, false), tiNamaFile('SOAL', nama, tanggal));
-      if (ikutKunci) {
+    for (const nama of f.daftar) {
+      tiMsg('tl-msg-wait', '⏳ Membuat soal untuk <b>' + toolsEsc(nama) + '</b>… (' + (n + 1) + '/' + f.daftar.length + ')');
+      const p = tiBuatPaket(nama, f.tanggal, f.durasi, f.baris);
+      XLSX.writeFile(tiBuatWorkbook(p, false), tiNamaFile('SOAL', nama, f.tanggal));
+      if (f.ikutKunci) {
         await new Promise(res => setTimeout(res, 400));
-        XLSX.writeFile(tiBuatWorkbook(p, true), tiNamaFile('KUNCI', nama, tanggal));
+        XLSX.writeFile(tiBuatWorkbook(p, true), tiNamaFile('KUNCI', nama, f.tanggal));
       }
       n++;
       await new Promise(res => setTimeout(res, 400));
     }
-    setMsg('tl-msg-ok', '✅ Selesai. ' + n + ' kandidat, ' + (ikutKunci ? n * 2 : n) + ' file terunduh. Tiap kandidat memakai data yang berbeda, jadi jawabannya tidak bisa disamakan.');
+    tiMsg('tl-msg-ok', '✅ Selesai. ' + n + ' kandidat, ' + (f.ikutKunci ? n * 2 : n) + ' file terunduh. Tiap kandidat memakai data yang berbeda, jadi jawabannya tidak bisa disamakan. <i>Catatan: file unduhan tidak berwarna kuning seperti versi Google Sheet.</i>');
   } catch (e) {
     console.error(e);
-    setMsg('tl-msg-err', 'Gagal membuat file: ' + e.message);
+    tiMsg('tl-msg-err', 'Gagal membuat file: ' + toolsEsc(String(e.message || e)));
   } finally {
-    if (btn) btn.disabled = false;
+    tiSibuk(false);
   }
 }
