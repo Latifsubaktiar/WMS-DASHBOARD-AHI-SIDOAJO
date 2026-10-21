@@ -5840,8 +5840,12 @@ function tiGambarRiwayat() {
       + '<td><b>' + toolsEsc(r.nama) + '</b></td>'
       + '<td>' + nilai + '</td>'
       + '<td>' + (sudah ? '✅ ' : '⏳ ') + toolsEsc(r.status) + '</td>'
-      + '<td>' + (r.urlSoal ? '<a href="' + r.urlSoal + '" target="_blank" rel="noopener">buka</a>' : '—') + '</td>'
-      + '<td><button class="tl-btn tl-btn-sm" onclick="toolsNilaiKandidat(' + i + ')">📝 Nilai sekarang</button></td>'
+      + '<td>' + (r.urlSoal
+        ? (sudah ? '<button class="tl-btn tl-btn-sm" onclick="toolsBukaSoal(' + i + ')">🔒 Buka pakai NIP</button>'
+          : '<a href="' + r.urlSoal + '" target="_blank" rel="noopener">buka</a>')
+        : '—') + '</td>'
+      + '<td><button class="tl-btn tl-btn-sm" onclick="toolsNilaiKandidat(' + i + ')">📝 ' + (sudah ? 'Nilai ulang' : 'Nilai sekarang') + '</button>'
+      + (sudah ? ' <button class="tl-btn tl-btn-sm" onclick="toolsKunciSoal(' + i + ')">🔒 Kunci file</button>' : '') + '</td>'
       + '</tr>';
     if (r.rincian) h += '<tr><td colspan="6" class="tl-muted" style="font-size:12px">' + toolsEsc(r.rincian) + '</td></tr>';
   });
@@ -5850,6 +5854,37 @@ function tiGambarRiwayat() {
 }
 
 /** Baca jawaban kandidat, bandingkan dengan kunci, simpan nilainya. */
+/** Soal yang sudah dinilai: linknya baru dibuka setelah NIP cocok. */
+function toolsBukaSoal(idx) {
+  const r = tiRiwayat[idx];
+  if (!r || !r.urlSoal) return;
+  const izin = tiMintaNipNilai();
+  const box = toolsEl('tiRiwayatMsg');
+  if (izin === null) { if (box) { box.className = 'tl-msg tl-msg-err'; box.textContent = 'NIP tidak cocok. File soal tidak dibuka.'; } return; }
+  if (!izin) return;
+  window.open(r.urlSoal, '_blank', 'noopener');
+}
+
+/** Kunci ulang file soal secara manual (kalau penguncian otomatis tadi gagal). */
+async function toolsKunciSoal(idx) {
+  const r = tiRiwayat[idx];
+  if (!r || !r.idSoal) return;
+  const box = toolsEl('tiRiwayatMsg');
+  const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
+  const izin = tiMintaNipNilai();
+  if (izin === null) { pesan('tl-msg-err', 'NIP tidak cocok.'); return; }
+  if (!izin) return;
+  try {
+    pesan('tl-msg-wait', '⏳ Mengunci file soal <b>' + toolsEsc(r.nama) + '</b>…');
+    const k = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'kunciFileInterview', idSoal: r.idSoal }, 30000);
+    if (!k || k.ok === false) throw new Error((k && k.error) || 'Server tidak membalas');
+    pesan('tl-msg-ok', '🔒 File soal <b>' + toolsEsc(r.nama) + '</b> sudah dikunci — sekarang hanya bisa dibuka akun kamu'
+      + (k.dikeluarkan ? ' (' + k.dikeluarkan + ' orang dikeluarkan aksesnya)' : '') + '.');
+  } catch (e) {
+    pesan('tl-msg-err', 'Gagal mengunci: ' + toolsEsc(String(e.message || e)) + '<br>Kunci manual: buka filenya → Share → ubah jadi <b>Restricted</b>.');
+  }
+}
+
 /** Dari tabel riwayat. */
 function toolsNilaiKandidat(idx) {
   const r = tiRiwayat[idx];
@@ -5960,6 +5995,21 @@ async function tiNilai(r) {
       + ' · kotak terisi: <b>' + terisi + '</b> dari 39</span>';
     if (terisi === 0) {
       html += '<br><b>⚠️ Semua kotak jawaban terbaca kosong.</b> Kemungkinan yang dinilai bukan file yang dikerjakan kandidat — cek nama file di atas.';
+    }
+
+    // Setelah dinilai, file soalnya dikunci supaya tidak bisa dibuka/dicontek kandidat berikutnya.
+    try {
+      const k = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'kunciFileInterview', idSoal: r.idSoal }, 30000);
+      if (k && k.ok) {
+        html += '<br>🔒 <b>File soal sudah dikunci</b> — sekarang hanya bisa dibuka akun kamu'
+          + (k.dikeluarkan ? ' (' + k.dikeluarkan + ' orang dikeluarkan aksesnya)' : '') + '.';
+        r.terkunci = true;
+      } else {
+        html += '<br>⚠️ <b>File soal BELUM terkunci:</b> ' + toolsEsc((k && k.error) || 'server tidak membalas')
+          + '<br>Kunci manual: buka filenya → Share → ubah jadi <b>Restricted</b>.';
+      }
+    } catch (e3) {
+      html += '<br>⚠️ <b>File soal BELUM terkunci</b> (' + toolsEsc(String(e3.message || e3)) + '). Kunci manual lewat tombol Share di filenya.';
     }
     if (n.kosong) html += '<br><i>' + n.kosong + ' kotak jawaban dibiarkan kosong.</i>';
     if (n.salah.length) {
