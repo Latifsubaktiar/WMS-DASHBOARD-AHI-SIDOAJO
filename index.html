@@ -1746,6 +1746,18 @@
     <div class="card tl-block">
       <div class="card-header"><span class="card-title">🗂️ Riwayat &amp; Nilai Kandidat</span><button class="tl-btn tl-btn-sm" onclick="toolsMuatRiwayatInterview()">↺ Muat ulang</button></div>
       <div class="tl-body">
+        <p class="tl-desc">Sudah selesai dikerjakan kandidat? Tempel link file soalnya di sini, lalu klik Nilai. Nama dan tanggal harus <b>persis sama</b> seperti waktu soalnya dibuat — itu yang dipakai untuk menghitung ulang kuncinya.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:10px 0 14px">
+          <div><label class="tl-desc" style="display:block;margin-bottom:5px">Nama kandidat</label>
+            <input type="text" id="tiNilaiNama" placeholder="Latif Subaktiar" style="width:200px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font:inherit"></div>
+          <div><label class="tl-desc" style="display:block;margin-bottom:5px">Tanggal tes</label>
+            <input type="date" id="tiNilaiTgl" style="padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font:inherit"></div>
+          <div><label class="tl-desc" style="display:block;margin-bottom:5px">Baris data</label>
+            <input type="number" id="tiNilaiBaris" value="400" style="width:100px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font:inherit"></div>
+          <div style="flex:1;min-width:240px"><label class="tl-desc" style="display:block;margin-bottom:5px">Link file soal kandidat</label>
+            <input type="text" id="tiNilaiLink" placeholder="https://docs.google.com/spreadsheets/d/..." style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font:inherit"></div>
+          <button class="tl-btn tl-btn-primary" onclick="toolsNilaiDariLink()">📝 Nilai</button>
+        </div>
         <div class="tl-msg" id="tiRiwayatMsg"></div>
         <div id="tiRiwayat"><div class="tl-empty">Memuat riwayat…</div></div>
       </div>
