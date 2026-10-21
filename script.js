@@ -5836,7 +5836,7 @@ function tiGambarRiwayat() {
     const sudah = String(r.status || '').indexOf('Sudah') === 0;
     const nilai = sudah ? '<b>' + r.nilaiAkhir + '</b> / 100' : '—';
     h += '<tr>'
-      + '<td>' + toolsEsc(r.tanggal) + '</td>'
+      + '<td>' + toolsEsc(tiTglNormal(r.tanggal)) + '</td>'
       + '<td><b>' + toolsEsc(r.nama) + '</b></td>'
       + '<td>' + nilai + '</td>'
       + '<td>' + (sudah ? '✅ ' : '⏳ ') + toolsEsc(r.status) + '</td>'
@@ -5884,16 +5884,49 @@ function tiIdDariLink(link) {
   return /^[A-Za-z0-9_-]{20,}$/.test(s) ? s : '';
 }
 
+/* Hasil penilaian memuat jawaban yang benar, jadi dikunci NIP seperti file kunci.
+   Sekali terbuka, berlaku sampai halaman di-refresh. */
+var tiNilaiTerbuka = false;
+function tiMintaNipNilai() {
+  if (tiNilaiTerbuka) return true;
+  const isi = prompt('Hasil penilaian memuat KUNCI JAWABAN.\nMasukkan NIP kamu untuk melihatnya:');
+  if (isi === null) return false;
+  if (!tiNipDiterima(isi)) return null;   // null = NIP salah
+  tiNilaiTerbuka = true;
+  return true;
+}
+
+/** Pastikan tanggal berbentuk yyyy-MM-dd; kalau tidak, acakan datanya jadi beda.
+    Tanggal dibaca dari tulisannya langsung, bukan lewat zona waktu, supaya
+    'Wed Oct 21 2026 00:00:00 GMT+0700' tidak jadi mundur sehari. */
+var TI_BULAN_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function tiTglNormal(v) {
+  const s = String(v == null ? '' : v).trim();
+  const p = n => String(n).padStart(2, '0');
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  m = s.match(/\b([A-Z][a-z]{2}) (\d{1,2}) (\d{4})\b/);          // "Oct 21 2026"
+  if (m) { const b = TI_BULAN_EN.indexOf(m[1]); if (b >= 0) return m[3] + '-' + p(b + 1) + '-' + p(+m[2]); }
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);                // "21/10/2026"
+  if (m) return m[3] + '-' + p(+m[2]) + '-' + p(+m[1]);
+  return s;
+}
+
 async function tiNilai(r) {
   const box = toolsEl('tiRiwayatMsg');
   const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
   if (!r.idSoal) { pesan('tl-msg-err', 'Baris ini tidak menyimpan ID file soal, jadi tidak bisa dinilai otomatis.'); return; }
+
+  const izin = tiMintaNipNilai();
+  if (izin === null) { pesan('tl-msg-err', 'NIP tidak cocok. Hasil penilaian tidak ditampilkan.'); return; }
+  if (!izin) { pesan('tl-msg-wait', 'Dibatalkan.'); return; }
+
   try {
     pesan('tl-msg-wait', '⏳ Membaca jawaban <b>' + toolsEsc(r.nama) + '</b>…');
     const res = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'jawabanInterview', idSoal: r.idSoal }, 60000);
     if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
 
-    const p = tiBuatPaket(r.nama, r.tanggal, Number(r.durasi) || 30, Number(r.jmlBaris) || 400);
+    const p = tiBuatPaket(r.nama, tiTglNormal(r.tanggal), Number(r.durasi) || 30, Number(r.jmlBaris) || 400);
     const n = tiNilaiDariGrid(p, res.grid || []);
 
     let n51 = 0;
@@ -5918,7 +5951,16 @@ async function tiNilai(r) {
       catatanSimpan = '<br><i>Nilai ini tidak disimpan ke riwayat (dinilai dari link langsung).</i>';
     }
 
+    const terisi = 39 - n.kosong;
     let html = '✅ <b>' + toolsEsc(r.nama) + '</b> — nilai akhir <b>' + (n.total + n51) + ' / 100</b><br>' + toolsEsc(rincian);
+    // Keterangan sumber: biar ketahuan kalau yang kebaca ternyata file yang salah.
+    html += '<br><span class="tl-muted">Dibaca dari: '
+      + (res.urlFile ? '<a href="' + res.urlFile + '" target="_blank" rel="noopener">' + toolsEsc(res.namaFile || 'file soal') + '</a>' : toolsEsc(res.namaFile || r.idSoal))
+      + ' · tanggal dipakai: <b>' + toolsEsc(tiTglNormal(r.tanggal)) + '</b> · baris data: <b>' + (Number(r.jmlBaris) || 400) + '</b>'
+      + ' · kotak terisi: <b>' + terisi + '</b> dari 39</span>';
+    if (terisi === 0) {
+      html += '<br><b>⚠️ Semua kotak jawaban terbaca kosong.</b> Kemungkinan yang dinilai bukan file yang dikerjakan kandidat — cek nama file di atas.';
+    }
     if (n.kosong) html += '<br><i>' + n.kosong + ' kotak jawaban dibiarkan kosong.</i>';
     if (n.salah.length) {
       html += '<br><br><b>Yang salah (' + n.salah.length + '):</b><br>'
