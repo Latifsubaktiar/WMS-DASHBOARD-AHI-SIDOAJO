@@ -5772,27 +5772,51 @@ function tiSamaTeks(jawab, benar) {
   return b(jawab) !== '' && b(jawab) === b(benar);
 }
 
+/* Bagian 1-4 wajib pakai rumus Excel (sesuai PETUNJUK).
+   Bagian 5 Pivot dan 6 Filter & Sort memang dijawab dengan mengetik hasilnya. */
+var TI_BAGIAN_WAJIB_RUMUS = [1, 2, 3, 4];
+function tiWajibRumus(bagian) { return TI_BAGIAN_WAJIB_RUMUS.indexOf(bagian) >= 0; }
+
+/**
+ * Dianggap rumus kalau diawali '=' DAN memuat huruf — artinya ada nama fungsi
+ * (SUM, VLOOKUP, ...) atau acuan sel (M2, DATA!T:T).
+ * Rumus apa pun diterima; isinya tidak dibandingkan dengan rumus tertentu,
+ * karena satu soal bisa dikerjakan dengan banyak cara yang sama-sama benar.
+ * Yang ditolak hanya angka yang disamarkan jadi rumus, misalnya "=53571"
+ * atau "=20.82*1" — itu sama saja mengetik manual.
+ */
+function tiPakaiRumus(f) {
+  const s = String(f || '').trim();
+  if (s.indexOf('=') !== 0) return false;
+  return /[A-Za-z]/.test(s.slice(1));
+}
+
 /** Bandingkan jawaban kandidat dengan kunci. */
-function tiNilaiDariGrid(p, grid) {
+function tiNilaiDariGrid(p, grid, rumusGrid, tegakkanRumus) {
   const daftar = tiDaftarKunci(p);
   const perBagian = { 1: { dapat: 0, maks: 0 }, 2: { dapat: 0, maks: 0 }, 3: { dapat: 0, maks: 0 }, 4: { dapat: 0, maks: 0 }, 5: { dapat: 0, maks: 0 }, 6: { dapat: 0, maks: 0 } };
-  const salah = [], benarList = [];
+  const salah = [], benarList = [], tanpaRumus = [];
   let total = 0, maks = 0, kosong = 0;
   daftar.forEach(function (k) {
     const jawab = tiSelDariGrid(grid, k.ref);
     const benar = k.jenis === 'teks' ? tiSamaTeks(jawab, k.benar) : tiSamaAngka(jawab, k.benar);
+    const pakaiRumus = tiPakaiRumus(tiSelDariGrid(rumusGrid || [], k.ref));
     perBagian[k.bagian].maks += k.poin;
     maks += k.poin;
-    if (benar) {
+    if (benar && tiWajibRumus(k.bagian) && !pakaiRumus) {
+      // nilainya benar tapi diketik manual, padahal bagian ini wajib rumus
+      tanpaRumus.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, poin: k.poin });
+      if (!tegakkanRumus) { perBagian[k.bagian].dapat += k.poin; total += k.poin; }
+    } else if (benar) {
       perBagian[k.bagian].dapat += k.poin; total += k.poin;
-      benarList.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, poin: k.poin });
+      benarList.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, poin: k.poin, rumus: tiSelDariGrid(rumusGrid || [], k.ref) || '' });
     } else {
       if (String(jawab).trim() === '') kosong++;
       salah.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, benar: k.benar });
     }
   });
   perBagian[5].maks += 5; // soal 5.1 dinilai interviewer
-  return { total: total, maks: maks, perBagian: perBagian, salah: salah, benar: benarList, kosong: kosong };
+  return { total: total, maks: maks, perBagian: perBagian, salah: salah, benar: benarList, tanpaRumus: tanpaRumus, kosong: kosong };
 }
 
 // ── Riwayat ───────────────────────────────────────────────────────
@@ -6046,7 +6070,9 @@ async function tiNilai(r, opsi) {
     if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
 
     const p = tiBuatPaket(r.nama, tiTglNormal(r.tanggal), Number(r.durasi) || 30, Number(r.jmlBaris) || 400);
-    const n = tiNilaiDariGrid(p, res.grid || []);
+    const el = toolsEl('tiWajibRumus');
+    const tegakkan = el ? !!el.checked : true;
+    const n = tiNilaiDariGrid(p, res.grid || [], res.rumus || [], tegakkan);
 
     let n51 = 0;
     if (lihatSaja) {
@@ -6108,7 +6134,15 @@ async function tiNilai(r, opsi) {
     if (n.kosong) html += '<br><i>' + n.kosong + ' kotak jawaban dibiarkan kosong.</i>';
     if (n.benar.length) {
       html += '<br><br><b>✅ Yang benar (' + n.benar.length + ' soal, ' + n.total + ' poin — belum termasuk ' + n51 + ' poin soal 5.1):</b><br>'
-        + n.benar.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <b>' + toolsEsc(String(s.jawab)) + '</b> · +' + s.poin).join('<br>');
+        + n.benar.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <b>' + toolsEsc(String(s.jawab)) + '</b> · +' + s.poin
+          + (s.rumus ? ' <span class="tl-muted">' + toolsEsc(String(s.rumus).slice(0, 60)) + '</span>' : '')).join('<br>');
+    }
+    if (n.tanpaRumus && n.tanpaRumus.length) {
+      const poinHangus = n.tanpaRumus.reduce((s, x) => s + x.poin, 0);
+      html += '<br><br><b>⚠️ Benar tapi TANPA RUMUS (' + n.tanpaRumus.length + ' soal, ' + poinHangus + ' poin)</b> — '
+        + (tegakkan ? '<b style="color:var(--red)">tidak dihitung</b>' : 'tetap dihitung')
+        + ', karena Bagian 1–4 wajib pakai rumus Excel:<br>'
+        + n.tanpaRumus.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — diketik manual <b>' + toolsEsc(String(s.jawab)) + '</b>').join('<br>');
     }
     if (n.salah.length) {
       html += '<br><br><b>❌ Yang salah (' + n.salah.length + '):</b><br>'
