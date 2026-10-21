@@ -5163,12 +5163,13 @@ var TOOLS_PLANNER_URL = 'ppt-planner.html';
 var toolsTab = 'pagi';
 
 function toolsSwitchTab(name) {
-  toolsTab = (name === 'pimpinan' || name === 'planner') ? name : 'pagi';
-  const panes = { pagi: toolsEl('tlPanePagi'), pimpinan: toolsEl('tlPanePimpinan'), planner: toolsEl('tlPanePlanner') };
-  const tabs = { pagi: toolsEl('tlTabPagi'), pimpinan: toolsEl('tlTabPimpinan'), planner: toolsEl('tlTabPlanner') };
+  toolsTab = (name === 'pimpinan' || name === 'planner' || name === 'tes') ? name : 'pagi';
+  const panes = { pagi: toolsEl('tlPanePagi'), pimpinan: toolsEl('tlPanePimpinan'), planner: toolsEl('tlPanePlanner'), tes: toolsEl('tlPaneTes') };
+  const tabs = { pagi: toolsEl('tlTabPagi'), pimpinan: toolsEl('tlTabPimpinan'), planner: toolsEl('tlTabPlanner'), tes: toolsEl('tlTabTes') };
   Object.keys(panes).forEach(k => { if (panes[k]) panes[k].style.display = (toolsTab === k) ? '' : 'none'; if (tabs[k]) tabs[k].classList.toggle('active', toolsTab === k); });
   if (toolsTab === 'pimpinan') toolsLoadPimpinan(false);
   if (toolsTab === 'planner') toolsLoadPlanner(false);
+  if (toolsTab === 'tes') { const t = toolsEl('tiTanggal'); if (t && !t.value) t.value = new Date().toISOString().slice(0, 10); }
 }
 
 /** Muat satu tool HTML (Pimpinan/Planner) ke dalam iframe-nya, dengan pengecekan file ada dulu. */
@@ -5201,3 +5202,291 @@ function toolsReloadPimpinan() { const fr = toolsEl('tlPimpFrame'); if (fr) fr.d
 
 function toolsLoadPlanner(force) { return toolsLoadFrameTool(TOOLS_PLANNER_URL, 'tlPlannerFrame', 'tlPlannerMsg', force, 'PPT Planner'); }
 function toolsReloadPlanner() { const fr = toolsEl('tlPlannerFrame'); if (fr) fr.dataset.loaded = '0'; toolsLoadPlanner(true); }
+
+// ══════════════════════════════════════════════════════════════════
+//  TES INTERVIEW — STAFF PLANNING (file Excel per kandidat)
+//  Tiap kandidat dapat DATA yang berbeda (diacak dari nama + tanggal),
+//  jadi jawabannya ikut berbeda walaupun dikerjakan bersamaan.
+// ══════════════════════════════════════════════════════════════════
+const TI_XLSX_CDN = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+
+// Acakan yang bisa diulang: nama yang sama + tanggal yang sama = data yang sama.
+function tiSeed(teks) {
+  let h = 2166136261;
+  for (let i = 0; i < teks.length; i++) { h ^= teks.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function tiRng(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const tiPick = (r, arr) => arr[Math.floor(r() * arr.length)];
+const tiInt = (r, a, b) => a + Math.floor(r() * (b - a + 1));
+const tiDec = (r, a, b) => Math.round((a + r() * (b - a)) * 100) / 100;
+
+const TI_EXPEDISI = ['PT.DANEX', '1D-INTERNAL (SDA)', 'WPS', 'AHI', 'BS', 'KEMASINDO', 'PT AMANAH', 'MIF', 'PT SML', 'DKL', 'JT', 'TPIL'];
+const TI_JALUR = ['Bali', 'Makassar', 'JOGYAKARTA', 'SEMARANG', 'MALANG', 'SURABAYA PUSAT', 'SURABAYA SELATAN', 'SOLO', 'Manado', 'SURABAYA TIMUR ZONA1', 'SURABAYA BARAT ZONA1', 'GRESIK'];
+const TI_TYPE_LAND = ['CDD LONG CHASSIS', 'WINGBOX', 'CDE LONG CHASSIS', 'FUSO', 'CDE'];
+const TI_TYPE_SEA = ['CONT-20', 'CONT-40'];
+const TI_STATUS = ['Checkout', 'Checkout', 'Checkout', 'Checkout', 'Checkout', 'Close', 'New', 'Checkin'];
+const TI_STORE = [
+  ['A305', 'ST AHI SBY PAKUWON'], ['A307', 'ST AHI SURABAYA GALAXY'], ['A312', 'ST AHI SBY TUNJUNGAN PLAZA'],
+  ['A321', 'ST AHI ROYAL PLAZA SURABAYA'], ['A339', 'ST AHI SIDOARJO'], ['A367', 'ST AHI TEUKU UMAR DPS'],
+  ['A379', 'ST AHI NUSA DUA BALI'], ['A435', 'ST AHI BATU BULAN BALI'], ['A480', 'ST AHI MALANG'],
+  ['A551', 'ST AHI JOGJA'], ['A597', 'ST AHI GIANYAR BALI'], ['A615', 'ST AHI SOLO'],
+  ['A635', 'ST AHI SEMARANG'], ['A652', 'ST AHI MAKASSAR'], ['A668', 'ST AHI MANADO'],
+  ['A671', 'ST AHI GRESIK'], ['A684', 'ST AHI KEDIRI'], ['A690', 'ST AHI BANYUWANGI'],
+  ['A702', 'ST AHI JEMBER'], ['A714', 'ST AHI MADIUN']
+];
+const TI_HEADER = ['LC', 'NAMA EXPEDISI', 'TRANSPORTTYPE', 'NOPOL', 'TYPE', 'SHIP TO', 'JALUR', 'JML LC',
+  'ADD DATE', 'DELIV DATE', 'LOAD DATE', 'TOTTAL STOP', 'TOTALORDER', 'INFOR', 'RT TD', 'RTA', 'RTB',
+  'ORDER NDC', 'TOTAL CASE ID', 'CBM', 'RELEAS', '% RELEAS', 'PICKED', '% PICKED', 'BOOM STATUS', '% BOOM',
+  'STAGE', '% STAGE', 'LOADED', '%LOADED', 'SHIP', '% SHIP', 'STATUS'];
+
+/** Bikin tabel DATA dummy yang bentuknya meniru sheet DATA asli. */
+function tiBuatData(r, jml) {
+  const rows = [];
+  const pad = n => String(n).padStart(2, '0');
+  for (let i = 0; i < jml; i++) {
+    const bulan = tiInt(r, 1, 4), tgl = tiInt(r, 1, 28);
+    const lc = '26' + pad(bulan) + pad(tgl) + 'L' + pad(tiInt(r, 1, 99));
+    const sea = r() < 0.26;
+    const type = sea ? tiPick(r, TI_TYPE_SEA) : tiPick(r, TI_TYPE_LAND);
+    const st = tiPick(r, TI_STORE);
+    const totalOrder = tiInt(r, 20, 250);
+    const caseId = tiInt(r, 10, 120);
+    const cbm = r() < 0.08 ? '' : tiDec(r, 2, 38); // sebagian dikosongkan supaya soal COUNT & AVERAGE tidak asal jumlah baris
+    const status = tiPick(r, TI_STATUS);
+    const selesai = status === 'Checkout' || status === 'Close';
+    const pct = selesai ? 100 : (r() < 0.4 ? tiInt(r, 80, 99) : 0);
+    const ship = Math.round(totalOrder * pct / 100);
+    const nopol = ['L', 'W', 'N', 'S'][tiInt(r, 0, 3)] + tiInt(r, 1000, 9999) + String.fromCharCode(65 + tiInt(r, 0, 25)) + String.fromCharCode(65 + tiInt(r, 0, 25));
+    rows.push([
+      lc, tiPick(r, TI_EXPEDISI), sea ? 'Sea' : 'Land', nopol, type,
+      st[0] + ' ' + st[1], tiPick(r, TI_JALUR), 1,
+      pad(tgl) + '-' + pad(bulan) + '-26 ' + pad(tiInt(r, 6, 20)) + ':' + pad(tiInt(r, 0, 59)),
+      pad(tgl) + '-' + pad(bulan) + '-26', pad(tgl) + '-' + pad(bulan) + '-26 08:00',
+      tiInt(r, 1, 4), totalOrder, tiInt(r, 0, totalOrder), 0, 0, tiInt(r, 0, 6), 0,
+      caseId, cbm,
+      ship, pct, ship, pct, 'NOT CHECKED', '', ship, pct, ship, pct, ship, pct, status
+    ]);
+  }
+  // nomor LC dibuat unik supaya VLOOKUP tidak ambigu
+  const dipakai = {};
+  rows.forEach(function (row) {
+    let lc = row[0], n = 1;
+    while (dipakai[lc]) { lc = row[0] + '-' + (++n); }
+    dipakai[lc] = 1; row[0] = lc;
+  });
+  return rows;
+}
+
+/** Hitung semua jawaban dari data yang baru dibuat. */
+function tiHitung(rows, pil) {
+  const kol = { exp: 1, tt: 2, jalur: 6, totOrder: 12, cbm: 19, pctShip: 31, status: 32 };
+  const num = v => (typeof v === 'number' ? v : parseFloat(v) || 0);
+  const sum = (f, g) => rows.filter(g).reduce((s, x) => s + num(x[f]), 0);
+  const jmlCbm = rows.filter(x => num(x[kol.cbm]) > 0).length;
+  const totCbm = sum(kol.cbm, () => true);
+  const a = {
+    totalOrder: sum(kol.totOrder, () => true),
+    avgCbm: Math.round((totCbm / (jmlCbm || 1)) * 100) / 100,
+    jmlCbm: jmlCbm,
+    cJalur: rows.filter(x => x[kol.jalur] === pil.jalur).length,
+    cExp: rows.filter(x => x[kol.exp] === pil.exp1).length,
+    cStatus: rows.filter(x => x[kol.status] === pil.status).length,
+    sOrderExp: sum(kol.totOrder, x => x[kol.exp] === pil.exp2),
+    sCbmTt: Math.round(sum(kol.cbm, x => x[kol.tt] === pil.tt) * 100) / 100
+  };
+  // Bagian 5 - pivot: ekspedisi dengan LC terbanyak
+  const perExp = {};
+  rows.forEach(x => {
+    const k = x[kol.exp];
+    if (!perExp[k]) perExp[k] = { n: 0, order: 0 };
+    perExp[k].n++; perExp[k].order += num(x[kol.totOrder]);
+  });
+  let top = null;
+  Object.keys(perExp).forEach(k => { if (!top || perExp[k].n > perExp[top].n) top = k; });
+  a.pivotExp = top; a.pivotJml = perExp[top].n; a.pivotOrder = perExp[top].order;
+  // Bagian 6 - filter & sort
+  const fil = rows.filter(x => x[kol.jalur] === pil.jalurFilter)
+    .slice().sort((x, y) => num(y[kol.cbm]) - num(x[kol.cbm]));
+  a.filJml = fil.length;
+  a.filLc = fil.length ? fil[0][0] : '-';
+  a.filCbm = fil.length ? num(fil[0][kol.cbm]) : 0;
+  return a;
+}
+
+/** Susun satu paket soal (+ kunci) untuk satu kandidat. */
+function tiBuatPaket(nama, tanggal, durasi, jmlBaris) {
+  const r = tiRng(tiSeed(nama + '|' + tanggal));
+  const rows = tiBuatData(r, jmlBaris);
+  const adaJalur = Array.from(new Set(rows.map(x => x[6])));
+  const adaExp = Array.from(new Set(rows.map(x => x[1])));
+  const adaStatus = Array.from(new Set(rows.map(x => x[32])));
+  const pil = {
+    jalur: tiPick(r, adaJalur), exp1: tiPick(r, adaExp), exp2: tiPick(r, adaExp),
+    status: tiPick(r, adaStatus.filter(s => s !== 'Checkout')) || 'New',
+    tt: r() < 0.5 ? 'Sea' : 'Land', jalurFilter: tiPick(r, adaJalur)
+  };
+  const jwb = tiHitung(rows, pil);
+  // 10 LC untuk soal IF, 5 kode store + 5 LC untuk VLOOKUP
+  const acakAmbil = (arr, n) => { const c = arr.slice(); const out = []; while (out.length < n && c.length) out.push(c.splice(Math.floor(r() * c.length), 1)[0]); return out; };
+  const ifRows = acakAmbil(rows, 10);
+  const vlStore = acakAmbil(TI_STORE, 5);
+  const vlLc = acakAmbil(rows, 5);
+  return { nama: nama, tanggal: tanggal, durasi: durasi, rows: rows, pil: pil, jwb: jwb, ifRows: ifRows, vlStore: vlStore, vlLc: vlLc };
+}
+
+function tiSheetPetunjuk(p, kunci) {
+  const a = [];
+  a.push(['', 'INTERVIEW TEST — STAFF PLANNING' + (kunci ? '  (KUNCI JAWABAN)' : '')]);
+  a.push(['', 'DC AHI Sidoarjo · Tes Praktek Microsoft Excel']);
+  a.push([]);
+  a.push(['', 'Nama Kandidat', p.nama]);
+  a.push(['', 'Tanggal Tes', p.tanggal]);
+  a.push(['', 'Jam Mulai', '']);
+  a.push(['', 'Jam Selesai', '']);
+  a.push(['', 'Interviewer', '']);
+  a.push([]);
+  a.push(['', 'PETUNJUK PENGERJAAN']);
+  a.push(['', '1.  Waktu pengerjaan ' + p.durasi + ' menit.']);
+  a.push(['', '2.  Kerjakan semua soal di sheet SOAL. Isi jawaban pada kolom JAWABAN.']);
+  a.push(['', '3.  Wajib menggunakan RUMUS Excel (bukan diketik manual), kecuali soal Pivot dan Filter & Sort.']);
+  a.push(['', '4.  Sumber data: sheet DATA (data Load Control / LC) dan sheet MASTER STORE.']);
+  a.push(['', '5.  Untuk soal Pivot Table, buat pivot di sheet PIVOT.']);
+  a.push(['', '6.  Untuk soal Filter & Sort, lakukan langsung di sheet DATA, lalu tulis hasilnya di sheet SOAL.']);
+  a.push(['', '7.  Simpan file setelah selesai.']);
+  a.push([]);
+  a.push(['', 'MATERI & BOBOT NILAI']);
+  a.push(['', 'Bagian', 'Rumus / Fitur', 'Nilai']);
+  a.push(['', 1, 'SUM, AVERAGE, COUNT', 15]);
+  a.push(['', 2, 'SUMIF, COUNTIF', 25]);
+  a.push(['', 3, 'IF', 10]);
+  a.push(['', 4, 'VLOOKUP', 20]);
+  a.push(['', 5, 'Pivot Table', 15]);
+  a.push(['', 6, 'Filter & Sort', 15]);
+  a.push(['', '', 'TOTAL', 100]);
+  a.push([]);
+  a.push(['', 'CATATAN: data pada file ini dibuat khusus untuk kandidat di atas.']);
+  a.push(['', 'Kandidat lain memakai data berbeda, jadi jawabannya juga berbeda.']);
+  return a;
+}
+
+function tiSheetSoal(p, kunci) {
+  const j = p.jwb, K = v => kunci ? v : '';
+  const a = [];
+  a.push(['SOAL TES EXCEL — STAFF PLANNING' + (kunci ? '  (KUNCI JAWABAN)' : '')]);
+  a.push(['Nama: ' + p.nama + '   |   Tanggal: ' + p.tanggal + '   |   Waktu: ' + p.durasi + ' menit']);
+  a.push(['Isi jawaban di kolom JAWABAN. Gunakan rumus Excel. Sumber data: sheet DATA & MASTER STORE.']);
+  a.push([]);
+  a.push(['BAGIAN 1 — SUM, AVERAGE, COUNT   (15 poin)']);
+  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);
+  a.push([1, 'Berapa TOTAL seluruh TOTALORDER (kolom M)?', K(j.totalOrder), '', '5 poin']);
+  a.push([2, 'Berapa RATA-RATA CBM per LC (kolom T)? (2 angka di belakang koma)', K(j.avgCbm), '', '5 poin']);
+  a.push([3, 'Berapa JUMLAH LC yang memiliki data CBM (kolom T)?', K(j.jmlCbm), '', '5 poin']);
+  a.push([]);
+  a.push(['BAGIAN 2 — SUMIF, COUNTIF   (25 poin)']);
+  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);
+  a.push([4, 'Berapa jumlah LC dengan JALUR = "' + p.pil.jalur + '"?', K(j.cJalur), '', '5 poin']);
+  a.push([5, 'Berapa jumlah LC dengan NAMA EXPEDISI = "' + p.pil.exp1 + '"?', K(j.cExp), '', '5 poin']);
+  a.push([6, 'Berapa jumlah LC dengan STATUS = "' + p.pil.status + '"?', K(j.cStatus), '', '5 poin']);
+  a.push([7, 'Berapa total TOTALORDER untuk NAMA EXPEDISI = "' + p.pil.exp2 + '"?', K(j.sOrderExp), '', '5 poin']);
+  a.push([8, 'Berapa total CBM untuk TRANSPORTTYPE = "' + p.pil.tt + '"?', K(j.sCbmTt), '', '5 poin']);
+  a.push([]);
+  a.push(['BAGIAN 3 — IF   (10 poin)']);
+  a.push(['Isi kolom KETERANGAN: jika % SHIP = 100 maka "SELESAI", selain itu "BELUM SELESAI".']);
+  a.push(['No', 'LC', '% SHIP', 'KETERANGAN', 'Poin']);
+  p.ifRows.forEach(function (row, i) {
+    a.push([i + 1, row[0], row[31], K(row[31] === 100 ? 'SELESAI' : 'BELUM SELESAI'), '1 poin']);
+  });
+  a.push([]);
+  a.push(['BAGIAN 4 — VLOOKUP   (20 poin)']);
+  a.push(['4A. Cari NAMA STORE dari sheet MASTER STORE berdasarkan KODE STORE.']);
+  a.push(['No', 'KODE STORE', 'NAMA STORE', '', 'Poin']);
+  p.vlStore.forEach(function (s, i) { a.push([i + 1, s[0], K(s[1]), '', '2 poin']); });
+  a.push([]);
+  a.push(['4B. Cari NAMA EXPEDISI dan JALUR dari sheet DATA berdasarkan nomor LC.']);
+  a.push(['No', 'LC', 'NAMA EXPEDISI', 'JALUR', 'Poin']);
+  p.vlLc.forEach(function (row, i) { a.push([i + 1, row[0], K(row[1]), K(row[6]), '2 poin']); });
+  a.push([]);
+  a.push(['BAGIAN 5 — PIVOT TABLE   (15 poin)']);
+  a.push(['Buat Pivot Table di sheet PIVOT: Rows = NAMA EXPEDISI, Values = Count of LC dan Sum of TOTALORDER. Lalu jawab:']);
+  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);
+  a.push(['5.1', 'Pivot Table sudah dibuat di sheet PIVOT dengan susunan yang benar (dinilai interviewer).', '(dinilai interviewer)', '', '5 poin']);
+  a.push(['5.2', 'NAMA EXPEDISI dengan jumlah LC TERBANYAK?', K(j.pivotExp), '', '3 poin']);
+  a.push(['5.3', 'Berapa jumlah LC ekspedisi tersebut?', K(j.pivotJml), '', '3 poin']);
+  a.push(['5.4', 'Berapa total TOTALORDER ekspedisi tersebut?', K(j.pivotOrder), '', '4 poin']);
+  a.push([]);
+  a.push(['BAGIAN 6 — FILTER & SORT   (15 poin)']);
+  a.push(['Di sheet DATA: Filter JALUR = "' + p.pil.jalurFilter + '", lalu Sort kolom CBM dari TERBESAR ke TERKECIL. Lalu jawab:']);
+  a.push(['No', 'Pertanyaan', 'Jawaban', '', 'Poin']);
+  a.push(['6.1', 'Berapa jumlah baris (LC) hasil filter JALUR = "' + p.pil.jalurFilter + '"?', K(j.filJml), '', '5 poin']);
+  a.push(['6.2', 'LC dengan CBM TERBESAR di jalur tersebut (urutan paling atas)?', K(j.filLc), '', '5 poin']);
+  a.push(['6.3', 'Berapa CBM dari LC tersebut?', K(j.filCbm), '', '5 poin']);
+  if (kunci) {
+    a.push([]);
+    a.push(['CATATAN PENILAIAN']);
+    a.push(['Angka di atas dihitung langsung dari sheet DATA file ini, jadi sudah pasti cocok.']);
+    a.push(['Toleransi pembulatan 0,01 untuk jawaban desimal.']);
+  }
+  return a;
+}
+
+function tiBuatWorkbook(p, kunci) {
+  const wb = XLSX.utils.book_new();
+  const add = (nama, aoa) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), nama);
+  add('PETUNJUK', tiSheetPetunjuk(p, kunci));
+  add('SOAL', tiSheetSoal(p, kunci));
+  add('DATA', [TI_HEADER].concat(p.rows));
+  add('MASTER STORE', [['KODE STORE', 'NAMA STORE']].concat(TI_STORE));
+  add('PIVOT', [['Buat Pivot Table untuk Soal Bagian 5 di sheet ini.']]);
+  return wb;
+}
+
+function tiNamaFile(awalan, nama, tanggal) {
+  const bersih = String(nama).replace(/[^A-Za-z0-9 _-]/g, '').trim().replace(/\s+/g, '_') || 'Kandidat';
+  return awalan + '_' + bersih + '_' + tanggal + '.xlsx';
+}
+
+async function toolsBuatTesInterview() {
+  const btn = toolsEl('tiBtn'), msg = toolsEl('tiMsg');
+  const setMsg = (cls, t) => { if (msg) { msg.className = 'tl-msg ' + cls; msg.textContent = t; } };
+  const namaRaw = (toolsEl('tiNama') || {}).value || '';
+  const daftar = namaRaw.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!daftar.length) { setMsg('tl-msg-err', 'Isi dulu nama kandidatnya, satu nama per baris.'); return; }
+  const tanggal = (toolsEl('tiTanggal') || {}).value || new Date().toISOString().slice(0, 10);
+  const durasi = parseInt((toolsEl('tiDurasi') || {}).value, 10) || 30;
+  const jmlBaris = Math.min(Math.max(parseInt((toolsEl('tiBaris') || {}).value, 10) || 400, 100), 2000);
+  const ikutKunci = !(toolsEl('tiKunci') && !toolsEl('tiKunci').checked);
+
+  if (btn) btn.disabled = true;
+  try {
+    setMsg('tl-msg-wait', '⏳ Menyiapkan pustaka Excel…');
+    await toolsLoadScript(TI_XLSX_CDN);
+    if (typeof XLSX === 'undefined') throw new Error('Pustaka Excel tidak termuat.');
+    let n = 0;
+    for (const nama of daftar) {
+      setMsg('tl-msg-wait', '⏳ Membuat soal untuk ' + nama + '… (' + (n + 1) + '/' + daftar.length + ')');
+      const p = tiBuatPaket(nama, tanggal, durasi, jmlBaris);
+      XLSX.writeFile(tiBuatWorkbook(p, false), tiNamaFile('SOAL', nama, tanggal));
+      if (ikutKunci) {
+        await new Promise(res => setTimeout(res, 400));
+        XLSX.writeFile(tiBuatWorkbook(p, true), tiNamaFile('KUNCI', nama, tanggal));
+      }
+      n++;
+      await new Promise(res => setTimeout(res, 400));
+    }
+    setMsg('tl-msg-ok', '✅ Selesai. ' + n + ' kandidat, ' + (ikutKunci ? n * 2 : n) + ' file terunduh. Tiap kandidat memakai data yang berbeda, jadi jawabannya tidak bisa disamakan.');
+  } catch (e) {
+    console.error(e);
+    setMsg('tl-msg-err', 'Gagal membuat file: ' + e.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
