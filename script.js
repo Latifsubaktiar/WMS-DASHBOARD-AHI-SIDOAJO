@@ -6144,6 +6144,30 @@ function toolsNilaiKandidat(idx) {
   if (r) tiNilai(r);
 }
 
+/* Hasil hitung ulang terakhir, dipakai tombol "Simpan nilai". */
+var TI_NILAI_TERAKHIR = null;
+
+/** Simpan hasil hitung ulang ke sheet riwayat. */
+async function toolsSimpanNilaiTerakhir() {
+  const t = TI_NILAI_TERAKHIR;
+  const box = toolsEl('tiRiwayatMsg');
+  const pesan = (cls, s) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = s; } };
+  if (!t || !t.baris) { pesan('tl-msg-err', 'Tidak ada hasil hitung ulang untuk disimpan.'); return; }
+  try {
+    pesan('tl-msg-wait', '⏳ Menyimpan nilai <b>' + toolsEsc(t.nama) + '</b>…');
+    const res = await toolsXhrPost(GAS_DASHBOARD_URL, {
+      action: 'simpanNilaiInterview', baris: t.baris, nilaiOtomatis: t.nilaiOtomatis, nilai51: t.nilai51,
+      rincian: t.rincian, oleh: localStorage.getItem('wms_name') || ''
+    }, 30000);
+    if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
+    pesan('tl-msg-ok', '💾 Nilai <b>' + toolsEsc(t.nama) + '</b> diperbarui jadi <b>' + t.akhir + ' / 100</b>.');
+    TI_NILAI_TERAKHIR = null;
+    await toolsMuatRiwayatInterview();
+  } catch (e) {
+    pesan('tl-msg-err', 'Gagal menyimpan: ' + toolsEsc(String(e.message || e)));
+  }
+}
+
 /** Lihat rincian nilai yang sudah ada: tidak menanyakan nilai 5.1 lagi,
     tidak menyimpan ulang, dan tidak mengubah apa pun. */
 function toolsDetailNilai(idx) {
@@ -6272,7 +6296,15 @@ async function tiNilai(r, opsi) {
     // Penyimpanan ke sheet riwayat bersifat tambahan: kalau gagal, nilainya tetap ditampilkan.
     let catatanSimpan = '';
     if (lihatSaja) {
-      catatanSimpan = '<br><i>Mode lihat saja — nilai tersimpan tidak diubah.</i>';
+      const lama = Number(r.nilaiAkhir);
+      if (r.baris && !isNaN(lama) && lama !== akhir) {
+        // hasil hitung ulang beda dari yang tersimpan — tawarkan menyimpannya
+        TI_NILAI_TERAKHIR = { baris: r.baris, nama: r.nama, nilaiOtomatis: n.total, nilai51: n51, rincian: rincian, akhir: akhir };
+        catatanSimpan = '<br><b>Nilai tersimpan di tabel: ' + lama + '/100, hasil hitung ulang sekarang: ' + akhir + '/100.</b>'
+          + ' <button class="tl-btn tl-btn-sm" onclick="toolsSimpanNilaiTerakhir()">💾 Simpan nilai ' + akhir + '/100</button>';
+      } else {
+        catatanSimpan = '<br><i>Mode lihat saja — nilai tersimpan tidak diubah.</i>';
+      }
     } else if (r.baris) {
       try {
         const simpan = await toolsXhrPost(GAS_DASHBOARD_URL, {
