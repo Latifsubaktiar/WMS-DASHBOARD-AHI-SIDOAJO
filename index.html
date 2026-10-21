@@ -1617,6 +1617,7 @@
       <button class="tl-tab active" id="tlTabPagi" onclick="toolsSwitchTab('pagi')">📄 PPT Laporan Pagi <span class="tl-tab-tag">Otomatis</span></button>
       <button class="tl-tab" id="tlTabPimpinan" onclick="toolsSwitchTab('pimpinan')">🧑‍💼 PPT Pak Rudi, Pak Husni &amp; Pak Arson <span class="tl-tab-tag">Manual</span></button>
       <button class="tl-tab" id="tlTabPlanner" onclick="toolsSwitchTab('planner')">📈 PPT Planner <span class="tl-tab-tag">Manual</span></button>
+      <button class="tl-tab" id="tlTabTes" onclick="toolsSwitchTab('tes')">📝 Tes Interview <span class="tl-tab-tag">Excel</span></button>
     </div>
 
     <div id="tlPanePagi">
@@ -1689,6 +1690,55 @@
         <div class="tl-msg tl-frame-msg" id="tlPlannerMsg"></div>
         <iframe id="tlPlannerFrame" class="tl-frame" title="PPT Planner" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
       </div>
+    </div>
+
+    <div id="tlPaneTes" style="display:none">
+    <div class="tl-grid">
+      <div class="card">
+        <div class="card-header"><span class="card-title">📝 Tes Interview — Staff Planning</span><span class="tl-pill tl-pill-off">Excel</span></div>
+        <div class="tl-body">
+          <p class="tl-desc">Buat file soal Excel untuk kandidat. <b>Tiap kandidat dapat data yang berbeda</b> (diacak dari namanya), jadi walaupun dikerjakan bersamaan di ruangan yang sama, jawaban mereka tidak akan sama — tidak bisa saling menyontek. Kunci jawabannya ikut dibuat otomatis, dihitung langsung dari data masing-masing kandidat.</p>
+
+          <div style="display:grid;gap:12px;margin:14px 0">
+            <div>
+              <label class="tl-desc" style="display:block;margin-bottom:5px"><b>Nama kandidat</b> — satu nama per baris (boleh 1 sampai 5 orang atau lebih)</label>
+              <textarea id="tiNama" rows="5" placeholder="Budi Santoso&#10;Siti Rahma&#10;Andre Wijaya" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font:inherit;resize:vertical"></textarea>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <div><label class="tl-desc" style="display:block;margin-bottom:5px">Tanggal tes</label>
+                <input type="date" id="tiTanggal" style="padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font:inherit"></div>
+              <div><label class="tl-desc" style="display:block;margin-bottom:5px">Durasi (menit)</label>
+                <input type="number" id="tiDurasi" value="30" min="10" max="120" style="width:110px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font:inherit"></div>
+              <div><label class="tl-desc" style="display:block;margin-bottom:5px">Jumlah baris data</label>
+                <input type="number" id="tiBaris" value="400" min="100" max="2000" step="50" style="width:130px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font:inherit"></div>
+            </div>
+            <label class="tl-desc" style="display:flex;gap:8px;align-items:center;cursor:pointer">
+              <input type="checkbox" id="tiKunci" checked> Buat file kunci jawaban juga (<b>jangan diberikan ke kandidat</b>)
+            </label>
+          </div>
+
+          <div class="tl-actions">
+            <button class="tl-btn tl-btn-primary" id="tiBtn" onclick="toolsBuatTesInterview()">⬇️ Buat file soal</button>
+          </div>
+          <div class="tl-msg" id="tiMsg"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">ℹ️ Isi soalnya</span></div>
+        <div class="tl-body">
+          <div class="tl-slides">
+            <div class="tl-slide"><span class="tl-slide-no">1</span><div><b>SUM, AVERAGE, COUNT</b></div><span class="tl-tag">15</span></div>
+            <div class="tl-slide"><span class="tl-slide-no">2</span><div><b>SUMIF, COUNTIF</b></div><span class="tl-tag">25</span></div>
+            <div class="tl-slide"><span class="tl-slide-no">3</span><div><b>IF</b></div><span class="tl-tag">10</span></div>
+            <div class="tl-slide"><span class="tl-slide-no">4</span><div><b>VLOOKUP</b></div><span class="tl-tag">20</span></div>
+            <div class="tl-slide"><span class="tl-slide-no">5</span><div><b>Pivot Table</b></div><span class="tl-tag">15</span></div>
+            <div class="tl-slide"><span class="tl-slide-no">6</span><div><b>Filter &amp; Sort</b></div><span class="tl-tag">15</span></div>
+          </div>
+          <p class="tl-desc tl-muted">Tiap file berisi 5 sheet: PETUNJUK, SOAL, DATA, MASTER STORE, PIVOT — sama seperti soal yang sudah dipakai. Total nilai 100.</p>
+        </div>
+      </div>
+    </div>
     </div>
   </div>
 
