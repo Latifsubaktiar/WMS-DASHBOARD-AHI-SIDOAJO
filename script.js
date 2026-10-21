@@ -5836,7 +5836,7 @@ function tiGambarRiwayat() {
   let h = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Tanggal</th><th>Nama Kandidat</th><th>Nilai</th><th>Status</th><th>Soal</th><th></th></tr></thead><tbody>';
   tiRiwayat.forEach(function (r, i) {
     const sudah = String(r.status || '').indexOf('Sudah') === 0;
-    const nilai = sudah ? '<b>' + r.nilaiAkhir + '</b> / 100' : '—';
+    const nilai = sudah ? tiNilaiWarna(r.nilaiAkhir) : '—';
     h += '<tr>'
       + '<td>' + toolsEsc(tiTglNormal(r.tanggal)) + '</td>'
       + '<td><b>' + toolsEsc(r.nama) + '</b></td>'
@@ -5924,6 +5924,19 @@ async function toolsKunciSoal(idx) {
   } catch (e) {
     pesan('tl-msg-err', 'Gagal mengunci: ' + toolsEsc(String(e.message || e)) + '<br>Kunci manual: buka filenya → Share → ubah jadi <b>Restricted</b>.');
   }
+}
+
+/* KKM (nilai minimum lulus). Di bawah ini ditandai merah. */
+var TI_KKM = 80;
+function tiNilaiWarna(nilai) {
+  if (nilai === null || nilai === undefined || String(nilai).trim() === '') return '—';
+  const n = Number(nilai);
+  if (isNaN(n)) return '—';
+  const lulus = n >= TI_KKM;
+  return '<b style="color:var(--' + (lulus ? 'green' : 'red') + ')">' + n + '</b>'
+    + '<span class="tl-muted"> / 100</span>'
+    + ' <span style="color:var(--' + (lulus ? 'green' : 'red') + ');font-size:11px">'
+    + (lulus ? '✅ LULUS' : '❌ DI BAWAH KKM') + '</span>';
 }
 
 /** Dari tabel riwayat — penilaian pertama kali. */
@@ -6063,10 +6076,11 @@ async function tiNilai(r, opsi) {
       catatanSimpan = '<br><i>Nilai ini tidak disimpan ke riwayat (dinilai dari link langsung).</i>';
     }
 
-    const terisi = 39 - n.kosong;
-    let html = '✅ <b>' + toolsEsc(r.nama) + '</b> — nilai akhir <b>' + (n.total + n51) + ' / 100</b><br>'
+    const terisi = 39 - n.kosong, akhir = n.total + n51, lulus = akhir >= TI_KKM;
+    let html = (lulus ? '✅' : '❌') + ' <b>' + toolsEsc(r.nama) + '</b> — nilai akhir ' + tiNilaiWarna(akhir)
+      + ' <span class="tl-muted">(KKM ' + TI_KKM + ')</span><br>'
       + '<span class="tl-muted">' + n.total + ' poin dari jawaban yang benar + ' + n51 + ' poin soal 5.1 (Pivot Table, kamu yang menilai) = <b>'
-      + (n.total + n51) + '</b></span><br>' + toolsEsc(rincian);
+      + akhir + '</b></span><br>' + toolsEsc(rincian);
     // Keterangan sumber: biar ketahuan kalau yang kebaca ternyata file yang salah.
     html += '<br><span class="tl-muted">Dibaca dari: '
       + (res.urlFile ? '<a href="' + res.urlFile + '" target="_blank" rel="noopener">' + toolsEsc(res.namaFile || 'file soal') + '</a>' : toolsEsc(res.namaFile || r.idSoal))
