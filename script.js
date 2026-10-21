@@ -6133,21 +6133,22 @@ async function tiNilai(r, opsi) {
     }
     if (n.kosong) html += '<br><i>' + n.kosong + ' kotak jawaban dibiarkan kosong.</i>';
     if (n.benar.length) {
-      html += '<br><br><b>✅ Yang benar (' + n.benar.length + ' soal, ' + n.total + ' poin — belum termasuk ' + n51 + ' poin soal 5.1):</b><br>'
+      html += '<br><br><span style="color:var(--green)"><b>✅ Yang benar (' + n.benar.length + ' soal, ' + n.total + ' poin — belum termasuk ' + n51 + ' poin soal 5.1):</b><br>'
         + n.benar.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <b>' + toolsEsc(String(s.jawab)) + '</b> · +' + s.poin
-          + (s.rumus ? ' <span class="tl-muted">' + toolsEsc(String(s.rumus).slice(0, 60)) + '</span>' : '')).join('<br>');
+          + (s.rumus ? ' <span class="tl-muted">' + toolsEsc(String(s.rumus).slice(0, 60)) + '</span>' : '')).join('<br>') + '</span>';
     }
     if (n.tanpaRumus && n.tanpaRumus.length) {
       const poinHangus = n.tanpaRumus.reduce((s, x) => s + x.poin, 0);
-      html += '<br><br><b>⚠️ Benar tapi TANPA RUMUS (' + n.tanpaRumus.length + ' soal, ' + poinHangus + ' poin)</b> — '
-        + (tegakkan ? '<b style="color:var(--red)">tidak dihitung</b>' : 'tetap dihitung')
+      html += '<br><br><span style="color:var(--orange)"><b>⚠️ Benar tapi TANPA RUMUS (' + n.tanpaRumus.length + ' soal, ' + poinHangus + ' poin)</b> — '
+        + (tegakkan ? '<b>tidak dihitung</b>' : 'tetap dihitung')
         + ', karena Bagian 1–4 wajib pakai rumus Excel:<br>'
-        + n.tanpaRumus.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — diketik manual <b>' + toolsEsc(String(s.jawab)) + '</b>').join('<br>');
+        + n.tanpaRumus.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — diketik manual <b>' + toolsEsc(String(s.jawab)) + '</b>').join('<br>') + '</span>';
     }
     if (n.salah.length) {
-      html += '<br><br><b>❌ Yang salah (' + n.salah.length + '):</b><br>'
+      html += '<br><br><span style="color:var(--red)"><b>❌ Yang salah (' + n.salah.length + '):</b><br>'
         + n.salah.slice(0, 20).map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <i>' + toolsEsc(String(s.jawab) || '(kosong)') + '</i>, seharusnya <b>' + toolsEsc(String(s.benar)) + '</b>').join('<br>');
       if (n.salah.length > 20) html += '<br>… dan ' + (n.salah.length - 20) + ' lagi.';
+      html += '</span>';
     }
     pesan('tl-msg-ok', html + catatanSimpan);
     if (r.baris) toolsMuatRiwayatInterview();
