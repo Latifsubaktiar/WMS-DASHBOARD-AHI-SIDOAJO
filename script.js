@@ -5776,21 +5776,23 @@ function tiSamaTeks(jawab, benar) {
 function tiNilaiDariGrid(p, grid) {
   const daftar = tiDaftarKunci(p);
   const perBagian = { 1: { dapat: 0, maks: 0 }, 2: { dapat: 0, maks: 0 }, 3: { dapat: 0, maks: 0 }, 4: { dapat: 0, maks: 0 }, 5: { dapat: 0, maks: 0 }, 6: { dapat: 0, maks: 0 } };
-  const salah = [];
+  const salah = [], benarList = [];
   let total = 0, maks = 0, kosong = 0;
   daftar.forEach(function (k) {
     const jawab = tiSelDariGrid(grid, k.ref);
     const benar = k.jenis === 'teks' ? tiSamaTeks(jawab, k.benar) : tiSamaAngka(jawab, k.benar);
     perBagian[k.bagian].maks += k.poin;
     maks += k.poin;
-    if (benar) { perBagian[k.bagian].dapat += k.poin; total += k.poin; }
-    else {
+    if (benar) {
+      perBagian[k.bagian].dapat += k.poin; total += k.poin;
+      benarList.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, poin: k.poin });
+    } else {
       if (String(jawab).trim() === '') kosong++;
       salah.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, benar: k.benar });
     }
   });
   perBagian[5].maks += 5; // soal 5.1 dinilai interviewer
-  return { total: total, maks: maks, perBagian: perBagian, salah: salah, kosong: kosong };
+  return { total: total, maks: maks, perBagian: perBagian, salah: salah, benar: benarList, kosong: kosong };
 }
 
 // ── Riwayat ───────────────────────────────────────────────────────
@@ -5854,6 +5856,40 @@ function tiGambarRiwayat() {
 }
 
 /** Baca jawaban kandidat, bandingkan dengan kunci, simpan nilainya. */
+/** Periksa izin Drive dari sisi WEB APP, untuk tahu persis apa yang kurang. */
+async function toolsCekIzinDrive() {
+  const box = toolsEl('tiRiwayatMsg');
+  const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
+  try {
+    pesan('tl-msg-wait', '⏳ Memeriksa izin dari sisi web app…');
+    const res = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'cekIzinDrive' }, 60000);
+    if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
+    const h = res.hasil || {};
+    const tandai = v => (String(v).indexOf('OK') === 0 ? '✅ ' : '❌ ') + toolsEsc(String(v));
+    let html = '<b>Hasil pemeriksaan izin (dari web app):</b><br>'
+      + '• Dijalankan sebagai (effective): <b>' + toolsEsc(h.efektif || '-') + '</b><br>'
+      + '• Pengguna yang mengakses (active): <b>' + toolsEsc(h.aktif || '-') + '</b><br>'
+      + '• Baca Drive: ' + tandai(h.driveBaca) + '<br>'
+      + '• Tulis Drive: ' + tandai(h.driveTulis) + '<br>'
+      + '• Buat Google Sheet: ' + tandai(h.sheetBuat);
+    const driveOk = String(h.driveTulis || '').indexOf('OK') === 0;
+    if (!driveOk) {
+      html += '<br><br><b>Artinya:</b> web app tidak punya izin Drive. Perbaikannya di Apps Script:<br>'
+        + '1. Deploy → Manage deployments → ikon pensil<br>'
+        + '2. <b>Execute as</b> harus <b>Me (' + toolsEsc(h.efektif || 'akun kamu') + ')</b>, bukan "User accessing the web app"<br>'
+        + '3. <b>Who has access</b>: Anyone / Anyone within Kawan Lama<br>'
+        + '4. <b>Version: New version</b> → Deploy<br>'
+        + 'Izin Drive dibekukan saat deploy, jadi wajib <b>New version</b> — Save saja tidak cukup.';
+    } else {
+      html += '<br><br>✅ Izin Drive sudah aktif. Tombol <b>🔒 Kunci file</b> dan preview PPT seharusnya jalan sekarang.';
+    }
+    pesan(driveOk ? 'tl-msg-ok' : 'tl-msg-err', html);
+  } catch (e) {
+    pesan('tl-msg-err', 'Pemeriksaan gagal: ' + toolsEsc(String(e.message || e))
+      + '<br>Kalau pesannya "action tidak dikenali", berarti Code.gs terbaru belum di-deploy versi baru.');
+  }
+}
+
 /** Soal yang sudah dinilai: linknya baru dibuka setelah NIP cocok. */
 function toolsBukaSoal(idx) {
   const r = tiRiwayat[idx];
@@ -6012,8 +6048,12 @@ async function tiNilai(r) {
       html += '<br>⚠️ <b>File soal BELUM terkunci</b> (' + toolsEsc(String(e3.message || e3)) + '). Kunci manual lewat tombol Share di filenya.';
     }
     if (n.kosong) html += '<br><i>' + n.kosong + ' kotak jawaban dibiarkan kosong.</i>';
+    if (n.benar.length) {
+      html += '<br><br><b>✅ Yang benar (' + n.benar.length + ' soal, ' + n.total + ' poin):</b><br>'
+        + n.benar.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <b>' + toolsEsc(String(s.jawab)) + '</b> · +' + s.poin).join('<br>');
+    }
     if (n.salah.length) {
-      html += '<br><br><b>Yang salah (' + n.salah.length + '):</b><br>'
+      html += '<br><br><b>❌ Yang salah (' + n.salah.length + '):</b><br>'
         + n.salah.slice(0, 20).map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <i>' + toolsEsc(String(s.jawab) || '(kosong)') + '</i>, seharusnya <b>' + toolsEsc(String(s.benar)) + '</b>').join('<br>');
       if (n.salah.length > 20) html += '<br>… dan ' + (n.salah.length - 20) + ' lagi.';
     }
