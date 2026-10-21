@@ -5846,8 +5846,13 @@ function tiGambarRiwayat() {
         ? (sudah ? '<button class="tl-btn tl-btn-sm" onclick="toolsBukaSoal(' + i + ')">🔒 Buka pakai NIP</button>'
           : '<a href="' + r.urlSoal + '" target="_blank" rel="noopener">buka</a>')
         : '—') + '</td>'
-      + '<td><button class="tl-btn tl-btn-sm" onclick="toolsNilaiKandidat(' + i + ')">📝 ' + (sudah ? 'Nilai ulang' : 'Nilai sekarang') + '</button>'
-      + (sudah ? ' <button class="tl-btn tl-btn-sm" onclick="toolsKunciSoal(' + i + ')">🔒 Kunci file</button>' : '') + '</td>'
+      + '<td>'
+      + (sudah
+        ? '<button class="tl-btn tl-btn-sm" onclick="toolsDetailNilai(' + i + ')">👁️ Lihat detail nilai</button>'
+          + ' <button class="tl-btn tl-btn-sm" onclick="toolsKunciSoal(' + i + ')">🔒 Kunci file</button>'
+        : '<button class="tl-btn tl-btn-sm" onclick="toolsNilaiKandidat(' + i + ')">📝 Nilai sekarang</button>')
+      + ' <button class="tl-btn tl-btn-sm" onclick="toolsHapusRiwayat(' + i + ')">🗑️ Hapus</button>'
+      + '</td>'
       + '</tr>';
     if (r.rincian) h += '<tr><td colspan="6" class="tl-muted" style="font-size:12px">' + toolsEsc(r.rincian) + '</td></tr>';
   });
@@ -5921,10 +5926,39 @@ async function toolsKunciSoal(idx) {
   }
 }
 
-/** Dari tabel riwayat. */
+/** Dari tabel riwayat — penilaian pertama kali. */
 function toolsNilaiKandidat(idx) {
   const r = tiRiwayat[idx];
   if (r) tiNilai(r);
+}
+
+/** Lihat rincian nilai yang sudah ada: tidak menanyakan nilai 5.1 lagi,
+    tidak menyimpan ulang, dan tidak mengubah apa pun. */
+function toolsDetailNilai(idx) {
+  const r = tiRiwayat[idx];
+  if (r) tiNilai(r, { lihatSaja: true });
+}
+
+/** Hapus satu baris riwayat — hanya NIP yang terdaftar di server. */
+async function toolsHapusRiwayat(idx) {
+  const r = tiRiwayat[idx];
+  if (!r) return;
+  const box = toolsEl('tiRiwayatMsg');
+  const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
+  if (!confirm('Hapus baris riwayat "' + r.nama + '" (' + tiTglNormal(r.tanggal) + ')?\n\nFile Google Sheet-nya TIDAK ikut terhapus, hanya catatannya.')) return;
+  const nip = prompt('Masukkan NIP kamu untuk menghapus:');
+  if (nip === null) return;
+  try {
+    pesan('tl-msg-wait', '⏳ Menghapus riwayat <b>' + toolsEsc(r.nama) + '</b>…');
+    const res = await toolsXhrPost(GAS_DASHBOARD_URL, {
+      action: 'hapusRiwayatInterview', baris: r.baris, nama: r.nama, nip: nip
+    }, 30000);
+    if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
+    pesan('tl-msg-ok', '🗑️ Riwayat <b>' + toolsEsc(r.nama) + '</b> sudah dihapus. File Google Sheet-nya masih ada di Drive.');
+    await toolsMuatRiwayatInterview();
+  } catch (e) {
+    pesan('tl-msg-err', 'Gagal menghapus: ' + toolsEsc(String(e.message || e)));
+  }
 }
 
 /** Dari daftar kandidat yang baru dibuat di sesi ini (tidak butuh tabel riwayat). */
@@ -5983,7 +6017,8 @@ function tiTglNormal(v) {
   return s;
 }
 
-async function tiNilai(r) {
+async function tiNilai(r, opsi) {
+  const lihatSaja = !!(opsi && opsi.lihatSaja);
   const box = toolsEl('tiRiwayatMsg');
   const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
   if (!r.idSoal) { pesan('tl-msg-err', 'Baris ini tidak menyimpan ID file soal, jadi tidak bisa dinilai otomatis.'); return; }
@@ -6001,16 +6036,22 @@ async function tiNilai(r) {
     const n = tiNilaiDariGrid(p, res.grid || []);
 
     let n51 = 0;
-    const isi = prompt('Nilai otomatis: ' + n.total + ' dari ' + n.maks + '.\n\n'
-      + 'Soal 5.1 (Pivot Table dibuat dengan benar) dinilai manual, maksimal 5.\nBerapa nilainya? (0-5)', '5');
-    if (isi === null) { pesan('tl-msg-wait', 'Penilaian dibatalkan — belum disimpan.'); return; }
-    n51 = Math.max(0, Math.min(5, parseInt(isi, 10) || 0));
+    if (lihatSaja) {
+      n51 = Math.max(0, Math.min(5, parseInt(r.nilai51, 10) || 0));   // pakai nilai yang sudah tersimpan
+    } else {
+      const isi = prompt('Nilai otomatis: ' + n.total + ' dari ' + n.maks + '.\n\n'
+        + 'Soal 5.1 (Pivot Table dibuat dengan benar) dinilai manual, maksimal 5.\nBerapa nilainya? (0-5)', '5');
+      if (isi === null) { pesan('tl-msg-wait', 'Penilaian dibatalkan — belum disimpan.'); return; }
+      n51 = Math.max(0, Math.min(5, parseInt(isi, 10) || 0));
+    }
 
     const rincian = [1, 2, 3, 4, 5, 6].map(b => 'B' + b + ': ' + n.perBagian[b].dapat + (b === 5 ? '+' + n51 : '') + '/' + n.perBagian[b].maks).join(' · ');
 
     // Penyimpanan ke sheet riwayat bersifat tambahan: kalau gagal, nilainya tetap ditampilkan.
     let catatanSimpan = '';
-    if (r.baris) {
+    if (lihatSaja) {
+      catatanSimpan = '<br><i>Mode lihat saja — nilai tersimpan tidak diubah.</i>';
+    } else if (r.baris) {
       try {
         const simpan = await toolsXhrPost(GAS_DASHBOARD_URL, {
           action: 'simpanNilaiInterview', baris: r.baris, nilaiOtomatis: n.total, nilai51: n51,
@@ -6036,7 +6077,8 @@ async function tiNilai(r) {
     }
 
     // Setelah dinilai, file soalnya dikunci supaya tidak bisa dibuka/dicontek kandidat berikutnya.
-    try {
+    // Mode lihat saja tidak mengubah apa pun, termasuk sharing.
+    if (!lihatSaja) try {
       const k = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'kunciFileInterview', idSoal: r.idSoal }, 30000);
       if (k && k.ok) {
         html += '<br>🔒 <b>File soal sudah dikunci</b> — sekarang hanya bisa dibuka akun kamu'
