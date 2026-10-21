@@ -5589,7 +5589,9 @@ function tiMsg(cls, t) {
       supaya tidak kebaca kalau layar kelihatan kandidat.
    NIP yang diterima: NIP akun yang sedang login, atau yang terdaftar
    di TI_NIP_BOLEH di bawah (tambah NIP interviewer lain di sini). */
-var TI_NIP_BOLEH = ['182126'];
+var TI_NIP_BOLEH = ['182126', '098592'];
+/** Samakan bentuk NIP: buang non-angka dan nol di depan, jadi 098592 = 98592. */
+function tiNipKunci(n) { return String(n || '').replace(/\D/g, '').replace(/^0+/, ''); }
 var TI_KUNCI_URL = [];
 var tiKunciSalah = 0;
 
@@ -5603,20 +5605,21 @@ function tiNipSamar(n) {
   if (s.length < 4) return s;
   return s.slice(0, 3) + '•'.repeat(s.length - 4) + s.slice(-1);
 }
+/**
+ * Penjaga KUNCI JAWABAN: hanya NIP yang terdaftar di TI_NIP_BOLEH.
+ * NIP akun yang sedang login SENGAJA tidak diterima begitu saja — kalau iya,
+ * semua karyawan yang login di dashboard ini bisa melihat kunci jawaban.
+ */
 function tiNipDiterima(nip) {
-  const bersih = String(nip || '').replace(/\D/g, '');
+  const bersih = tiNipKunci(nip);
   if (!bersih) return false;
-  const sendiri = tiNipLogin();
-  if (sendiri && bersih === sendiri) return true;
-  return TI_NIP_BOLEH.map(x => String(x).replace(/\D/g, '')).indexOf(bersih) >= 0;
+  return TI_NIP_BOLEH.map(tiNipKunci).indexOf(bersih) >= 0;
 }
 /** Penjelasan kenapa NIP ditolak, supaya tidak cuma "tidak cocok". */
 function tiNipKenapaGagal() {
-  const sendiri = tiNipLogin();
-  if (sendiri) return 'NIP tidak cocok. NIP akun yang sedang login: <b>' + tiNipSamar(sendiri) + '</b> (' + sendiri.length + ' digit).';
-  return 'NIP tidak cocok. Perangkat/browser ini <b>belum menyimpan NIP login</b>, '
-    + 'jadi yang diterima hanya NIP yang terdaftar di <code>TI_NIP_BOLEH</code> pada script.js. '
-    + 'Coba login ulang di dashboard ini, atau tambahkan NIP kamu ke daftar itu.';
+  return 'NIP tidak berhak melihat kunci jawaban. Yang boleh hanya NIP yang terdaftar di '
+    + '<code>TI_NIP_BOLEH</code> pada script.js (saat ini ' + TI_NIP_BOLEH.length + ' NIP: '
+    + TI_NIP_BOLEH.map(x => tiNipSamar(String(x))).join(', ') + ').';
 }
 
 function tiBukaKunci() {
@@ -5830,7 +5833,10 @@ function tiNilaiDariGrid(p, grid, rumusGrid, tegakkanRumus) {
       benarList.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, poin: k.poin, rumus: tiSelDariGrid(rumusGrid || [], k.ref) || '' });
     } else {
       if (String(jawab).trim() === '') kosong++;
-      salah.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, benar: k.benar });
+      salah.push({
+        ref: k.ref, bagian: k.bagian, jawab: jawab, benar: k.benar,
+        rumus: tiSelDariGrid(rumusGrid || [], k.ref) || ''   // rumusnya ikut, supaya kelihatan melesetnya di mana
+      });
     }
   });
   perBagian[5].maks += 5; // soal 5.1 dinilai interviewer
@@ -5956,12 +5962,17 @@ function toolsBukaSoal(idx) {
   if (!r || !r.urlSoal) return;
   const box = toolsEl('tiRiwayatMsg');
   const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
-  const isi = prompt('Masukkan NIP kamu untuk membuka file soal (mode lihat saja):');
+  const isi = prompt('Masukkan NIP kamu untuk membuka file soal:');
   if (isi === null) return;
   if (!tiNipApaSaja(isi)) { pesan('tl-msg-err', 'NIP tidak valid — minimal 4 angka. File soal tidak dibuka.'); return; }
-  window.open(tiUrlLihatSaja(r.urlSoal), '_blank', 'noopener');
-  pesan('tl-msg-ok', '👁️ File soal <b>' + toolsEsc(r.nama) + '</b> dibuka dalam mode lihat saja oleh NIP <b>'
-    + toolsEsc(String(isi).replace(/\D/g, '')) + '</b>.');
+  // NIP interviewer dibuka penuh supaya RUMUS tiap sel kelihatan di formula bar.
+  // NIP lain cukup mode lihat (/preview), yang memang tidak menampilkan rumus.
+  const interviewer = tiNipDiterima(isi);
+  window.open(interviewer ? r.urlSoal : tiUrlLihatSaja(r.urlSoal), '_blank', 'noopener');
+  pesan('tl-msg-ok', '👁️ File soal <b>' + toolsEsc(r.nama) + '</b> dibuka oleh NIP <b>'
+    + toolsEsc(tiNipKunci(isi)) + '</b> — '
+    + (interviewer ? '<b>mode penuh</b>, klik selnya untuk melihat rumus di formula bar.'
+      : 'mode lihat saja (rumus tidak ditampilkan).'));
 }
 
 /** Kunci ulang file soal secara manual (kalau penguncian otomatis tadi gagal). */
@@ -6065,9 +6076,8 @@ function tiIdDariLink(link) {
 var tiNilaiTerbuka = false;
 function tiMintaNipNilai() {
   if (tiNilaiTerbuka) return true;
-  const sendiri = tiNipLogin();
-  const isi = prompt('Hasil penilaian memuat KUNCI JAWABAN.\nMasukkan NIP kamu untuk melihatnya:'
-    + (sendiri ? '\n\n(NIP akun yang login: ' + tiNipSamar(sendiri) + ')' : ''));
+  const isi = prompt('Hasil penilaian memuat KUNCI JAWABAN.\n'
+    + 'Hanya NIP interviewer yang berhak melihat.\n\nMasukkan NIP kamu:');
   if (isi === null) return false;
   if (!tiNipDiterima(isi)) return null;   // null = NIP salah
   tiNilaiTerbuka = true;
@@ -6171,7 +6181,7 @@ async function tiNilai(r, opsi) {
     if (n.benar.length) {
       html += '<br><br><span style="color:var(--green)"><b>✅ Yang benar (' + n.benar.length + ' soal, ' + n.total + ' poin — belum termasuk ' + n51 + ' poin soal 5.1):</b><br>'
         + n.benar.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <b>' + toolsEsc(String(s.jawab)) + '</b> · +' + s.poin
-          + (s.rumus ? ' <span class="tl-muted">' + toolsEsc(String(s.rumus).slice(0, 60)) + '</span>' : '')).join('<br>') + '</span>';
+          + (s.rumus ? '<br>&nbsp;&nbsp;&nbsp;<span class="tl-muted"><code>' + toolsEsc(String(s.rumus).slice(0, 90)) + '</code></span>' : '')).join('<br>') + '</span>';
     }
     if (n.tanpaRumus && n.tanpaRumus.length) {
       const poinHangus = n.tanpaRumus.reduce((s, x) => s + x.poin, 0);
@@ -6182,7 +6192,8 @@ async function tiNilai(r, opsi) {
     }
     if (n.salah.length) {
       html += '<br><br><span style="color:var(--red)"><b>❌ Yang salah (' + n.salah.length + '):</b><br>'
-        + n.salah.slice(0, 20).map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <i>' + toolsEsc(String(s.jawab) || '(kosong)') + '</i>, seharusnya <b>' + toolsEsc(String(s.benar)) + '</b>').join('<br>');
+        + n.salah.slice(0, 20).map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <i>' + toolsEsc(String(s.jawab) || '(kosong)') + '</i>, seharusnya <b>' + toolsEsc(String(s.benar)) + '</b>'
+          + (s.rumus ? '<br>&nbsp;&nbsp;&nbsp;<span class="tl-muted">rumusnya: <code>' + toolsEsc(String(s.rumus).slice(0, 90)) + '</code></span>' : '')).join('<br>');
       if (n.salah.length > 20) html += '<br>… dan ' + (n.salah.length - 20) + ' lagi.';
       html += '</span>';
     }
