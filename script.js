@@ -5593,12 +5593,30 @@ var TI_NIP_BOLEH = ['182126'];
 var TI_KUNCI_URL = [];
 var tiKunciSalah = 0;
 
+function tiNipLogin() {
+  try { return String(localStorage.getItem('wms_nip') || '').replace(/\D/g, ''); }
+  catch (e) { return ''; }
+}
+/** NIP disamarkan untuk petunjuk: 182126 -> 182••6 */
+function tiNipSamar(n) {
+  const s = String(n || '');
+  if (s.length < 4) return s;
+  return s.slice(0, 3) + '•'.repeat(s.length - 4) + s.slice(-1);
+}
 function tiNipDiterima(nip) {
   const bersih = String(nip || '').replace(/\D/g, '');
   if (!bersih) return false;
-  const sendiri = String(localStorage.getItem('wms_nip') || '').replace(/\D/g, '');
+  const sendiri = tiNipLogin();
   if (sendiri && bersih === sendiri) return true;
   return TI_NIP_BOLEH.map(x => String(x).replace(/\D/g, '')).indexOf(bersih) >= 0;
+}
+/** Penjelasan kenapa NIP ditolak, supaya tidak cuma "tidak cocok". */
+function tiNipKenapaGagal() {
+  const sendiri = tiNipLogin();
+  if (sendiri) return 'NIP tidak cocok. NIP akun yang sedang login: <b>' + tiNipSamar(sendiri) + '</b> (' + sendiri.length + ' digit).';
+  return 'NIP tidak cocok. Perangkat/browser ini <b>belum menyimpan NIP login</b>, '
+    + 'jadi yang diterima hanya NIP yang terdaftar di <code>TI_NIP_BOLEH</code> pada script.js. '
+    + 'Coba login ulang di dashboard ini, atau tambahkan NIP kamu ke daftar itu.';
 }
 
 function tiBukaKunci() {
@@ -5612,7 +5630,7 @@ function tiBukaKunci() {
   if (isi === null) return;
   if (!tiNipDiterima(isi)) {
     tiKunciSalah++;
-    if (area) area.innerHTML = '<b>NIP tidak cocok.</b> Sisa percobaan: ' + Math.max(0, 3 - tiKunciSalah) + '.';
+    if (area) area.innerHTML = tiNipKenapaGagal() + ' Sisa percobaan: ' + Math.max(0, 3 - tiKunciSalah) + '.';
     return;
   }
   tiKunciSalah = 0;
@@ -5867,7 +5885,7 @@ function tiGambarRiwayat() {
       + '<td>' + nilai + '</td>'
       + '<td>' + (sudah ? '✅ ' : '⏳ ') + toolsEsc(r.status) + '</td>'
       + '<td>' + (r.urlSoal
-        ? (sudah ? '<button class="tl-btn tl-btn-sm" onclick="toolsBukaSoal(' + i + ')">🔒 Buka pakai NIP</button>'
+        ? (sudah ? '<button class="tl-btn tl-btn-sm" onclick="toolsBukaSoal(' + i + ')">👁️ Lihat soal (NIP)</button>'
           : '<a href="' + r.urlSoal + '" target="_blank" rel="noopener">buka</a>')
         : '—') + '</td>'
       + '<td>'
@@ -5919,15 +5937,31 @@ async function toolsCekIzinDrive() {
   }
 }
 
-/** Soal yang sudah dinilai: linknya baru dibuka setelah NIP cocok. */
+/* Membuka FILE SOAL boleh untuk semua NIP yang terdaftar di dashboard —
+   cukup masukkan NIP apa saja yang wajar, lalu dibuka dalam mode lihat saja.
+   Ini beda dengan KUNCI JAWABAN & hapus riwayat, yang tetap dibatasi NIP tertentu. */
+function tiNipApaSaja(nip) {
+  return String(nip || '').replace(/\D/g, '').length >= 4;
+}
+
+/** Ubah link jadi mode lihat saja (tidak membuka editor). */
+function tiUrlLihatSaja(u) {
+  const id = tiIdDariLink(u);
+  return id ? 'https://docs.google.com/spreadsheets/d/' + id + '/preview' : u;
+}
+
+/** Soal yang sudah dinilai: dibuka setelah isi NIP, dan hanya mode lihat. */
 function toolsBukaSoal(idx) {
   const r = tiRiwayat[idx];
   if (!r || !r.urlSoal) return;
-  const izin = tiMintaNipNilai();
   const box = toolsEl('tiRiwayatMsg');
-  if (izin === null) { if (box) { box.className = 'tl-msg tl-msg-err'; box.textContent = 'NIP tidak cocok. File soal tidak dibuka.'; } return; }
-  if (!izin) return;
-  window.open(r.urlSoal, '_blank', 'noopener');
+  const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
+  const isi = prompt('Masukkan NIP kamu untuk membuka file soal (mode lihat saja):');
+  if (isi === null) return;
+  if (!tiNipApaSaja(isi)) { pesan('tl-msg-err', 'NIP tidak valid — minimal 4 angka. File soal tidak dibuka.'); return; }
+  window.open(tiUrlLihatSaja(r.urlSoal), '_blank', 'noopener');
+  pesan('tl-msg-ok', '👁️ File soal <b>' + toolsEsc(r.nama) + '</b> dibuka dalam mode lihat saja oleh NIP <b>'
+    + toolsEsc(String(isi).replace(/\D/g, '')) + '</b>.');
 }
 
 /** Kunci ulang file soal secara manual (kalau penguncian otomatis tadi gagal). */
@@ -5937,7 +5971,7 @@ async function toolsKunciSoal(idx) {
   const box = toolsEl('tiRiwayatMsg');
   const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
   const izin = tiMintaNipNilai();
-  if (izin === null) { pesan('tl-msg-err', 'NIP tidak cocok.'); return; }
+  if (izin === null) { pesan('tl-msg-err', tiNipKenapaGagal()); return; }
   if (!izin) return;
   try {
     pesan('tl-msg-wait', '⏳ Mengunci file soal <b>' + toolsEsc(r.nama) + '</b>…');
@@ -6031,7 +6065,9 @@ function tiIdDariLink(link) {
 var tiNilaiTerbuka = false;
 function tiMintaNipNilai() {
   if (tiNilaiTerbuka) return true;
-  const isi = prompt('Hasil penilaian memuat KUNCI JAWABAN.\nMasukkan NIP kamu untuk melihatnya:');
+  const sendiri = tiNipLogin();
+  const isi = prompt('Hasil penilaian memuat KUNCI JAWABAN.\nMasukkan NIP kamu untuk melihatnya:'
+    + (sendiri ? '\n\n(NIP akun yang login: ' + tiNipSamar(sendiri) + ')' : ''));
   if (isi === null) return false;
   if (!tiNipDiterima(isi)) return null;   // null = NIP salah
   tiNilaiTerbuka = true;
@@ -6061,7 +6097,7 @@ async function tiNilai(r, opsi) {
   if (!r.idSoal) { pesan('tl-msg-err', 'Baris ini tidak menyimpan ID file soal, jadi tidak bisa dinilai otomatis.'); return; }
 
   const izin = tiMintaNipNilai();
-  if (izin === null) { pesan('tl-msg-err', 'NIP tidak cocok. Hasil penilaian tidak ditampilkan.'); return; }
+  if (izin === null) { pesan('tl-msg-err', tiNipKenapaGagal() + ' Hasil penilaian tidak ditampilkan.'); return; }
   if (!izin) { pesan('tl-msg-wait', 'Dibatalkan.'); return; }
 
   try {
