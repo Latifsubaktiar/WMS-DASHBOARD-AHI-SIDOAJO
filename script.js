@@ -5812,9 +5812,139 @@ function tiPakaiRumus(f) {
   return /[A-Za-z]/.test(s.slice(1));
 }
 
+// ══════════════════════════════════════════════════════════════════
+//  KUNCI JAWABAN DIHITUNG DARI ISI FILE KANDIDAT
+//  Dulu kunci dibuat ulang dari benih acakan (nama + tanggal + baris).
+//  Cara itu rapuh: beda versi kode atau beda satu huruf pada nama bikin
+//  datanya lain, dan kunci jadi meleset padahal kandidat sudah benar.
+//  Sekarang: soal dibaca dari sheet SOAL, jawabannya dihitung langsung
+//  dari sheet DATA & MASTER STORE milik file itu juga. Apa pun isinya,
+//  kuncinya pasti cocok.
+// ══════════════════════════════════════════════════════════════════
+
+/** Ambil teks dalam tanda kutip: 'JALUR = "Manado"?' -> Manado */
+function tiDalamKutip(teks) {
+  const m = String(teks == null ? '' : teks).match(/"([^"]+)"/);
+  return m ? m[1] : '';
+}
+function tiAngka(v) {
+  if (typeof v === 'number') return v;
+  const s = String(v == null ? '' : v).replace(/\s/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+const TI_KOL = { lc: 0, exp: 1, tt: 2, jalur: 6, totOrder: 12, cbm: 19, pctShip: 31, status: 32 };
+
+/**
+ * Susun daftar kunci dari file kandidat.
+ * soal   = grid sheet SOAL (array of array, baris 1 di index 0)
+ * data   = sheet DATA termasuk baris judul
+ * master = sheet MASTER STORE termasuk baris judul
+ * Mengembalikan null kalau datanya tidak memadai, supaya pemanggil bisa
+ * kembali ke cara lama.
+ */
+function tiKunciDariFile(soal, data, master) {
+  if (!soal || !soal.length || !data || data.length < 2) return null;
+  const baris = data.slice(1).filter(function (r) { return r && String(r[TI_KOL.lc] || '').trim() !== ''; });
+  if (!baris.length) return null;
+
+  const sel = function (ref) {
+    const m = String(ref).match(/^([A-Z])(\d+)$/);
+    if (!m) return '';
+    const b = soal[parseInt(m[2], 10) - 1];
+    if (!b) return '';
+    const v = b[m[1].charCodeAt(0) - 65];
+    return v === null || v === undefined ? '' : v;
+  };
+  const d = [];
+  const t = function (ref, benar, poin, bagian, jenis) {
+    d.push({ ref: ref, benar: benar, poin: poin, bagian: bagian, jenis: jenis || 'angka' });
+  };
+  const jumlah = function (kol, saring) {
+    return baris.filter(saring || function () { return true; })
+      .reduce(function (s, x) { return s + tiAngka(x[kol]); }, 0);
+  };
+  const bulat2 = function (n) { return Math.round(n * 100) / 100; };
+  const sama = function (a, b) { return String(a == null ? '' : a).trim().toUpperCase() === String(b == null ? '' : b).trim().toUpperCase(); };
+
+  // ── Bagian 1 ──────────────────────────────────────────────────
+  const adaCbm = baris.filter(function (x) { return String(x[TI_KOL.cbm]).trim() !== '' && tiAngka(x[TI_KOL.cbm]) > 0; });
+  t('C6', jumlah(TI_KOL.totOrder), 5, 1);
+  t('C7', bulat2(adaCbm.reduce(function (s, x) { return s + tiAngka(x[TI_KOL.cbm]); }, 0) / (adaCbm.length || 1)), 5, 1);
+  t('C8', adaCbm.length, 5, 1);
+
+  // ── Bagian 2 (parameternya dibaca dari teks soal) ─────────────
+  const pJalur = tiDalamKutip(sel('B12'));
+  const pExp1 = tiDalamKutip(sel('B13'));
+  const pStatus = tiDalamKutip(sel('B14'));
+  const pExp2 = tiDalamKutip(sel('B15'));
+  const pTt = tiDalamKutip(sel('B16'));
+  t('C12', baris.filter(function (x) { return sama(x[TI_KOL.jalur], pJalur); }).length, 5, 2);
+  t('C13', baris.filter(function (x) { return sama(x[TI_KOL.exp], pExp1); }).length, 5, 2);
+  t('C14', baris.filter(function (x) { return sama(x[TI_KOL.status], pStatus); }).length, 5, 2);
+  t('C15', jumlah(TI_KOL.totOrder, function (x) { return sama(x[TI_KOL.exp], pExp2); }), 5, 2);
+  t('C16', bulat2(jumlah(TI_KOL.cbm, function (x) { return sama(x[TI_KOL.tt], pTt); })), 5, 2);
+
+  // ── Bagian 3: jawabannya dari kolom % SHIP di soal itu sendiri ─
+  for (let i = 0; i < 10; i++) {
+    const r = 21 + i;
+    if (String(sel('B' + r)).trim() === '') continue;
+    t('D' + r, tiAngka(sel('C' + r)) === 100 ? 'SELESAI' : 'BELUM SELESAI', 1, 3, 'teks');
+  }
+
+  // ── Bagian 4A: cari di MASTER STORE ───────────────────────────
+  const petaStore = {};
+  (master || []).slice(1).forEach(function (r) {
+    if (r && String(r[0] || '').trim()) petaStore[String(r[0]).trim().toUpperCase()] = String(r[1] == null ? '' : r[1]).trim();
+  });
+  for (let i = 0; i < 5; i++) {
+    const r = 35 + i, kode = String(sel('B' + r)).trim().toUpperCase();
+    if (!kode) continue;
+    const nama = petaStore[kode];
+    if (nama) t('C' + r, nama, 2, 4, 'teks');
+  }
+
+  // ── Bagian 4B: cari di DATA berdasarkan nomor LC ──────────────
+  const petaLc = {};
+  baris.forEach(function (x) { petaLc[String(x[TI_KOL.lc]).trim().toUpperCase()] = x; });
+  for (let i = 0; i < 5; i++) {
+    const r = 43 + i, lc = String(sel('B' + r)).trim().toUpperCase();
+    if (!lc || !petaLc[lc]) continue;
+    t('C' + r, String(petaLc[lc][TI_KOL.exp]), 1, 4, 'teks');
+    t('D' + r, String(petaLc[lc][TI_KOL.jalur]), 1, 4, 'teks');
+  }
+
+  // ── Bagian 5: ekspedisi dengan LC terbanyak ───────────────────
+  const perExp = {};
+  baris.forEach(function (x) {
+    const k = String(x[TI_KOL.exp]).trim();
+    if (!perExp[k]) perExp[k] = { n: 0, order: 0 };
+    perExp[k].n++; perExp[k].order += tiAngka(x[TI_KOL.totOrder]);
+  });
+  let top = null;
+  Object.keys(perExp).forEach(function (k) { if (!top || perExp[k].n > perExp[top].n) top = k; });
+  if (top) {
+    t('C53', top, 3, 5, 'teks');
+    t('C54', perExp[top].n, 3, 5);
+    t('C55', perExp[top].order, 4, 5);
+  }
+
+  // ── Bagian 6: filter jalur lalu urutkan CBM terbesar ──────────
+  // teks Bagian 6 ada di kolom A (barisnya tidak bertabel), bukan kolom B
+  const pFilter = tiDalamKutip(sel('A58')) || tiDalamKutip(sel('B58'));
+  if (pFilter) {
+    const fil = baris.filter(function (x) { return sama(x[TI_KOL.jalur], pFilter); })
+      .slice().sort(function (a, b) { return tiAngka(b[TI_KOL.cbm]) - tiAngka(a[TI_KOL.cbm]); });
+    t('C60', fil.length, 5, 6);
+    t('C61', fil.length ? String(fil[0][TI_KOL.lc]) : '-', 5, 6, 'teks');
+    t('C62', fil.length ? bulat2(tiAngka(fil[0][TI_KOL.cbm])) : 0, 5, 6);
+  }
+  return d.length >= 20 ? d : null;   // terlalu sedikit = pembacaan gagal
+}
+
 /** Bandingkan jawaban kandidat dengan kunci. */
-function tiNilaiDariGrid(p, grid, rumusGrid, tegakkanRumus) {
-  const daftar = tiDaftarKunci(p);
+function tiNilaiDariGrid(p, grid, rumusGrid, tegakkanRumus, daftarKunci) {
+  const daftar = daftarKunci && daftarKunci.length ? daftarKunci : tiDaftarKunci(p);
   const perBagian = { 1: { dapat: 0, maks: 0 }, 2: { dapat: 0, maks: 0 }, 3: { dapat: 0, maks: 0 }, 4: { dapat: 0, maks: 0 }, 5: { dapat: 0, maks: 0 }, 6: { dapat: 0, maks: 0 } };
   const salah = [], benarList = [], tanpaRumus = [];
   let total = 0, maks = 0, kosong = 0;
@@ -6057,10 +6187,14 @@ function toolsNilaiDariLink() {
   const link = (toolsEl('tiNilaiLink') || {}).value || '';
   const box = toolsEl('tiRiwayatMsg');
   const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
-  if (!nama.trim() || !tanggal) { pesan('tl-msg-err', 'Nama kandidat dan tanggal tes harus diisi, persis seperti waktu soalnya dibuat.'); return; }
   const id = tiIdDariLink(link);
   if (!id) { pesan('tl-msg-err', 'Link file soal tidak dikenali. Tempel link Google Sheet kandidat (yang ada /spreadsheets/d/...).'); return; }
-  tiNilai({ nama: nama.trim(), tanggal: tanggal, durasi: 30, jmlBaris: jmlBaris, idSoal: id });
+  // Nama & tanggal sekarang hanya label: kunci dihitung dari isi file yang dilink.
+  tiNilai({
+    nama: nama.trim() || 'Kandidat (dari link)',
+    tanggal: tanggal || new Date().toISOString().slice(0, 10),
+    durasi: 30, jmlBaris: jmlBaris, idSoal: id
+  });
 }
 
 /** Ambil ID spreadsheet dari link, atau terima ID mentah. */
@@ -6118,7 +6252,10 @@ async function tiNilai(r, opsi) {
     const p = tiBuatPaket(r.nama, tiTglNormal(r.tanggal), Number(r.durasi) || 30, Number(r.jmlBaris) || 400);
     const el = toolsEl('tiWajibRumus');
     const tegakkan = el ? !!el.checked : true;
-    const n = tiNilaiDariGrid(p, res.grid || [], res.rumus || [], tegakkan);
+    // Kunci diambil dari ISI FILE kandidat. Kalau sheet DATA-nya tidak terbaca,
+    // baru pakai cara lama (dihitung ulang dari acakan nama+tanggal).
+    const kunciFile = tiKunciDariFile(res.grid || [], res.data || [], res.master || []);
+    const n = tiNilaiDariGrid(p, res.grid || [], res.rumus || [], tegakkan, kunciFile);
 
     let n51 = 0;
     if (lihatSaja) {
@@ -6157,7 +6294,9 @@ async function tiNilai(r, opsi) {
     html += '<br><span class="tl-muted">Dibaca dari: '
       + (res.urlFile ? '<a href="' + res.urlFile + '" target="_blank" rel="noopener">' + toolsEsc(res.namaFile || 'file soal') + '</a>' : toolsEsc(res.namaFile || r.idSoal))
       + ' · tanggal dipakai: <b>' + toolsEsc(tiTglNormal(r.tanggal)) + '</b> · baris data: <b>' + (Number(r.jmlBaris) || 400) + '</b>'
-      + ' · kotak terisi: <b>' + terisi + '</b> dari 39</span>';
+      + ' · kotak terisi: <b>' + terisi + '</b> dari 39'
+      + ' · kunci: <b>' + (kunciFile ? 'dihitung dari sheet DATA file ini' : 'dibuat ulang dari acakan nama+tanggal') + '</b></span>'
+      + (kunciFile ? '' : '<br><span style="color:var(--orange)">⚠️ Sheet DATA tidak terbaca, jadi kunci dibuat ulang dari acakan — kalau file ini dibuat dengan versi lain, kuncinya bisa meleset.</span>');
     if (terisi === 0) {
       html += '<br><b>⚠️ Semua kotak jawaban terbaca kosong.</b> Kemungkinan yang dinilai bukan file yang dikerjakan kandidat — cek nama file di atas.';
     }
