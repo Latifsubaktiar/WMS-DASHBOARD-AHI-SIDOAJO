@@ -5198,7 +5198,10 @@ function toolsSwitchTab(name) {
   Object.keys(panes).forEach(k => { if (panes[k]) panes[k].style.display = (toolsTab === k) ? '' : 'none'; if (tabs[k]) tabs[k].classList.toggle('active', toolsTab === k); });
   if (toolsTab === 'pimpinan') toolsLoadPimpinan(false);
   if (toolsTab === 'planner') toolsLoadPlanner(false);
-  if (toolsTab === 'tes') { const t = toolsEl('tiTanggal'); if (t && !t.value) t.value = new Date().toISOString().slice(0, 10); }
+  if (toolsTab === 'tes') {
+    const t = toolsEl('tiTanggal'); if (t && !t.value) t.value = new Date().toISOString().slice(0, 10);
+    if (!tiRiwayat.length) toolsMuatRiwayatInterview();
+  }
 }
 
 /** Muat satu tool HTML (Pimpinan/Planner) ke dalam iframe-nya, dengan pengecekan file ada dulu. */
@@ -5608,6 +5611,7 @@ async function toolsBuatSheetInterview() {
       const p = tiBuatPaket(nama, f.tanggal, f.durasi, f.baris);
       const tugas = [{ awalan: 'SOAL', kunci: false }];
       if (f.ikutKunci) tugas.push({ awalan: 'KUNCI', kunci: true });
+      let urlSoal = '', idSoal = '', urlKunci = '';
       for (let t = 0; t < tugas.length; t++) {
         tiMsg('tl-msg-wait', '⏳ Membuat ' + tugas[t].awalan + ' untuk <b>' + toolsEsc(nama) + '</b>… (kandidat ' + (i + 1) + '/' + f.daftar.length + ')');
         const b = tiBahanFile(p, tugas[t].kunci);
@@ -5618,8 +5622,10 @@ async function toolsBuatSheetInterview() {
           petunjuk: b.petunjuk, soal: b.soal, data: b.data, master: b.master, pivot: b.pivot, kuning: b.kuning
         }, 180000);
         if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
+        if (tugas[t].kunci) { urlKunci = res.url || ''; } else { urlSoal = res.url || ''; idSoal = res.id || ''; }
         hasil.push({ label: tugas[t].awalan + ' — ' + nama, url: res.url, catatan: res.catatan || '', kunci: tugas[t].kunci });
       }
+      await tiCatatKeRiwayat(nama, f, urlSoal, idSoal, urlKunci);
     }
   } catch (e) {
     console.error(e);
@@ -5644,6 +5650,7 @@ async function toolsBuatSheetInterview() {
       + '<br>Kalau pesannya soal izin, jalankan <b>authorizeSheetInterview</b> di editor Apps Script lalu deploy versi baru. Sementara itu bisa pakai tombol <b>Unduh Excel</b>.';
   }
   tiMsg(gagal ? (hasil.length ? 'tl-msg-wait' : 'tl-msg-err') : 'tl-msg-ok', html || 'Tidak ada yang dibuat.');
+  if (hasil.length) toolsMuatRiwayatInterview();
 }
 
 // ── 2) Unduh sebagai file Excel (cadangan, tanpa pewarnaan) ────────
@@ -5673,5 +5680,165 @@ async function toolsBuatTesInterview() {
     tiMsg('tl-msg-err', 'Gagal membuat file: ' + toolsEsc(String(e.message || e)));
   } finally {
     tiSibuk(false);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RIWAYAT & PENILAIAN OTOMATIS
+//  Data tiap kandidat bisa dibangkitkan ulang dari (nama + tanggal +
+//  jumlah baris), jadi kunci jawabannya selalu bisa dihitung ulang
+//  persis — tidak perlu disimpan di mana pun.
+// ══════════════════════════════════════════════════════════════════
+
+/** Daftar sel jawaban + nilai benarnya + bobot poinnya. */
+function tiDaftarKunci(p) {
+  const j = p.jwb, d = [];
+  const t = (ref, benar, poin, bagian, jenis) => d.push({ ref: ref, benar: benar, poin: poin, bagian: bagian, jenis: jenis || 'angka' });
+  t('C6', j.totalOrder, 5, 1); t('C7', j.avgCbm, 5, 1); t('C8', j.jmlCbm, 5, 1);
+  t('C12', j.cJalur, 5, 2); t('C13', j.cExp, 5, 2); t('C14', j.cStatus, 5, 2);
+  t('C15', j.sOrderExp, 5, 2); t('C16', j.sCbmTt, 5, 2);
+  p.ifRows.forEach(function (row, i) {
+    t('D' + (21 + i), row[31] === 100 ? 'SELESAI' : 'BELUM SELESAI', 1, 3, 'teks');
+  });
+  p.vlStore.forEach(function (s, i) { t('C' + (35 + i), s[1], 2, 4, 'teks'); });
+  p.vlLc.forEach(function (row, i) {
+    t('C' + (43 + i), row[1], 1, 4, 'teks');
+    t('D' + (43 + i), row[6], 1, 4, 'teks');
+  });
+  t('C53', j.pivotExp, 3, 5, 'teks'); t('C54', j.pivotJml, 3, 5); t('C55', j.pivotOrder, 4, 5);
+  t('C60', j.filJml, 5, 6); t('C61', j.filLc, 5, 6, 'teks'); t('C62', j.filCbm, 5, 6);
+  return d;
+}
+
+/** Ambil isi satu sel dari grid hasil pembacaan Apps Script. */
+function tiSelDariGrid(grid, ref) {
+  const m = String(ref).match(/^([A-Z])(\d+)$/);
+  if (!m) return '';
+  const kol = m[1].charCodeAt(0) - 65, bar = parseInt(m[2], 10) - 1;
+  const baris = grid[bar];
+  if (!baris) return '';
+  const v = baris[kol];
+  return v === null || v === undefined ? '' : v;
+}
+
+function tiSamaAngka(jawab, benar) {
+  const n = parseFloat(String(jawab).replace(/\s/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.'));
+  if (isNaN(n)) return false;
+  return Math.abs(n - Number(benar)) <= 0.011;
+}
+function tiSamaTeks(jawab, benar) {
+  const b = s => String(s === null || s === undefined ? '' : s).replace(/\s+/g, ' ').trim().toUpperCase();
+  return b(jawab) !== '' && b(jawab) === b(benar);
+}
+
+/** Bandingkan jawaban kandidat dengan kunci. */
+function tiNilaiDariGrid(p, grid) {
+  const daftar = tiDaftarKunci(p);
+  const perBagian = { 1: { dapat: 0, maks: 0 }, 2: { dapat: 0, maks: 0 }, 3: { dapat: 0, maks: 0 }, 4: { dapat: 0, maks: 0 }, 5: { dapat: 0, maks: 0 }, 6: { dapat: 0, maks: 0 } };
+  const salah = [];
+  let total = 0, maks = 0, kosong = 0;
+  daftar.forEach(function (k) {
+    const jawab = tiSelDariGrid(grid, k.ref);
+    const benar = k.jenis === 'teks' ? tiSamaTeks(jawab, k.benar) : tiSamaAngka(jawab, k.benar);
+    perBagian[k.bagian].maks += k.poin;
+    maks += k.poin;
+    if (benar) { perBagian[k.bagian].dapat += k.poin; total += k.poin; }
+    else {
+      if (String(jawab).trim() === '') kosong++;
+      salah.push({ ref: k.ref, bagian: k.bagian, jawab: jawab, benar: k.benar });
+    }
+  });
+  perBagian[5].maks += 5; // soal 5.1 dinilai interviewer
+  return { total: total, maks: maks, perBagian: perBagian, salah: salah, kosong: kosong };
+}
+
+// ── Riwayat ───────────────────────────────────────────────────────
+var tiRiwayat = [];
+
+async function tiCatatKeRiwayat(nama, f, urlSoal, idSoal, urlKunci) {
+  try {
+    await toolsXhrPost(GAS_DASHBOARD_URL, {
+      action: 'logInterview', nama: nama, tanggal: f.tanggal, durasi: f.durasi, baris: f.baris,
+      urlSoal: urlSoal || '', urlKunci: urlKunci || '', idSoal: idSoal || '',
+      oleh: localStorage.getItem('wms_name') || ''
+    }, 30000);
+  } catch (e) { console.warn('Gagal mencatat riwayat interview:', e); }
+}
+
+async function toolsMuatRiwayatInterview() {
+  const box = toolsEl('tiRiwayat');
+  if (box) box.innerHTML = '<div class="tl-empty">Memuat riwayat…</div>';
+  try {
+    const res = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'riwayatInterview' }, 45000);
+    if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
+    tiRiwayat = res.rows || [];
+    tiGambarRiwayat();
+  } catch (e) {
+    if (box) box.innerHTML = '<div class="tl-empty">Riwayat belum bisa dimuat (' + toolsEsc(String(e.message || e)) + ')</div>';
+  }
+}
+
+function tiGambarRiwayat() {
+  const box = toolsEl('tiRiwayat');
+  if (!box) return;
+  if (!tiRiwayat.length) { box.innerHTML = '<div class="tl-empty">Belum ada kandidat yang dibuatkan soal.</div>'; return; }
+  let h = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Tanggal</th><th>Nama Kandidat</th><th>Nilai</th><th>Status</th><th>Soal</th><th></th></tr></thead><tbody>';
+  tiRiwayat.forEach(function (r, i) {
+    const sudah = String(r.status || '').indexOf('Sudah') === 0;
+    const nilai = sudah ? '<b>' + r.nilaiAkhir + '</b> / 100' : '—';
+    h += '<tr>'
+      + '<td>' + toolsEsc(r.tanggal) + '</td>'
+      + '<td><b>' + toolsEsc(r.nama) + '</b></td>'
+      + '<td>' + nilai + '</td>'
+      + '<td>' + (sudah ? '✅ ' : '⏳ ') + toolsEsc(r.status) + '</td>'
+      + '<td>' + (r.urlSoal ? '<a href="' + r.urlSoal + '" target="_blank" rel="noopener">buka</a>' : '—') + '</td>'
+      + '<td><button class="tl-btn tl-btn-sm" onclick="toolsNilaiKandidat(' + i + ')">📝 Nilai sekarang</button></td>'
+      + '</tr>';
+    if (r.rincian) h += '<tr><td colspan="6" class="tl-muted" style="font-size:12px">' + toolsEsc(r.rincian) + '</td></tr>';
+  });
+  h += '</tbody></table></div>';
+  box.innerHTML = h;
+}
+
+/** Baca jawaban kandidat, bandingkan dengan kunci, simpan nilainya. */
+async function toolsNilaiKandidat(idx) {
+  const r = tiRiwayat[idx];
+  if (!r) return;
+  const box = toolsEl('tiRiwayatMsg');
+  const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
+  if (!r.idSoal) { pesan('tl-msg-err', 'Baris ini tidak menyimpan ID file soal, jadi tidak bisa dinilai otomatis.'); return; }
+  try {
+    pesan('tl-msg-wait', '⏳ Membaca jawaban <b>' + toolsEsc(r.nama) + '</b>…');
+    const res = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'jawabanInterview', idSoal: r.idSoal }, 60000);
+    if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
+
+    const p = tiBuatPaket(r.nama, r.tanggal, Number(r.durasi) || 30, Number(r.jmlBaris) || 400);
+    const n = tiNilaiDariGrid(p, res.grid || []);
+
+    let n51 = 0;
+    const isi = prompt('Nilai otomatis: ' + n.total + ' dari ' + n.maks + '.\n\n'
+      + 'Soal 5.1 (Pivot Table dibuat dengan benar) dinilai manual, maksimal 5.\nBerapa nilainya? (0-5)', '5');
+    if (isi === null) { pesan('tl-msg-wait', 'Penilaian dibatalkan — belum disimpan.'); return; }
+    n51 = Math.max(0, Math.min(5, parseInt(isi, 10) || 0));
+
+    const rincian = [1, 2, 3, 4, 5, 6].map(b => 'B' + b + ': ' + n.perBagian[b].dapat + (b === 5 ? '+' + n51 : '') + '/' + n.perBagian[b].maks).join(' · ');
+    const simpan = await toolsXhrPost(GAS_DASHBOARD_URL, {
+      action: 'simpanNilaiInterview', baris: r.baris, nilaiOtomatis: n.total, nilai51: n51,
+      rincian: rincian, oleh: localStorage.getItem('wms_name') || ''
+    }, 30000);
+    if (!simpan || simpan.ok === false) throw new Error((simpan && simpan.error) || 'Gagal menyimpan nilai');
+
+    let html = '✅ <b>' + toolsEsc(r.nama) + '</b> — nilai akhir <b>' + (n.total + n51) + ' / 100</b><br>' + toolsEsc(rincian);
+    if (n.kosong) html += '<br><i>' + n.kosong + ' kotak jawaban dibiarkan kosong.</i>';
+    if (n.salah.length) {
+      html += '<br><br><b>Yang salah (' + n.salah.length + '):</b><br>'
+        + n.salah.slice(0, 20).map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <i>' + toolsEsc(String(s.jawab) || '(kosong)') + '</i>, seharusnya <b>' + toolsEsc(String(s.benar)) + '</b>').join('<br>');
+      if (n.salah.length > 20) html += '<br>… dan ' + (n.salah.length - 20) + ' lagi.';
+    }
+    pesan('tl-msg-ok', html);
+    await toolsMuatRiwayatInterview();
+  } catch (e) {
+    console.error(e);
+    pesan('tl-msg-err', 'Gagal menilai: ' + toolsEsc(String(e.message || e)));
   }
 }
