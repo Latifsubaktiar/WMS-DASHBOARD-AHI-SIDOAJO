@@ -3615,12 +3615,22 @@ function toolsMapStockTransfer(api) { return api.stockTransfer || {}; }
 function toolsMapInboundPlanning(api) { return api.inboundPlanning || {}; }
 
 // latar gradien biru -> kuning -> oranye (seperti slide contoh)
+/* Latar gradasi slide.
+   Dulu: PNG 1920x1080 = 2,1 MB, dan pptxgenjs menyalinnya SEKALI PER SLIDE,
+   jadi 11 slide = ~23 MB — itu biang kerok ukuran PPT, bukan screenshot-nya.
+   Sekarang: JPEG 1280x720 (gradasi halus, tidak butuh transparansi) = ~23 KB.
+   Selisih warnanya rata-rata 0,6 dari 255 alias tidak kelihatan mata.
+   Hasilnya dihitung sekali lalu dipakai ulang. */
+var toolsBgCache = null;
 function toolsGradientBg() {
-  const c = document.createElement('canvas'); c.width = 1920; c.height = 1080;
-  const g = c.getContext('2d'); const grd = g.createLinearGradient(0, 0, 2060, 596);
+  if (toolsBgCache) return toolsBgCache;
+  const W = 1280, H = 720, S = W / 1920;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'); const grd = g.createLinearGradient(0, 0, 2060 * S, 596 * S);
   grd.addColorStop(0, 'rgb(112,152,218)'); grd.addColorStop(0.5, 'rgb(250,206,104)'); grd.addColorStop(1, 'rgb(240,92,72)');
-  g.fillStyle = grd; g.fillRect(0, 0, 1920, 1080);
-  return c.toDataURL('image/png').replace(/^data:/, '');
+  g.fillStyle = grd; g.fillRect(0, 0, W, H);
+  toolsBgCache = c.toDataURL('image/jpeg', 0.82).replace(/^data:/, '');
+  return toolsBgCache;
 }
 
 // ── SLOT SCREENSHOT slide 2 (Profil DC & Daily Proses) ─────────────
@@ -4875,6 +4885,22 @@ function toolsBcast(w, msg, d) {
     toolsBcast(f, msg, d + 1);
   }
 }
+/* Batas atas ukuran tiap gambar capture. Normalnya gambar cuma ~220 KB, jadi
+   batas ini tidak pernah kepakai; cuma jaga-jaga kalau suatu saat ada capture
+   yang ukurannya meledak. Mutu gambar TIDAK diturunkan selama masih di bawah ini. */
+var TOOLS_SHOT_MAX_KB = 1500;
+
+/** Simpan sebagai JPEG; mutunya baru diturunkan kalau melebihi batas. */
+function toolsEncodeBudget(c, maxKb) {
+  const bytes = s => Math.round(s.length * 0.75);
+  let q = 0.92, u = c.toDataURL('image/jpeg', q);
+  while (bytes(u) > maxKb * 1024 && q > 0.5) {
+    q = Math.round((q - 0.07) * 100) / 100;
+    u = c.toDataURL('image/jpeg', q);
+  }
+  return { url: u, q: q, kb: Math.round(bytes(u) / 1024) };
+}
+
 function toolsShotFromUrl(url, key) {
   return new Promise(function (resolve, reject) {
     const im = new Image();
@@ -4883,7 +4909,8 @@ function toolsShotFromUrl(url, key) {
       const sc = Math.min(1, 1800 / im.naturalWidth), w = Math.max(1, Math.round(im.naturalWidth * sc)), h = Math.max(1, Math.round(im.naturalHeight * sc));
       const c = document.createElement('canvas'); c.width = w; c.height = h;
       const g = c.getContext('2d'); g.fillStyle = '#0a0508'; g.fillRect(0, 0, w, h); g.drawImage(im, 0, 0, w, h);
-      const u = c.toDataURL('image/jpeg', 0.92), d = new Date();
+      const enc = toolsEncodeBudget(c, TOOLS_SHOT_MAX_KB), u = enc.url, d = new Date();
+      console.log('Capture "' + key + '": ' + w + 'x' + h + ', ' + enc.kb + ' KB, mutu ' + enc.q);
       TOOLS_SHOTS[key] = { url: u, data: u.replace(/^data:/, ''), w: w, h: h, auto: true, at: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') };
       resolve();
     };
@@ -5137,7 +5164,9 @@ async function toolsGeneratePpt() {
     if (blob) toolsDownloadBlob(blob, fileName); else await pres.writeFile({ fileName: fileName });
 
     toolsSetPill('ok', 'PPT terunduh');
-    toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download). Mengunggah salinan untuk preview\u2026');
+    const ukuranMb = blob ? (blob.size / 1048576) : 0;
+    const infoUkuran = ukuranMb ? ' Ukuran ' + ukuranMb.toFixed(1) + ' MB' + (ukuranMb <= 15 ? ' (muat dilampirkan di email).' : ' (lebih dari 15 MB, email hanya berisi link).') : '';
+    toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download).' + infoUkuran + ' Mengirim ke email\u2026');
     const catatanRingkas = 'Rata-rata progres ' + (toolsData.rata != null ? toolsData.rata.toFixed(1) : '-') + '% (data pukul ' + toolsData.jam + ' WIB)';
     const uploaded = blob ? await toolsUploadAndLog(blob, fileName, (pres.slides ? pres.slides.length : '') + ' slide', catatanRingkas) : null;
     if (uploaded && uploaded.previewUrl) {
@@ -5515,6 +5544,53 @@ function tiMsg(cls, t) {
   const el = toolsEl('tiMsg');
   if (el) { el.className = 'tl-msg ' + cls; el.innerHTML = t; }
 }
+
+/* ── Gembok file KUNCI JAWABAN ──────────────────────────────────────
+   Dua lapis:
+   1. File kunci dibuat PRIVAT di Drive (tidak dibagikan ke siapa pun),
+      jadi walaupun linknya bocor, kandidat tetap tidak bisa membukanya.
+   2. Linknya tidak ditampilkan di halaman ini sampai NIP dimasukkan,
+      supaya tidak kebaca kalau layar kelihatan kandidat.
+   NIP yang diterima: NIP akun yang sedang login, atau yang terdaftar
+   di TI_NIP_BOLEH di bawah (tambah NIP interviewer lain di sini). */
+var TI_NIP_BOLEH = ['182126'];
+var TI_KUNCI_URL = [];
+var tiKunciSalah = 0;
+
+function tiNipDiterima(nip) {
+  const bersih = String(nip || '').replace(/\D/g, '');
+  if (!bersih) return false;
+  const sendiri = String(localStorage.getItem('wms_nip') || '').replace(/\D/g, '');
+  if (sendiri && bersih === sendiri) return true;
+  return TI_NIP_BOLEH.map(x => String(x).replace(/\D/g, '')).indexOf(bersih) >= 0;
+}
+
+function tiBukaKunci() {
+  const area = toolsEl('tiKunciArea');
+  if (!TI_KUNCI_URL.length) { if (area) area.innerHTML = '<i>Belum ada file kunci di sesi ini.</i>'; return; }
+  if (tiKunciSalah >= 3) {
+    if (area) area.innerHTML = '<b>NIP salah 3 kali.</b> Muat ulang halaman dulu, atau buka langsung dari Google Drive kamu.';
+    return;
+  }
+  const isi = prompt('Masukkan NIP kamu untuk membuka kunci jawaban:');
+  if (isi === null) return;
+  if (!tiNipDiterima(isi)) {
+    tiKunciSalah++;
+    if (area) area.innerHTML = '<b>NIP tidak cocok.</b> Sisa percobaan: ' + Math.max(0, 3 - tiKunciSalah) + '.';
+    return;
+  }
+  tiKunciSalah = 0;
+  if (area) {
+    area.innerHTML = '🔓 Kunci terbuka:<br>' + TI_KUNCI_URL.map(function (h) {
+      return '• <a href="' + h.url + '" target="_blank" rel="noopener"><b>' + toolsEsc(h.label) + '</b></a>';
+    }).join('<br>') + '<br><button class="tl-btn tl-btn-sm" onclick="tiTutupKunci()">🔒 Sembunyikan lagi</button>';
+  }
+}
+
+function tiTutupKunci() {
+  const area = toolsEl('tiKunciArea');
+  if (area) area.innerHTML = '';
+}
 function tiSibuk(on) {
   ['tiBtnSheet', 'tiBtnExcel'].forEach(function (id) { const b = toolsEl(id); if (b) b.disabled = !!on; });
 }
@@ -5538,10 +5614,11 @@ async function toolsBuatSheetInterview() {
         const res = await toolsXhrPost(GAS_DASHBOARD_URL, {
           action: 'buatSheetInterview',
           judul: tiJudulSheet(tugas[t].awalan, nama, f.tanggal),
+          privat: tugas[t].kunci,   // file kunci tidak dibagikan ke siapa pun
           petunjuk: b.petunjuk, soal: b.soal, data: b.data, master: b.master, pivot: b.pivot, kuning: b.kuning
         }, 180000);
         if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
-        hasil.push({ label: tugas[t].awalan + ' — ' + nama, url: res.url, catatan: res.catatan || '' });
+        hasil.push({ label: tugas[t].awalan + ' — ' + nama, url: res.url, catatan: res.catatan || '', kunci: tugas[t].kunci });
       }
     }
   } catch (e) {
@@ -5552,8 +5629,15 @@ async function toolsBuatSheetInterview() {
 
   let html = '';
   if (hasil.length) {
+    TI_KUNCI_URL = hasil.filter(h => h.kunci).map(h => ({ label: h.label, url: h.url }));
+    const terbuka = hasil.filter(h => !h.kunci);
     html += '✅ ' + hasil.length + ' Google Sheet dibuat di Drive kamu:<br>';
-    html += hasil.map(h => '• <a href="' + h.url + '" target="_blank" rel="noopener"><b>' + toolsEsc(h.label) + '</b></a>' + (h.catatan ? ' <i>(' + toolsEsc(h.catatan) + ')</i>' : '')).join('<br>');
+    html += terbuka.map(h => '• <a href="' + h.url + '" target="_blank" rel="noopener"><b>' + toolsEsc(h.label) + '</b></a>' + (h.catatan ? ' <i>(' + toolsEsc(h.catatan) + ')</i>' : '')).join('<br>');
+    if (TI_KUNCI_URL.length) {
+      html += (terbuka.length ? '<br>' : '') + '• <b>' + TI_KUNCI_URL.length + ' file KUNCI JAWABAN</b> — terkunci. '
+        + '<button class="tl-btn tl-btn-sm" onclick="tiBukaKunci()">🔒 Buka pakai NIP</button>'
+        + '<br><span id="tiKunciArea"></span>';
+    }
   }
   if (gagal) {
     html += (html ? '<br><br>' : '') + '⚠️ Berhenti di tengah: ' + toolsEsc(gagal)
