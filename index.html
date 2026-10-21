@@ -1736,9 +1736,18 @@
             <div class="tl-slide"><span class="tl-slide-no">5</span><div><b>Pivot Table</b></div><span class="tl-tag">15</span></div>
             <div class="tl-slide"><span class="tl-slide-no">6</span><div><b>Filter &amp; Sort</b></div><span class="tl-tag">15</span></div>
           </div>
-          <p class="tl-desc tl-muted">Tiap file berisi 5 sheet: PETUNJUK, SOAL, DATA, MASTER STORE, PIVOT — sama seperti soal yang sudah dipakai. Total nilai 100.</p>
+          <p class="tl-desc tl-muted">Tiap file berisi 5 sheet: PETUNJUK, SOAL, DATA, MASTER STORE, PIVOT — sama seperti soal yang sudah dipakai. Total nilai 100, dan 95 di antaranya dinilai otomatis (soal 5.1 Pivot Table dinilai interviewer).</p>
           <p class="tl-desc tl-muted"><b>📗 Google Sheet</b> — file langsung dibuat di Drive kamu lengkap dengan kotak jawaban kuning, header biru, dan filter; linknya muncul di sini untuk dibagikan ke kandidat. <b>⬇️ Unduh Excel</b> — cadangan kalau Apps Script bermasalah, isinya sama tapi tanpa warna.</p>
+          <p class="tl-desc tl-muted">Setelah kandidat selesai mengerjakan, klik <b>📝 Nilai sekarang</b> di tabel riwayat di bawah. Jawabannya dibaca langsung dari file kandidat lalu dibandingkan dengan kunci — nilainya keluar sendiri.</p>
         </div>
+      </div>
+    </div>
+
+    <div class="card tl-block">
+      <div class="card-header"><span class="card-title">🗂️ Riwayat &amp; Nilai Kandidat</span><button class="tl-btn tl-btn-sm" onclick="toolsMuatRiwayatInterview()">↺ Muat ulang</button></div>
+      <div class="tl-body">
+        <div class="tl-msg" id="tiRiwayatMsg"></div>
+        <div id="tiRiwayat"><div class="tl-empty">Memuat riwayat…</div></div>
       </div>
     </div>
     </div>
