@@ -5604,6 +5604,7 @@ async function toolsBuatSheetInterview() {
   if (!f.daftar.length) { tiMsg('tl-msg-err', 'Isi dulu nama kandidatnya, satu nama per baris.'); return; }
   tiSibuk(true);
   const hasil = [];
+  TI_SESI = [];
   let gagal = '';
   try {
     for (let i = 0; i < f.daftar.length; i++) {
@@ -5625,6 +5626,7 @@ async function toolsBuatSheetInterview() {
         if (tugas[t].kunci) { urlKunci = res.url || ''; } else { urlSoal = res.url || ''; idSoal = res.id || ''; }
         hasil.push({ label: tugas[t].awalan + ' — ' + nama, url: res.url, catatan: res.catatan || '', kunci: tugas[t].kunci });
       }
+      TI_SESI.push({ nama: nama, tanggal: f.tanggal, durasi: f.durasi, jmlBaris: f.baris, idSoal: idSoal, urlSoal: urlSoal });
       await tiCatatKeRiwayat(nama, f, urlSoal, idSoal, urlKunci);
     }
   } catch (e) {
@@ -5643,6 +5645,12 @@ async function toolsBuatSheetInterview() {
       html += (terbuka.length ? '<br>' : '') + '• <b>' + TI_KUNCI_URL.length + ' file KUNCI JAWABAN</b> — terkunci. '
         + '<button class="tl-btn tl-btn-sm" onclick="tiBukaKunci()">🔒 Buka pakai NIP</button>'
         + '<br><span id="tiKunciArea"></span>';
+    }
+    if (TI_SESI.length) {
+      html += '<br><br><b>Sudah selesai dikerjakan? Nilai di sini:</b><br>'
+        + TI_SESI.map(function (s, i) {
+          return '<button class="tl-btn tl-btn-sm" onclick="toolsNilaiSesi(' + i + ')">📝 Nilai ' + toolsEsc(s.nama) + '</button>';
+        }).join(' ');
     }
   }
   if (gagal) {
@@ -5754,6 +5762,7 @@ function tiNilaiDariGrid(p, grid) {
 
 // ── Riwayat ───────────────────────────────────────────────────────
 var tiRiwayat = [];
+var TI_SESI = [];   // kandidat yang dibuatkan soal di sesi ini (dipakai tombol Nilai langsung)
 
 async function tiCatatKeRiwayat(nama, f, urlSoal, idSoal, urlKunci) {
   try {
@@ -5769,12 +5778,19 @@ async function toolsMuatRiwayatInterview() {
   const box = toolsEl('tiRiwayat');
   if (box) box.innerHTML = '<div class="tl-empty">Memuat riwayat…</div>';
   try {
-    const res = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'riwayatInterview' }, 45000);
+    const res = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'riwayatInterview' }, 30000);
     if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
     tiRiwayat = res.rows || [];
     tiGambarRiwayat();
   } catch (e) {
-    if (box) box.innerHTML = '<div class="tl-empty">Riwayat belum bisa dimuat (' + toolsEsc(String(e.message || e)) + ')</div>';
+    console.warn('Riwayat interview gagal dimuat:', e);
+    const sebab = String((e && e.message) || e);
+    const belumDeploy = /tidak dikenali|action/i.test(sebab);
+    if (box) {
+      box.innerHTML = '<div class="tl-empty tl-empty-err"><b>Riwayat belum bisa dimuat.</b><br>' + toolsEsc(sebab)
+        + (belumDeploy ? '<br>Sepertinya Apps Script belum di-<b>deploy versi baru</b> setelah Code.gs diganti.' : '')
+        + '<br>Nilai tetap bisa dihitung lewat kotak <b>Nilai dari link</b> di atas.</div>';
+    }
   }
 }
 
@@ -5801,9 +5817,41 @@ function tiGambarRiwayat() {
 }
 
 /** Baca jawaban kandidat, bandingkan dengan kunci, simpan nilainya. */
-async function toolsNilaiKandidat(idx) {
+/** Dari tabel riwayat. */
+function toolsNilaiKandidat(idx) {
   const r = tiRiwayat[idx];
-  if (!r) return;
+  if (r) tiNilai(r);
+}
+
+/** Dari daftar kandidat yang baru dibuat di sesi ini (tidak butuh tabel riwayat). */
+function toolsNilaiSesi(i) {
+  const r = TI_SESI[i];
+  if (r) tiNilai(r);
+}
+
+/** Dari link file yang ditempel manual. */
+function toolsNilaiDariLink() {
+  const nama = (toolsEl('tiNilaiNama') || {}).value || '';
+  const tanggal = (toolsEl('tiNilaiTgl') || {}).value || '';
+  const jmlBaris = parseInt((toolsEl('tiNilaiBaris') || {}).value, 10) || 400;
+  const link = (toolsEl('tiNilaiLink') || {}).value || '';
+  const box = toolsEl('tiRiwayatMsg');
+  const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
+  if (!nama.trim() || !tanggal) { pesan('tl-msg-err', 'Nama kandidat dan tanggal tes harus diisi, persis seperti waktu soalnya dibuat.'); return; }
+  const id = tiIdDariLink(link);
+  if (!id) { pesan('tl-msg-err', 'Link file soal tidak dikenali. Tempel link Google Sheet kandidat (yang ada /spreadsheets/d/...).'); return; }
+  tiNilai({ nama: nama.trim(), tanggal: tanggal, durasi: 30, jmlBaris: jmlBaris, idSoal: id });
+}
+
+/** Ambil ID spreadsheet dari link, atau terima ID mentah. */
+function tiIdDariLink(link) {
+  const s = String(link || '').trim();
+  const m = s.match(/\/spreadsheets\/d\/([A-Za-z0-9_-]{20,})/);
+  if (m) return m[1];
+  return /^[A-Za-z0-9_-]{20,}$/.test(s) ? s : '';
+}
+
+async function tiNilai(r) {
   const box = toolsEl('tiRiwayatMsg');
   const pesan = (cls, t) => { if (box) { box.className = 'tl-msg ' + cls; box.innerHTML = t; } };
   if (!r.idSoal) { pesan('tl-msg-err', 'Baris ini tidak menyimpan ID file soal, jadi tidak bisa dinilai otomatis.'); return; }
@@ -5822,11 +5870,20 @@ async function toolsNilaiKandidat(idx) {
     n51 = Math.max(0, Math.min(5, parseInt(isi, 10) || 0));
 
     const rincian = [1, 2, 3, 4, 5, 6].map(b => 'B' + b + ': ' + n.perBagian[b].dapat + (b === 5 ? '+' + n51 : '') + '/' + n.perBagian[b].maks).join(' · ');
-    const simpan = await toolsXhrPost(GAS_DASHBOARD_URL, {
-      action: 'simpanNilaiInterview', baris: r.baris, nilaiOtomatis: n.total, nilai51: n51,
-      rincian: rincian, oleh: localStorage.getItem('wms_name') || ''
-    }, 30000);
-    if (!simpan || simpan.ok === false) throw new Error((simpan && simpan.error) || 'Gagal menyimpan nilai');
+
+    // Penyimpanan ke sheet riwayat bersifat tambahan: kalau gagal, nilainya tetap ditampilkan.
+    let catatanSimpan = '';
+    if (r.baris) {
+      try {
+        const simpan = await toolsXhrPost(GAS_DASHBOARD_URL, {
+          action: 'simpanNilaiInterview', baris: r.baris, nilaiOtomatis: n.total, nilai51: n51,
+          rincian: rincian, oleh: localStorage.getItem('wms_name') || ''
+        }, 30000);
+        if (!simpan || simpan.ok === false) throw new Error((simpan && simpan.error) || 'gagal menyimpan');
+      } catch (e2) { catatanSimpan = '<br><i>Nilai belum tersimpan ke riwayat (' + toolsEsc(String(e2.message || e2)) + ').</i>'; }
+    } else {
+      catatanSimpan = '<br><i>Nilai ini tidak disimpan ke riwayat (dinilai dari link langsung).</i>';
+    }
 
     let html = '✅ <b>' + toolsEsc(r.nama) + '</b> — nilai akhir <b>' + (n.total + n51) + ' / 100</b><br>' + toolsEsc(rincian);
     if (n.kosong) html += '<br><i>' + n.kosong + ' kotak jawaban dibiarkan kosong.</i>';
@@ -5835,8 +5892,8 @@ async function toolsNilaiKandidat(idx) {
         + n.salah.slice(0, 20).map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <i>' + toolsEsc(String(s.jawab) || '(kosong)') + '</i>, seharusnya <b>' + toolsEsc(String(s.benar)) + '</b>').join('<br>');
       if (n.salah.length > 20) html += '<br>… dan ' + (n.salah.length - 20) + ' lagi.';
     }
-    pesan('tl-msg-ok', html);
-    await toolsMuatRiwayatInterview();
+    pesan('tl-msg-ok', html + catatanSimpan);
+    if (r.baris) toolsMuatRiwayatInterview();
   } catch (e) {
     console.error(e);
     pesan('tl-msg-err', 'Gagal menilai: ' + toolsEsc(String(e.message || e)));
