@@ -6023,7 +6023,9 @@ async function tiNilai(r) {
     }
 
     const terisi = 39 - n.kosong;
-    let html = '✅ <b>' + toolsEsc(r.nama) + '</b> — nilai akhir <b>' + (n.total + n51) + ' / 100</b><br>' + toolsEsc(rincian);
+    let html = '✅ <b>' + toolsEsc(r.nama) + '</b> — nilai akhir <b>' + (n.total + n51) + ' / 100</b><br>'
+      + '<span class="tl-muted">' + n.total + ' poin dari jawaban yang benar + ' + n51 + ' poin soal 5.1 (Pivot Table, kamu yang menilai) = <b>'
+      + (n.total + n51) + '</b></span><br>' + toolsEsc(rincian);
     // Keterangan sumber: biar ketahuan kalau yang kebaca ternyata file yang salah.
     html += '<br><span class="tl-muted">Dibaca dari: '
       + (res.urlFile ? '<a href="' + res.urlFile + '" target="_blank" rel="noopener">' + toolsEsc(res.namaFile || 'file soal') + '</a>' : toolsEsc(res.namaFile || r.idSoal))
@@ -6049,7 +6051,7 @@ async function tiNilai(r) {
     }
     if (n.kosong) html += '<br><i>' + n.kosong + ' kotak jawaban dibiarkan kosong.</i>';
     if (n.benar.length) {
-      html += '<br><br><b>✅ Yang benar (' + n.benar.length + ' soal, ' + n.total + ' poin):</b><br>'
+      html += '<br><br><b>✅ Yang benar (' + n.benar.length + ' soal, ' + n.total + ' poin — belum termasuk ' + n51 + ' poin soal 5.1):</b><br>'
         + n.benar.map(s => '• ' + s.ref + ' (B' + s.bagian + ') — dijawab <b>' + toolsEsc(String(s.jawab)) + '</b> · +' + s.poin).join('<br>');
     }
     if (n.salah.length) {
