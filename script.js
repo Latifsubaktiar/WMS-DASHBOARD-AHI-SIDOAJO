@@ -5269,7 +5269,10 @@ async function toolsLoadFrameTool(url, frameId, msgId, force, namaTool) {
     setTimeout(() => {
       if (!selesai) setMsg('tl-msg-err', '⚠️ ' + namaTool + ' sudah diminta tapi belum selesai dimuat setelah 8 detik. Kemungkinan diblokir jaringan/firewall, atau file terlalu berat. Coba klik "Buka di tab baru" untuk cek langsung, atau tunggu lebih lama.');
     }, 8000);
-    fr.src = url + (force ? '?v=' + Date.now() : '');
+    // Selalu pakai penanda waktu, bukan cuma saat "Muat ulang".
+    // Tanpa ini GitHub Pages bisa menyajikan versi lama tool-nya sampai ~10 menit,
+    // dan perbaikan di ppt-pimpinan.html / ppt-planner.html seolah tidak berefek.
+    fr.src = url + '?v=' + Date.now();
   } catch (e) {
     fr.style.display = 'none';
     setMsg('tl-msg-err', 'Tool ' + namaTool + ' belum bisa dimuat (' + e.message + '). Pastikan file ' + url + ' sudah di-upload ke repo GitHub, sejajar dengan index.html.');
