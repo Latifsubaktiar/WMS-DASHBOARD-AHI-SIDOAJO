@@ -517,6 +517,23 @@ function chartData(p){
 let dl = null;
 setTimeout(async () => { try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch(e){ dl = null; } }, 0);
 
+/* Catat ke Riwayat PPT (sheet yang sama dengan PPT Laporan Pagi).
+   Dipanggil setelah file berhasil dibuat; kalau gagal, cukup diabaikan
+   supaya tidak mengganggu proses unduh. */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
+async function catatRiwayat(fname, catatan){
+  try{
+    const oleh = (function(){ try { return localStorage.getItem('wms_name') || ''; } catch(e){ return ''; } })();
+    const q = '?action=logPpt&status=sukses'
+      + '&file=' + encodeURIComponent(fname)
+      + '&slide=' + encodeURIComponent('3 slide')
+      + '&catatan=' + encodeURIComponent('PPT Pimpinan \u2014 ' + (catatan || ''))
+      + '&oleh=' + encodeURIComponent(oleh);
+    await fetch(GAS_URL + q);
+    try { window.top.postMessage({ type:'wmsPptPimpinanTercatat' }, '*'); } catch(e){}
+  }catch(e){ console.warn('Gagal mencatat riwayat PPT Pimpinan:', e); }
+}
+
 $('#gen').addEventListener('click', async () => {
   if (typeof PptxGenJS === 'undefined'){ status('Library PPT belum termuat. Cek koneksi internet lalu muat ulang halaman.', 'err'); return; }
   const kosong = ORDER.filter(k => !P[k]).length;
@@ -537,10 +554,12 @@ $('#gen').addEventListener('click', async () => {
     if (dl){
       try { await dl.save({ filename:fname, data:blob }); status('Tersimpan: <b>' + esc(fname) + '</b>' + (kosong ? ' — ' + kosong + ' kotak gambar masih kosong.' : ''), 'ok'); }
       catch(err){ status(err && err.code === 'declined' ? 'Download dibatalkan.' : 'Gagal menyimpan (' + esc(err && err.code || 'error') + ').', err && err.code === 'declined' ? '' : 'err'); }
+      catatRiwayat(fname, tg);
     } else {
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname;
       document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
       status('Terunduh: <b>' + esc(fname) + '</b>', 'ok');
+      catatRiwayat(fname, tg);
     }
   } catch(err){ console.error(err); status('Gagal membuat PPT: ' + esc(err.message || err), 'err'); }
   btn.disabled = false;
