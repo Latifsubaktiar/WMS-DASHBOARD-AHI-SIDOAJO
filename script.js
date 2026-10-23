@@ -5229,7 +5229,7 @@ function toolsSwitchTab(name) {
   const panes = { pagi: toolsEl('tlPanePagi'), pimpinan: toolsEl('tlPanePimpinan'), planner: toolsEl('tlPanePlanner'), tes: toolsEl('tlPaneTes') };
   const tabs = { pagi: toolsEl('tlTabPagi'), pimpinan: toolsEl('tlTabPimpinan'), planner: toolsEl('tlTabPlanner'), tes: toolsEl('tlTabTes') };
   Object.keys(panes).forEach(k => { if (panes[k]) panes[k].style.display = (toolsTab === k) ? '' : 'none'; if (tabs[k]) tabs[k].classList.toggle('active', toolsTab === k); });
-  if (toolsTab === 'pimpinan') toolsLoadPimpinan(false);
+  if (toolsTab === 'pimpinan') { toolsLoadPimpinan(false); toolsMuatRiwayatPimpinan(); }
   if (toolsTab === 'planner') toolsLoadPlanner(false);
   if (toolsTab === 'tes') {
     const t = toolsEl('tiTanggal'); if (t && !t.value) t.value = new Date().toISOString().slice(0, 10);
@@ -6426,3 +6426,43 @@ async function tiNilai(r, opsi) {
     pesan('tl-msg-err', 'Gagal menilai: ' + toolsEsc(String(e.message || e)));
   }
 }
+
+// ══════════════════════════════════════════════════════════════════
+//  RIWAYAT PPT PIMPINAN
+//  Tool-nya dimuat lewat iframe dan filenya diunduh langsung ke komputer,
+//  jadi halaman ini tidak tahu apa-apa. Yang mencatat adalah ppt-pimpinan.html
+//  sendiri (action=logPpt, catatan diawali "PPT Pimpinan"), ke sheet riwayat
+//  yang sama dengan PPT Laporan Pagi. Di sini tinggal disaring dan ditampilkan.
+// ══════════════════════════════════════════════════════════════════
+async function toolsMuatRiwayatPimpinan() {
+  const box = toolsEl('tlPimpRiwayat');
+  if (!box) return;
+  box.innerHTML = '<div class="tl-empty">Memuat riwayat…</div>';
+  try {
+    const res = await fetch(GAS_DASHBOARD_URL + '?action=getPptHistory&limit=60&_=' + Date.now());
+    const json = await res.json();
+    if (!json || json.ok === false) throw new Error((json && json.error) || 'Respons server tidak valid');
+    const rows = (json.rows || []).filter(r => String(r.catatan || '').indexOf('PPT Pimpinan') === 0);
+    if (!rows.length) {
+      box.innerHTML = '<div class="tl-empty">Belum ada PPT Pimpinan yang tercatat. PPT yang dibuat lewat tombol <b>Download PPT</b> di atas akan muncul di sini.</div>';
+      return;
+    }
+    box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>File</th><th>Slide</th><th>Oleh</th></tr></thead><tbody>'
+      + rows.map(r => '<tr>'
+        + '<td>' + toolsEsc(r.waktu || '') + '</td>'
+        + '<td><b>' + toolsEsc(r.file || '') + '</b></td>'
+        + '<td>' + toolsEsc(r.slide || '') + '</td>'
+        + '<td>' + toolsEsc(r.oleh || '—') + '</td>'
+        + '</tr>').join('')
+      + '</tbody></table></div>';
+  } catch (e) {
+    box.innerHTML = '<div class="tl-empty tl-empty-err">Riwayat tidak bisa dimuat: ' + toolsEsc(String(e.message || e)) + '</div>';
+  }
+}
+
+/* ppt-pimpinan.html mengabari lewat postMessage setelah berhasil mencatat,
+   supaya tabelnya ikut segar tanpa perlu diklik Muat ulang. */
+window.addEventListener('message', function (e) {
+  const d = e.data;
+  if (d && d.type === 'wmsPptPimpinanTercatat') setTimeout(toolsMuatRiwayatPimpinan, 1200);
+});
