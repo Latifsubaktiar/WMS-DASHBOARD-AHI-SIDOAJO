@@ -517,21 +517,45 @@ function chartData(p){
 let dl = null;
 setTimeout(async () => { try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch(e){ dl = null; } }, 0);
 
-/* Catat ke Riwayat PPT (sheet yang sama dengan PPT Laporan Pagi).
-   Dipanggil setelah file berhasil dibuat; kalau gagal, cukup diabaikan
-   supaya tidak mengganggu proses unduh. */
+/* Unggah PPT ke Drive lewat Apps Script, lalu catat ke Riwayat PPT.
+   Dengan begini hasilnya punya link preview yang bisa dibuka dari dashboard.
+   Dibungkus try/catch: kalau gagal, file yang sudah terunduh tetap aman. */
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxxjijcpvbfzKtZH1gJKPswP1heNpopp2TERUESg5mJiLu7t8qZuSpVist4uAMwxZzN/exec';
-async function catatRiwayat(fname, catatan){
+
+function blobKeBase64(b){
+  return new Promise(function(res, rej){
+    const r = new FileReader();
+    r.onload = function(){ res(String(r.result).split(',')[1] || ''); };
+    r.onerror = function(){ rej(new Error('gagal membaca file')); };
+    r.readAsDataURL(b);
+  });
+}
+
+async function unggahDanCatat(blob, fname, tg){
+  const oleh = (function(){ try { return localStorage.getItem('wms_name') || ''; } catch(e){ return ''; } })();
+  const mb = (blob.size / 1048576).toFixed(1);
   try{
-    const oleh = (function(){ try { return localStorage.getItem('wms_name') || ''; } catch(e){ return ''; } })();
-    const q = '?action=logPpt&status=sukses'
-      + '&file=' + encodeURIComponent(fname)
-      + '&slide=' + encodeURIComponent('3 slide')
-      + '&catatan=' + encodeURIComponent('PPT Pimpinan \u2014 ' + (catatan || ''))
-      + '&oleh=' + encodeURIComponent(oleh);
-    await fetch(GAS_URL + q);
-    try { window.top.postMessage({ type:'wmsPptPimpinanTercatat' }, '*'); } catch(e){}
-  }catch(e){ console.warn('Gagal mencatat riwayat PPT Pimpinan:', e); }
+    status('Tersimpan: <b>' + esc(fname) + '</b> \u2014 mengunggah salinan untuk preview (' + mb + ' MB)\u2026', 'ok');
+    const base64 = await blobKeBase64(blob);
+    const r = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'uploadPpt', base64: base64, fileName: fname,
+        slide: '3 slide', kirimEmail: false,
+        catatan: 'PPT Pimpinan \u2014 ' + (tg || ''), oleh: oleh
+      })
+    });
+    const j = await r.json();
+    if (j && j.ok && j.viewUrl){
+      status('Tersimpan: <b>' + esc(fname) + '</b> \u2014 <a href="' + j.viewUrl + '" target="_blank" rel="noopener">buka preview di Drive</a>', 'ok');
+    } else {
+      status('Tersimpan: <b>' + esc(fname) + '</b> \u2014 preview tidak tersedia (' + esc((j && j.error) || 'server tidak membalas') + ')', 'ok');
+    }
+  }catch(e){
+    console.warn('Unggah PPT Pimpinan gagal:', e);
+    status('Tersimpan: <b>' + esc(fname) + '</b> \u2014 preview tidak tersedia (' + esc(e.message || e) + ')', 'ok');
+  }
+  try { window.top.postMessage({ type:'wmsPptPimpinanTercatat' }, '*'); } catch(e){}
 }
 
 $('#gen').addEventListener('click', async () => {
@@ -554,12 +578,12 @@ $('#gen').addEventListener('click', async () => {
     if (dl){
       try { await dl.save({ filename:fname, data:blob }); status('Tersimpan: <b>' + esc(fname) + '</b>' + (kosong ? ' — ' + kosong + ' kotak gambar masih kosong.' : ''), 'ok'); }
       catch(err){ status(err && err.code === 'declined' ? 'Download dibatalkan.' : 'Gagal menyimpan (' + esc(err && err.code || 'error') + ').', err && err.code === 'declined' ? '' : 'err'); }
-      catatRiwayat(fname, tg);
+      unggahDanCatat(blob, fname, tg);
     } else {
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname;
       document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
       status('Terunduh: <b>' + esc(fname) + '</b>', 'ok');
-      catatRiwayat(fname, tg);
+      unggahDanCatat(blob, fname, tg);
     }
   } catch(err){ console.error(err); status('Gagal membuat PPT: ' + esc(err.message || err), 'err'); }
   btn.disabled = false;
