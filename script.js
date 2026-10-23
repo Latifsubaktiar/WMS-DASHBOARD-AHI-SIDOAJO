@@ -6055,16 +6055,27 @@ async function toolsCekIzinDrive() {
       + '• Baca Drive: ' + tandai(h.driveBaca) + '<br>'
       + '• Tulis Drive: ' + tandai(h.driveTulis) + '<br>'
       + '• Buat Google Sheet: ' + tandai(h.sheetBuat);
+    const scope = String(h.scope || '');
+    const punyaDrive = scope.indexOf('/auth/drive') >= 0;
+    html += '<br>• Punya izin Drive: ' + (punyaDrive ? '✅ YA' : '❌ TIDAK')
+      + '<br>• Daftar izin web app:<br><span class="tl-muted" style="font-size:11px">'
+      + (scope ? scope.split(' ').map(x => '&nbsp;&nbsp;' + toolsEsc(x)).join('<br>') : '(kosong)') + '</span>';
+
     const driveOk = String(h.driveTulis || '').indexOf('OK') === 0;
-    if (!driveOk) {
-      html += '<br><br><b>Artinya:</b> web app tidak punya izin Drive. Perbaikannya di Apps Script:<br>'
-        + '1. Deploy → Manage deployments → ikon pensil<br>'
-        + '2. <b>Execute as</b> harus <b>Me (' + toolsEsc(h.efektif || 'akun kamu') + ')</b>, bukan "User accessing the web app"<br>'
-        + '3. <b>Who has access</b>: Anyone / Anyone within Kawan Lama<br>'
-        + '4. <b>Version: New version</b> → Deploy<br>'
-        + 'Izin Drive dibekukan saat deploy, jadi wajib <b>New version</b> — Save saja tidak cukup.';
+    if (driveOk) {
+      html += '<br><br>✅ Izin Drive sudah aktif. Preview PPT dan 🔒 Kunci file seharusnya jalan sekarang.';
+    } else if (!punyaDrive) {
+      html += '<br><br><b>Ketemu:</b> deployment ini <b>tidak memegang izin Drive sama sekali</b>, '
+        + 'makanya DriveApp selalu ditolak padahal dari editor berhasil. '
+        + 'Izin dibekukan saat deploy, jadi perbaikannya:<br>'
+        + '1. Apps Script → <b>Deploy → Manage deployments → ikon pensil</b><br>'
+        + '2. <b>Version: New version</b> → <b>Deploy</b> (wajib New version, Save saja tidak cukup)<br>'
+        + '3. Kalau muncul <b>Authorize access</b> / <b>Review permissions</b> → pilih akunmu → Advanced → Allow<br>'
+        + '4. Klik tombol ini lagi, pastikan "Punya izin Drive" sudah ✅';
     } else {
-      html += '<br><br>✅ Izin Drive sudah aktif. Tombol <b>🔒 Kunci file</b> dan preview PPT seharusnya jalan sekarang.';
+      html += '<br><br><b>Aneh:</b> izin Drive ada, tapi DriveApp tetap ditolak. '
+        + 'Biasanya ini soal <b>Execute as</b>. Di Manage deployments pastikan <b>Execute as: Me ('
+        + toolsEsc(h.efektif || 'akun kamu') + ')</b>, bukan "User accessing the web app", lalu deploy New version.';
     }
     pesan(driveOk ? 'tl-msg-ok' : 'tl-msg-err', html);
   } catch (e) {
