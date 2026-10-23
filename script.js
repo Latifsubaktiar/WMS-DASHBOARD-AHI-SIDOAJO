@@ -2442,7 +2442,9 @@ async function fetchDailyActivity(){
         scales: {
           x:  { grid:{color:'rgba(0,0,0,0.04)'}, ticks:{maxRotation:0,font:{size:9,weight:'600'},color:'#475569'}, border:{display:false} },
           yL: { type:'linear', position:'left',  beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v,font:{size:9},color:'#475569'}, border:{display:false} },
-          yR: { type:'linear', position:'right', min:0, max:100, grid:{display:false}, ticks:{callback:v=>v+'%',stepSize:25,color:C.occupancy,font:{size:10,weight:'700'}}, border:{display:false} }
+          // Batas atas mengikuti data: occupancy bisa lewat 100% (gudang over-capacity),
+          // dan kalau dipatok 100 garisnya terpotong di tepi atas.
+          yR: { type:'linear', position:'right', min:0, max:toolsMaxOcc(d), grid:{display:false}, ticks:{callback:v=>v+'%',stepSize:25,color:C.occupancy,font:{size:10,weight:'700'}}, border:{display:false} }
         },
         plugins: {
           legend:{ display:false },
@@ -6543,4 +6545,17 @@ function toolsPreviewPimpinan(i) {
   toolsEl('tlPreviewTitle').textContent = r.file || 'Preview PPT';
   toolsEl('tlPreviewFrame').src = 'https://drive.google.com/file/d/' + fid + '/preview';
   modal.style.display = 'flex';
+}
+
+/** Batas atas sumbu Occupancy: minimal 100%, dibulatkan ke kelipatan 25
+    di atas nilai tertinggi, plus sedikit ruang supaya titiknya tidak menempel
+    di tepi grafik. */
+function toolsMaxOcc(rows) {
+  let maks = 0;
+  (rows || []).forEach(function (r) {
+    const v = Number(r && r.occupancy);
+    if (!isNaN(v) && v > maks) maks = v;
+  });
+  if (maks <= 100) return 100;
+  return Math.ceil((maks + 5) / 25) * 25;
 }
