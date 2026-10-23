@@ -3446,8 +3446,22 @@ async function toolsLoadHistory() {
   }
 }
 
+/**
+ * Ambil ID file dari link Drive. Bentuk linknya beda-beda tergantung jenis file:
+ *   drive.google.com/file/d/<id>/view          (file biasa)
+ *   docs.google.com/presentation/d/<id>/edit   (.pptx, dibuka pakai editor Slides)
+ *   docs.google.com/document|spreadsheets/d/<id>/edit
+ *   drive.google.com/open?id=<id>
+ * Dulu hanya bentuk pertama yang dikenali, makanya tombol Preview untuk PPT
+ * tidak pernah muncul padahal filenya ada.
+ */
 function toolsDriveFileId(url) {
-  const m = String(url || '').match(/\/file\/d\/([^/]+)/);
+  const s = String(url || '');
+  let m = s.match(/\/(?:file|presentation|document|spreadsheets)\/d\/([A-Za-z0-9_-]{15,})/);
+  if (m) return m[1];
+  m = s.match(/[?&]id=([A-Za-z0-9_-]{15,})/);
+  if (m) return m[1];
+  m = s.match(/\/d\/([A-Za-z0-9_-]{15,})/);
   return m ? m[1] : null;
 }
 
@@ -6458,12 +6472,17 @@ async function toolsMuatRiwayatPimpinan() {
       box.innerHTML = '<div class="tl-empty">Belum ada PPT Pimpinan yang tercatat. PPT yang dibuat lewat tombol <b>Download PPT</b> di atas akan muncul di sini.</div>';
       return;
     }
-    box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>File</th><th>Slide</th><th>Oleh</th></tr></thead><tbody>'
-      + rows.map(r => '<tr>'
+    tiRiwayatPpt = rows;
+    box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>File</th><th>Slide</th><th>Oleh</th><th>Preview</th><th></th></tr></thead><tbody>'
+      + rows.map((r, i) => '<tr>'
         + '<td>' + toolsEsc(r.waktu || '') + '</td>'
         + '<td><b>' + toolsEsc(r.file || '') + '</b></td>'
         + '<td>' + toolsEsc(r.slide || '') + '</td>'
         + '<td>' + toolsEsc(r.oleh || '—') + '</td>'
+        + '<td>' + (r.link
+          ? '<a class="tl-btn tl-btn-sm" href="' + r.link + '" target="_blank" rel="noopener">↗ Buka</a>'
+          : '<span class="tl-muted">—</span>') + '</td>'
+        + '<td><button class="tl-btn tl-btn-sm" onclick="toolsHapusRiwayatPpt(' + i + ')">🗑️ Hapus</button></td>'
         + '</tr>').join('')
       + '</tbody></table></div>';
   } catch (e) {
@@ -6477,3 +6496,26 @@ window.addEventListener('message', function (e) {
   const d = e.data;
   if (d && d.type === 'wmsPptPimpinanTercatat') setTimeout(toolsMuatRiwayatPimpinan, 1200);
 });
+
+/* Baris riwayat PPT Pimpinan yang sedang tampil (untuk tombol hapus). */
+var tiRiwayatPpt = [];
+
+/** Hapus satu baris Riwayat PPT. Dijaga NIP di server, bukan cuma di sini. */
+async function toolsHapusRiwayatPpt(idx) {
+  const r = tiRiwayatPpt[idx];
+  if (!r) return;
+  const box = toolsEl('tlPimpRiwayat');
+  if (!confirm('Hapus catatan riwayat "' + (r.file || '') + '"?\n\nFile PPT di Drive TIDAK ikut terhapus, hanya catatannya.')) return;
+  const nip = prompt('Masukkan NIP kamu untuk menghapus:');
+  if (nip === null) return;
+  try {
+    const res = await toolsXhrPost(GAS_DASHBOARD_URL, {
+      action: 'hapusRiwayatPpt', baris: r.baris, file: r.file || '', nip: nip
+    }, 30000);
+    if (!res || res.ok === false) throw new Error((res && res.error) || 'Server tidak membalas');
+    await toolsMuatRiwayatPimpinan();
+  } catch (e) {
+    if (box) box.insertAdjacentHTML('afterbegin',
+      '<div class="tl-msg tl-msg-err">Gagal menghapus: ' + toolsEsc(String(e.message || e)) + '</div>');
+  }
+}
