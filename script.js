@@ -3467,7 +3467,9 @@ function toolsDriveFileId(url) {
 
 function toolsRenderHistory() {
   const box = toolsEl('tlHistory'); if (!box) return;
-  const rows = toolsHistory || [];
+  // PPT Pimpinan ditulis ke sheet riwayat yang sama, tapi punya kartunya sendiri
+  // di tab Pimpinan — jadi di tabel ini disaring keluar supaya tidak dobel.
+  const rows = (toolsHistory || []).filter(r => String(r.catatan || '').indexOf('PPT Pimpinan') !== 0);
   toolsRenderSchedule();
   if (!rows.length) { box.innerHTML = '<div class="tl-empty">Belum ada PPT yang tercatat. PPT yang dibuat otomatis (jadwal) maupun lewat tombol akan muncul di sini.</div>'; return; }
   box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Status</th><th>Keterangan</th><th>Preview</th><th>Aksi</th></tr></thead><tbody>' +
