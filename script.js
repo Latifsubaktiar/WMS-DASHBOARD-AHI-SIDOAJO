@@ -6479,9 +6479,10 @@ async function toolsMuatRiwayatPimpinan() {
         + '<td><b>' + toolsEsc(r.file || '') + '</b></td>'
         + '<td>' + toolsEsc(r.slide || '') + '</td>'
         + '<td>' + toolsEsc(r.oleh || '—') + '</td>'
-        + '<td>' + (r.link
-          ? '<a class="tl-btn tl-btn-sm" href="' + r.link + '" target="_blank" rel="noopener">↗ Buka</a>'
-          : '<span class="tl-muted">—</span>') + '</td>'
+        + '<td>' + (toolsDriveFileId(r.link)
+          ? '<button class="tl-btn tl-btn-sm" onclick="toolsPreviewPimpinan(' + i + ')">▶ Preview</button>'
+            + ' <a class="tl-btn tl-btn-sm" href="' + r.link + '" target="_blank" rel="noopener">↗</a>'
+          : '<span class="tl-muted" title="File ini belum pernah diunggah ke Drive">—</span>') + '</td>'
         + '<td><button class="tl-btn tl-btn-sm" onclick="toolsHapusRiwayatPpt(' + i + ')">🗑️ Hapus</button></td>'
         + '</tr>').join('')
       + '</tbody></table></div>';
@@ -6518,4 +6519,23 @@ async function toolsHapusRiwayatPpt(idx) {
     if (box) box.insertAdjacentHTML('afterbegin',
       '<div class="tl-msg tl-msg-err">Gagal menghapus: ' + toolsEsc(String(e.message || e)) + '</div>');
   }
+}
+
+/** Preview inline untuk Riwayat PPT Pimpinan — memakai modal yang sama
+    dengan Riwayat PPT utama, supaya tidak perlu pindah tab ke Drive. */
+function toolsPreviewPimpinan(i) {
+  const r = (tiRiwayatPpt || [])[i]; if (!r) return;
+  const fid = toolsDriveFileId(r.link); if (!fid) return;
+  let modal = toolsEl('tlPreviewModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'tlPreviewModal';
+    modal.className = 'tl-modal-backdrop';
+    modal.innerHTML = '<div class="tl-modal"><div class="tl-modal-bar"><b id="tlPreviewTitle"></b><button class="tl-btn tl-btn-sm" onclick="toolsClosePreview()">✕ Tutup</button></div><iframe id="tlPreviewFrame" allow="fullscreen"></iframe></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) toolsClosePreview(); });
+  }
+  toolsEl('tlPreviewTitle').textContent = r.file || 'Preview PPT';
+  toolsEl('tlPreviewFrame').src = 'https://drive.google.com/file/d/' + fid + '/preview';
+  modal.style.display = 'flex';
 }
