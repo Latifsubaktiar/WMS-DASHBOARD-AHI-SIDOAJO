@@ -535,13 +535,13 @@ async function unggahDanCatat(blob, fname, tg){
   const oleh = (function(){ try { return localStorage.getItem('wms_name') || ''; } catch(e){ return ''; } })();
   const mb = (blob.size / 1048576).toFixed(1);
   try{
-    status('Tersimpan: <b>' + esc(fname) + '</b> \u2014 mengunggah salinan untuk preview (' + mb + ' MB)\u2026', 'ok');
+    status('Tersimpan: <b>' + esc(fname) + '</b> \u2014 mengunggah ke Drive &amp; Slack (' + mb + ' MB)\u2026', 'ok');
     const base64 = await blobKeBase64(blob);
     const r = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({
         action: 'uploadPpt', base64: base64, fileName: fname,
-        slide: '3 slide', kirimEmail: false,
+        slide: '3 slide', kirimEmail: false, slack: true,
         catatan: 'PPT Pimpinan \u2014 ' + (tg || ''), oleh: oleh
       })
     });
