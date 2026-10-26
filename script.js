@@ -3580,7 +3580,7 @@ async function toolsUploadAndLog(blob, fileName, slide, catatan) {
   try {
     toolsUploadErr = '';
     const base64 = await toolsBlobToBase64(blob);
-    const json = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'uploadPpt', base64: base64, fileName: fileName, slide: slide || '', catatan: catatan || '', oleh: localStorage.getItem('wms_name') || '' }, 90000);
+    const json = await toolsXhrPost(GAS_DASHBOARD_URL, { action: 'uploadPpt', base64: base64, fileName: fileName, slide: slide || '', catatan: catatan || '', slack: true, oleh: localStorage.getItem('wms_name') || '' }, 90000);
     if (!json || json.ok === false) throw new Error((json && json.error) || 'Upload ke Drive gagal');
     toolsLoadHistory();
     return json;
@@ -5217,7 +5217,7 @@ async function toolsGeneratePpt() {
     toolsSetPill('ok', 'PPT terunduh');
     const ukuranMb = blob ? (blob.size / 1048576) : 0;
     const infoUkuran = ukuranMb ? ' Ukuran ' + ukuranMb.toFixed(1) + ' MB' + (ukuranMb <= 15 ? ' (muat dilampirkan di email).' : ' (lebih dari 15 MB, email hanya berisi link).') : '';
-    toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download).' + infoUkuran + ' Mengirim ke email\u2026');
+    toolsMsg('ok', toolsCapNote + 'PPT berhasil dibuat (' + (pres.slides ? pres.slides.length : '') + ' slide): ' + fileName + ' (cek folder Download).' + infoUkuran + ' Mengirim ke email & Slack\u2026');
     const catatanRingkas = 'Rata-rata progres ' + (toolsData.rata != null ? toolsData.rata.toFixed(1) : '-') + '% (data pukul ' + toolsData.jam + ' WIB)';
     const uploaded = blob ? await toolsUploadAndLog(blob, fileName, (pres.slides ? pres.slides.length : '') + ' slide', catatanRingkas) : null;
     if (uploaded && uploaded.previewUrl) {
@@ -6480,11 +6480,12 @@ async function toolsMuatRiwayatPimpinan() {
       return;
     }
     tiRiwayatPpt = rows;
-    box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>File</th><th>Slide</th><th>Oleh</th><th>Preview</th><th></th></tr></thead><tbody>'
+    box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>File</th><th>Keterangan</th><th>Oleh</th><th>Preview</th><th></th></tr></thead><tbody>'
       + rows.map((r, i) => '<tr>'
         + '<td>' + toolsEsc(r.waktu || '') + '</td>'
         + '<td><b>' + toolsEsc(r.file || '') + '</b></td>'
-        + '<td>' + toolsEsc(r.slide || '') + '</td>'
+        // Keterangan memuat hasil Drive, email, dan Slack — di situ alasan kalau ada yang gagal.
+        + '<td class="tl-ket">' + toolsEsc(String(r.catatan || '').replace(/^PPT Pimpinan\s*—\s*/, '')) + '</td>'
         + '<td>' + toolsEsc(r.oleh || '—') + '</td>'
         + '<td>' + (toolsDriveFileId(r.link)
           ? '<button class="tl-btn tl-btn-sm" onclick="toolsPreviewPimpinan(' + i + ')">▶ Preview</button>'
