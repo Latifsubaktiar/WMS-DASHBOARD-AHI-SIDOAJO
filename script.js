@@ -3314,6 +3314,7 @@ const TOOLS_JSZIP_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jsz
 const TOOLS_PARTS = [['profil', 'Profil DC'], ['inbound', 'Inbound'], ['storing', 'Storing'], ['outbound', 'Outbound'], ['inventory', 'Inventory'], ['planner', 'Planner SLA'], ['plannerMaster', 'Planner CBM'], ['outstanding', 'Outstanding Backlog'], ['vendorTrend', 'Vendor Trend'], ['stockTransfer', 'Stock Transfer'], ['inboundPlanning', 'Inbound Planning']];
 let toolsData = null;
 let toolsHistory = null;
+let toolsRiwayatTampil = null;   // baris riwayat yang sedang tampil (sudah disaring)
 let toolsBusy = false;
 
 function toolsEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -3472,6 +3473,11 @@ function toolsRenderHistory() {
   // PPT Pimpinan ditulis ke sheet riwayat yang sama, tapi punya kartunya sendiri
   // di tab Pimpinan — jadi di tabel ini disaring keluar supaya tidak dobel.
   const rows = (toolsHistory || []).filter(r => String(r.catatan || '').indexOf('PPT Pimpinan') !== 0);
+  // Simpan baris yang BENAR-BENAR tampil. Tombol Preview mengirim nomor urut
+  // dari daftar ini, jadi pencariannya harus di daftar ini juga — kalau dicari
+  // di toolsHistory (yang belum disaring) nomornya geser dan preview-nya
+  // membuka file lain.
+  toolsRiwayatTampil = rows;
   toolsRenderSchedule();
   if (!rows.length) { box.innerHTML = '<div class="tl-empty">Belum ada PPT yang tercatat. PPT yang dibuat otomatis (jadwal) maupun lewat tombol akan muncul di sini.</div>'; return; }
   box.innerHTML = '<div class="tl-table-wrap"><table class="tl-table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Status</th><th>Keterangan</th><th>Preview</th><th>Aksi</th></tr></thead><tbody>' +
@@ -3490,7 +3496,7 @@ function toolsRenderHistory() {
 
 /** Buka modal preview Drive (iframe) untuk baris riwayat ke-i. Tidak perlu download. */
 function toolsOpenPreview(i) {
-  const r = (toolsHistory || [])[i]; if (!r) return;
+  const r = (toolsRiwayatTampil || toolsHistory || [])[i]; if (!r) return;
   const fid = toolsDriveFileId(r.link); if (!fid) return;
   let modal = toolsEl('tlPreviewModal');
   if (!modal) {
