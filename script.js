@@ -4141,8 +4141,8 @@ function buildPlannerSlideV2(pres, planner, master, bgData, shots) {
   function panel(x, y, w, h, d) {
     s.addShape(pres.ShapeType.roundRect, { x, y, w, h, rectRadius: 0.05, fill: { color: '0D0D0F' }, line: { color: 'C81E32', width: 1 } });
     T('MAIN DASHBOARD', { x: x + 0.13, y: y + 0.08, w: w - 0.26, h: 0.16, fontSize: 7, bold: true, color: 'FF4D5E' });
-    const rowY0 = y + 0.28, rh = 0.52, gap = 0.045, cw3 = (w - 0.26 - gap * 2) / 3, cw4 = (w - 0.26 - gap * 3) / 4;
-    function cell3(rowY, i, val, lbl, bg, fg) { const cx = x + 0.13 + i * (cw3 + gap); s.addShape(pres.ShapeType.roundRect, { x: cx, y: rowY, w: cw3, h: rh, rectRadius: 0.03, fill: { color: bg } }); T(val, { x: cx + 0.05, y: rowY + 0.05, w: cw3 - 0.1, h: 0.28, fontSize: 12, bold: true, color: fg, fit: 'shrink' }); T(lbl, { x: cx + 0.05, y: rowY + 0.33, w: cw3 - 0.1, h: 0.18, fontSize: 5, bold: true, color: fg }); }
+    const rowY0 = y + 0.28, rh = 0.65, gap = 0.045, cw3 = (w - 0.26 - gap * 2) / 3, cw4 = (w - 0.26 - gap * 3) / 4;
+    function cell3(rowY, i, val, lbl, bg, fg) { const cx = x + 0.13 + i * (cw3 + gap); s.addShape(pres.ShapeType.roundRect, { x: cx, y: rowY, w: cw3, h: rh, rectRadius: 0.03, fill: { color: bg } }); T(val, { x: cx + 0.05, y: rowY + 0.07, w: cw3 - 0.1, h: 0.34, fontSize: 14, bold: true, color: fg, fit: 'shrink' }); T(lbl, { x: cx + 0.05, y: rowY + 0.44, w: cw3 - 0.1, h: 0.18, fontSize: 6, bold: true, color: fg }); }
     cell3(rowY0, 0, fmt2i(d.caseIdShipped), 'CASE ID SHIPPED', 'FCD34D', '3F2D00');
     cell3(rowY0, 1, d.caseIdPct.toFixed(1) + '%', 'CASE ID FULFILLMENT (%)', 'FCD34D', '3F2D00');
     cell3(rowY0, 2, fmt2i(d.caseIdPlan), 'CASE ID PLAN', 'FCD34D', '3F2D00');
@@ -4150,7 +4150,7 @@ function buildPlannerSlideV2(pres, planner, master, bgData, shots) {
     cell3(row2Y, 0, fmt2(d.cbmShipped), 'CBM SHIPPED', 'F87171', '3F0808');
     cell3(row2Y, 1, d.pct.toFixed(1) + '%', 'CBM FULFILLMENT (%)', 'F87171', '3F0808');
     cell3(row2Y, 2, fmt2(d.cbmPlan), 'CBM PLAN', 'F87171', '3F0808');
-    function cell4(rowY, i, val, lbl, bg, fg) { const cx = x + 0.13 + i * (cw4 + gap); s.addShape(pres.ShapeType.roundRect, { x: cx, y: rowY, w: cw4, h: rh, rectRadius: 0.03, fill: { color: bg } }); T(val, { x: cx + 0.05, y: rowY + 0.05, w: cw4 - 0.1, h: 0.28, fontSize: 11, bold: true, color: fg, fit: 'shrink' }); T(lbl, { x: cx + 0.05, y: rowY + 0.33, w: cw4 - 0.1, h: 0.18, fontSize: 4.8, bold: true, color: fg }); }
+    function cell4(rowY, i, val, lbl, bg, fg) { const cx = x + 0.13 + i * (cw4 + gap); s.addShape(pres.ShapeType.roundRect, { x: cx, y: rowY, w: cw4, h: rh, rectRadius: 0.03, fill: { color: bg } }); T(val, { x: cx + 0.05, y: rowY + 0.07, w: cw4 - 0.1, h: 0.34, fontSize: 12.5, bold: true, color: fg, fit: 'shrink' }); T(lbl, { x: cx + 0.05, y: rowY + 0.44, w: cw4 - 0.1, h: 0.18, fontSize: 5.6, bold: true, color: fg }); }
     const row3Y = row2Y + rh + gap;
     cell4(row3Y, 0, fmt2(d.cbmPlanShift1), 'CBM PLAN SHIFT 1', '6EE7B7', '013320');
     cell4(row3Y, 1, fmt2(d.cbmPlanShift2), 'CBM PLAN SHIFT 2', '6EE7B7', '013320');
@@ -4162,7 +4162,7 @@ function buildPlannerSlideV2(pres, planner, master, bgData, shots) {
     ['B1', 'B2', 'B3', 'B4'].forEach((b, i) => cell4(row5Y, i, fmt2(d.batch[b].cbm), 'CBM PLAN ' + b, 'D1D5DB', '1F2937'));
     return row5Y + rh;
   }
-  const PW = 6.0, PH = 3.55, PY = 1.5;
+  const PW = 6.0, PH = 3.95, PY = 1.5;
   if (shots && shots.e && shots.f) {
     // pakai screenshot asli panel MAIN DASHBOARD dari app Planner
     const SH = { type: 'outer', color: '000000', opacity: 0.4, blur: 5, offset: 2, angle: 90 };
@@ -4189,7 +4189,7 @@ function buildPlannerSlideV2(pres, planner, master, bgData, shots) {
     para([label('Plan Outbound per Shift (CBM): '), val('Shift 1 ' + fmt2(master.yesterday.cbmPlanShift1)), { text: ' | ' }, val('Shift 2 ' + fmt2(master.yesterday.cbmPlanShift2))], true),
     para([label('Plan Storing per Shift (Case ID): '), val('Shift 1 (B2+B3) ' + fmt2i(planStoring(master.yesterday).s1)), { text: ' | ' }, val('Shift 2 (B4+B1) ' + fmt2i(planStoring(master.yesterday).s2))], true),
     para([label('SLA Planner: '), val('SLA GRW ' + (planner.slaGrw || '-') + ', SLA Customer ' + (planner.slaCust || '-'))], true)
-  ), { x: 0.55, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
+  ), { x: 0.55, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 10, color: '111111', paraSpaceAfter: 3 });
   T([].concat(
     para([{ text: 'Laporan Ringkasan Plan Loading Today AHI Sidoarjo:', options: { bold: true, italic: true, fontSize: 10.5, paraSpaceAfter: 4 } }]),
     para([label('CBM Plan: '), val(fmt2(master.today.cbmPlan) + ' CBM'), { text: ' | ' }, label('Case ID Plan: '), val(fmt2i(master.today.caseIdPlan))], true),
@@ -4197,7 +4197,7 @@ function buildPlannerSlideV2(pres, planner, master, bgData, shots) {
     para([label('Plan Storing per Shift (Case ID): '), val('Shift 1 (B2+B3) ' + fmt2i(planStoring(master.today).s1)), { text: ' | ' }, val('Shift 2 (B4+B1) ' + fmt2i(planStoring(master.today).s2))], true),
     para([label('Plan Outbound per Batch (CBM): '), val('B1 ' + fmt2(master.today.batch.B1.cbm) + ' | B2 ' + fmt2(master.today.batch.B2.cbm) + ' | B3 ' + fmt2(master.today.batch.B3.cbm) + ' | B4 ' + fmt2(master.today.batch.B4.cbm) + ' CBM')], true),
     para([label('Total LC: '), val(String(master.today.lc || 0) + ' LC')], true)
-  ), { x: 6.9, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 9, color: '111111', paraSpaceAfter: 2.5 });
+  ), { x: 6.9, y: by, w: PW, h: 7.5 - by - 0.25, fontSize: 10, color: '111111', paraSpaceAfter: 3 });
 }
 // Storing: B2+B3 = Shift 1, B4+B1 = Shift 2 (dihitung dari Case ID plan per batch, bukan CBM)
 function planStoring(d) { const b = (d && d.batch) || {}; const c = k => (b[k] && b[k].caseId) || 0; return { s1: c('B2') + c('B3'), s2: c('B4') + c('B1') }; }
@@ -5145,7 +5145,7 @@ function toolsPrewarmCapture() {
   TOOLS_SHOTS.g = null; TOOLS_SHOTS.h = null; TOOLS_SHOTS.i = null; TOOLS_SHOTS.j = null; toolsCapAt = 0;
   toolsCapPromise = toolsAutoCaptureProfil(160000).then(function (ok) {
     // lanjut capture app Planner (slide 3), lalu app Inbound (slide 6)
-    return toolsAutoCapturePlanner(170000)
+    return toolsAutoCapturePlanner(210000)
       .then(function () { return toolsAutoCaptureInbound(180000); })
       .then(function () { return toolsAutoCaptureInboundPlan(150000); })
       .then(function () { return ok; });
