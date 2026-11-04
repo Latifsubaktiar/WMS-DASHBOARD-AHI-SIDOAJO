@@ -4135,7 +4135,7 @@ function buildPlannerSlideV2(pres, planner, master, bgData, shots) {
   const T = (t, opt) => s.addText(t, Object.assign({ fontFace: FONT, margin: 0, isTextBox: true, valign: 'top' }, opt));
   T('REPORTING PLANNER', { x: 0.55, y: 0.4, w: 8, h: 0.45, fontSize: 24, bold: true, color: '111111' });
   T('Monitoring Planning & Operational Achievement \u2013 Yesterday & Today', { x: 0.55, y: 0.82, w: 8, h: 0.28, fontSize: 11.5, italic: true, color: '333333' });
-  T("Yesterday's Work Completion", { x: 0.55, y: 1.22, w: 6.0, h: 0.28, fontSize: 12.5, bold: true, italic: true, color: 'A50F1E', align: 'center' });
+  T('Daily Proses Yesterday', { x: 0.55, y: 1.22, w: 6.0, h: 0.28, fontSize: 12.5, bold: true, italic: true, color: 'A50F1E', align: 'center' });
   T('Daily Proses today', { x: 6.9, y: 1.22, w: 6.0, h: 0.28, fontSize: 12.5, bold: true, italic: true, color: NAVY, align: 'center' });
 
   function panel(x, y, w, h, d) {
